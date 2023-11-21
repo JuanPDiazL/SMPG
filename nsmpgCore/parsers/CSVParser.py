@@ -10,7 +10,7 @@ def dict_of_nparrays(df:pd.DataFrame):
     dataset = {}
     dft = df.T
     for col_index in dft.columns:
-        dataset[col_index] = dft[col_index].to_numpy()
+        dataset[str(col_index)] = dft[col_index].to_numpy()
 
     # print(dataset)
     return dataset

@@ -29,7 +29,7 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QFileDialog, QPushButton
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
-from .nsmpgCore.structures.Dataset import Dataset, Season
+from .nsmpgCore.structures import Dataset
 from .nsmpgCore.commons import define_seasonal_dict
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -66,5 +66,5 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
     def process_btn_event(self):
         self.structured_dataset.to_json(self.dataset_directory_path, self.dataset_filename)
-        with open(f'{self.dataset_directory_path}/seasonal_cols.js', 'w') as js_data_wrapper:
-            js_data_wrapper.write(f'var colNames = {define_seasonal_dict(period_lenght=Season.season_unit)};')
+        with open(f'{self.dataset_directory_path}/{self.dataset_filename}_seasonal_cols.js', 'w') as js_data_wrapper:
+            js_data_wrapper.write(f'var colNames = {define_seasonal_dict(period_unit=self.structured_dataset.seasonal_properties.period_unit)};')
