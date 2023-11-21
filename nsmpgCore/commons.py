@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 
 yearly_periods = {
     'year': 1,
@@ -28,20 +29,13 @@ def define_seasonal_dict(start=0, period_unit='dekad', return_key_list=True):
 def get_year_slice(year: str, start_index:int) -> str:
     return year[start_index:start_index+4]
 
-# class SeasonalProperties:
-#     timestamp_start_index: int
-#     period_unit: str
-#     season_quantity: int
-#     current_season_index: int
-#     current_season_key: str
-
+@dataclass
 class SeasonalProperties:
-    def __init__(self, timestamp_start_index: int, period_unit: str, season_quantity: int, current_season_index: int, current_season_key: str) -> None:
-        self.timestamp_start_index = timestamp_start_index
-        self.period_unit = period_unit
-        self.season_quantity = season_quantity
-        self.current_season_index = current_season_index
-        self.current_season_key = current_season_key
+    timestamp_start_index: int
+    period_unit: str
+    season_quantity: int
+    current_season_index: int
+    current_season_key: str
 
 def parse_timestamps(timestamps: list[str]) -> SeasonalProperties:
     # get timestamp offset

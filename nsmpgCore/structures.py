@@ -1,5 +1,6 @@
 import json
 from numpy import split, ndarray
+from dataclasses import dataclass
 
 from .commons import yearly_periods, get_year_slice, parse_timestamps
 
@@ -44,9 +45,9 @@ class Place:
             season_id = get_year_slice(self.parent_dataset.timestamps[i*period_lenght], self.parent_dataset.seasonal_properties.timestamp_start_index)
             self.seasons[season_id] = Season(season_id, data, self.parent_dataset, self)
 
+@dataclass
 class Season:
-    def __init__(self, season_id: str, data: ndarray, parent_dataset: Dataset, parent_place: Place) -> None:
-        self.id = season_id
-        self.data = data
-        self.parent_dataset = parent_dataset
-        self.parent_place = parent_place
+    id: str
+    data: ndarray
+    parent_dataset: Dataset
+    parent_place: Place
