@@ -66,5 +66,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
     def process_btn_event(self):
         self.structured_dataset.to_json(self.dataset_directory_path, self.dataset_filename)
+        self.structured_dataset.to_json(self.dataset_directory_path, self.dataset_filename, kind='stats')
         with open(f'{self.dataset_directory_path}/{self.dataset_filename}_seasonal_cols.js', 'w') as js_data_wrapper:
-            js_data_wrapper.write(f'var colNames = {define_seasonal_dict(period_unit=self.structured_dataset.seasonal_properties.period_unit)};')
+            js_data_wrapper.write(f'var subCols = {define_seasonal_dict(period_unit=self.structured_dataset.seasonal_properties.period_unit)};\
+                                  var seasonalCols = {list(list(self.structured_dataset.get_children().values())[0].get_children().keys())};')
