@@ -30,7 +30,7 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QPushButton
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset
-from .nsmpgCore.commons import define_seasonal_dict
+from .nsmpgCore.commons import define_seasonal_dict, data_py_to_js
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -65,8 +65,17 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.structured_dataset = Dataset(self.dataset_filename, parsed_dataset, col_names)
 
     def process_btn_event(self):
-        self.structured_dataset.to_json(self.dataset_directory_path, self.dataset_filename)
-        self.structured_dataset.to_json(self.dataset_directory_path, self.dataset_filename, kind='stats')
-        with open(f'{self.dataset_directory_path}/{self.dataset_filename}_seasonal_cols.js', 'w') as js_data_wrapper:
-            js_data_wrapper.write(f'var subCols = {define_seasonal_dict(period_unit=self.structured_dataset.seasonal_properties.period_unit)};\
-                                  var seasonalCols = {list(list(self.structured_dataset.get_children().values())[0].get_children().keys())};')
+        structured_dict = self.structured_dataset.raw_to_dict()
+        data_py_to_js(structured_dict, self.dataset_directory_path, self.dataset_filename, 'data')
+
+        stats_dict = self.structured_dataset.place_stats_to_dict()
+        data_py_to_js(stats_dict, self.dataset_directory_path, self.dataset_filename, 'placeStats')
+
+        stats_dict = self.structured_dataset.season_stats_to_dict()
+        data_py_to_js(stats_dict, self.dataset_directory_path, self.dataset_filename, 'seasonStats')
+
+        seasonal_cols = list(list(self.structured_dataset.get_children().values())[0].get_children().keys())
+        data_py_to_js(seasonal_cols, self.dataset_directory_path, self.dataset_filename, 'seasonalCols')
+
+        data_py_to_js(define_seasonal_dict(), self.dataset_directory_path, self.dataset_filename, 'subCols')
+        

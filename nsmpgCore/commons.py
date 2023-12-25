@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+import json
 import numpy as np
 import scipy.stats as sp
 
@@ -64,7 +65,7 @@ def parse_timestamps(timestamps: list[str]) -> SeasonalProperties:
     current_season_key = get_year_slice(timestamps[current_season_index], timestamp_start)
     return SeasonalProperties(timestamp_start, period_unit, n_seasons, current_season_index, current_season_key)
 
-def percentile(data):
+def percentile(data) -> np.ndarray:
     return sp.percentileofscore(data, data, kind='rank')
 
 def operate_each(data, f):
@@ -75,12 +76,19 @@ def operate_parallel(data, f):
     for i in range(1, len(data[0])):
         column = [sub_data[i] for sub_data in data]
         result.append(f(column))
-    # print(result)
     return np.array(result)
 
-def percentiles_to_values(data, values=(3, 6, 11, 21, 31)):
+def percentiles_to_values(data: np.ndarray, values=(3, 6, 11, 21, 31)) -> np.ndarray:
     # return dict(map(lambda v: (str(v), np.percentile(data, v)), values))
     return np.percentile(data, values)
 
 def to_scalar(data):
     return np.sum(data)
+
+def ensemble_sum(current_data, post_data):
+    return np.cumsum(np.concatenate((current_data, post_data[len(current_data):])))
+
+def data_py_to_js(data: dict, path: str, filename: str, data_name: str):
+    with open(f'{path}/{filename}_{data_name}.js', 'w') as js_data_wrapper:
+        if isinstance(data, dict): js_data_wrapper.write(f'var {data_name} = {json.dumps(data)};')
+        else: js_data_wrapper.write(f'var {data_name} = {data};')

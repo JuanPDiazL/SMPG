@@ -1,8 +1,7 @@
 import json
 from numpy import ndarray
 import numpy as np
-from dataclasses import dataclass
-from .commons import operate_each, percentile, percentiles_to_values, yearly_periods, get_year_slice, parse_timestamps, to_scalar, operate_parallel
+from .commons import *
 
 class Dataset:
     def __init__(self, name: str, dataset: dict, col_names: list[str]) -> None:
@@ -14,22 +13,28 @@ class Dataset:
         for place, timeseries in dataset.items():
             self.places[place] = Place(place, timeseries, self)
 
-    def to_json(self, path, filename, kind='data'):
+    def raw_to_dict(self):
         data_dict = {}
-        for place_key, place in self.places.items():
-            place_dict = {}
-            if kind == 'data':
-                for season_key, season in place.seasons.items():
-                    place_dict[season_key] = season.data.tolist()
-                place_dict[self.seasonal_properties.current_season_key] = place.current_season.tolist()
-                data_dict[place_key] = place_dict
-            elif kind == 'stats':
-                data_dict[place_key] = {k: v.tolist() for k, v in place.get_stats().items()}
-
-        with open(f'{path}/{filename}_{kind}.js', 'w') as js_data_wrapper:
-            json_str = json.dumps(data_dict)
-            js_data_wrapper.write(f'var {kind} = {json_str};')
-
+        for place_id, place in self.places.items():
+            data_dict[place_id] = {}
+            for season_id, season in place.seasons.items():
+                data_dict[place_id][season_id] = season.data.tolist()
+        return data_dict
+    
+    def place_stats_to_dict(self):
+        data_dict = {}
+        for place_id, place in self.places.items():
+            data_dict[place_id] = dict(map(lambda v: (v[0], v[1].tolist()), place.get_stats().items()))
+        return data_dict
+    
+    def season_stats_to_dict(self):
+        data_dict = {}
+        for place_id, place in self.places.items():
+            data_dict[place_id] = {}
+            for season_id, season in place.seasons.items():
+                data_dict[place_id][season_id] = dict(map(lambda v: (v[0], v[1].tolist()), season.get_stats().items()))
+        return data_dict
+    
     def get_children(self):
         return self.places
 
@@ -51,8 +56,7 @@ class Place:
 
     def get_stats(self):
         seasonal_scalars = [s.scalar for s in self.seasons.values()]
-        seasonal_cum = [i.get_stats()['sum'] for i in self.seasons.values()]
-        print(seasonal_cum)
+        seasonal_cum = [i.get_stats()['Sum'] for i in self.seasons.values()]
         to_compute = {
             'Yr. Pctls.': percentile(seasonal_scalars),
             'Drought Severity Pctls.': percentiles_to_values(seasonal_scalars),
@@ -74,6 +78,7 @@ class Season:
 
     def get_stats(self):
         to_compute = {
-            'sum': np.cumsum(self.data),
+            'Sum': np.cumsum(self.data),
+            'Ensemble Sum': ensemble_sum(self.parent.current_season, self.data),
         }
         return to_compute
