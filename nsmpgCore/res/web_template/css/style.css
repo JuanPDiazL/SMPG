@@ -1,0 +1,33 @@
+html, body {
+    --sidebarSize: 10%;
+    user-select: none;
+    line-height: 1.0;
+}
+
+.sidebar {
+    width: var(--sidebarSize);
+}
+
+.content {
+    margin-left: calc(var(--sidebarSize));
+    /* overflow-y: scroll; */
+}
+
+.content-inner {
+    align-content: center;
+    align-items: center;
+    align-self: center;
+    width: 100%;
+}
+
+.plot-container {
+    width: auto;
+    aspect-ratio: 16/9;
+}
+
+/* .line-class-data1 { stroke-dasharray: 3 4; stroke-width: 3px; }
+.line-class-data2 { stroke-dasharray: 2 4; stroke-width: 2px; } */
+
+.selected {
+    background-color: red;
+}

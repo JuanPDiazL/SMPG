@@ -30,7 +30,8 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QPushButton
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset
-from .nsmpgCore.commons import define_seasonal_dict, data_py_to_js
+from .nsmpgCore.commons import define_seasonal_dict
+from .nsmpgCore.exporters.WebExporter import data_py_to_js, export_to_web_files
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -56,26 +57,14 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.processBtn.clicked.connect(self.process_btn_event)
 
     def load_file_btn_event(self):
-        self.dataset_file_path = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
-        if self.dataset_file_path == "": return
-        self.dataset_directory_path = os.path.dirname(self.dataset_file_path)
-        self.dataset_filename = ''.join(os.path.basename(self.dataset_file_path).split('.')[:-1])
+        self.selected_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
+        if self.selected_source == "": return
+        self.dataset_source_path = os.path.normpath(os.path.dirname(self.selected_source))
+        self.dataset_filename = ''.join(os.path.basename(self.selected_source).split('.')[:-1])
 
-        parsed_dataset, col_names = parse_csv(self.dataset_file_path)
+        parsed_dataset, col_names = parse_csv(self.selected_source)
         self.structured_dataset = Dataset(self.dataset_filename, parsed_dataset, col_names)
 
     def process_btn_event(self):
-        structured_dict = self.structured_dataset.raw_to_dict()
-        data_py_to_js(structured_dict, self.dataset_directory_path, self.dataset_filename, 'data')
-
-        stats_dict = self.structured_dataset.place_stats_to_dict()
-        data_py_to_js(stats_dict, self.dataset_directory_path, self.dataset_filename, 'placeStats')
-
-        stats_dict = self.structured_dataset.season_stats_to_dict()
-        data_py_to_js(stats_dict, self.dataset_directory_path, self.dataset_filename, 'seasonStats')
-
-        seasonal_cols = list(list(self.structured_dataset.get_children().values())[0].get_children().keys())
-        data_py_to_js(seasonal_cols, self.dataset_directory_path, self.dataset_filename, 'seasonalCols')
-
-        data_py_to_js(define_seasonal_dict(), self.dataset_directory_path, self.dataset_filename, 'subCols')
-        
+        destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
+        export_to_web_files(destination_path, self.structured_dataset)

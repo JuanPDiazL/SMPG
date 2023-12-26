@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Layout</title>
+
+    <link rel="stylesheet" href="./css/w3.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/billboard_graph.min.css">
+    <!-- <link rel="stylesheet" href="./css/billboard_insight.min.css"> -->
+
+    <script type="text/javascript" src="./js/lodash_4.17.15-npm_lodash.js"></script>
+
+    <script type="text/javascript" src="./js/d3.v7.min.js"></script>
+    <script type="text/javascript" src="./js/billboard.min.js"></script>
+</head>
+
+<body>
+    <div class="sidebar w3-sidebar w3-light-grey w3-bar-block w3-hide-small">
+
+        <h3 class="w3-bar-item">Places</h3>
+
+    </div>
+
+    <div class="content">
+
+        <!-- <header class="w3-container w3-card w3-light-blue w3-margin-bottom">
+            <h1>Template</h1>
+        </header> -->
+
+        <div class="content-inner">
+
+            <div class="w3-row-padding">
+                
+                <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
+                    <div class="w3-card">
+                        <header class=" w3-container w3-pale-blue">
+                            <p>Chart 1</p>
+                        </header>
+                        <div class="plot-container w3-container w3-padding-16">
+                            <div id="chart1"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
+                    <div class="w3-card">
+                        <header class="w3-container w3-pale-blue">
+                            <p>Chart 2</p>
+                        </header>
+                        <div class="plot-container w3-container w3-padding-16">
+                            <div id="chart2"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="w3-row-padding">
+
+                <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
+                    <div class="w3-card">
+                        <header class="w3-container w3-pale-blue">
+                            <p>Chart 3</p>
+                        </header>
+                        <div class="plot-container w3-container w3-padding-16">
+                            <div id="chart3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
+                    <div class="w3-card">
+                        <header class="w3-container w3-pale-blue">
+                            <p>Chart 4</p>
+                        </header>
+                        <div class="plot-container w3-container w3-padding-16">
+                            <!-- <div id="chart4"></div> -->
+                            <div id="chart4"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="w3-container w3-two-half w3-margin-bottom w3-padding-small">
+                <div class="w3-card">
+                    <header class="w3-container w3-pale-blue">
+                        <p>Table</p>
+                    </header>
+
+                    <div class="w3-container w3-padding-16">
+                        <table id="statsTable" class="w3-table w3-striped w3-bordered w3-border">
+                            <tr>
+                                <th>
+
+                                </th>
+                                <th>
+                                    X
+                                </th>
+                                <th>
+                                    Y
+                                </th>
+                            </tr>
+                            <tr>
+                                <th>
+                                    A
+                                </th>
+                                <td>
+                                    0
+                                </td>
+                                <td>
+                                    0
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    B
+                                </th>
+                                <td>
+                                    0
+                                </td>
+                                <td>
+                                    0
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script src="./data/rawData.js"></script>
+    <script src="./data/placeStats.js"></script>
+    <script src="./data/seasonalStats.js"></script>
+    <script src="./data/seasonCols.js"></script>
+    <script src="./data/subSeasonCols.js"></script>
+
+    <script src="./js/makeBillboard.js"></script>
+
+    <script>
+        function updateTable(table) {
+            table.rows[1].cells[1].innerHTML = Math.random();
+            table.rows[1].cells[2].innerHTML = Math.random();
+            table.rows[2].cells[1].innerHTML = Math.random();
+            table.rows[2].cells[2].innerHTML = Math.random();
+        }
+
+        function updatePlots(index) {
+            updateBillboard(index, data, bb1);
+            updateBillboard(index, placeStats, bb2);
+            updateTable(document.getElementById('statsTable'));
+        }
+
+        function makeSelectionMenu(data) {
+            sidebar = document.getElementsByClassName('sidebar')[0];
+            for (const i in data) {
+                placeLink = document.createElement('a');
+                placeLink.id = i;
+                placeLink.className = 'w3-bar-item w3-button';
+                placeLink.innerHTML = i;
+                placeLink.addEventListener('click', function () {
+                    updatePlots(i);
+                });
+                sidebar.appendChild(placeLink);
+            }
+        }
+        
+        let firstPlaceKey = Object.keys(rawData)[0];
+
+        makeSelectionMenu(rawData);
+        let bb1 = makeBillboard(rawData, subSeasonCols, '#chart1');
+        let bb2 = makeBillboard(placeStats, seasonCols, '#chart2');
+    </script>
+</body>
+
+</html>

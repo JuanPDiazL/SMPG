@@ -1,6 +1,5 @@
 import re
 from dataclasses import dataclass
-import json
 import numpy as np
 import scipy.stats as sp
 
@@ -87,8 +86,3 @@ def to_scalar(data):
 
 def ensemble_sum(current_data, post_data):
     return np.cumsum(np.concatenate((current_data, post_data[len(current_data):])))
-
-def data_py_to_js(data: dict, path: str, filename: str, data_name: str):
-    with open(f'{path}/{filename}_{data_name}.js', 'w') as js_data_wrapper:
-        if isinstance(data, dict): js_data_wrapper.write(f'var {data_name} = {json.dumps(data)};')
-        else: js_data_wrapper.write(f'var {data_name} = {data};')
