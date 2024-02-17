@@ -17,7 +17,8 @@ html, body {
     align-content: center;
     align-items: center;
     align-self: center;
-    width: 100%;
+    width: 90%;
+    padding-left: 10%;
 }
 
 .plot-container {
@@ -25,9 +26,31 @@ html, body {
     aspect-ratio: 16/9;
 }
 
-/* .line-class-data1 { stroke-dasharray: 3 4; stroke-width: 3px; }
-.line-class-data2 { stroke-dasharray: 2 4; stroke-width: 2px; } */
-
 .selected {
     background-color: red;
 }
+
+/* Custom line styles */
+
+.bb-line-LTA, .bb-line-Avg- {
+    stroke-width: 4px !important;
+    /* stroke: red !important; */
+}
+
+.bb-line-E--LTM {
+    stroke-width: 4px !important;
+    stroke-dasharray: 6 2;
+    /* stroke: black !important; */
+}
+
+.bb-areas {
+    opacity: .5;
+}
+
+.bb-circle-1, .bb-circle-0 {
+    opacity: .8 !important;
+}
+
+/* path {
+    shape-rendering: geometricPrecision !important;
+} */

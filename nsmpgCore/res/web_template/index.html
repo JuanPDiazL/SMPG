@@ -8,8 +8,7 @@
 
     <link rel="stylesheet" href="./css/w3.css">
     <link rel="stylesheet" href="./css/style.css">
-    <link rel="stylesheet" href="./css/billboard_graph.min.css">
-    <!-- <link rel="stylesheet" href="./css/billboard_insight.min.css"> -->
+    <link rel="stylesheet" href="./css/billboard_modern.min.css">
 
     <script type="text/javascript" src="./js/lodash_4.17.15-npm_lodash.js"></script>
 
@@ -37,7 +36,7 @@
                 <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
                         <header class=" w3-container w3-pale-blue">
-                            <p>Chart 1</p>
+                            <p>Chart 1: Seasonal Accumulations</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-16">
                             <div id="chart1"></div>
@@ -48,7 +47,7 @@
                 <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
                         <header class="w3-container w3-pale-blue">
-                            <p>Chart 2</p>
+                            <p>Chart 2: Current Rainfall Status</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-16">
                             <div id="chart2"></div>
@@ -63,7 +62,7 @@
                 <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
                         <header class="w3-container w3-pale-blue">
-                            <p>Chart 3</p>
+                            <p>Chart 3: Ensemble</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-16">
                             <div id="chart3"></div>
@@ -74,7 +73,7 @@
                 <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
                         <header class="w3-container w3-pale-blue">
-                            <p>Chart 4</p>
+                            <p>Chart 4: Seasonal Rainfall Accumulation Up to Current Dekad</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-16">
                             <!-- <div id="chart4"></div> -->
@@ -88,7 +87,7 @@
             <div class="w3-container w3-two-half w3-margin-bottom w3-padding-small">
                 <div class="w3-card">
                     <header class="w3-container w3-pale-blue">
-                        <p>Table</p>
+                        <p>Test Table</p>
                     </header>
 
                     <div class="w3-container w3-padding-16">
@@ -151,12 +150,6 @@
             table.rows[2].cells[2].innerHTML = Math.random();
         }
 
-        function updatePlots(index) {
-            updateBillboard(index, rawData, bb1);
-            updateBillboard(index, placeStats, bb2);
-            updateTable(document.getElementById('statsTable'));
-        }
-
         function makeSelectionMenu(data) {
             sidebar = document.getElementsByClassName('sidebar')[0];
             for (const i in data) {
@@ -165,7 +158,11 @@
                 placeLink.className = 'w3-bar-item w3-button';
                 placeLink.innerHTML = i;
                 placeLink.addEventListener('click', function () {
-                    updatePlots(i);
+                    bb1.update(i);
+                    bb2.update(i);
+                    bb3.update(i);
+                    bb4.update(i);
+                    updateTable(document.getElementById('statsTable'));
                 });
                 sidebar.appendChild(placeLink);
             }
@@ -173,9 +170,12 @@
         
         let firstPlaceKey = Object.keys(rawData)[0];
 
-        makeSelectionMenu(rawData);
-        let bb1 = makeBillboard(rawData, subSeasonCols, '#chart1');
-        let bb2 = makeBillboard(placeStats, seasonCols, '#chart2');
+        let bb1 = new AccumulationsBillboardChart(seasonalStats, placeStats, seasonCols, subSeasonCols, '#chart1');
+        let bb2 = new EnsembleBillboardChart(seasonalStats, placeStats, seasonCols, subSeasonCols, '#chart3');
+        let bb3 = new CurrentBillboardChart(seasonalStats, placeStats, subSeasonCols, '#chart2');
+        let bb4 = new SeasonalAccumulationsBillboardChart(seasonalStats, placeStats, seasonCols, '#chart4');
+        updateTable(document.getElementById('statsTable'));
+        makeSelectionMenu(rawData, bb1);
     </script>
 </body>
 

@@ -70,9 +70,9 @@ def percentile(data) -> np.ndarray:
 def operate_each(data, f):
     return np.array([f(data[:i]) for i in range(1, len(data))])
 
-def operate_parallel(data, f):
+def operate_column_parallel(data, f):
     result = []
-    for i in range(1, len(data[0])):
+    for i in range(0, len(data[0])):
         column = [sub_data[i] for sub_data in data]
         result.append(f(column))
     return np.array(result)
@@ -81,8 +81,8 @@ def percentiles_to_values(data: np.ndarray, values=(3, 6, 11, 21, 31)) -> np.nda
     # return dict(map(lambda v: (str(v), np.percentile(data, v)), values))
     return np.percentile(data, values)
 
-def to_scalar(data):
-    return np.sum(data)
+def to_scalar(data, position=-1):
+    return np.sum(data[position])
 
 def ensemble_sum(current_data, post_data):
     return np.cumsum(np.concatenate((current_data, post_data[len(current_data):])))

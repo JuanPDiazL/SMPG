@@ -1,4 +1,3 @@
-import json
 from numpy import ndarray
 import numpy as np
 from .commons import *
@@ -30,9 +29,11 @@ class Dataset:
     def season_stats_to_dict(self):
         data_dict = {}
         for place_id, place in self.places.items():
-            data_dict[place_id] = {}
+            data_dict[place_id] = dict(map(lambda k: (k, {}), list(place.seasons.values())[1].get_stats().keys()))
             for season_id, season in place.seasons.items():
-                data_dict[place_id][season_id] = dict(map(lambda v: (v[0], v[1].tolist()), season.get_stats().items()))
+                for stat, values in season.get_stats().items():
+                    data_dict[place_id][stat] = data_dict[place_id][stat] | {season_id: values.tolist()}
+
         return data_dict
     
     def get_children(self):
@@ -55,14 +56,24 @@ class Place:
             self.seasons[season_id] = Season(season_id, data, self)
 
     def get_stats(self):
-        seasonal_scalars = [s.scalar for s in self.seasons.values()]
-        seasonal_cum = [i.get_stats()['Sum'] for i in self.seasons.values()]
+        season_values = [s.data for s in self.seasons.values()]
+        season_stats = [s.get_stats() for s in self.seasons.values()]
+        seasonal_cum = [s['Sum'] for s in season_stats]
+        seasonal_current_sum_scalars = [c[self.current_season.__len__()-1] for c in seasonal_cum]
+        accumulation_scalars = [c[-1] for c in seasonal_cum]
+        seasonal_ensemble = [s['Ensemble Sum'] for s in season_stats]
+        ensemble_scalars = [e[-1] for e in seasonal_ensemble]
         to_compute = {
-            'Yr. Pctls.': percentile(seasonal_scalars),
-            'Drought Severity Pctls.': percentiles_to_values(seasonal_scalars),
-            'LTM': operate_parallel(seasonal_cum, np.median),
-            'LTA': operate_parallel(seasonal_cum, np.average),
-            'St. Dev.': operate_parallel(seasonal_cum, np.std),
+            'Pctls. per Year': percentile(seasonal_current_sum_scalars),
+            'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sum_scalars, (3, 6, 11, 21, 31)),
+            'Pctls.': percentiles_to_values(accumulation_scalars, [33, 67]),
+            'LTM': operate_column_parallel(seasonal_cum, np.median),
+            'LTA': operate_column_parallel(seasonal_cum, np.average),
+            'Avg.': operate_column_parallel(season_values, np.average),
+            'E. LTM': operate_column_parallel(seasonal_ensemble, np.median),
+            'E. Pctls.': percentiles_to_values(ensemble_scalars, [33, 67]),
+            'St. Dev.': operate_column_parallel(seasonal_cum, np.std),
+            'Current Year': self.current_season,
         }
         return to_compute
     
@@ -75,6 +86,7 @@ class Season:
         self.data = data
         self.parent = parent_place
         self.scalar = to_scalar(data)
+        self.scalar_current = to_scalar(data, self.parent.current_season.__len__())
 
     def get_stats(self):
         to_compute = {

@@ -1,0 +1,1 @@
+var subSeasonCols = ['Jan-1', 'Jan-2', 'Jan-3', 'Feb-1', 'Feb-2', 'Feb-3', 'Mar-1', 'Mar-2', 'Mar-3', 'Apr-1', 'Apr-2', 'Apr-3', 'May-1', 'May-2', 'May-3', 'Jun-1', 'Jun-2', 'Jun-3', 'Jul-1', 'Jul-2', 'Jul-3', 'Aug-1', 'Aug-2', 'Aug-3', 'Sep-1', 'Sep-2', 'Sep-3', 'Oct-1', 'Oct-2', 'Oct-3', 'Nov-1', 'Nov-2', 'Nov-3', 'Dec-1', 'Dec-2', 'Dec-3'];

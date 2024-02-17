@@ -26,12 +26,11 @@ import os
 
 # from qgis.PyQt import uic, QtWidgets
 from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog, QFileDialog, QPushButton
+from PyQt5.QtWidgets import QDialog, QFileDialog, QPushButton, QMessageBox
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset
-from .nsmpgCore.commons import define_seasonal_dict
-from .nsmpgCore.exporters.WebExporter import data_py_to_js, export_to_web_files
+from .nsmpgCore.exporters.WebExporter import export_to_web_files
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -50,11 +49,11 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.setupUi(self)
 
         ### My code starting from here
-        self.loadFileBtn: QPushButton
-        self.processBtn: QPushButton
+        self.loadFileButton: QPushButton
+        self.processButton: QPushButton
 
-        self.loadFileBtn.clicked.connect(self.load_file_btn_event)
-        self.processBtn.clicked.connect(self.process_btn_event)
+        self.loadFileButton.clicked.connect(self.load_file_btn_event)
+        self.processButton.clicked.connect(self.process_btn_event)
 
     def load_file_btn_event(self):
         self.selected_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
@@ -68,3 +67,4 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def process_btn_event(self):
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
         export_to_web_files(destination_path, self.structured_dataset)
+        QMessageBox(text='Task completed.').exec()
