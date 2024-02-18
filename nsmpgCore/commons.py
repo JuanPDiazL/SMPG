@@ -31,38 +31,38 @@ def define_seasonal_dict(start=0, period_unit='dekad', return_key_list=True):
 def get_year_slice(year: str, start_index:int) -> str:
     return year[start_index:start_index+4]
 
-@dataclass
-class SeasonalProperties:
-    timestamp_start_index: int
-    period_unit: str
-    season_quantity: int
-    current_season_index: int
-    current_season_key: str
-
-def parse_timestamps(timestamps: list[str]) -> SeasonalProperties:
+def parse_timestamps(timestamps: list[str]) -> dict:
     # get timestamp offset
-    first_timestamp = timestamps[0]
-    match = re.search(r"\d{6}", first_timestamp)
+    match = re.search(r"\d{6}", timestamps[0])
     if match is None:
-        raise(RuntimeError('Each column must contain a six digit number indicating the year and sub-period.'))
-    timestamp_start = match.start()
+        raise(RuntimeError('Each column must contain a six digit number indicating the year and sub-period number.'))
+    timestamp_str_offset = match.start()
 
     # get period lenght from timestamps
-    first_year = get_year_slice(first_timestamp, timestamp_start)
-    period_unit = None
+    first_year = get_year_slice(timestamps[0], timestamp_str_offset)
+    period_unit_id = None
     period_lenght = 0
     for p_unit, p_lenght in yearly_periods.items():
-        offset_year = get_year_slice(timestamps[p_lenght], timestamp_start)
+        offset_year = get_year_slice(timestamps[p_lenght], timestamp_str_offset)
         if first_year != offset_year:
-            period_unit = p_unit
+            period_unit_id = p_unit
             period_lenght = p_lenght
             break
     
     # get period properties
-    n_seasons = (len(timestamps) - 1) // period_lenght
-    current_season_index = n_seasons*period_lenght
-    current_season_key = get_year_slice(timestamps[current_season_index], timestamp_start)
-    return SeasonalProperties(timestamp_start, period_unit, n_seasons, current_season_index, current_season_key)
+    season_quantity = (len(timestamps) - 1) // period_lenght
+    year_ids = [str(y) for y in range(int(first_year), int(first_year)+season_quantity)]
+    current_season_index = season_quantity*period_lenght
+    current_season_id = get_year_slice(timestamps[current_season_index], timestamp_str_offset)
+    season_properties = {
+        'timestamp_str_offset': timestamp_str_offset,
+        'period_unit_id': period_unit_id,
+        'season_quantity': season_quantity,
+        'year_ids': year_ids,
+        'current_season_index': current_season_index,
+        'current_season_key': current_season_id,
+    }
+    return season_properties
 
 def percentile(data) -> np.ndarray:
     return sp.percentileofscore(data, data, kind='rank')
@@ -78,7 +78,6 @@ def operate_column_parallel(data, f):
     return np.array(result)
 
 def percentiles_to_values(data: np.ndarray, values=(3, 6, 11, 21, 31)) -> np.ndarray:
-    # return dict(map(lambda v: (str(v), np.percentile(data, v)), values))
     return np.percentile(data, values)
 
 def to_scalar(data, position=-1):
