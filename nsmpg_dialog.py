@@ -23,6 +23,7 @@
 """
 
 import os
+import time
 
 # from qgis.PyQt import uic, QtWidgets
 from PyQt5 import uic
@@ -91,6 +92,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
     # function to allow the computation of the required data, such as accumulation, ensemble, stats, percentiles, etc
     def process_btn_event(self): 
+        renderTime = time.perf_counter()
         # computation with parameters given from GUI
         options = Options(
             climatology_start=self.climatologyStartComboBox.currentText(),
@@ -104,6 +106,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
         export_to_web_files(destination_path, self.structured_dataset)
         export_to_web_files(destination_path, filtered_dataset, 'Dynamic_Web_Report_Filtered')
+        print(f'Render time: {time.perf_counter() - renderTime}')
         QMessageBox(text='Task completed.').exec()
 
     # placeholder

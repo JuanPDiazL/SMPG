@@ -75,12 +75,8 @@ def operate_each(data, f):
     return np.array([f(data[:i]) for i in range(1, len(data))])
 
 # applies a function to each column of an array
-def operate_column_parallel(data, f):
-    result = []
-    for i in range(0, len(data[0])):
-        column = [sub_data[i] for sub_data in data]
-        result.append(f(column))
-    return np.array(result)
+def operate_column(data, f) -> np.ndarray:
+    return f(data, axis=0)
 
 def percentiles_to_values(data: np.ndarray, values=(3, 6, 11, 21, 31)) -> np.ndarray:
     return np.percentile(data, values)
