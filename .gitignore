@@ -2,3 +2,4 @@
 .vscode
 **/*.code-workspace
 **/*.prof
+nsmpgCore/res/web_template/data

@@ -1,10 +1,10 @@
 from numpy import ndarray
 import numpy as np
 from .commons import *
-from dataclasses import dataclass
 
+# options for the computation
 class Options:
-    def __init__(self, parameters=None, climatology_start=None, climatology_end=None,
+    def __init__(self, climatology_start=None, climatology_end=None,
                  season_start=None, season_end=None, selected_years=None,
                  output_types=None):
         self.climatology_start: str = climatology_start # year string. ej. '2021'
@@ -16,21 +16,23 @@ class Options:
         self.selected_years: list[str] = selected_years
         self.output_types: list[str] = output_types
 
-        if parameters is not None:
-            self.update(parameters)
-
-    def update(self, parameters: dict):
-        self.__dict__.update(parameters)
-
+# properties of the dataset
 class Properties:
     def __init__(self, properties_dict: dict=None) -> None:
         self.timestamp_str_offset: int
         self.period_unit_id: str
         self.season_quantity: int
+
         self.year_ids: list[str]
+        self.climatology_year_ids: list[str]
+        self.selected_year_ids: list[str]
+        
+        self.sub_season_ids: list[str]
+        self.sub_season_offset: int
 
         self.current_season_index: int
         self.current_season_id: str
+        self.current_season_length: int
 
         if properties_dict is not None:
             self.update(properties_dict)
@@ -38,16 +40,38 @@ class Properties:
     def update(self, properties: dict):
         self.__dict__.update(properties)
 
+    def update_complementary_info(self, climatology_year_ids, sub_season_ids, sub_season_offset,):
+        self.climatology_year_ids = climatology_year_ids
+        self.sub_season_ids = sub_season_ids
+        self.sub_season_offset = sub_season_offset
+
+# stores and processes all the information in the dataset
+# a dataset contains data of places
 class Dataset:
     def __init__(self, name: str, dataset: dict, col_names: list[str], options: Options=None) -> None:
         self.name = name
         self.timestamps = col_names
         
         self.properties = Properties(properties_dict=parse_timestamps(self.timestamps))
-        self.options = Options(climatology_start=self.properties.year_ids[0], climatology_end=self.properties.year_ids[-1])
+
+        self.options = Options( # default options
+            climatology_start=self.properties.year_ids[0],
+            climatology_end=self.properties.year_ids[-1],
+            season_start='Jan-1',
+            season_end='Dec-3',
+            )
+        
         if options is not None:
             self.options = options
         
+        default_seasons = define_seasonal_dict(return_key_list=False)
+        self.properties.update_complementary_info(
+            climatology_year_ids=slice_by_element(self.properties.year_ids, self.options.climatology_start, self.options.climatology_end),
+            sub_season_ids=slice_by_element(define_seasonal_dict(), self.options.season_start, self.options.season_end),
+            sub_season_offset=default_seasons[self.options.season_start],
+        )
+        print(self.properties.__dict__)
+
         self.places: dict[str, Place] = {}
         for place, timeseries in dataset.items():
             self.places[place] = Place(place, timeseries, self)
@@ -79,25 +103,30 @@ class Dataset:
     def get_children(self):
         return self.places
 
+# a place contains data for the seasons and computes its stats
 class Place:
     def __init__(self, place_id: str, timeseries: ndarray, parent_dataset: Dataset) -> None:
         self.id = place_id
         self.timeseries = timeseries
         self.parent = parent_dataset
+        seasons = define_seasonal_dict(return_key_list=False)
+        season_start_index = seasons[parent_dataset.options.season_start]
+        season_end_index = seasons[parent_dataset.options.season_end]+1
 
         split_seasons: list[ndarray] = np.split(timeseries[:self.parent.properties.current_season_index], 
                               self.parent.properties.season_quantity)
+        
+        current_season_trim_index = min(self.parent.properties.current_season_length, season_end_index)
         self.current_season: ndarray = timeseries[self.parent.properties.current_season_index:]
-
+        self.current_season = self.current_season[season_start_index:current_season_trim_index]
 
         # construct the seasons
         self.seasons: dict[str, Season] = {}
         for i, data in enumerate(split_seasons):
             # variables for climatology filter
-            start = int(self.parent.options.climatology_start)
-            end = int(self.parent.options.climatology_end)
             season_id = self.parent.properties.year_ids[i]
-            if int(season_id) in range(start, end+1):
+            if season_id in self.parent.properties.climatology_year_ids:
+                data = data[season_start_index:season_end_index]
                 self.seasons[season_id] = Season(season_id, data, self)
 
     def get_stats(self):
@@ -109,7 +138,7 @@ class Place:
         seasonal_ensemble = [s['Ensemble Sum'] for s in season_stats]
         ensemble_scalars = [e[-1] for e in seasonal_ensemble]
         to_compute = {
-            'Pctls. per Year': percentile(seasonal_current_sum_scalars),
+            'Pctls. per Year': percentiles_from_values(seasonal_current_sum_scalars),
             'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sum_scalars, (3, 6, 11, 21, 31)),
             'Pctls.': percentiles_to_values(accumulation_scalars, [33, 67]),
             'LTM': operate_column_parallel(seasonal_cum, np.median),
@@ -118,20 +147,21 @@ class Place:
             'E. LTM': operate_column_parallel(seasonal_ensemble, np.median),
             'E. Pctls.': percentiles_to_values(ensemble_scalars, [33, 67]),
             'St. Dev.': operate_column_parallel(seasonal_cum, np.std),
-            'Current Year': self.current_season,
+            'Current Season': self.current_season,
+            'Current Season Accumulation': np.cumsum(self.current_season),
         }
         return to_compute
     
     def get_children(self):
         return self.seasons
 
+# a season contains the values of the season and computes its stats
 class Season:
     def __init__(self, id: str, data: ndarray, parent_place: Place) -> None:
         self.id = id
         self.data = data
         self.parent = parent_place
-        self.scalar = to_scalar(data)
-        self.scalar_current = to_scalar(data, self.parent.current_season.__len__())
+        self.total = np.sum(data)
 
     def get_stats(self):
         to_compute = {

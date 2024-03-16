@@ -26,10 +26,11 @@ import os
 
 # from qgis.PyQt import uic, QtWidgets
 from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog, QFileDialog, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QDialog, QFileDialog, QPushButton, QMessageBox, QComboBox, QLineEdit
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
-from .nsmpgCore.structures import Dataset
+from .nsmpgCore.structures import Dataset, Options, Properties
+from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -51,20 +52,62 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         ### My code starting from here
         self.loadFileButton: QPushButton
         self.processButton: QPushButton
+        self.datasetInputLineEdit: QLineEdit
+        self.climatologyStartComboBox: QComboBox
+        self.climatologyEndComboBox: QComboBox
+        self.seasonStartComboBox: QComboBox
+        self.seasonEndComboBox: QComboBox
+
+        self.datasetInputLineEdit.editingFinished.connect(self.path_changed_event)
+        self.datasetInputLineEdit.setPlaceholderText('Select a source dataset.')
 
         self.loadFileButton.clicked.connect(self.load_file_btn_event)
         self.processButton.clicked.connect(self.process_btn_event)
 
-    def load_file_btn_event(self):
+    # function that reads the dataset from a file.
+    def load_file_btn_event(self): 
+        # path reading
         self.selected_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
         if self.selected_source == "": return
         self.dataset_source_path = os.path.normpath(os.path.dirname(self.selected_source))
         self.dataset_filename = ''.join(os.path.basename(self.selected_source).split('.')[:-1])
 
-        parsed_dataset, col_names = parse_csv(self.selected_source)
-        self.structured_dataset = Dataset(self.dataset_filename, parsed_dataset, col_names)
+        # parse dataset
+        self.parsed_dataset, self.col_names = parse_csv(self.selected_source)
+        self.dataset_properties = Properties(parse_timestamps(self.col_names))
+        self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names)
 
-    def process_btn_event(self):
+        # set form fields content from data
+        self.datasetInputLineEdit.setText(self.selected_source)
+
+        self.climatologyStartComboBox.addItems(self.dataset_properties.year_ids)
+        self.climatologyEndComboBox.addItems(self.dataset_properties.year_ids)
+        self.climatologyEndComboBox.setCurrentIndex(len(self.dataset_properties.year_ids)-1)
+
+        seasons = define_seasonal_dict()
+        self.seasonStartComboBox.addItems(seasons)
+        self.seasonEndComboBox.addItems(seasons)
+        self.seasonEndComboBox.setCurrentIndex(len(seasons)-1)
+
+    # function to allow the computation of the required data, such as accumulation, ensemble, stats, percentiles, etc
+    def process_btn_event(self): 
+        # computation with parameters given from GUI
+        options = Options(
+            climatology_start=self.climatologyStartComboBox.currentText(),
+            climatology_end=self.climatologyEndComboBox.currentText(),
+            season_start=self.seasonStartComboBox.currentText(),
+            season_end=self.seasonEndComboBox.currentText(),
+        )
+        filtered_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options=options)
+
+        # output files
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
         export_to_web_files(destination_path, self.structured_dataset)
+        export_to_web_files(destination_path, filtered_dataset, 'Dynamic_Web_Report_Filtered')
         QMessageBox(text='Task completed.').exec()
+
+    # placeholder
+    def path_changed_event(self): 
+        print(self.datasetInputLineEdit.text())
+        if self.datasetInputLineEdit.text().__len__() != 0:
+            print('valid')

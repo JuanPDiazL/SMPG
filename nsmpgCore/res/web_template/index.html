@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./css/w3.css">
     <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="./css/billboard_modern.min.css">
+    <link rel="stylesheet" href="./css/fontawesome.min.css">
 
     <script type="text/javascript" src="./js/lodash_4.17.15-npm_lodash.js"></script>
 
@@ -16,42 +17,50 @@
     <script type="text/javascript" src="./js/billboard.min.js"></script>
 </head>
 
-<body>
-    <div class="sidebar w3-sidebar w3-light-grey w3-bar-block w3-hide-small">
-
-        <h3 class="w3-bar-item">Places</h3>
-
+<body class="darkmode">
+    <div id="leftSidebar" class="w3-sidebar w3-card-4 w3-bar-block w3-animate-left" style="display: none; z-index: 4;">
+        
+        <header id="leftSidebarHeader" class="w3-container w3-card w3-blue-grey w3-padding-small">
+            <span class="w3-blue-grey" style="font-size: 2em;">Places</span>
+            <span><button class="mi w3-button w3-right" onclick="w3_close()">close</button></span>
+        </header>
     </div>
+    <div class="w3-overlay  w3-bar-block" onclick="w3_close()" style="cursor:pointer" id="myOverlay"></div>
 
     <div class="content">
 
-        <!-- <header class="w3-container w3-card w3-light-blue w3-margin-bottom">
-            <h1>Template</h1>
-        </header> -->
+        <header id="contentHeader" class="w3-container w3-card w3-blue-grey w3-padding-small">
+            <span><button class="mi w3-button w3-left" onclick="w3_open()">menu</button></span>
+            <span class="" style="font-size: 2em;">Template</span>
+            <!-- <span><button class="mi w3-button w3-right" onclick="">settings</button></span> -->
+            <span><button class="mi w3-button w3-right" onclick="document.body.classList.toggle('darkmode');">dark_mode</button></span>
+        </header>
 
-        <div class="content-inner">
+        <div class="content-inner w3-padding-small">
 
             <div class="w3-row-padding">
-                
+
                 <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
-                        <header class=" w3-container w3-pale-blue">
-                            <p>Chart 1: Seasonal Accumulations</p>
+                        <header class="w3-container w3-blue-grey">
+                            <p>Seasonal Accumulations</p>
                         </header>
-                        <div class="plot-container w3-container w3-padding-16">
+                        <div class="plot-container w3-container w3-padding-small">
                             <div id="chart1"></div>
                         </div>
+                        <div id="legend1" class="legend-container w3-container w3-padding-small"></div>
                     </div>
                 </div>
 
                 <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
-                        <header class="w3-container w3-pale-blue">
-                            <p>Chart 2: Current Rainfall Status</p>
+                        <header class="w3-container w3-blue-grey">
+                            <p>Current Rainfall Status</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-16">
-                            <div id="chart2"></div>
+                            <div id="chart2" class="chart"></div>
                         </div>
+                        <div id="legend2" class="legend-container w3-container w3-padding-16"></div>
                     </div>
                 </div>
 
@@ -61,24 +70,26 @@
 
                 <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
-                        <header class="w3-container w3-pale-blue">
-                            <p>Chart 3: Ensemble</p>
+                        <header class="w3-container w3-blue-grey">
+                            <p>Ensemble</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-16">
                             <div id="chart3"></div>
                         </div>
+                        <div id="legend3" class="legend-container w3-container w3-padding-16"></div>
                     </div>
                 </div>
 
                 <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
-                        <header class="w3-container w3-pale-blue">
-                            <p>Chart 4: Seasonal Rainfall Accumulation Up to Current Dekad</p>
+                        <header class="w3-container w3-blue-grey">
+                            <p>Seasonal Rainfall Accumulation Up to Current Dekad</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-16">
                             <!-- <div id="chart4"></div> -->
                             <div id="chart4"></div>
                         </div>
+                        <div id="legend4" class="legend-container w3-container w3-padding-16"></div>
                     </div>
                 </div>
 
@@ -86,45 +97,12 @@
 
             <div class="w3-container w3-two-half w3-margin-bottom w3-padding-small">
                 <div class="w3-card">
-                    <header class="w3-container w3-pale-blue">
+                    <header class="w3-container w3-blue-grey">
                         <p>Test Table</p>
                     </header>
 
                     <div class="w3-container w3-padding-16">
                         <table id="statsTable" class="w3-table w3-striped w3-bordered w3-border">
-                            <tr>
-                                <th>
-
-                                </th>
-                                <th>
-                                    X
-                                </th>
-                                <th>
-                                    Y
-                                </th>
-                            </tr>
-                            <tr>
-                                <th>
-                                    A
-                                </th>
-                                <td>
-                                    0
-                                </td>
-                                <td>
-                                    0
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    B
-                                </th>
-                                <td>
-                                    0
-                                </td>
-                                <td>
-                                    0
-                                </td>
-                            </tr>
                         </table>
                     </div>
                 </div>
@@ -139,43 +117,94 @@
     <script src="./data/seasonalStats.js"></script>
     <script src="./data/seasonCols.js"></script>
     <script src="./data/subSeasonCols.js"></script>
+    <script src="./data/datasetProperties.js"></script>
 
     <script src="./js/makeBillboard.js"></script>
+    <script src="./js/makeTable.js"></script>
 
     <script>
-        function updateTable(table) {
-            table.rows[1].cells[1].innerHTML = Math.random();
-            table.rows[1].cells[2].innerHTML = Math.random();
-            table.rows[2].cells[1].innerHTML = Math.random();
-            table.rows[2].cells[2].innerHTML = Math.random();
+        function getLast(arr) {
+            return arr[arr.length - 1];
         }
 
+        function w3_open() {
+            document.getElementById("leftSidebar").style.display = "block";
+            document.getElementById("myOverlay").style.display = "block";
+        }
+
+        function w3_close() {
+            document.getElementById("leftSidebar").style.display = "none";
+            document.getElementById("myOverlay").style.display = "none";
+        }
+
+        function updateTable(table) {
+            // table.rows[1].cells[1].innerHTML = Math.random();
+            // table.rows[1].cells[2].innerHTML = Math.random();
+            // table.rows[2].cells[1].innerHTML = Math.random();
+            // table.rows[2].cells[2].innerHTML = Math.random();
+        }
+
+        function overlaySVG(table, gSelector) {
+            let position = document.querySelector(gSelector).attributes.transform.value.slice('translate('.length, -1).split(',');
+            let xPosition = parseFloat(position[0]);
+            table.style.left = `${xPosition + 5}px`;
+        }
+
+        function placeUnder(element, anchor) {
+            const bbox = anchor.getBoundingClientRect();
+            const xPos = anchor.style.left;
+            const yPos = `${bbox.height + 10}px`;
+
+            element.style.left = xPos;
+            element.style.top = yPos;
+        }
+
+        let sidebarElements = {};
         function makeSelectionMenu(data) {
-            sidebar = document.getElementsByClassName('sidebar')[0];
+            const sidebar = document.getElementById('leftSidebar');
             for (const i in data) {
-                placeLink = document.createElement('a');
+                const placeLink = document.createElement('a');
+                sidebarElements[i] = placeLink;
                 placeLink.id = i;
                 placeLink.className = 'w3-bar-item w3-button';
                 placeLink.innerHTML = i;
                 placeLink.addEventListener('click', function () {
+                    placeLink.classList.add('selected');
                     bb1.update(i);
                     bb2.update(i);
                     bb3.update(i);
                     bb4.update(i);
-                    updateTable(document.getElementById('statsTable'));
+                    // updateTable(document.getElementById('statsTable'));
+                    if (previousSelectionElement) {
+                        previousSelectionElement.classList.remove('selected');
+                    }
+                    previousSelectionElement = placeLink;
                 });
                 sidebar.appendChild(placeLink);
             }
         }
-        
+
         let firstPlaceKey = Object.keys(rawData)[0];
 
-        let bb1 = new AccumulationsBillboardChart(seasonalStats, placeStats, seasonCols, subSeasonCols, '#chart1');
-        let bb2 = new EnsembleBillboardChart(seasonalStats, placeStats, seasonCols, subSeasonCols, '#chart3');
-        let bb3 = new CurrentBillboardChart(seasonalStats, placeStats, subSeasonCols, '#chart2');
-        let bb4 = new SeasonalAccumulationsBillboardChart(seasonalStats, placeStats, seasonCols, '#chart4');
-        updateTable(document.getElementById('statsTable'));
-        makeSelectionMenu(rawData, bb1);
+        let bb1 = new AccumulationsBillboardChart(seasonalStats, placeStats, subSeasonCols, datasetProperties, '#chart1');
+        let bb2 = new CurrentBillboardChart(seasonalStats, placeStats, subSeasonCols, '#chart2');
+        let bb3 = new EnsembleBillboardChart(seasonalStats, placeStats, seasonCols, subSeasonCols, datasetProperties, '#chart3');
+        let bb4 = new AccumulationsBillboardCurrentChart(seasonalStats, placeStats, datasetProperties['climatology_year_ids'], '#chart4');
+
+        let table1 = makeTable('#chart1', getDataAssessmentCD(placeStats, firstPlaceKey), 'Assessment at Current Dekad');
+        overlaySVG(table1, '#chart1 .bb-main');
+
+        let table2 = makeTable('#chart2', getDataSeasonalAnalysis(placeStats, firstPlaceKey), 'Seasonal Analysis');
+        overlaySVG(table2, '#chart2 .bb-main');
+
+        let table3 = makeTable('#chart3', getDataProjectionEoS(placeStats, firstPlaceKey), 'Projection at EoS');
+        overlaySVG(table3, '#chart3 .bb-main');
+        let table4 = makeTable('#chart3', getDataProbabilityEoS(placeStats, firstPlaceKey), 'Probability at EoS');
+        placeUnder(table4, table3);
+        // updateTable(document.getElementById('statsTable'));
+        makeSelectionMenu(rawData);
+        let previousSelectionElement = sidebarElements[firstPlaceKey];
+        sidebarElements[firstPlaceKey].classList.add('selected');
     </script>
 </body>
 

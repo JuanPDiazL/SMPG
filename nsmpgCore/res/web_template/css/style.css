@@ -1,56 +1,178 @@
-html, body {
+/* Page elements */
+
+body {
     --sidebarSize: 10%;
-    user-select: none;
-    line-height: 1.0;
+    /* user-select: none; */
+    line-height: .9;
+    color:#555;
+    background-color: white;
+}
+.darkmode, .darkmode table {
+    background-color: #1d2a35 !important;
+    color: #ddd !important;
 }
 
-.sidebar {
+#leftSidebar {
+    min-width: 15em;
     width: var(--sidebarSize);
+    background-color: inherit !important;
+}
+
+#contentHeader {
+
 }
 
 .content {
-    margin-left: calc(var(--sidebarSize));
-    /* overflow-y: scroll; */
+    /* margin-left: calc(var(--sidebarSize)); */
+    max-height: 100vh;
+    overflow-y: hidden;
+    /* width: 90%; */
 }
 
 .content-inner {
-    align-content: center;
-    align-items: center;
-    align-self: center;
+    overflow-y: auto;
+    margin-left: 5%;
     width: 90%;
-    padding-left: 10%;
+    max-height: min-content;
+    height: 97vh;
+    box-sizing: border-box;
+}
+
+.selected {color: #000 !important;
+    background-color: #9e9e9e !important;
+}
+
+/* Fonts */
+
+@font-face {
+    font-family: "Font Awesome 6 Free";
+    src: url(fa-solid-900.woff2) format('woff2');
+}
+
+@font-face {
+    font-family: 'Material Symbols Outlined';
+    font-style: normal;
+    src: url(MaterialSymbolsOutlined[FILL\,GRAD\,opsz\,wght].woff2) format('woff');
+  }
+
+  .ms {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+
+    transform: scale(1.5);
+    font-variation-settings: 'FILL' 0, 'GRAD' 0, 'opsz' 24, 'wght' 700;
+}
+
+.ms-fill {
+    font-variation-settings: 'FILL' 1;
+}
+
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Material Icons'),
+        local('MaterialIcons-Regular'),
+        url(material-icons-outlined.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Material Icons Filled';
+    font-style: normal;
+    font-weight: 400;
+    src: url(material-icons.woff2) format('woff2');
+}
+
+.mi {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+  
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'liga';
+}
+
+.mi-button {
+    line-height: 0;
+    transform: scale(1.5);
+    /* font-size: 1.5em; */
+}
+
+.mi-fill {
+    font-family: 'Material Icons Filled';
+}
+
+/* Chart */
+
+.chart-table {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    opacity: .8;
+    display: inline-block;
+    pointer-events: none;
+
+    width: unset;
+    line-height: 0;
+    font-size: x-small;
 }
 
 .plot-container {
+    position: relative;
     width: auto;
     aspect-ratio: 16/9;
+    padding-bottom: 0 !important;
 }
 
-.selected {
-    background-color: red;
+.bb-chart {
+    position: relative;
+}
+
+.legend-container {
+    padding-top: 0 !important;
+}
+
+.bb-legend-item {
+    display: inline-block;
 }
 
 /* Custom line styles */
 
-.bb-line-LTA, .bb-line-Avg- {
+.bb-line-LTA, .bb-line-Avg-, .bb-line-Current-Season-Accumulation {
     stroke-width: 4px !important;
-    /* stroke: red !important; */
 }
 
 .bb-line-E--LTM {
     stroke-width: 4px !important;
     stroke-dasharray: 6 2;
-    /* stroke: black !important; */
 }
 
 .bb-areas {
     opacity: .5;
 }
 
-.bb-circle-1, .bb-circle-0 {
-    opacity: .8 !important;
+.bb-area-LTA±20- {
+    opacity: .33 !important;
 }
 
-/* path {
+.bb-circle-1, .bb-circle-0 {
+    opacity: 1 !important;
+}
+
+path {
     shape-rendering: geometricPrecision !important;
-} */
+}
