@@ -21,6 +21,8 @@ def export_to_web_files(destination_path, structured_dataset: Dataset, subFolder
     
     # copies the web template 
     sh.copytree(source_folder, web_subfolder_path, dirs_exist_ok=True)
+
+    # makes sub folder for data
     data_destination_path = os.path.join(web_subfolder_path, 'data')
     os.makedirs(data_destination_path, exist_ok=True)
 
