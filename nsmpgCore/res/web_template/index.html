@@ -30,7 +30,7 @@
 
         <header id="contentHeader" class="w3-container w3-card w3-blue-grey w3-padding-small">
             <span><button class="mi w3-button w3-left" onclick="w3_open()">menu</button></span>
-            <span class="" style="font-size: 2em;">Template</span>
+            <span id="contentHeaderText" style="font-size: 2em;">Template</span>
             <!-- <span><button class="mi w3-button w3-right" onclick="">settings</button></span> -->
             <span><button class="mi w3-button w3-right" onclick="document.body.classList.toggle('darkmode');">dark_mode</button></span>
         </header>
@@ -114,8 +114,6 @@
     <script src="./data/rawData.js"></script>
     <script src="./data/placeStats.js"></script>
     <script src="./data/seasonalStats.js"></script>
-    <script src="./data/seasonCols.js"></script>
-    <script src="./data/subSeasonCols.js"></script>
     <script src="./data/datasetProperties.js"></script>
 
     <script src="./js/makeBillboard.js"></script>
@@ -169,6 +167,7 @@
                 placeLink.innerHTML = i;
                 placeLink.addEventListener('click', function () {
                     placeLink.classList.add('selected');
+                    document.getElementById('contentHeaderText').textContent = i;
                     bb1.update(i);
                     bb2.update(i);
                     bb3.update(i);
@@ -185,10 +184,10 @@
 
         let firstPlaceKey = Object.keys(rawData)[0];
 
-        let bb1 = new AccumulationsBillboardChart(seasonalStats, placeStats, subSeasonCols, datasetProperties, '#chart1');
-        let bb2 = new CurrentBillboardChart(seasonalStats, placeStats, subSeasonCols, '#chart2');
-        let bb3 = new EnsembleBillboardChart(seasonalStats, placeStats, seasonCols, subSeasonCols, datasetProperties, '#chart3');
-        let bb4 = new AccumulationsBillboardCurrentChart(seasonalStats, placeStats, datasetProperties['climatology_year_ids'], '#chart4');
+        let bb1 = new AccumulationsBillboardChart(seasonalStats, placeStats, datasetProperties, '#chart1');
+        let bb2 = new CurrentBillboardChart(seasonalStats, placeStats, datasetProperties, '#chart2');
+        let bb3 = new EnsembleBillboardChart(seasonalStats, placeStats, datasetProperties, '#chart3');
+        let bb4 = new AccumulationsBillboardCurrentChart(seasonalStats, placeStats, datasetProperties, '#chart4');
 
         let table1 = makeTable('#chart1', getDataAssessmentCD(placeStats, firstPlaceKey), 'Assessment at Current Dekad');
         overlaySVG(table1, '#chart1 .bb-main');
@@ -204,6 +203,7 @@
         makeSelectionMenu(rawData);
         let previousSelectionElement = sidebarElements[firstPlaceKey];
         sidebarElements[firstPlaceKey].classList.add('selected');
+        document.getElementById('contentHeaderText').textContent = firstPlaceKey;
     </script>
 </body>
 

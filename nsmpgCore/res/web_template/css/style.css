@@ -18,10 +18,6 @@ body {
     background-color: inherit !important;
 }
 
-#contentHeader {
-
-}
-
 .content {
     /* margin-left: calc(var(--sidebarSize)); */
     max-height: 100vh;

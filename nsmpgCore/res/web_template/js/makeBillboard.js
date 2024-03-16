@@ -148,10 +148,10 @@ let chartColors = {
     'E. (33, 67) Pctl.': '#0000FF',
 }
 class AccumulationsBillboardChart {
-    constructor(seasonalData, placeData, columnNames, datasetProperties, containerElement) {
+    constructor(seasonalData, placeData, datasetProperties, containerElement) {
         this.seasonalData = seasonalData;
         this.placeData = placeData;
-        this.columnNames = columnNames;
+        this.columnNames = datasetProperties['sub_season_ids'];
         this.containerElement = containerElement;
         this.lastCoordinates = [datasetProperties['sub_season_ids'].length - 1, datasetProperties['sub_season_ids'].length - 1];
         this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length - 1;
@@ -163,7 +163,7 @@ class AccumulationsBillboardChart {
         }
         const chartOptions = {
             // title: {text: 'Seasonal Accumulations'},
-            axis: { x: { tick: { format: function (index) { return columnNames[index]; }, }, }, },
+            axis: { x: { tick: { format: (index) => { return this.columnNames[index]; }, }, }, },
             tooltip: { format: { value: function (value, ratio, id) { return Math.round(value); }, }, },
             legend: {
                 contents: {
@@ -210,9 +210,10 @@ class AccumulationsBillboardChart {
 }
 
 class CurrentBillboardChart {
-    constructor(seasonalData, placeData, columnNames, containerElement) {
+    constructor(seasonalData, placeData, datasetProperties, containerElement) {
         this.seasonalData = seasonalData;
         this.placeData = placeData;
+        this.columnNames = datasetProperties['sub_season_ids'];
         this.containerElement = containerElement;
         let containerWidth = parseInt(d3.select(this.containerElement).style('width'));
         this.chartTypes = {
@@ -220,7 +221,7 @@ class CurrentBillboardChart {
             'Avg.': 'line',
         }
         const chartOptions = {
-            axis: { x: { tick: { format: function (index) { return columnNames[index]; }, }, }, },
+            axis: { x: { tick: { format: (index) => { return this.columnNames[index]; }, }, }, },
             tooltip: { format: { value: function (value, ratio, id) { return Math.round(value); }, }, },
             legend: {
                 contents: {
@@ -254,10 +255,10 @@ class CurrentBillboardChart {
 }
 
 class EnsembleBillboardChart {
-    constructor(seasonalData, placeData, yearNames, columnNames, datasetProperties, containerElement) {
+    constructor(seasonalData, placeData, datasetProperties, containerElement) {
         this.seasonalData = seasonalData;
         this.placeData = placeData;
-        this.columnNames = columnNames;
+        this.columnNames = datasetProperties['sub_season_ids'];
         this.containerElement = containerElement;
         this.lastCoordinates = [datasetProperties['sub_season_ids'].length - 1, datasetProperties['sub_season_ids'].length - 1];
         this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length - 1;
@@ -271,7 +272,7 @@ class EnsembleBillboardChart {
         }
         const chartOptions = {
             // title: {text: 'Seasonal Accumulations'},
-            axis: { x: { tick: { format: function (index) { return columnNames[index]; }, }, }, },
+            axis: { x: { tick: { format: (index) => { return this.columnNames[index]; }, }, }, },
             tooltip: { format: { value: function (value, ratio, id) { return Math.round(value); }, }, },
             legend: {
                 contents: {
@@ -325,8 +326,8 @@ class EnsembleBillboardChart {
 }
 
 class AccumulationsBillboardCurrentChart {
-    constructor(seasonalData, placeData, columnNames, containerElement) {
-        this.columnNames = columnNames;
+    constructor(seasonalData, placeData, datasetProperties, containerElement) {
+        this.columnNames = datasetProperties['climatology_year_ids'];
         this.seasonalData = seasonalData;
         this.placeData = placeData;
         this.containerElement = containerElement;
@@ -343,7 +344,7 @@ class AccumulationsBillboardCurrentChart {
         }
         const chartOptions = {
             // title: {text: 'Seasonal Accumulations'},
-            axis: { x: { tick: { format: function (index) { return columnNames[index]; }, }, }, },
+            axis: { x: { tick: { format: (index) => { return this.columnNames[index]; }, }, }, },
             tooltip: { format: { value: function (value, ratio, id) { return Math.round(value); }, }, },
             legend: {
                 contents: {
