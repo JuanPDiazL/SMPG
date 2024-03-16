@@ -129,6 +129,7 @@ body {
     width: unset;
     line-height: 0;
     font-size: x-small;
+    box-shadow: #000 1px 1px 1px;
 }
 
 .plot-container {
