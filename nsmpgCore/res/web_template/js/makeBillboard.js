@@ -12,6 +12,12 @@ function getxs(years) {
 function extendScalar(value, length) {
     return new Array(length).fill(value);
 }
+function getLastBar(value, length) {
+    let chartData = new Array(length-1);
+    chartData.fill(null).push(getLast(value));
+    console.log(chartData);
+    return chartData;
+}
 function ascendingArray(n) {
     const arr = [];
     for (let i = 0; i < n; i++) {
@@ -102,12 +108,12 @@ const defaultOptions = {
     point: {
         show: false,
         pattern: [
-            "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>circle</text></g>",
-            "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>change_history</text></g>",
-            "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>square</text></g>",
-            // 'circle',
-            // "<polygon points='4 0 0 8 8 8'></polygon>",
-            // 'rectangle',
+            // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>circle</text></g>",
+            // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>change_history</text></g>",
+            // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>square</text></g>",
+            'circle',
+            "<polygon points='4 0 0 8 8 8'></polygon>",
+            'rectangle',
         ]
     },
     transition: {
@@ -124,6 +130,9 @@ const defaultOptions = {
     },
     bar: {
         front: true,
+        indices: {
+            removeNull: true
+        },
     },
 };
 
@@ -328,6 +337,7 @@ class EnsembleBillboardChart {
 class AccumulationsBillboardCurrentChart {
     constructor(seasonalData, placeData, datasetProperties, containerElement) {
         this.columnNames = datasetProperties['climatology_year_ids'];
+        this.columnNames.push(datasetProperties['current_season_key']);
         this.seasonalData = seasonalData;
         this.placeData = placeData;
         this.containerElement = containerElement;
@@ -335,6 +345,7 @@ class AccumulationsBillboardCurrentChart {
         let containerWidth = parseInt(d3.select(this.containerElement).style('width'), 10);
         this.chartTypes = {
             'Seasonal Accumulation': 'bar',
+            'Current Season Accumulation': 'bar',
             'Avg': 'line',
             'D4: 3 Pctl.': 'area',
             'D3: 6 Pctl.': 'area',
@@ -357,6 +368,17 @@ class AccumulationsBillboardCurrentChart {
             groups: [
                 ['D4: 3 Pctl.', 'D3: 6 Pctl.', 'D2: 11 Pctl.', 'D1: 21 Pctl.', 'D0: 31 Pctl.',]
             ],
+            bar: {
+                overlap: true,
+              width: {
+                'Seasonal Accumulation': {
+                  ratio: 1.2,
+                },
+                'Current Season Accumulation': {
+                  ratio: 1.2,
+                },
+              }
+            },
         };
         this.plot = bb.generate({
             bindto: this.containerElement,
@@ -372,6 +394,7 @@ class AccumulationsBillboardCurrentChart {
         this.plot.load({
             json: {
                 'Seasonal Accumulation': getUpTo(this.seasonalData[index]['Sum'], this.currentLength),
+                'Current Season Accumulation': getLastBar(this.placeData[index]['Current Season Accumulation'], this.columnNames.length),
                 'Avg.': extendScalar(this.placeData[index]['LTA'][this.currentLength], this.columnNames.length),
                 'D0: 31 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][4], this.columnNames.length),
                 'D1: 21 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][3], this.columnNames.length),
