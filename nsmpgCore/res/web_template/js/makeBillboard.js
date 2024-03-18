@@ -370,14 +370,14 @@ class AccumulationsBillboardCurrentChart {
             ],
             bar: {
                 overlap: true,
-              width: {
-                'Seasonal Accumulation': {
-                  ratio: 1.2,
-                },
-                'Current Season Accumulation': {
-                  ratio: 1.2,
-                },
-              }
+                width: {
+                    'Seasonal Accumulation': {
+                        ratio: 1.2,
+                    },
+                    'Current Season Accumulation': {
+                        ratio: 1.2,
+                    },
+                }
             },
         };
         this.plot = bb.generate({

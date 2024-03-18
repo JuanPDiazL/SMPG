@@ -70,7 +70,6 @@ class Dataset:
             sub_season_ids=slice_by_element(define_seasonal_dict(), self.options.season_start, self.options.season_end),
             sub_season_offset=default_seasons[self.options.season_start],
         )
-        print(self.properties.__dict__)
 
         self.places: dict[str, Place] = {}
         for place, timeseries in dataset.items():

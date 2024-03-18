@@ -4,6 +4,7 @@ import numpy as np
 import scipy.stats as sp
 from typing import Tuple, Union
 
+# number of periods that fit in a year
 yearly_periods = {
     'year': 1,
     'month': 12,
@@ -81,7 +82,7 @@ def operate_column(data, f) -> np.ndarray:
 def percentiles_to_values(data: np.ndarray, values=(3, 6, 11, 21, 31)) -> np.ndarray:
     return np.percentile(data, values)
 
-def ensemble_sum(current_data, post_data):
+def ensemble_sum(current_data, post_data) -> np.ndarray:
     return np.cumsum(np.concatenate((current_data, post_data[len(current_data):])))
 
 # slices a list given a element inside the list
