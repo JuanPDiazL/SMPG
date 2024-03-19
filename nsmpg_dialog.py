@@ -94,20 +94,30 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def process_btn_event(self): 
         renderTime = time.perf_counter()
         # computation with parameters given from GUI
-        options = Options(
+        climatology_options = Options(
+            climatology_start=self.climatologyStartComboBox.currentText(),
+            climatology_end=self.climatologyEndComboBox.currentText(),
+        )
+        filtered_climatology_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options=climatology_options)
+
+        monitoring_options = Options(
+            season_start=self.seasonStartComboBox.currentText(),
+            season_end=self.seasonEndComboBox.currentText(),
+        )
+        monitoring_filtered_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options=monitoring_options)
+
+        all_options = Options(
             climatology_start=self.climatologyStartComboBox.currentText(),
             climatology_end=self.climatologyEndComboBox.currentText(),
             season_start=self.seasonStartComboBox.currentText(),
             season_end=self.seasonEndComboBox.currentText(),
         )
-        filtered_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options=options)
-
+        filtered_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options=all_options)
         # output files
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
-        export_to_web_files(destination_path, self.structured_dataset)
-        export_to_web_files(destination_path, filtered_dataset, 'Dynamic_Web_Report_Filtered')
-        print(f'Render time: {time.perf_counter() - renderTime}')
-        QMessageBox(text='Task completed.').exec()
+        export_to_web_files(destination_path, self.structured_dataset, filtered_climatology_dataset, monitoring_filtered_dataset, filtered_dataset)
+        renderFinishTime = time.perf_counter() - renderTime
+        QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}').exec()
 
     # placeholder
     def path_changed_event(self): 

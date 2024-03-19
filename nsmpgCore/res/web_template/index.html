@@ -111,10 +111,15 @@
     </div>
 
 
-    <script src="./data/rawData.js"></script>
+    <script src="./data/datasetProperties.js"></script>
     <script src="./data/placeStats.js"></script>
     <script src="./data/seasonalStats.js"></script>
-    <script src="./data/datasetProperties.js"></script>
+    <script src="./data/placeStatsClimatologyFiltered.js"></script>
+    <script src="./data/seasonalStatsClimatologyFiltered.js"></script>
+    <script src="./data/placeStatsMonitoringFiltered.js"></script>
+    <script src="./data/seasonalStatsMonitoringFiltered.js"></script>
+    <script src="./data/placeStatsAllFiltered.js"></script>
+    <script src="./data/seasonalStatsAllFiltered.js"></script>
 
     <script src="./js/makeBillboard.js"></script>
     <script src="./js/makeTable.js"></script>
@@ -159,19 +164,19 @@
         let sidebarElements = {};
         function makeSelectionMenu(data) {
             const sidebar = document.getElementById('leftSidebar');
-            for (const i in data) {
+            for (const place of data) {
                 const placeLink = document.createElement('a');
-                sidebarElements[i] = placeLink;
-                placeLink.id = i;
+                sidebarElements[place] = placeLink;
+                placeLink.id = place;
                 placeLink.className = 'w3-bar-item w3-button';
-                placeLink.innerHTML = i;
+                placeLink.innerHTML = place;
                 placeLink.addEventListener('click', function () {
                     placeLink.classList.add('selected');
-                    document.getElementById('contentHeaderText').textContent = i;
-                    bb1.update(i);
-                    bb2.update(i);
-                    bb3.update(i);
-                    bb4.update(i);
+                    document.getElementById('contentHeaderText').textContent = place;
+                    bb1.update(place);
+                    bb2.update(place);
+                    bb3.update(place);
+                    bb4.update(place);
                     // updateTable(document.getElementById('statsTable'));
                     if (previousSelectionElement) {
                         previousSelectionElement.classList.remove('selected');
@@ -182,14 +187,14 @@
             }
         }
 
-        let firstPlaceKey = Object.keys(rawData)[0];
+        let firstPlaceKey = datasetProperties['place_ids'][0];
 
-        let bb1 = new AccumulationsBillboardChart(seasonalStats, placeStats, datasetProperties, '#chart1');
-        let bb2 = new CurrentBillboardChart(seasonalStats, placeStats, datasetProperties, '#chart2');
-        let bb3 = new EnsembleBillboardChart(seasonalStats, placeStats, datasetProperties, '#chart3');
-        let bb4 = new AccumulationsBillboardCurrentChart(seasonalStats, placeStats, datasetProperties, '#chart4');
+        let bb1 = new AccumulationsBillboardChart(seasonalStatsMonitoringFiltered, placeStatsMonitoringFiltered, datasetProperties, '#chart1');
+        let bb2 = new CurrentBillboardChart(seasonalStatsClimatologyFiltered, placeStatsClimatologyFiltered, datasetProperties, '#chart2');
+        let bb3 = new EnsembleBillboardChart(seasonalStatsMonitoringFiltered, placeStatsMonitoringFiltered, datasetProperties, '#chart3');
+        let bb4 = new AccumulationsBillboardCurrentChart(seasonalStatsMonitoringFiltered, placeStatsMonitoringFiltered, datasetProperties, '#chart4');
 
-        let table1 = makeTable('#chart1', getDataAssessmentCD(placeStats, firstPlaceKey), 'Assessment at Current Dekad');
+        let table1 = makeTable('#chart1', getDataAssessmentCD(placeStatsMonitoringFiltered, firstPlaceKey), 'Assessment at Current Dekad');
         overlaySVG(table1, '#chart1 .bb-main');
 
         let table2 = makeTable('#chart2', getDataSeasonalAnalysis(placeStats, firstPlaceKey), 'Seasonal Analysis');
@@ -200,7 +205,7 @@
         let table4 = makeTable('#chart3', getDataProbabilityEoS(placeStats, firstPlaceKey), 'Probability at EoS');
         placeUnder(table4, table3);
         // updateTable(document.getElementById('statsTable'));
-        makeSelectionMenu(rawData);
+        makeSelectionMenu(datasetProperties['place_ids']);
         let previousSelectionElement = sidebarElements[firstPlaceKey];
         sidebarElements[firstPlaceKey].classList.add('selected');
         document.getElementById('contentHeaderText').textContent = firstPlaceKey;

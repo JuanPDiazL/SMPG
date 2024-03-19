@@ -15,7 +15,11 @@ function extendScalar(value, length) {
 function getLastBar(value, length) {
     let chartData = new Array(length-1);
     chartData.fill(null).push(getLast(value));
-    console.log(chartData);
+    return chartData;
+}
+function offsetBar(values, offset) {
+    let chartData = new Array(offset);
+    chartData.fill(null).push(getLast(values));
     return chartData;
 }
 function ascendingArray(n) {
@@ -160,11 +164,10 @@ class AccumulationsBillboardChart {
     constructor(seasonalData, placeData, datasetProperties, containerElement) {
         this.seasonalData = seasonalData;
         this.placeData = placeData;
-        this.columnNames = datasetProperties['sub_season_ids'];
+        this.columnNames = datasetProperties['sub_season_monitoring_ids'];
         this.containerElement = containerElement;
-        this.lastCoordinates = [datasetProperties['sub_season_ids'].length - 1, datasetProperties['sub_season_ids'].length - 1];
+        this.lastCoordinates = new Array(2).fill(datasetProperties['sub_season_monitoring_ids'].length - 1);
         this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length - 1;
-        let containerWidth = parseInt(d3.select(this.containerElement).style('width'));
         this.chartTypes = {
             'LTA±20%': 'area-line-range',
             'LTA±St. Dev.': 'scatter',
@@ -224,7 +227,6 @@ class CurrentBillboardChart {
         this.placeData = placeData;
         this.columnNames = datasetProperties['sub_season_ids'];
         this.containerElement = containerElement;
-        let containerWidth = parseInt(d3.select(this.containerElement).style('width'));
         this.chartTypes = {
             'Current Season': 'bar',
             'Avg.': 'line',
@@ -267,9 +269,9 @@ class EnsembleBillboardChart {
     constructor(seasonalData, placeData, datasetProperties, containerElement) {
         this.seasonalData = seasonalData;
         this.placeData = placeData;
-        this.columnNames = datasetProperties['sub_season_ids'];
+        this.columnNames = datasetProperties['sub_season_monitoring_ids'];
         this.containerElement = containerElement;
-        this.lastCoordinates = [datasetProperties['sub_season_ids'].length - 1, datasetProperties['sub_season_ids'].length - 1];
+        this.lastCoordinates = new Array(2).fill(datasetProperties['sub_season_monitoring_ids'].length - 1);
         this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length - 1;
         let containerWidth = parseInt(d3.select(this.containerElement).style('width'), 10);
         this.chartTypes = {
@@ -336,7 +338,7 @@ class EnsembleBillboardChart {
 
 class AccumulationsBillboardCurrentChart {
     constructor(seasonalData, placeData, datasetProperties, containerElement) {
-        this.columnNames = datasetProperties['climatology_year_ids'];
+        this.columnNames = datasetProperties['year_ids'];
         this.columnNames.push(datasetProperties['current_season_key']);
         this.seasonalData = seasonalData;
         this.placeData = placeData;

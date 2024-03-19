@@ -16,6 +16,14 @@ class Options:
         self.selected_years: list[str] = selected_years
         self.output_types: list[str] = output_types
 
+    def overwrite(self, options: object):
+        options = options.__dict__
+        # Iterate over keys
+        for key in self.__dict__:
+            # If the value in dict1 is None, replace it with the value from dict2
+            if options[key] is not None and key in options:
+                self.__dict__[key] = options[key]
+
 # properties of the dataset
 class Properties:
     def __init__(self, properties_dict: dict=None) -> None:
@@ -28,6 +36,7 @@ class Properties:
         self.selected_year_ids: list[str]
         
         self.sub_season_ids: list[str]
+        self.sub_season_monitoring_ids: list[str]
         self.sub_season_offset: int
 
         self.current_season_index: int
@@ -40,10 +49,12 @@ class Properties:
     def update(self, properties: dict):
         self.__dict__.update(properties)
 
-    def update_complementary_info(self, climatology_year_ids, sub_season_ids, sub_season_offset,):
+    def update_complementary_info(self, climatology_year_ids, sub_season_ids, sub_season_monitoring_ids, sub_season_offset, place_ids,):
         self.climatology_year_ids = climatology_year_ids
         self.sub_season_ids = sub_season_ids
+        self.sub_season_monitoring_ids = sub_season_monitoring_ids
         self.sub_season_offset = sub_season_offset
+        self.place_ids = place_ids
 
 # stores and processes all the information in the dataset
 # a dataset contains data of places
@@ -62,13 +73,15 @@ class Dataset:
             )
         
         if options is not None:
-            self.options = options
+            self.options.overwrite(options)
         
         default_seasons = define_seasonal_dict(return_key_list=False)
         self.properties.update_complementary_info(
             climatology_year_ids=slice_by_element(self.properties.year_ids, self.options.climatology_start, self.options.climatology_end),
-            sub_season_ids=slice_by_element(define_seasonal_dict(), self.options.season_start, self.options.season_end),
+            sub_season_ids=define_seasonal_dict(),
+            sub_season_monitoring_ids=slice_by_element(define_seasonal_dict(), self.options.season_start, self.options.season_end),
             sub_season_offset=default_seasons[self.options.season_start],
+            place_ids=list(dataset.keys()),
         )
 
         self.places: dict[str, Place] = {}
