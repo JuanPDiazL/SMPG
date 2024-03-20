@@ -97,20 +97,21 @@ class Dataset:
         return data_dict
     
     def place_stats_to_dict(self):
-        data_dict = {}
+        place_data_dict = {}
         for place_id, place in self.places.items():
-            data_dict[place_id] = dict(map(lambda v: (v[0], v[1].tolist()), place.get_stats().items()))
-        return data_dict
+            place_stats = place.place_stats
+            place_data_dict[place_id] = dict(map(lambda v: (v[0], v[1].tolist()), place_stats.items()))
+
+        return place_data_dict
     
     def season_stats_to_dict(self):
-        data_dict = {}
+        seasonal_data_dict = {}
         for place_id, place in self.places.items():
-            data_dict[place_id] = dict(map(lambda k: (k, {}), list(place.seasons.values())[1].get_stats().keys()))
-            for season_id, season in place.seasons.items():
-                for stat, values in season.get_stats().items():
-                    data_dict[place_id][stat] = data_dict[place_id][stat] | {season_id: values.tolist()}
-
-        return data_dict
+            season_stats = place.seasonal_stats
+            seasonal_data_dict[place_id] = {'Sum': {}, 'Ensemble Sum': {}}
+            seasonal_data_dict[place_id]['Sum'] = dict(map(lambda v: (v[0], v[1].tolist()), season_stats['Sum'].items()))
+            seasonal_data_dict[place_id]['Ensemble Sum'] = dict(map(lambda v: (v[0], v[1].tolist()), season_stats['Ensemble Sum'].items()))
+        return seasonal_data_dict
     
     def get_children(self):
         return self.places
@@ -133,51 +134,48 @@ class Place:
         self.current_season = self.current_season[season_start_index:current_season_trim_index]
 
         # construct the seasons
-        self.seasons: dict[str, Season] = {}
+        self.seasons: dict[str, ndarray] = {}
         for i, data in enumerate(split_seasons):
             # variables for climatology filter
             season_id = self.parent.properties.year_ids[i]
             if season_id in self.parent.properties.climatology_year_ids:
                 data = data[season_start_index:season_end_index]
-                self.seasons[season_id] = Season(season_id, data, self)
+                self.seasons[season_id] = data
+
+        self.place_stats, self.seasonal_stats = self.get_stats()
 
     def get_stats(self):
-        season_values = [s.data for s in self.seasons.values()]
-        season_stats = [s.get_stats() for s in self.seasons.values()]
-        seasonal_cum = [s['Sum'] for s in season_stats]
-        seasonal_current_sum_scalars = [c[self.current_season.__len__()-1] for c in seasonal_cum]
-        accumulation_scalars = [c[-1] for c in seasonal_cum]
-        seasonal_ensemble = [s['Ensemble Sum'] for s in season_stats]
+        seasonal_cum = np.cumsum(list(self.seasons.values()), axis=1)
+        seasonal_current_sum_scalars = seasonal_cum[:, self.current_season.__len__()-1]
+        seasonal_sums = seasonal_cum[:, -1]
+        seasonal_ensemble = [ensemble_sum(self.current_season, s) for s in list(self.seasons.values())]
         ensemble_scalars = [e[-1] for e in seasonal_ensemble]
-        to_compute = {
+        place_stats = {
             'Pctls. per Year': percentiles_from_values(seasonal_current_sum_scalars),
             'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sum_scalars, (3, 6, 11, 21, 31)),
-            'Pctls.': percentiles_to_values(accumulation_scalars, [33, 67]),
+            'Pctls.': percentiles_to_values(seasonal_sums, [33, 67]),
             'LTM': operate_column(seasonal_cum, np.median),
             'LTA': operate_column(seasonal_cum, np.average),
-            'Avg.': operate_column(season_values, np.average),
+            'Avg.': operate_column(list(self.seasons.values()), np.average),
             'E. LTM': operate_column(seasonal_ensemble, np.median),
             'E. Pctls.': percentiles_to_values(ensemble_scalars, [33, 67]),
             'St. Dev.': operate_column(seasonal_cum, np.std),
             'Current Season': self.current_season,
             'Current Season Accumulation': np.cumsum(self.current_season),
         }
+        seasonal_stats = {
+            'Sum': dict(map(lambda v: (v[0], v[1]), zip(self.seasons.keys(), seasonal_cum))),
+            'Ensemble Sum': dict(map(lambda v: (v[0], ensemble_sum(self.current_season, v[1])), zip(self.seasons.keys(), list(self.seasons.values())))),
+        }
+        return place_stats, seasonal_stats
+    
+    def get_season_stats(self, data):
+        to_compute = {
+            'Sum': np.cumsum(data),
+            'Ensemble Sum': ensemble_sum(self.current_season, data),
+        }
         return to_compute
     
     def get_children(self):
         return self.seasons
-
-# a season contains the values of the season and computes its stats
-class Season:
-    def __init__(self, id: str, data: ndarray, parent_place: Place) -> None:
-        self.id = id
-        self.data = data
-        self.parent = parent_place
-        self.total = np.sum(data)
-
-    def get_stats(self):
-        to_compute = {
-            'Sum': np.cumsum(self.data),
-            'Ensemble Sum': ensemble_sum(self.parent.current_season, self.data),
-        }
-        return to_compute
+    
