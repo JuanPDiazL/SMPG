@@ -24,6 +24,8 @@
 
 import os
 import time
+# import cProfile
+# import pstats
 
 # from qgis.PyQt import uic, QtWidgets
 from PyQt5 import uic
@@ -76,23 +78,29 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         # parse dataset
         self.parsed_dataset, self.col_names = parse_csv(self.selected_source)
         self.dataset_properties = Properties(parse_timestamps(self.col_names))
-        self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names)
 
         # set form fields content from data
         self.datasetInputLineEdit.setText(self.selected_source)
 
+        self.climatologyStartComboBox.clear()
         self.climatologyStartComboBox.addItems(self.dataset_properties.year_ids)
+        self.climatologyEndComboBox.clear()
         self.climatologyEndComboBox.addItems(self.dataset_properties.year_ids)
         self.climatologyEndComboBox.setCurrentIndex(len(self.dataset_properties.year_ids)-1)
 
         seasons = define_seasonal_dict()
+        self.seasonStartComboBox.clear()
         self.seasonStartComboBox.addItems(seasons)
+        self.seasonEndComboBox.clear()
         self.seasonEndComboBox.addItems(seasons)
         self.seasonEndComboBox.setCurrentIndex(len(seasons)-1)
 
     # function to allow the computation of the required data, such as accumulation, ensemble, stats, percentiles, etc
-    def process_btn_event(self): 
+    def process_btn_event(self):
+        # with cProfile.Profile() as profile:
+
         renderTime = time.perf_counter()
+        self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names)
         # computation with parameters given from GUI
         climatology_options = Options(
             climatology_start=self.climatologyStartComboBox.currentText(),
@@ -118,6 +126,11 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         export_to_web_files(destination_path, self.structured_dataset, filtered_climatology_dataset, monitoring_filtered_dataset, filtered_dataset)
         renderFinishTime = time.perf_counter() - renderTime
         QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}').exec()
+
+            # stats = pstats.Stats(profile)
+            # stats.sort_stats(pstats.SortKey.TIME)
+            # stats.dump_stats('snakeviz.prof')
+            # stats.print_stats()
 
     # placeholder
     def path_changed_event(self): 
