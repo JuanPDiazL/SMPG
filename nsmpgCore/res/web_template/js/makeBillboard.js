@@ -13,9 +13,9 @@ function genxs(dataIds, length, customxs = {}, defaultxs = 'data_xs') {
 function extendScalar(value, length) {
     return new Array(length).fill(value);
 }
-function ascendingArray(n) {
+function ascendingArray(n, offset=0) {
     const arr = [];
-    for (let i = 0; i < n; i++) {
+    for (let i = offset; i < n; i++) {
         arr.push(i);
     }
     return arr;
@@ -99,6 +99,7 @@ const defaultOptions = {
     },
     tooltip: {
         order: 'desc',
+        grouped: true,
     },
     point: {
         show: false,
@@ -125,9 +126,6 @@ const defaultOptions = {
     },
     bar: {
         front: true,
-        indices: {
-            removeNull: true
-        },
     },
 };
 const chartColors = {
@@ -239,7 +237,14 @@ class CurrentBillboardChart {
                 },
             },
             size: getSize(this.containerElement),
-        }
+        };
+        this.xs = {
+            'data_xs': ascendingArray(this.columnNames.length),
+            'bar_xs': ascendingArray(datasetProperties['current_season_length'], datasetProperties['sub_season_offset']),
+        };
+        this.customxs = {
+            'Current Season': 'bar_xs',
+        };
         this.plot = bb.generate({
             bindto: this.containerElement,
             data: { json: {}, },
@@ -251,14 +256,14 @@ class CurrentBillboardChart {
 
     update(index) {
         const jsonData = {
+            ...this.xs,
             'Current Season': this.placeData[index]['Current Season'],
             'Avg.': this.placeData[index]['Avg.'],
         };
         this.plot.load({
             json: jsonData,
-            types: {
-                'Current Season': 'bar',
-            },
+            xs: genxs(Object.keys(jsonData), this.columnNames.length, this.customxs),
+            types: this.chartTypes,
             colors: chartColors,
         });
     }
@@ -380,19 +385,10 @@ class AccumulationsBillboardCurrentChart {
             size: getSize(this.containerElement),
             point: { show: true, },
             groups: [
-                ['D4: 3 Pctl.', 'D3: 6 Pctl.', 'D2: 11 Pctl.', 'D1: 21 Pctl.', 'D0: 31 Pctl.',]
+                ['D4: 3 Pctl.', 'D3: 6 Pctl.', 'D2: 11 Pctl.', 'D1: 21 Pctl.', 'D0: 31 Pctl.',],
             ],
             bar: {
-                overlap: true,
                 zerobased: false,
-                width: {
-                    // 'Seasonal Accumulation': {
-                    //     ratio: 1.2,
-                    // },
-                    'Current Season Accumulation': {
-                        ratio: .6,
-                    },
-                },
             },
             area: {
                 zerobased: false,
