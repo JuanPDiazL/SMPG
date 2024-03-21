@@ -1,9 +1,11 @@
 function getDataAssessmentCD(placeStats, place) {
     let data = placeStats[place];
+    const currentSeason = getLast(data['Current Season Accumulation']);
+    const ltaUptoCurrentSeason = data['LTA'][data['Current Season'].length-1]
     let selectedData = [
-        ['Total C.Dk.', 0, 0],
-        ['LTA C.Dk.', 0, data['LTA'][data['Current Season'].length-1]],
-        ['LTA C.Dk. Pctl.', 0, 0],
+        ['Total C.Dk.', 0, currentSeason],
+        ['LTA C.Dk.', 0, ltaUptoCurrentSeason],
+        ['C.Dk./LTA', 0, (currentSeason/ltaUptoCurrentSeason) * 100],
     ];
     return selectedData;
 }
@@ -18,19 +20,21 @@ function getDataSeasonalAnalysis(placeStats, place) {
 }
 function getDataProjectionEoS(placeStats, place) {
     let data = placeStats[place];
+    const ensembleLTM = getLast(data['E. LTM']);
+    const lta = getLast(data['LTA']);
     let selectedData = [
-        ['E. LTM', 0, getLast(data['E. LTM'])],
-        ['LTA', 0, getLast(data['LTA'])],
-        ['E. LTM Pctl.', 0, 0],
+        ['E. LTM', 0, ensembleLTM],
+        ['LTA', 0, lta],
+        ['E. LTM/LTA', 0, (ensembleLTM/lta) * 100],
     ];
     return selectedData;
 }
 function getDataProbabilityEoS(placeStats, place) {
     let data = placeStats[place];
     let selectedData = [
-        ['Ab. Normal', 0, 0],
-        ['Normal', 0, 0],
-        ['Be. Normal', 0, 0],
+        ['Ab. Normal', 0, data['E. Probabilities'][2] * 100],
+        ['Normal', 0, data['E. Probabilities'][1] * 100],
+        ['Be. Normal', 0, data['E. Probabilities'][0] * 100],
     ];
     return selectedData;
 }

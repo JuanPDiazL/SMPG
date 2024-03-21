@@ -108,7 +108,7 @@ class Dataset:
         seasonal_data_dict = {}
         for place_id, place in self.places.items():
             season_stats = place.seasonal_stats
-            seasonal_data_dict[place_id] = {'Sum': {}, 'Ensemble Sum': {}}
+            seasonal_data_dict[place_id] = dict(map(lambda v: (v, {}), season_stats.keys()))
             seasonal_data_dict[place_id]['Sum'] = dict(map(lambda v: (v[0], v[1].tolist()), season_stats['Sum'].items()))
             seasonal_data_dict[place_id]['Ensemble Sum'] = dict(map(lambda v: (v[0], v[1].tolist()), season_stats['Ensemble Sum'].items()))
         return seasonal_data_dict
@@ -145,34 +145,46 @@ class Place:
         self.place_stats, self.seasonal_stats = self.get_stats()
 
     def get_stats(self):
-        seasonal_cum = np.cumsum(list(self.seasons.values()), axis=1)
-        seasonal_current_sum_scalars = seasonal_cum[:, self.current_season.__len__()-1]
-        seasonal_sums = seasonal_cum[:, -1]
-        seasonal_ensemble = [ensemble_sum(self.current_season, s) for s in list(self.seasons.values())]
-        ensemble_scalars = [e[-1] for e in seasonal_ensemble]
+        seasonal_accumulations = np.cumsum(list(self.seasons.values()), axis=1)
+        seasonal_sums = seasonal_accumulations[:, -1]
+        seasonal_current_sums = seasonal_accumulations[:, self.current_season.__len__()-1]
+        seasonal_ensemble = [get_ensemble(self.current_season, s) for s in list(self.seasons.values())]
+        ensemble_sums = np.array([e[-1] for e in seasonal_ensemble])
+
+        seasonal_lta = operate_column(seasonal_accumulations, np.average)
+        seasonal_pctls = percentiles_to_values(seasonal_sums, [33, 67])
+        ensemble_ltm = operate_column(seasonal_ensemble, np.median)
+        ensemble_pctls = percentiles_to_values(ensemble_sums, [33, 67])
+        ensemble_pctl_probabilities = np.array([
+            np.count_nonzero(ensemble_sums < seasonal_pctls[0]) / len(ensemble_sums),
+            np.count_nonzero((ensemble_sums >= seasonal_pctls[0]) & (ensemble_sums < seasonal_pctls[1])) / len(ensemble_sums),
+            np.count_nonzero(ensemble_sums >= seasonal_pctls[1]) / len(ensemble_sums),
+        ])
+
         place_stats = {
-            'Pctls. per Year': percentiles_from_values(seasonal_current_sum_scalars),
-            'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sum_scalars, (3, 6, 11, 21, 31)),
-            'Pctls.': percentiles_to_values(seasonal_sums, [33, 67]),
-            'LTM': operate_column(seasonal_cum, np.median),
-            'LTA': operate_column(seasonal_cum, np.average),
+            'Pctls. per Year': percentiles_from_values(seasonal_current_sums),
+            'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sums, (3, 6, 11, 21, 31)),
+            'Pctls.': seasonal_pctls,
+            'LTM': operate_column(seasonal_accumulations, np.median),
+            'LTA': seasonal_lta,
             'Avg.': operate_column(list(self.seasons.values()), np.average),
-            'E. LTM': operate_column(seasonal_ensemble, np.median),
-            'E. Pctls.': percentiles_to_values(ensemble_scalars, [33, 67]),
-            'St. Dev.': operate_column(seasonal_cum, np.std),
+            'E. LTM': ensemble_ltm,
+            'E. Pctls.': ensemble_pctls,
+            'E. Probabilities': ensemble_pctl_probabilities,
+            'St. Dev.': operate_column(seasonal_accumulations, np.std),
             'Current Season': self.current_season,
             'Current Season Accumulation': np.cumsum(self.current_season),
         }
         seasonal_stats = {
-            'Sum': dict(map(lambda v: (v[0], v[1]), zip(self.seasons.keys(), seasonal_cum))),
-            'Ensemble Sum': dict(map(lambda v: (v[0], ensemble_sum(self.current_season, v[1])), zip(self.seasons.keys(), list(self.seasons.values())))),
+            'Sum': dict(map(lambda v: (v[0], v[1]), zip(self.seasons.keys(), seasonal_accumulations))),
+            'Ensemble Sum': dict(map(lambda v: (v[0], get_ensemble(self.current_season, v[1])), zip(self.seasons.keys(), list(self.seasons.values())))),
         }
         return place_stats, seasonal_stats
     
     def get_season_stats(self, data):
         to_compute = {
             'Sum': np.cumsum(data),
-            'Ensemble Sum': ensemble_sum(self.current_season, data),
+            'Ensemble Sum': get_ensemble(self.current_season, data),
         }
         return to_compute
     

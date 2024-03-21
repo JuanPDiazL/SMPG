@@ -68,6 +68,10 @@ const defaultOptions = {
                 culling: { max: '13' },
                 multiline: false,
             },
+            padding: {
+                // left: 1,
+                // right: 0,
+            },
         },
         y: {
             // min: 0,
