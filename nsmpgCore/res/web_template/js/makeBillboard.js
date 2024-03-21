@@ -6,22 +6,12 @@ function arrayMoreLess20(numbers) {
 function getUpTo(places, index) {
     return Object.values(places).map(place => place[index]);
 }
-function genxs(dataIds, length, customxs = {}) {
+function genxs(dataIds, length, customxs = {}, defaultxs = 'data_xs') {
     const xs = ascendingArray(length);
-    return Object.fromEntries(dataIds.map(id => [id, (id in customxs) ? customxs[id] : 'data_xs']));
+    return Object.fromEntries(dataIds.map(id => [id, (id in customxs) ? customxs[id] : defaultxs]));
 }
 function extendScalar(value, length) {
     return new Array(length).fill(value);
-}
-function getLastBar(value, length) {
-    let chartData = new Array(length - 1);
-    chartData.fill(null).push(getLast(value));
-    return chartData;
-}
-function offsetBar(values, offset) {
-    let chartData = new Array(offset);
-    chartData.fill(null).push(getLast(values));
-    return chartData;
 }
 function ascendingArray(n) {
     const arr = [];
@@ -140,8 +130,7 @@ const defaultOptions = {
         },
     },
 };
-
-let chartColors = {
+const chartColors = {
     'LTA': '#FF0000',
     'LTA±20%': '#00AFE5',
     'Avg.': '#FF0000',
@@ -161,6 +150,7 @@ let chartColors = {
     'E. LTM±St. Dev.': '#FFA500',
     'E. (33, 67) Pctl.': '#0000FF',
 }
+
 class AccumulationsBillboardChart {
     constructor(seasonalData, placeData, datasetProperties, containerElement) {
         this.seasonalData = seasonalData;
@@ -198,7 +188,7 @@ class AccumulationsBillboardChart {
 
         this.plot = bb.generate({
             bindto: this.containerElement,
-            data: {json: {},},
+            data: { json: {}, },
             ..._.merge(defaultOptions, chartOptions)
         });
         this.update(firstPlaceKey);
@@ -282,7 +272,6 @@ class EnsembleBillboardChart {
         this.containerElement = containerElement;
         this.lastCoordinates = new Array(2).fill(datasetProperties['sub_season_monitoring_ids'].length - 1);
         this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length - 1;
-        let containerWidth = parseInt(d3.select(this.containerElement).style('width'), 10);
         this.chartTypes = {
             'LTA±20%': 'area-line-range',
             'LTA±St. Dev.': 'scatter',
@@ -290,10 +279,10 @@ class EnsembleBillboardChart {
             '(33, 67) Pctl.': 'scatter',
             'E. (33, 67) Pctl.': 'scatter',
         },
-        this.xs = {
-            'data_xs': ascendingArray(this.columnNames.length),
-            'scatter_xs': this.lastCoordinates,
-        };
+            this.xs = {
+                'data_xs': ascendingArray(this.columnNames.length),
+                'scatter_xs': this.lastCoordinates,
+            };
         this.customxs = {
             'LTA±St. Dev.': 'scatter_xs',
             'E. LTM±St. Dev.': 'scatter_xs',
@@ -359,8 +348,8 @@ class AccumulationsBillboardCurrentChart {
         this.seasonalData = seasonalData;
         this.placeData = placeData;
         this.containerElement = containerElement;
+        this.lastCoordinates = this.columnNames.length - 1;
         this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length - 1;
-        let containerWidth = parseInt(d3.select(this.containerElement).style('width'), 10);
         this.chartTypes = {
             'Seasonal Accumulation': 'bar',
             'Current Season Accumulation': 'bar',
@@ -370,7 +359,14 @@ class AccumulationsBillboardCurrentChart {
             'D2: 11 Pctl.': 'area',
             'D1: 21 Pctl.': 'area',
             'D0: 31 Pctl.': 'area',
-        }
+        };
+        this.xs = {
+            'data_xs': ascendingArray(this.columnNames.length),
+            'bar_xs': [this.lastCoordinates],
+        };
+        this.customxs = {
+            'Current Season Accumulation': 'bar_xs',
+        };
         const chartOptions = {
             // title: {text: 'Seasonal Accumulations'},
             axis: { x: { tick: { format: (index) => { return this.columnNames[index]; }, }, }, },
@@ -390,11 +386,11 @@ class AccumulationsBillboardCurrentChart {
                 overlap: true,
                 zerobased: false,
                 width: {
-                    'Seasonal Accumulation': {
-                        ratio: 1.2,
-                    },
+                    // 'Seasonal Accumulation': {
+                    //     ratio: 1.2,
+                    // },
                     'Current Season Accumulation': {
-                        ratio: 1.2,
+                        ratio: .6,
                     },
                 },
             },
@@ -414,8 +410,9 @@ class AccumulationsBillboardCurrentChart {
 
     update(index) {
         const jsonData = {
+            ...this.xs,
             'Seasonal Accumulation': getUpTo(this.seasonalData[index]['Sum'], this.currentLength),
-            'Current Season Accumulation': getLastBar(this.placeData[index]['Current Season Accumulation'], this.columnNames.length),
+            'Current Season Accumulation': [getLast(this.placeData[index]['Current Season Accumulation'])],
             'Avg.': extendScalar(this.placeData[index]['LTA'][this.currentLength], this.columnNames.length),
             'D0: 31 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][4], this.columnNames.length),
             'D1: 21 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][3], this.columnNames.length),
@@ -425,6 +422,7 @@ class AccumulationsBillboardCurrentChart {
         };
         this.plot.load({
             json: jsonData,
+            xs: genxs(Object.keys(jsonData), this.columnNames.length, this.customxs),
             types: this.chartTypes,
             colors: chartColors,
         });
