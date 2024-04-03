@@ -29,11 +29,11 @@ import time
 
 # from qgis.PyQt import uic, QtWidgets
 from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog, QFileDialog, QPushButton, QMessageBox, QComboBox, QLineEdit
+from PyQt5.QtWidgets import QDialog, QFileDialog, QPushButton, QMessageBox, QComboBox, QLineEdit, QCheckBox
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset, Options, Properties
-from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps
+from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps, get_cross_years, yearly_periods
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -58,11 +58,14 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.datasetInputLineEdit: QLineEdit
         self.climatologyStartComboBox: QComboBox
         self.climatologyEndComboBox: QComboBox
+        self.crossYearsCheckBox: QCheckBox
         self.seasonStartComboBox: QComboBox
         self.seasonEndComboBox: QComboBox
 
         self.datasetInputLineEdit.editingFinished.connect(self.path_changed_event)
         self.datasetInputLineEdit.setPlaceholderText('Select a source dataset.')
+
+        self.crossYearsCheckBox.stateChanged.connect(self.cross_years_cb_changed_event)
 
         self.loadFileButton.clicked.connect(self.load_file_btn_event)
         self.processButton.clicked.connect(self.process_btn_event)
@@ -100,40 +103,48 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         # with cProfile.Profile() as profile:
 
         renderTime = time.perf_counter()
-        self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names)
         # computation with parameters given from GUI
-        climatology_options = Options(
-            climatology_start=self.climatologyStartComboBox.currentText(),
-            climatology_end=self.climatologyEndComboBox.currentText(),
-        )
-        filtered_climatology_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options=climatology_options)
-
-        monitoring_options = Options(
-            season_start=self.seasonStartComboBox.currentText(),
-            season_end=self.seasonEndComboBox.currentText(),
-        )
-        monitoring_filtered_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options=monitoring_options)
-
-        all_options = Options(
+        options = Options(
             climatology_start=self.climatologyStartComboBox.currentText(),
             climatology_end=self.climatologyEndComboBox.currentText(),
             season_start=self.seasonStartComboBox.currentText(),
             season_end=self.seasonEndComboBox.currentText(),
+            cross_years=self.crossYearsCheckBox.isChecked(),
         )
-        filtered_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options=all_options)
+        self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options)
         # output files
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
-        export_to_web_files(destination_path, self.structured_dataset, filtered_climatology_dataset, monitoring_filtered_dataset, filtered_dataset)
+        export_to_web_files(destination_path, self.structured_dataset)
         renderFinishTime = time.perf_counter() - renderTime
         QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}').exec()
 
             # stats = pstats.Stats(profile)
             # stats.sort_stats(pstats.SortKey.TIME)
             # stats.dump_stats('snakeviz.prof')
-            # stats.print_stats()
 
     # placeholder
     def path_changed_event(self): 
         print(self.datasetInputLineEdit.text())
         if self.datasetInputLineEdit.text().__len__() != 0:
             print('valid')
+
+    def cross_years_cb_changed_event(self, state):
+        sub_season_ids = define_seasonal_dict()
+        year_list = self.dataset_properties.year_ids
+        if self.crossYearsCheckBox.isChecked():
+            year_list = get_cross_years(year_list)
+            sub_season_ids = define_seasonal_dict(start=6)
+            if self.dataset_properties.current_season_length <= (yearly_periods[self.dataset_properties.period_unit_id] // 2):
+                year_list.pop()
+        self.climatologyStartComboBox.clear()
+        self.climatologyStartComboBox.addItems(year_list)
+        self.climatologyEndComboBox.clear()
+        self.climatologyEndComboBox.addItems(year_list)
+        self.climatologyEndComboBox.setCurrentIndex(len(year_list)-1)
+
+        
+        self.seasonStartComboBox.clear()
+        self.seasonStartComboBox.addItems(sub_season_ids)
+        self.seasonEndComboBox.clear()
+        self.seasonEndComboBox.addItems(sub_season_ids)
+        self.seasonEndComboBox.setCurrentIndex(len(sub_season_ids)-1)

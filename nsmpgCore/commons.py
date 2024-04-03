@@ -2,36 +2,73 @@ import re
 from dataclasses import dataclass
 import numpy as np
 import scipy.stats as sp
-from typing import Tuple, Union
+# from typing import Tuple, Union
 
-# number of periods that fit in a year
+# Dictionary that correlates the period name
+# with the number of periods that fit in a year
 yearly_periods = {
-    'year': 1,
     'month': 12,
     'dekad': 36,
     'pentad': 72,
-    'day': 365,
 }
 
-# defines dictionary for seasonal periods
-def define_seasonal_dict(start=0, period_unit='dekad', return_key_list=True) -> Union[dict, list]:
-    period_unit = yearly_periods[period_unit] // 12
-    if period_unit < 1: return ['']
+def define_seasonal_dict(start=0, period_unit='dekad') -> list:
+    """Creates a list of seasonal periods for the given start and period unit.
+
+    Args:
+        start (int, optional): 
+            Defines the initial month from which the seasons 
+            should be defined. Defaults to 0.
+        period_unit (str, optional): 
+        Defines the length of each seasonal period. Defaults to 'dekad'.
+
+    Returns:
+        list: List of seasonal periods
+    """
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     months = months[start:]+months[:start]
+    period_unit = yearly_periods[period_unit] // 12
     if period_unit == 1: return months
     dekad_strings = [f'{month}-{i+1}' for month in months for i in range(period_unit)]
-    dekads = {dekad : i for i, dekad in enumerate(dekad_strings)}
-    if return_key_list:
-        return list(dekads.keys())
-    return dekads
+    return dekad_strings
 
-# gets year from a header string slice
+# gets year from a column header string slice
 def get_year_slice(year: str, start_index:int) -> str:
+    """Extracts the year from a given string by slicing it using the provided start index.
+
+    Args:
+        year (str): A string representing a column header that contains the year.
+        start_index (int): An integer representing the starting index of where to slice from.
+
+    Returns:
+        str: the four characters that represent the year in the column header string.
+    """
     return year[start_index:start_index+4]
 
-# parses timestamps to get properties of the dataset
+def get_cross_years(years: list[str]) -> list[str]:
+    return [f'{year}-{int(year)+1}' for year in years]
+
 def parse_timestamps(timestamps: list[str]) -> dict:
+    """This function parses a list of timestamps to get properties of 
+    the dataset.
+
+    Args:
+        timestamps (list[str]): 
+            A list of strings containing timestamps for each row in the dataset. 
+            Each string should have a six-digit number that indicates the year and 
+            sub-period of the time series data.
+
+
+    Returns:
+        dict: A dictionary with entries as follows:
+            'period_unit_id': ID for the period unit, such as 'year' or 'month'.
+            'period_length': Number of rows in each period.
+            'season_quantity': Number of periods in the seasonal subset of data.
+            'year_ids': List of years corresponding to each row in the dataset.
+            'current_season_index': Index of the current period in the dataset.
+            'current_season_key': Year ID for the current season, if there is one.
+            'current_season_length': Number of rows in the current seasonal subset.
+    """
     # get timestamp offset from headers
     match = re.search(r"\d{6}", timestamps[0])
     if match is None:
@@ -41,30 +78,29 @@ def parse_timestamps(timestamps: list[str]) -> dict:
     # get period lenght from timestamps
     first_year = get_year_slice(timestamps[0], timestamp_str_offset)
     period_unit_id = None
-    period_lenght = 0
+    period_length = 0
     for p_unit, p_lenght in yearly_periods.items():
         offset_year = get_year_slice(timestamps[p_lenght], timestamp_str_offset)
         if first_year != offset_year:
             period_unit_id = p_unit
-            period_lenght = p_lenght
+            period_length = p_lenght
             break
     
     # get period properties
-    season_quantity = (len(timestamps) - 1) // period_lenght
+    season_quantity = (len(timestamps) - 1) // period_length
     year_ids = [str(y) for y in range(int(first_year), int(first_year)+season_quantity)]
-    current_season_index = season_quantity*period_lenght
+    current_season_index = season_quantity*period_length
     current_season_id = get_year_slice(timestamps[current_season_index], timestamp_str_offset)
     current_season_length = len(timestamps) - current_season_index
-    season_properties = {
-        'timestamp_str_offset': timestamp_str_offset,
+    return {
         'period_unit_id': period_unit_id,
+        'period_length': period_length,
         'season_quantity': season_quantity,
         'year_ids': year_ids,
         'current_season_index': current_season_index,
-        'current_season_key': current_season_id,
+        'current_season_id': current_season_id,
         'current_season_length': current_season_length,
     }
-    return season_properties
 
 def percentiles_from_values(data, values=None) -> np.ndarray:
     if values is None:
@@ -82,7 +118,7 @@ def operate_column(data, f) -> np.ndarray:
 def percentiles_to_values(data: np.ndarray, values=(3, 6, 11, 21, 31)) -> np.ndarray:
     return np.percentile(data, values)
 
-def ensemble_sum(current_data, post_data) -> np.ndarray:
+def get_ensemble(current_data, post_data) -> np.ndarray:
     return np.cumsum(np.concatenate((current_data, post_data[len(current_data):])))
 
 # slices a list given a element inside the list

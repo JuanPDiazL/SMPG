@@ -56,7 +56,7 @@ function getLegend(title, color, data, chartTypes = {}, points = {}) {
 const defaultOptions = {
     axis: {
         x: {
-            min: .5,
+            // min: .5,
             // max: 35,
             label: {
                 text: 'Time',
@@ -80,7 +80,7 @@ const defaultOptions = {
                 position: 'outer-top',
             },
             padding: {
-                // bottom: 0,
+                bottom: 10,
             },
         },
         // y2: {
@@ -160,7 +160,7 @@ class AccumulationsBillboardChart {
         this.columnNames = datasetProperties['sub_season_monitoring_ids'];
         this.containerElement = containerElement;
         this.lastCoordinates = new Array(2).fill(datasetProperties['sub_season_monitoring_ids'].length - 1);
-        this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length - 1;
+        this.currentLength = this.placeData[firstPlaceKey]['Current Season Accumulation'].length;
         this.chartTypes = {
             'LTA±20%': 'area-line-range',
             'LTA±St. Dev.': 'scatter',
@@ -222,8 +222,7 @@ class AccumulationsBillboardChart {
 }
 
 class CurrentBillboardChart {
-    constructor(seasonalData, placeData, datasetProperties, containerElement) {
-        this.seasonalData = seasonalData;
+    constructor(placeData, datasetProperties, containerElement) {
         this.placeData = placeData;
         this.columnNames = datasetProperties['sub_season_ids'];
         this.containerElement = containerElement;
@@ -244,10 +243,11 @@ class CurrentBillboardChart {
         };
         this.xs = {
             'data_xs': ascendingArray(this.columnNames.length),
-            'bar_xs': ascendingArray(datasetProperties['current_season_length'], datasetProperties['sub_season_offset']),
+            // 'bar_xs': ascendingArray(datasetProperties['current_season_length'], datasetProperties['sub_season_offset']),
         };
         this.customxs = {
             'Current Season': 'bar_xs',
+            'Current Season': 'data_xs',
         };
         this.plot = bb.generate({
             bindto: this.containerElement,
@@ -280,7 +280,7 @@ class EnsembleBillboardChart {
         this.columnNames = datasetProperties['sub_season_monitoring_ids'];
         this.containerElement = containerElement;
         this.lastCoordinates = new Array(2).fill(datasetProperties['sub_season_monitoring_ids'].length - 1);
-        this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length - 1;
+        this.currentLength = this.placeData[firstPlaceKey]['Current Season Accumulation'].length;
         this.chartTypes = {
             'LTA±20%': 'area-line-range',
             'LTA±St. Dev.': 'scatter',
@@ -353,12 +353,12 @@ class EnsembleBillboardChart {
 class AccumulationsBillboardCurrentChart {
     constructor(seasonalData, placeData, datasetProperties, containerElement) {
         this.columnNames = datasetProperties['year_ids'];
-        this.columnNames.push(datasetProperties['current_season_key']);
+        this.columnNames.push(datasetProperties['current_season_id']);
         this.seasonalData = seasonalData;
         this.placeData = placeData;
         this.containerElement = containerElement;
         this.lastCoordinates = this.columnNames.length - 1;
-        this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length - 1;
+        this.currentLength = this.placeData[firstPlaceKey]['Current Season Accumulation'].length;
         this.chartTypes = {
             'Seasonal Accumulation': 'bar',
             'Current Season Accumulation': 'bar',
@@ -411,15 +411,16 @@ class AccumulationsBillboardCurrentChart {
     update(index) {
         const jsonData = {
             ...this.xs,
-            'Seasonal Accumulation': getUpTo(this.seasonalData[index]['Sum'], this.currentLength),
+            'Seasonal Accumulation': getUpTo(this.seasonalData[index]['Sum'], this.currentLength - 1),
             'Current Season Accumulation': [getLast(this.placeData[index]['Current Season Accumulation'])],
-            'Avg.': extendScalar(this.placeData[index]['LTA'][this.currentLength], this.columnNames.length),
+            'Avg.': extendScalar(this.placeData[index]['LTA'][this.currentLength-1], this.columnNames.length),
             'D0: 31 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][4], this.columnNames.length),
             'D1: 21 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][3], this.columnNames.length),
             'D2: 11 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][2], this.columnNames.length),
             'D3: 6 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][1], this.columnNames.length),
             'D4: 3 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][0], this.columnNames.length),
         };
+        console.log(jsonData);
         this.plot.load({
             json: jsonData,
             xs: genxs(Object.keys(jsonData), this.columnNames.length, this.customxs),

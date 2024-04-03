@@ -1,7 +1,7 @@
 function getDataAssessmentCD(placeStats, place) {
     let data = placeStats[place];
     const currentSeason = getLast(data['Current Season Accumulation']);
-    const ltaUptoCurrentSeason = data['LTA'][data['Current Season'].length-1]
+    const ltaUptoCurrentSeason = data['LTA'][data['Current Season Accumulation'].length-1]
     let selectedData = [
         ['Total C.Dk.', 0, currentSeason],
         ['LTA C.Dk.', 0, ltaUptoCurrentSeason],
