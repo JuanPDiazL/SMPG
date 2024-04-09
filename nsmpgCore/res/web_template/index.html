@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Layout</title>
+    <title>Web Report</title>
 
     <link rel="stylesheet" href="./css/w3.css">
     <link rel="stylesheet" href="./css/style.css">
@@ -94,18 +94,6 @@
 
             </div>
 
-            <div class="w3-container w3-two-half w3-margin-bottom w3-padding-small">
-                <div class="w3-card">
-                    <header class="w3-container w3-blue-grey">
-                        <p>Test Table</p>
-                    </header>
-
-                    <div class="w3-container w3-padding-small">
-                        <table id="statsTable" class="w3-table w3-striped w3-bordered w3-border">
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
 
     </div>
@@ -114,6 +102,8 @@
     <script src="./data/datasetProperties.js"></script>
     <script src="./data/placeStats.js"></script>
     <script src="./data/seasonalStats.js"></script>
+    <script src="./data/selectedYearsPlaceStats.js"></script>
+    <script src="./data/selectedYearsSeasonalStats.js"></script>
 
     <script src="./js/makeBillboard.js"></script>
     <script src="./js/makeTable.js"></script>
@@ -131,13 +121,6 @@
         function w3_close() {
             document.getElementById("leftSidebar").style.display = "none";
             document.getElementById("myOverlay").style.display = "none";
-        }
-
-        function updateTable(table) {
-            // table.rows[1].cells[1].innerHTML = Math.random();
-            // table.rows[1].cells[2].innerHTML = Math.random();
-            // table.rows[2].cells[1].innerHTML = Math.random();
-            // table.rows[2].cells[2].innerHTML = Math.random();
         }
 
         function overlaySVG(table, gSelector) {
@@ -184,30 +167,30 @@
         let firstPlaceKey = datasetProperties['place_ids'][0];
 
         let bb1 = new AccumulationsBillboardChart(
-            seasonalStats, placeStats, 
+            selectedYearsSeasonalStats, placeStats, 
             datasetProperties, '#chart1');
         let bb2 = new CurrentBillboardChart(
             placeStats, datasetProperties, '#chart2');
         let bb3 = new EnsembleBillboardChart(
-            seasonalStats, placeStats, 
+            selectedYearsSeasonalStats, placeStats, selectedYearsPlaceStats, 
             datasetProperties, '#chart3');
         let bb4 = new AccumulationsBillboardCurrentChart(
             seasonalStats, placeStats, datasetProperties, '#chart4');
 
         let table1 = makeTable('#chart1', getDataAssessmentCD(
-            placeStats, firstPlaceKey), 
+            placeStats, selectedYearsPlaceStats, firstPlaceKey), 
             'Assessment at Current Dekad');
         overlaySVG(table1, '#chart1 .bb-main');
 
         let table2 = makeTable('#chart2', getDataSeasonalAnalysis(
-            placeStats, firstPlaceKey), 'Seasonal Analysis');
+            placeStats, selectedYearsPlaceStats, firstPlaceKey), 'Seasonal Analysis');
         overlaySVG(table2, '#chart2 .bb-main');
 
         let table3 = makeTable('#chart3', getDataProjectionEoS(
-            placeStats, firstPlaceKey), 'Projection at EoS');
+            placeStats, selectedYearsPlaceStats, firstPlaceKey), 'Projection at EoS');
         overlaySVG(table3, '#chart3 .bb-main');
         let table4 = makeTable('#chart3', getDataProbabilityEoS(
-            placeStats, firstPlaceKey), 'Probability at EoS');
+            placeStats, selectedYearsPlaceStats, firstPlaceKey), 'Probability at EoS');
         placeUnder(table4, table3);
         // updateTable(document.getElementById('statsTable'));
         makeSelectionMenu(datasetProperties['place_ids']);

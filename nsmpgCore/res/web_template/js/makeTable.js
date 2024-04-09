@@ -1,42 +1,49 @@
-function getDataAssessmentCD(placeStats, place) {
+function getDataAssessmentCD(placeStats, selectedYearsStats, place) {
     let data = placeStats[place];
+    let selectedData = selectedYearsStats[place];
     const currentSeason = getLast(data['Current Season Accumulation']);
     const ltaUptoCurrentSeason = data['LTA'][data['Current Season Accumulation'].length-1]
-    let selectedData = [
-        ['Total C.Dk.', 0, currentSeason],
-        ['LTA C.Dk.', 0, ltaUptoCurrentSeason],
-        ['C.Dk./LTA', 0, (currentSeason/ltaUptoCurrentSeason) * 100],
+    const selectedLtaUptoCurrentSeason = selectedData['LTA'][data['Current Season Accumulation'].length-1]
+    let tableData = [
+        ['Total C.Dk.', currentSeason],
+        ['LTA C.Dk.', selectedLtaUptoCurrentSeason, ltaUptoCurrentSeason],
+        ['C.Dk. LTA Pct', (currentSeason/selectedLtaUptoCurrentSeason) * 100, (currentSeason/ltaUptoCurrentSeason) * 100],
     ];
-    return selectedData;
+    return tableData;
 }
 
-function getDataSeasonalAnalysis(placeStats, place) {
+function getDataSeasonalAnalysis(placeStats, selectedYearsStats, place) {
     let data = placeStats[place];
-    let selectedData = [
-        ['LTM', 0, getLast(data['LTA'])],
-        ['St. Dev.', 0, getLast(data['St. Dev.'])],
+    let selectedData = selectedYearsStats[place];
+    let tableData = [
+        ['LTM', getLast(selectedData['LTA']), getLast(data['LTA'])],
+        ['St. Dev.', getLast(selectedData['St. Dev.']), getLast(data['St. Dev.'])],
     ];
-    return selectedData;
+    return tableData;
 }
-function getDataProjectionEoS(placeStats, place) {
+function getDataProjectionEoS(placeStats, selectedYearsStats, place) {
     let data = placeStats[place];
+    let selectedData = selectedYearsStats[place];
     const ensembleLTM = getLast(data['E. LTM']);
     const lta = getLast(data['LTA']);
-    let selectedData = [
-        ['E. LTM', 0, ensembleLTM],
-        ['LTA', 0, lta],
-        ['E. LTM/LTA', 0, (ensembleLTM/lta) * 100],
+    const selectedEnsembleLTM = getLast(selectedData['E. LTM']);
+    const selectedLta = getLast(selectedData['LTA']);
+    let tableData = [
+        ['E. LTM', selectedEnsembleLTM, ensembleLTM],
+        ['LTA', selectedLta, lta],
+        ['E. LTM LTA Pct.', (selectedEnsembleLTM/selectedLta) * 100, (ensembleLTM/lta) * 100],
     ];
-    return selectedData;
+    return tableData;
 }
-function getDataProbabilityEoS(placeStats, place) {
+function getDataProbabilityEoS(placeStats, selectedYearsStats, place) {
     let data = placeStats[place];
-    let selectedData = [
-        ['Ab. Normal', 0, data['E. Probabilities'][2] * 100],
-        ['Normal', 0, data['E. Probabilities'][1] * 100],
-        ['Be. Normal', 0, data['E. Probabilities'][0] * 100],
+    let selectedData = selectedYearsStats[place];
+    let tableData = [
+        ['Ab. Normal', selectedData['E. Probabilities'][2] * 100, data['E. Probabilities'][2] * 100],
+        ['Normal', selectedData['E. Probabilities'][1] * 100, data['E. Probabilities'][1] * 100],
+        ['Be. Normal', selectedData['E. Probabilities'][0] * 100, data['E. Probabilities'][0] * 100],
     ];
-    return selectedData;
+    return tableData;
 }
 
 function makeTable(container, selectedData, title) {

@@ -1,5 +1,4 @@
 import re
-from dataclasses import dataclass
 import numpy as np
 import scipy.stats as sp
 # from typing import Tuple, Union
@@ -12,7 +11,65 @@ yearly_periods = {
     'pentad': 72,
 }
 
-def define_seasonal_dict(start=0, period_unit='dekad') -> list:
+# properties of the dataset
+class Properties:
+    def __init__(self, properties_dict: dict=None) -> None:
+        self.period_unit_id: str
+        self.period_length: int
+        self.season_quantity: int
+
+        self.place_ids : list[str]
+        self.year_ids: list[str]
+        self.climatology_year_ids: list[str]
+        self.selected_year_ids: list[str]
+        
+        self.sub_season_ids: list[str]
+        self.sub_season_monitoring_ids: list[str]
+        self.sub_season_offset: int
+
+        self.current_season_index: int
+        self.current_season_id: str
+        self.current_season_length: int
+
+        if properties_dict is not None:
+            self.update(properties_dict)
+
+    def update(self, properties: dict):
+        self.__dict__.update(properties)
+
+# options for the computation
+class Options:
+    def __init__(self, climatology_start=None, climatology_end=None,
+                 season_start=None, season_end=None, cross_years=None, selected_years=None,
+                 output_types=None, dataset_properties:Properties=None):
+        # constructs default options from the properties of the dataset
+        if dataset_properties is not None:
+            self.climatology_start=dataset_properties.year_ids[0]
+            self.climatology_end=dataset_properties.year_ids[-1]
+            self.season_start='Jan-1'
+            self.season_end='Dec-3'
+            self.selected_years=dataset_properties.year_ids
+            self.cross_years=False
+            return
+        self.climatology_start: str = climatology_start
+        self.climatology_end: str = climatology_end
+
+        self.season_start: str = season_start
+        self.season_end: str = season_end
+        self.cross_years: bool = cross_years
+
+        self.selected_years: list[str] = selected_years
+        self.output_types: list[str] = output_types
+
+    def overwrite(self, options: object):
+        options = options.__dict__
+        # Iterate over keys
+        for key in self.__dict__:
+            # If the value in dict1 is None, replace it with the value from dict2
+            if options[key] is not None and key in options:
+                self.__dict__[key] = options[key]
+
+def define_seasonal_dict(july_june=False, period_unit='dekad') -> list:
     """Creates a list of seasonal periods for the given start and period unit.
 
     Args:
@@ -26,11 +83,20 @@ def define_seasonal_dict(start=0, period_unit='dekad') -> list:
         list: List of seasonal periods
     """
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    start = 6 if july_june else 0
     months = months[start:]+months[:start]
     period_unit = yearly_periods[period_unit] // 12
     if period_unit == 1: return months
     dekad_strings = [f'{month}-{i+1}' for month in months for i in range(period_unit)]
     return dekad_strings
+
+def get_properties_validated_year_list(dataset_properties: Properties, cross_years=False) -> list:
+    if cross_years:
+        year_list = get_cross_years(dataset_properties.year_ids)
+        if dataset_properties.current_season_length <= (yearly_periods[dataset_properties.period_unit_id] // 2):
+            year_list.pop()
+    else: year_list = dataset_properties.year_ids
+    return year_list
 
 # gets year from a column header string slice
 def get_year_slice(year: str, start_index:int) -> str:

@@ -29,16 +29,18 @@ import time
 
 # from qgis.PyQt import uic, QtWidgets
 from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog, QFileDialog, QPushButton, QMessageBox, QComboBox, QLineEdit, QCheckBox
+from PyQt5.QtWidgets import QDialog, QFileDialog, QGroupBox, QFrame, QGridLayout, QPushButton, QMessageBox, QComboBox, QLineEdit, QCheckBox
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset, Options, Properties
-from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps, get_cross_years, yearly_periods
+from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps, get_cross_years, get_properties_validated_year_list, yearly_periods
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'nsmpg_dialog_base.ui'))
+YEAR_SELECTION_DIALOG_CLASS, _ = uic.loadUiType(os.path.join(
+    os.path.dirname(__file__), 'year_selection_dialog.ui'))
 
 
 class NSMPGDialog(QDialog, FORM_CLASS):
@@ -53,22 +55,63 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.setupUi(self)
 
         ### My code starting from here
+        self.year_selection_dialog = YearSelectionDialog(self)
+
+        self.climatologyGroup: QGroupBox
+        self.monitoringGroup: QGroupBox
+        self.yearSelectionGroup: QGroupBox
+
         self.loadFileButton: QPushButton
+        self.importParametersButton: QPushButton
         self.processButton: QPushButton
         self.datasetInputLineEdit: QLineEdit
+        self.importParametersLineEdit: QLineEdit
         self.climatologyStartComboBox: QComboBox
         self.climatologyEndComboBox: QComboBox
         self.crossYearsCheckBox: QCheckBox
         self.seasonStartComboBox: QComboBox
         self.seasonEndComboBox: QComboBox
+        self.selectYearsButton: QPushButton
 
         self.datasetInputLineEdit.editingFinished.connect(self.path_changed_event)
-        self.datasetInputLineEdit.setPlaceholderText('Select a source dataset.')
 
         self.crossYearsCheckBox.stateChanged.connect(self.cross_years_cb_changed_event)
+        self.selectYearsButton.clicked.connect(self.select_years_btn_event)
 
         self.loadFileButton.clicked.connect(self.load_file_btn_event)
         self.processButton.clicked.connect(self.process_btn_event)
+
+    def update_fields(self, options: Options):
+        self.crossYearsCheckBox.setChecked(options.cross_years)
+        year_ids = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
+        sub_season_ids = define_seasonal_dict(self.crossYearsCheckBox.isChecked())
+
+        self.climatologyStartComboBox.setEnabled(True)
+        self.climatologyStartComboBox.clear()
+        self.climatologyStartComboBox.addItems(year_ids)
+        self.climatologyStartComboBox.setCurrentText(options.climatology_start)
+        self.climatologyEndComboBox.setEnabled(True)
+        self.climatologyEndComboBox.clear()
+        self.climatologyEndComboBox.addItems(year_ids)
+        self.climatologyEndComboBox.setCurrentText(options.climatology_end)
+
+        self.seasonStartComboBox.setEnabled(True)
+        self.seasonStartComboBox.clear()
+        self.seasonStartComboBox.addItems(sub_season_ids)
+        self.seasonStartComboBox.setCurrentText(options.season_start)
+        self.seasonEndComboBox.setEnabled(True)
+        self.seasonEndComboBox.clear()
+        self.seasonEndComboBox.addItems(sub_season_ids)
+        self.seasonEndComboBox.setCurrentText(options.season_end)
+
+        self.importParametersLineEdit.setEnabled(True)
+        self.importParametersButton.setEnabled(True)
+        self.crossYearsCheckBox.setEnabled(True)
+        self.selectYearsButton.setEnabled(True)
+        self.processButton.setEnabled(True)
+        self.year_selection_dialog.updateYearsList(year_ids)
+        self.year_selection_dialog.selected_years = options.selected_years
+        self.year_selection_dialog.update_selection()
 
     # function that reads the dataset from a file.
     def load_file_btn_event(self): 
@@ -81,28 +124,19 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         # parse dataset
         self.parsed_dataset, self.col_names = parse_csv(self.selected_source)
         self.dataset_properties = Properties(parse_timestamps(self.col_names))
+        default_options = Options(dataset_properties=self.dataset_properties)
 
         # set form fields content from data
         self.datasetInputLineEdit.setText(self.selected_source)
 
-        self.climatologyStartComboBox.clear()
-        self.climatologyStartComboBox.addItems(self.dataset_properties.year_ids)
-        self.climatologyEndComboBox.clear()
-        self.climatologyEndComboBox.addItems(self.dataset_properties.year_ids)
-        self.climatologyEndComboBox.setCurrentIndex(len(self.dataset_properties.year_ids)-1)
-
-        seasons = define_seasonal_dict()
-        self.seasonStartComboBox.clear()
-        self.seasonStartComboBox.addItems(seasons)
-        self.seasonEndComboBox.clear()
-        self.seasonEndComboBox.addItems(seasons)
-        self.seasonEndComboBox.setCurrentIndex(len(seasons)-1)
+        self.update_fields(default_options)
 
     # function to allow the computation of the required data, such as accumulation, ensemble, stats, percentiles, etc
     def process_btn_event(self):
         # with cProfile.Profile() as profile:
 
         renderTime = time.perf_counter()
+        default_year_ids = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
         # computation with parameters given from GUI
         options = Options(
             climatology_start=self.climatologyStartComboBox.currentText(),
@@ -110,8 +144,10 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             season_start=self.seasonStartComboBox.currentText(),
             season_end=self.seasonEndComboBox.currentText(),
             cross_years=self.crossYearsCheckBox.isChecked(),
+            selected_years=self.year_selection_dialog.selected_years,
         )
         self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options)
+        
         # output files
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
         export_to_web_files(destination_path, self.structured_dataset)
@@ -128,23 +164,90 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         if self.datasetInputLineEdit.text().__len__() != 0:
             print('valid')
 
-    def cross_years_cb_changed_event(self, state):
-        sub_season_ids = define_seasonal_dict()
-        year_list = self.dataset_properties.year_ids
-        if self.crossYearsCheckBox.isChecked():
-            year_list = get_cross_years(year_list)
-            sub_season_ids = define_seasonal_dict(start=6)
-            if self.dataset_properties.current_season_length <= (yearly_periods[self.dataset_properties.period_unit_id] // 2):
-                year_list.pop()
-        self.climatologyStartComboBox.clear()
-        self.climatologyStartComboBox.addItems(year_list)
-        self.climatologyEndComboBox.clear()
-        self.climatologyEndComboBox.addItems(year_list)
-        self.climatologyEndComboBox.setCurrentIndex(len(year_list)-1)
+    def cross_years_cb_changed_event(self):
+        sub_season_ids = define_seasonal_dict(self.crossYearsCheckBox.isChecked())
+        year_list = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
+        options = Options(
+            climatology_start=year_list[0],
+            climatology_end=year_list[-1],
+            season_start=sub_season_ids[0],
+            season_end=sub_season_ids[-1],
+            cross_years=self.crossYearsCheckBox.isChecked(),
+            selected_years=year_list,
+            )
+        self.update_fields(options)
 
-        
-        self.seasonStartComboBox.clear()
-        self.seasonStartComboBox.addItems(sub_season_ids)
-        self.seasonEndComboBox.clear()
-        self.seasonEndComboBox.addItems(sub_season_ids)
-        self.seasonEndComboBox.setCurrentIndex(len(sub_season_ids)-1)
+    def select_years_btn_event(self):
+        self.year_selection_dialog.show()
+
+class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
+    def __init__(self, parent=None):
+        super(YearSelectionDialog, self).__init__(parent)
+        self.setupUi(self)
+
+        self.yearsFrame: QFrame
+        self.yearsLayout: QGridLayout
+        self.selectAllCheckBox: QCheckBox
+        self.select_all_state = False
+        self.year_combo_boxes: list[QCheckBox] = []
+        self.selected_years: list[str] = []
+
+        self.selectAllCheckBox.clicked.connect(self.select_all_cb_event)
+
+    def updateYearsList(self, year_list):
+        self.clear_years_layout()
+        self.selectAllCheckBox.setChecked(False)
+        cb_list = []
+        col_n = 0
+        row_n = 0
+        for year in year_list:
+            check_box = QCheckBox(year)
+            check_box.clicked.connect(self.year_combo_boxes_changed)
+            self.yearsLayout.addWidget(check_box, row_n, col_n)
+            cb_list.append(check_box)
+            col_n += 1
+            if col_n == 4:
+                row_n += 1
+                col_n = 0
+        self.year_combo_boxes = cb_list
+        # self.yearsLayout.update()
+    
+    def select_all_cb_event(self):
+        for cb in self.year_combo_boxes:
+            cb.setChecked(self.selectAllCheckBox.isChecked())
+
+    def update_selection(self):
+        all_checked = True
+        for cb in self.year_combo_boxes:
+            if cb.text() in self.selected_years:
+                cb.setChecked(True)
+            else:
+                cb.setChecked(False)
+                all_checked &= False
+        self.selectAllCheckBox.setChecked(all_checked)
+
+    def accept(self) -> None:
+        self.selected_years = []
+        for cb in self.year_combo_boxes:
+            if cb.isChecked():
+                self.selected_years.append(cb.text())
+        print(f"Selected years: {self.selected_years}")
+        self.select_all_state = self.selectAllCheckBox.isChecked()
+        super(YearSelectionDialog, self).accept()
+
+    def reject(self) -> None:
+        self.update_selection()
+        super(YearSelectionDialog, self).reject()
+
+    def year_combo_boxes_changed(self):
+        for cb in self.year_combo_boxes:
+            if cb.isChecked() == False:
+                self.selectAllCheckBox.setChecked(False)
+                return
+        self.selectAllCheckBox.setChecked(True)
+
+    def clear_years_layout(self):
+        while self.yearsLayout.count():
+            child = self.yearsLayout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()

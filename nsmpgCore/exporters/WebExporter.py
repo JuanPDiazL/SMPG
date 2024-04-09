@@ -39,8 +39,13 @@ def export_to_web_files(destination_path, structured_dataset: Dataset, subFolder
     data_py_to_js(place_stats_dict, data_destination_path, 'placeStats')
     season_stats_dict = structured_dataset.season_stats_to_dict()
     data_py_to_js(season_stats_dict, data_destination_path, 'seasonalStats')
+    # filtered
+    selected_years_place_stats_dict = structured_dataset.place_stats_to_dict('selected')
+    data_py_to_js(selected_years_place_stats_dict, data_destination_path, 'selectedYearsPlaceStats')
+    selected_years_season_stats_dict = structured_dataset.season_stats_to_dict('selected')
+    data_py_to_js(selected_years_season_stats_dict, data_destination_path, 'selectedYearsSeasonalStats')
 
-    options_dict = structured_dataset.options.__dict__
-    data_py_to_js(options_dict, data_destination_path, 'options')
+    # options_dict = structured_dataset.options.__dict__
+    # data_py_to_js(options_dict, data_destination_path, 'options')
     properties_dict = structured_dataset.properties.__dict__
     data_py_to_js(properties_dict, data_destination_path, 'datasetProperties')

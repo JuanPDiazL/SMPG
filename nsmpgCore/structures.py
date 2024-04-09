@@ -2,55 +2,6 @@ from numpy import ndarray
 import numpy as np
 from .commons import *
 
-# options for the computation
-class Options:
-    def __init__(self, climatology_start=None, climatology_end=None,
-                 season_start=None, season_end=None, cross_years=None, selected_years=None,
-                 output_types=None):
-        self.climatology_start: str = climatology_start # year string. ej. '2021'
-        self.climatology_end: str = climatology_end
-
-        self.season_start: str = season_start
-        self.season_end: str = season_end
-        self.cross_years: bool = cross_years
-
-        self.selected_years: list[str] = selected_years
-        self.output_types: list[str] = output_types
-
-    def overwrite(self, options: object):
-        options = options.__dict__
-        # Iterate over keys
-        for key in self.__dict__:
-            # If the value in dict1 is None, replace it with the value from dict2
-            if options[key] is not None and key in options:
-                self.__dict__[key] = options[key]
-
-# properties of the dataset
-class Properties:
-    def __init__(self, properties_dict: dict=None) -> None:
-        self.period_unit_id: str
-        self.period_length: int
-        self.season_quantity: int
-
-        self.place_ids : list[str]
-        self.year_ids: list[str]
-        self.climatology_year_ids: list[str]
-        self.selected_year_ids: list[str]
-        
-        self.sub_season_ids: list[str]
-        self.sub_season_monitoring_ids: list[str]
-        self.sub_season_offset: int
-
-        self.current_season_index: int
-        self.current_season_id: str
-        self.current_season_length: int
-
-        if properties_dict is not None:
-            self.update(properties_dict)
-
-    def update(self, properties: dict):
-        self.__dict__.update(properties)
-
 # stores and processes all the information in the dataset
 # a dataset contains data of places
 class Dataset:
@@ -69,13 +20,12 @@ class Dataset:
                 )
         else: self.options = options
         
+        default_sub_seasons = define_seasonal_dict(self.options.cross_years)
         if self.options.cross_years:
-            default_sub_seasons = define_seasonal_dict(6)
             self.season_shift = (yearly_periods[self.properties.period_unit_id] // 2)
             self.properties.year_ids = get_cross_years(self.properties.year_ids)
             self.properties.current_season_id = get_cross_years([self.properties.current_season_id])
         else:
-            default_sub_seasons = define_seasonal_dict()
             self.season_shift = 0
             self.properties.year_ids = self.properties.year_ids
 
@@ -90,6 +40,7 @@ class Dataset:
             self.properties.current_season_length = yearly_periods[self.properties.period_unit_id]
         self.properties.climatology_year_ids = slice_by_element(self.properties.year_ids, self.options.climatology_start, self.options.climatology_end)
         self.properties.sub_season_ids = default_sub_seasons
+        self.properties.selected_year_ids = self.options.selected_years
         self.properties.sub_season_monitoring_ids = slice_by_element(default_sub_seasons, self.options.season_start, self.options.season_end)
         self.properties.sub_season_offset = default_sub_seasons.index(self.options.season_start)
         self.properties.place_ids = list(dataset.keys())
@@ -104,18 +55,19 @@ class Dataset:
         for place, timeseries in dataset.items():
             self.places[place] = Place(place, timeseries, self)
     
-    def place_stats_to_dict(self):
+    def place_stats_to_dict(self, type='all'):
         place_data_dict = {}
         for place_id, place in self.places.items():
-            place_stats = place.place_stats
+            if type == 'selected': place_stats = place.selected_years_place_stats
+            else: place_stats = place.place_stats
             place_data_dict[place_id] = dict(map(lambda v: (v[0], v[1].tolist()), place_stats.items()))
-
         return place_data_dict
     
-    def season_stats_to_dict(self):
+    def season_stats_to_dict(self, type='all'):
         seasonal_data_dict = {}
         for place_id, place in self.places.items():
-            season_stats = place.seasonal_stats
+            if type =='selected': season_stats = place.selected_years_seasonal_stats
+            else: season_stats = place.seasonal_stats
             seasonal_data_dict[place_id] = dict(map(lambda v: (v, {}), season_stats.keys()))
             for key in season_stats.keys():
                 seasonal_data_dict[place_id][key] = dict(map(lambda v: (v[0], v[1].tolist()), season_stats[key].items()))
@@ -137,24 +89,25 @@ class Place:
         # self.seasons: dict[str, ndarray] = {}
         self.seasons_climatology: dict[str, ndarray] = {}
         self.seasons_monitoring: dict[str, ndarray] = {}
+        self.seasons_monitoring_selected: dict[str, ndarray] = {}
+        self.seasons_monitoring_climatology: dict[str, ndarray] = {}
         for i, data in enumerate(split_seasons):
             # variables for climatology filter
             season_id = parent.properties.year_ids[i]
             # self.seasons[season_id] = data
             self.seasons_monitoring[season_id] = data[parent.season_start_index:parent.season_end_index]
+            if season_id in parent.properties.selected_year_ids:
+                self.seasons_monitoring_selected[season_id] = self.seasons_monitoring[season_id]
             if season_id in self.parent.properties.climatology_year_ids:
+                self.seasons_monitoring_climatology[season_id] = self.seasons_monitoring[season_id]
                 self.seasons_climatology[season_id] = data
-        self.place_stats, self.seasonal_stats = self.get_stats()
+        self.place_stats, self.seasonal_stats, self.selected_years_place_stats, self.selected_years_seasonal_stats = self.get_stats()
 
-    def get_stats(self):
-        seasonal_accumulations = np.cumsum(list(self.seasons_monitoring.values()), axis=1)
-        seasonal_sums = seasonal_accumulations[:, -1]
+    def get_place_stats(self, seasonal_accumulations, seasonal_ensemble, common_stats):
         seasonal_current_sums = seasonal_accumulations[:, self.current_season_monitoring.__len__()-1]
-        seasonal_ensemble = [get_ensemble(self.current_season_monitoring, s) for s in list(self.seasons_monitoring.values())]
         ensemble_sums = np.array([e[-1] for e in seasonal_ensemble])
-
         seasonal_lta = operate_column(seasonal_accumulations, np.average)
-        seasonal_pctls = percentiles_to_values(seasonal_sums, [33, 67])
+        seasonal_pctls = common_stats['climatology_seasonal_pctls']
         ensemble_ltm = operate_column(seasonal_ensemble, np.median)
         ensemble_pctls = percentiles_to_values(ensemble_sums, [33, 67])
         ensemble_pctl_probabilities = np.array([
@@ -162,7 +115,6 @@ class Place:
             np.count_nonzero((ensemble_sums >= seasonal_pctls[0]) & (ensemble_sums < seasonal_pctls[1])) / len(ensemble_sums),
             np.count_nonzero(ensemble_sums >= seasonal_pctls[1]) / len(ensemble_sums),
         ])
-
         place_stats = {
             'Pctls. per Year': percentiles_from_values(seasonal_current_sums),
             'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sums, (3, 6, 11, 21, 31)),
@@ -177,16 +129,32 @@ class Place:
             'Current Season': self.current_season,
             'Current Season Accumulation': np.cumsum(self.current_season_monitoring),
         }
+        return place_stats
+
+    def get_seasonal_stats(self, seasonal_accumulations, seasonal_ensemble):
         seasonal_stats = {
             'Sum': dict(map(lambda v: (v[0], v[1]), zip(self.seasons_monitoring.keys(), seasonal_accumulations))),
-            'Ensemble Sum': dict(map(lambda v: (v[0], get_ensemble(self.current_season_monitoring, v[1])), zip(self.seasons_monitoring.keys(), list(self.seasons_monitoring.values())))),
+            'Ensemble Sum': dict(map(lambda v: (v[0], v[1]), zip(self.seasons_monitoring.keys(), seasonal_ensemble))),
         }
-        return place_stats, seasonal_stats
-    
-    def get_season_stats(self, data):
-        to_compute = {
-            'Sum': np.cumsum(data),
-            'Ensemble Sum': get_ensemble(self.current_season_monitoring, data),
+        return seasonal_stats
+
+    def get_stats(self):
+        seasonal_accumulations = np.cumsum(list(self.seasons_monitoring.values()), axis=1)
+        seasonal_ensemble = [get_ensemble(self.current_season_monitoring, s) for s in list(self.seasons_monitoring.values())]
+
+        climatology_seasonal_accumulations = np.cumsum(list(self.seasons_monitoring_climatology.values()), axis=1)
+        climatology_seasonal_ensemble = [get_ensemble(self.current_season_monitoring, s) for s in list(self.seasons_monitoring_climatology.values())]
+        climatology_seasonal_sums = climatology_seasonal_accumulations[:, -1]
+        climatology_seasonal_pctls = percentiles_to_values(climatology_seasonal_sums, [33, 67])
+
+        selected_years_seasonal_accumulations = np.cumsum(list(self.seasons_monitoring_selected.values()), axis=1)
+        selected_years_seasonal_ensemble = [get_ensemble(self.current_season_monitoring, s) for s in list(self.seasons_monitoring_selected.values())]
+
+        common_stats = {
+            'climatology_seasonal_pctls': climatology_seasonal_pctls,
         }
-        return to_compute
-    
+        return (self.get_place_stats(climatology_seasonal_accumulations, climatology_seasonal_ensemble, common_stats),
+                self.get_seasonal_stats(seasonal_accumulations, seasonal_ensemble),
+                self.get_place_stats(selected_years_seasonal_accumulations, selected_years_seasonal_ensemble, common_stats),
+                self.get_seasonal_stats(selected_years_seasonal_accumulations, selected_years_seasonal_ensemble),
+                )
