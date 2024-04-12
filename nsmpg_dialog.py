@@ -29,7 +29,7 @@ import time
 
 # from qgis.PyQt import uic, QtWidgets
 from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog, QFileDialog, QGroupBox, QFrame, QGridLayout, QPushButton, QMessageBox, QComboBox, QLineEdit, QCheckBox
+from PyQt5.QtWidgets import *
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset, Options, Properties
@@ -71,11 +71,16 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.crossYearsCheckBox: QCheckBox
         self.seasonStartComboBox: QComboBox
         self.seasonEndComboBox: QComboBox
+        self.customYearsRadioButton: QRadioButton
+        self.similarYearsRadioButton: QRadioButton
+        self.similarYearsComboBox: QComboBox
         self.selectYearsButton: QPushButton
 
         self.datasetInputLineEdit.editingFinished.connect(self.path_changed_event)
 
         self.crossYearsCheckBox.stateChanged.connect(self.cross_years_cb_changed_event)
+        self.customYearsRadioButton.toggled.connect(self.year_selection_rb_event)
+        self.similarYearsRadioButton.toggled.connect(self.year_selection_rb_event)
         self.selectYearsButton.clicked.connect(self.select_years_btn_event)
 
         self.loadFileButton.clicked.connect(self.load_file_btn_event)
@@ -106,12 +111,24 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
         self.importParametersLineEdit.setEnabled(True)
         self.importParametersButton.setEnabled(True)
+        self.customYearsRadioButton.setEnabled(True)
+        self.similarYearsRadioButton.setEnabled(True)
         self.crossYearsCheckBox.setEnabled(True)
-        self.selectYearsButton.setEnabled(True)
         self.processButton.setEnabled(True)
+
+
+        if self.customYearsRadioButton.isChecked():
+            self.selectYearsButton.setEnabled(True)
+            self.similarYearsComboBox.setEnabled(False)
         self.year_selection_dialog.updateYearsList(year_ids)
         self.year_selection_dialog.selected_years = options.selected_years
         self.year_selection_dialog.update_selection()
+        if self.similarYearsRadioButton.isChecked():
+            self.similarYearsComboBox.setEnabled(True)
+            self.selectYearsButton.setEnabled(False)
+        self.similarYearsComboBox.clear()
+        self.similarYearsComboBox.addItems([str(y) for y in range(1, self.dataset_properties.season_quantity+1)])
+        self.similarYearsComboBox.setCurrentIndex(0)
 
     # function that reads the dataset from a file.
     def load_file_btn_event(self): 
@@ -134,9 +151,8 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     # function to allow the computation of the required data, such as accumulation, ensemble, stats, percentiles, etc
     def process_btn_event(self):
         # with cProfile.Profile() as profile:
-
         renderTime = time.perf_counter()
-        default_year_ids = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
+        # default_year_ids = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
         # computation with parameters given from GUI
         options = Options(
             climatology_start=self.climatologyStartComboBox.currentText(),
@@ -144,7 +160,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             season_start=self.seasonStartComboBox.currentText(),
             season_end=self.seasonEndComboBox.currentText(),
             cross_years=self.crossYearsCheckBox.isChecked(),
-            selected_years=self.year_selection_dialog.selected_years,
+            selected_years=self.year_selection_dialog.selected_years if self.customYearsRadioButton.isChecked() else self.similarYearsComboBox.currentText(),
         )
         self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options)
         
@@ -176,6 +192,14 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             selected_years=year_list,
             )
         self.update_fields(options)
+
+    def year_selection_rb_event(self):
+        if self.customYearsRadioButton.isChecked():
+            self.selectYearsButton.setEnabled(True)
+            self.similarYearsComboBox.setEnabled(False)
+        elif self.similarYearsRadioButton.isChecked():
+            self.similarYearsComboBox.setEnabled(True)
+            self.selectYearsButton.setEnabled(False)
 
     def select_years_btn_event(self):
         self.year_selection_dialog.show()

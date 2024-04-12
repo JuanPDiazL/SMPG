@@ -102,6 +102,29 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QRadioButton" name="customYearsRadioButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Custom Selection</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QPushButton" name="selectYearsButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Select Years</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="similarYearsComboBox">
         <property name="enabled">
@@ -117,25 +140,8 @@
         <property name="text">
          <string>Similar to Current Season</string>
         </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QRadioButton" name="customYearsRadioButton">
-        <property name="enabled">
+        <property name="checked">
          <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Custom Selection</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QPushButton" name="selectYearsButton">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Select Years</string>
         </property>
        </widget>
       </item>
@@ -290,6 +296,9 @@
    </item>
    <item row="3" column="0" colspan="3">
     <widget class="QPushButton" name="processButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Process</string>
      </property>

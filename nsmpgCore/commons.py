@@ -1,7 +1,7 @@
 import re
 import numpy as np
 import scipy.stats as sp
-# from typing import Tuple, Union
+from typing import Tuple, Union
 
 # Dictionary that correlates the period name
 # with the number of periods that fit in a year
@@ -21,7 +21,7 @@ class Properties:
         self.place_ids : list[str]
         self.year_ids: list[str]
         self.climatology_year_ids: list[str]
-        self.selected_year_ids: list[str]
+        self.selected_years: Union(list[str], str)
         
         self.sub_season_ids: list[str]
         self.sub_season_monitoring_ids: list[str]
@@ -58,7 +58,7 @@ class Options:
         self.season_end: str = season_end
         self.cross_years: bool = cross_years
 
-        self.selected_years: list[str] = selected_years
+        self.selected_years: Union(list[str], str) = selected_years
         self.output_types: list[str] = output_types
 
     def overwrite(self, options: object):
@@ -197,3 +197,22 @@ def slice_by_element(_list: list, start, end=None) -> list:
     sliced_list = _list[start_index:end_index]
 
     return sliced_list
+
+def get_similar_years(current_year: np.ndarray, year_list: list[np.ndarray], year_ids: list[str]) -> list[str]:
+    year_list = np.array(year_list)[:,:current_year.size]
+    current_year_accumulation = np.cumsum(current_year)
+    accumulations_list = np.cumsum(year_list, axis=1)
+    differences = {
+        'difference_each': np.sum((year_list - current_year) ** 2, axis=1),
+        # 'difference_accumulations': np.sum((accumulations_list - current_year_accumulation) ** 2, axis=1),
+        # 'difference_total': (accumulations_list[:,-1] - current_year_accumulation[-1]) ** 2,
+        # 'inverse pearson correlation': [1 - (sp.pearsonr(arr, current_year).statistic) ** 2 for arr in year_list],
+    }
+    # for k,v in differences.items():
+    #     sort_indexes = np.argsort(v)
+    #     print(f'{k}: {v}')
+    #     print(f'{k} indexes: {sort_indexes}')
+    #     print(f'{k} years ranked: {[year_ids[i] for i in sort_indexes]}')
+    ranked_indexes = np.argsort(differences['difference_each'])
+    ranked_year_ids = [year_ids[i] for i in ranked_indexes]
+    return ranked_year_ids

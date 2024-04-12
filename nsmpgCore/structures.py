@@ -40,7 +40,7 @@ class Dataset:
             self.properties.current_season_length = yearly_periods[self.properties.period_unit_id]
         self.properties.climatology_year_ids = slice_by_element(self.properties.year_ids, self.options.climatology_start, self.options.climatology_end)
         self.properties.sub_season_ids = default_sub_seasons
-        self.properties.selected_year_ids = self.options.selected_years
+        self.properties.selected_years = self.options.selected_years
         self.properties.sub_season_monitoring_ids = slice_by_element(default_sub_seasons, self.options.season_start, self.options.season_end)
         self.properties.sub_season_offset = default_sub_seasons.index(self.options.season_start)
         self.properties.place_ids = list(dataset.keys())
@@ -85,6 +85,12 @@ class Place:
         self.current_season_monitoring = self.current_season[parent.season_start_index:parent.current_season_trim_index]
         # compensation for slice out of bounds
         self.current_season_monitoring = self.current_season_monitoring if self.current_season_monitoring.__len__() != 0 else np.array([0])
+        if isinstance(parent.properties.selected_years, str):
+            self.selected_years = get_similar_years(self.current_season, 
+                                            split_seasons, 
+                                            parent.properties.year_ids)[:int(parent.properties.selected_years)]
+        if isinstance(parent.properties.selected_years, list):
+            self.selected_years = parent.properties.selected_years
         # build seasons
         # self.seasons: dict[str, ndarray] = {}
         self.seasons_climatology: dict[str, ndarray] = {}
@@ -96,7 +102,7 @@ class Place:
             season_id = parent.properties.year_ids[i]
             # self.seasons[season_id] = data
             self.seasons_monitoring[season_id] = data[parent.season_start_index:parent.season_end_index]
-            if season_id in parent.properties.selected_year_ids:
+            if season_id in self.selected_years:
                 self.seasons_monitoring_selected[season_id] = self.seasons_monitoring[season_id]
             if season_id in self.parent.properties.climatology_year_ids:
                 self.seasons_monitoring_climatology[season_id] = self.seasons_monitoring[season_id]
@@ -131,10 +137,10 @@ class Place:
         }
         return place_stats
 
-    def get_seasonal_stats(self, seasonal_accumulations, seasonal_ensemble):
+    def get_seasonal_stats(self, seasonal_accumulations, seasonal_ensemble, year_ids):
         seasonal_stats = {
-            'Sum': dict(map(lambda v: (v[0], v[1]), zip(self.seasons_monitoring.keys(), seasonal_accumulations))),
-            'Ensemble Sum': dict(map(lambda v: (v[0], v[1]), zip(self.seasons_monitoring.keys(), seasonal_ensemble))),
+            'Sum': dict(map(lambda v: (v[0], v[1]), zip(year_ids, seasonal_accumulations))),
+            'Ensemble Sum': dict(map(lambda v: (v[0], v[1]), zip(year_ids, seasonal_ensemble))),
         }
         return seasonal_stats
 
@@ -154,7 +160,7 @@ class Place:
             'climatology_seasonal_pctls': climatology_seasonal_pctls,
         }
         return (self.get_place_stats(climatology_seasonal_accumulations, climatology_seasonal_ensemble, common_stats),
-                self.get_seasonal_stats(seasonal_accumulations, seasonal_ensemble),
+                self.get_seasonal_stats(seasonal_accumulations, seasonal_ensemble, self.seasons_monitoring_climatology.keys()),
                 self.get_place_stats(selected_years_seasonal_accumulations, selected_years_seasonal_ensemble, common_stats),
-                self.get_seasonal_stats(selected_years_seasonal_accumulations, selected_years_seasonal_ensemble),
+                self.get_seasonal_stats(selected_years_seasonal_accumulations, selected_years_seasonal_ensemble, self.seasons_monitoring_selected.keys()),
                 )
