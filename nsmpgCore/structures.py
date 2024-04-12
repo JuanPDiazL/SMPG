@@ -160,7 +160,7 @@ class Place:
             'climatology_seasonal_pctls': climatology_seasonal_pctls,
         }
         return (self.get_place_stats(climatology_seasonal_accumulations, climatology_seasonal_ensemble, common_stats),
-                self.get_seasonal_stats(seasonal_accumulations, seasonal_ensemble, self.seasons_monitoring_climatology.keys()),
+                self.get_seasonal_stats(seasonal_accumulations, seasonal_ensemble, self.seasons_monitoring.keys()),
                 self.get_place_stats(selected_years_seasonal_accumulations, selected_years_seasonal_ensemble, common_stats),
                 self.get_seasonal_stats(selected_years_seasonal_accumulations, selected_years_seasonal_ensemble, self.seasons_monitoring_selected.keys()),
                 )

@@ -63,10 +63,10 @@ const defaultOptions = {
                 position: 'outer-right',
             },
             tick: {
-                // rotate: -35,
-                autorotate: true,
+                rotate: -35,
+                // autorotate: true,
                 culling: { max: '13' },
-                multiline: false,
+                // multiline: false,
             },
             padding: {
                 // left: 1,
@@ -217,6 +217,7 @@ class AccumulationsBillboardChart {
             type: 'line',
             types: this.chartTypes,
             colors: chartColors,
+            unload: true,
         });
     }
 }
@@ -269,6 +270,7 @@ class CurrentBillboardChart {
             xs: genxs(Object.keys(jsonData), this.columnNames.length, this.customxs),
             types: this.chartTypes,
             colors: chartColors,
+            unload: true,
         });
     }
 }
@@ -347,6 +349,7 @@ class EnsembleBillboardChart {
             xs: genxs(Object.keys(jsonData), this.columnNames.length, this.customxs),
             types: this.chartTypes,
             colors: chartColors,
+            unload: true,
         });
     }
 }
@@ -427,6 +430,7 @@ class AccumulationsBillboardCurrentChart {
             xs: genxs(Object.keys(jsonData), this.columnNames.length, this.customxs),
             types: this.chartTypes,
             colors: chartColors,
+            unload: true,
         });
     }
 }
