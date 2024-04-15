@@ -424,7 +424,6 @@ class AccumulationsBillboardCurrentChart {
             'D3: 6 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][1], this.columnNames.length),
             'D4: 3 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][0], this.columnNames.length),
         };
-        console.log(jsonData);
         this.plot.load({
             json: jsonData,
             xs: genxs(Object.keys(jsonData), this.columnNames.length, this.customxs),
