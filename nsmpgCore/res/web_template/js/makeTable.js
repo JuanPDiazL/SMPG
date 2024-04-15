@@ -5,9 +5,9 @@ function getDataAssessmentCD(placeStats, selectedYearsStats, place) {
     const ltaUptoCurrentSeason = data['LTA'][data['Current Season Accumulation'].length-1]
     const selectedLtaUptoCurrentSeason = selectedData['LTA'][data['Current Season Accumulation'].length-1]
     let tableData = [
-        ['Total C.Dk.', currentSeason],
-        ['LTA C.Dk.', selectedLtaUptoCurrentSeason, ltaUptoCurrentSeason],
-        ['C.Dk. LTA Pct', (currentSeason/selectedLtaUptoCurrentSeason) * 100, (currentSeason/ltaUptoCurrentSeason) * 100],
+        ['Total C. Dk.', currentSeason, currentSeason],
+        ['LTA C. Dk.', selectedLtaUptoCurrentSeason, ltaUptoCurrentSeason],
+        ['C. Dk./LTA Pct.', (currentSeason/selectedLtaUptoCurrentSeason) * 100, (currentSeason/ltaUptoCurrentSeason) * 100],
     ];
     return tableData;
 }
@@ -31,7 +31,7 @@ function getDataProjectionEoS(placeStats, selectedYearsStats, place) {
     let tableData = [
         ['E. LTM', selectedEnsembleLTM, ensembleLTM],
         ['LTA', selectedLta, lta],
-        ['E. LTM LTA Pct.', (selectedEnsembleLTM/selectedLta) * 100, (ensembleLTM/lta) * 100],
+        ['E. LTM/LTA Pct.', (selectedEnsembleLTM/selectedLta) * 100, (ensembleLTM/lta) * 100],
     ];
     return tableData;
 }
@@ -44,6 +44,37 @@ function getDataProbabilityEoS(placeStats, selectedYearsStats, place) {
         ['Be. Normal', selectedData['E. Probabilities'][0] * 100, data['E. Probabilities'][0] * 100],
     ];
     return tableData;
+}
+
+class statsTable {
+    constructor(container, title, headers=['Sel. Yrs.', 'Clim.']) {
+        this.container = container;
+        this.title = title;
+
+        this.table = document.querySelector(container).appendChild(document.createElement('table'));
+        this.table.className = 'chart-table w3-table w3-bordered w3-border';
+        this.table.innerHTML = `
+        <thead>
+            <tr><th colspan=3>${this.title}</th></tr>
+            <tr><td></td><td>${headers[0]}</td><td>${headers[1]}</td></tr>
+        </thead>
+        `;
+        this.tableBody = this.table.appendChild(document.createElement('tbody'));
+        document.querySelector(container).appendChild(this.table);
+    }
+
+    update(tableData) {
+        this.tableBody.innerHTML = '';
+        for (let row of tableData) {
+            let tr = this.tableBody.appendChild(document.createElement('tr'));
+            if (row[1] != row[2]) {
+                tr.innerHTML = `<td>${row[0]}</td><td>${(row[1].toFixed(1))}</td><td>${row[2].toFixed(1)}</td>`;
+            }
+            else {
+                tr.innerHTML = `<td>${row[0]}</td><td class="w3-center" colspan=2>${row[1].toFixed(1)}</td>`;
+            }
+        }
+    }
 }
 
 function makeTable(container, selectedData, title) {
