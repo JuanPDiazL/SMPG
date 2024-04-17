@@ -35,6 +35,7 @@ from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset, Options, Properties
 from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps, get_cross_years, get_properties_validated_year_list, yearly_periods
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
+from .nsmpgCore.exporters.CSVExporter import export_to_csv_files
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -167,6 +168,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         # output files
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
         export_to_web_files(destination_path, self.structured_dataset)
+        export_to_csv_files(destination_path, self.structured_dataset)
         renderFinishTime = time.perf_counter() - renderTime
         QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}').exec()
 

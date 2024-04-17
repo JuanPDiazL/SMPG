@@ -85,10 +85,11 @@ class Place:
         self.current_season_monitoring = self.current_season[parent.season_start_index:parent.current_season_trim_index]
         # compensation for slice out of bounds
         self.current_season_monitoring = self.current_season_monitoring if self.current_season_monitoring.__len__() != 0 else np.array([0])
-        if isinstance(parent.properties.selected_years, str):
-            self.selected_years = get_similar_years(self.current_season, 
+        self.similar_seasons = get_similar_years(self.current_season, 
                                             split_seasons, 
-                                            parent.properties.year_ids)[:int(parent.properties.selected_years)]
+                                            parent.properties.year_ids)
+        if isinstance(parent.properties.selected_years, str):
+            self.selected_years = self.similar_seasons[:int(parent.properties.selected_years)]
         if isinstance(parent.properties.selected_years, list):
             self.selected_years = parent.properties.selected_years
         # build seasons
@@ -110,7 +111,10 @@ class Place:
         self.place_stats, self.seasonal_stats, self.selected_years_place_stats, self.selected_years_seasonal_stats = self.get_stats()
 
     def get_place_stats(self, seasonal_accumulations, seasonal_ensemble, common_stats):
-        seasonal_current_sums = seasonal_accumulations[:, self.current_season_monitoring.__len__()-1]
+        current_accumulation_mon = np.cumsum(self.current_season_monitoring)
+        current_index = self.current_season_monitoring.__len__()-1
+        seasonal_current_sums = seasonal_accumulations[:, current_index]
+        seasonal_sums = np.array([e[-1] for e in seasonal_accumulations])
         ensemble_sums = np.array([e[-1] for e in seasonal_ensemble])
         seasonal_lta = operate_column(seasonal_accumulations, np.average)
         seasonal_pctls = common_stats['climatology_seasonal_pctls']
@@ -127,13 +131,16 @@ class Place:
             'Pctls.': seasonal_pctls,
             'LTM': operate_column(seasonal_accumulations, np.median),
             'LTA': seasonal_lta,
+            'C. Dk./LTA': current_accumulation_mon/seasonal_lta[:current_index+1],
             'Avg.': operate_column(list(self.seasons_climatology.values()), np.average),
             'E. LTM': ensemble_ltm,
+            'E. LTM/LTA': ensemble_ltm/seasonal_lta,
+            'E. LTM Pctl.': percentiles_from_values(seasonal_sums, [ensemble_ltm[-1]]),
             'E. Pctls.': ensemble_pctls,
             'E. Probabilities': ensemble_pctl_probabilities,
             'St. Dev.': operate_column(seasonal_accumulations, np.std),
             'Current Season': self.current_season,
-            'Current Season Accumulation': np.cumsum(self.current_season_monitoring),
+            'Current Season Accumulation': current_accumulation_mon,
         }
         return place_stats
 
