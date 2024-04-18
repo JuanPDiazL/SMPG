@@ -41,7 +41,7 @@ class Properties:
 class Options:
     def __init__(self, climatology_start=None, climatology_end=None,
                  season_start=None, season_end=None, cross_years=None, selected_years=None,
-                 output_types=None, dataset_properties:Properties=None):
+                 is_forecast=None, output_types=None, dataset_properties:Properties=None):
         # constructs default options from the properties of the dataset
         if dataset_properties is not None:
             self.climatology_start=dataset_properties.year_ids[0]
@@ -50,6 +50,7 @@ class Options:
             self.season_end='Dec-3'
             self.selected_years=dataset_properties.year_ids
             self.cross_years=False
+            self.is_forecast=False
             return
         self.climatology_start: str = climatology_start
         self.climatology_end: str = climatology_end
@@ -59,6 +60,7 @@ class Options:
         self.cross_years: bool = cross_years
 
         self.selected_years: Union(list[str], str) = selected_years
+        self.is_forecast: bool = is_forecast
         self.output_types: list[str] = output_types
 
     def overwrite(self, options: object):

@@ -63,19 +63,26 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.yearSelectionGroup: QGroupBox
 
         self.loadFileButton: QPushButton
-        self.importParametersButton: QPushButton
-        self.processButton: QPushButton
         self.datasetInputLineEdit: QLineEdit
+        self.importParametersButton: QPushButton
         self.importParametersLineEdit: QLineEdit
+        
         self.climatologyStartComboBox: QComboBox
         self.climatologyEndComboBox: QComboBox
+
         self.crossYearsCheckBox: QCheckBox
         self.seasonStartComboBox: QComboBox
         self.seasonEndComboBox: QComboBox
+
         self.customYearsRadioButton: QRadioButton
         self.similarYearsRadioButton: QRadioButton
         self.similarYearsComboBox: QComboBox
         self.selectYearsButton: QPushButton
+
+        self.observedDataRadioButton: QRadioButton
+        self.forecastRadioButton: QRadioButton
+
+        self.processButton: QPushButton
 
         self.datasetInputLineEdit.editingFinished.connect(self.path_changed_event)
 
@@ -131,6 +138,11 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.similarYearsComboBox.addItems([str(y) for y in range(1, self.dataset_properties.season_quantity+1)])
         self.similarYearsComboBox.setCurrentIndex(0)
 
+        self.observedDataRadioButton.setEnabled(True)
+        self.forecastRadioButton.setEnabled(True)
+        if options.is_forecast: self.forecastRadioButton.setChecked(True)
+        else: self.observedDataRadioButton.setChecked(True)
+
     # function that reads the dataset from a file.
     def load_file_btn_event(self): 
         # path reading
@@ -162,6 +174,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             season_end=self.seasonEndComboBox.currentText(),
             cross_years=self.crossYearsCheckBox.isChecked(),
             selected_years=self.year_selection_dialog.selected_years if self.customYearsRadioButton.isChecked() else self.similarYearsComboBox.currentText(),
+            is_forecast=self.forecastRadioButton.isChecked(),
         )
         self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options)
         
@@ -192,6 +205,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             season_end=sub_season_ids[-1],
             cross_years=self.crossYearsCheckBox.isChecked(),
             selected_years=year_list,
+            is_forecast=self.forecastRadioButton.isChecked(),
             )
         self.update_fields(options)
 

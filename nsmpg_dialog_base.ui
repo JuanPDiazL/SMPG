@@ -15,22 +15,31 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="0">
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="analysisGroup">
      <property name="title">
-      <string>GroupBox</string>
+      <string>Analysis preferences</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_9">
       <item row="0" column="0">
-       <widget class="QRadioButton" name="radioButton_3">
+       <widget class="QRadioButton" name="observedDataRadioButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
-         <string>RadioButton</string>
+         <string>Observed Data</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QRadioButton" name="radioButton_4">
+       <widget class="QRadioButton" name="forecastRadioButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
-         <string>RadioButton</string>
+         <string>Forecast</string>
         </property>
        </widget>
       </item>
@@ -244,13 +253,6 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QComboBox" name="climatologyEndComboBox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="climstartlabel">
         <property name="enabled">
@@ -258,6 +260,13 @@
         </property>
         <property name="text">
          <string>Start</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QComboBox" name="climatologyEndComboBox">
+        <property name="enabled">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
