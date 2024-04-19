@@ -221,12 +221,10 @@ def get_similar_years(current_year: np.ndarray, year_list: list[np.ndarray], yea
     year_list = np.array(year_list)[:,:current_year.size]
     current_year_accumulation = np.cumsum(current_year)
     accumulations_list = np.cumsum(year_list, axis=1)
-    differences = {
-        'Each Value': np.sum((year_list - current_year) ** 2, axis=1),
-        'Accumulation': np.sum((accumulations_list - current_year_accumulation) ** 2, axis=1),
-        'Total': (accumulations_list[:,-1] - current_year_accumulation[-1]) ** 2,
-        'Pearson Correlation': [1 - (sp.pearsonr(arr, current_year).statistic) ** 2 for arr in year_list],
-    }
-    ranked_indexes = np.argsort(differences[method])
+    if method == 'Each Value': rankings = np.sum((year_list - current_year) ** 2, axis=1)
+    if method == 'Accumulation': rankings = np.sum((accumulations_list - current_year_accumulation) ** 2, axis=1)
+    if method == 'Total': rankings = (accumulations_list[:,-1] - current_year_accumulation[-1]) ** 2
+    if method == 'Pearson Correlation': rankings = [1 - (sp.pearsonr(arr, current_year).statistic) ** 2 for arr in year_list]
+    ranked_indexes = np.argsort(rankings)
     ranked_year_ids = [year_ids[i] for i in ranked_indexes]
     return ranked_year_ids
