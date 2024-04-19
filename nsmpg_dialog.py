@@ -43,6 +43,8 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'nsmpg_dialog_base.ui'))
 YEAR_SELECTION_DIALOG_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'year_selection_dialog.ui'))
+ABOUT_DIALOG_CLASS,_ = uic.loadUiType(os.path.join(
+    os.path.dirname(__file__), 'about_dialog.ui'))
 
 
 class NSMPGDialog(QDialog, FORM_CLASS):
@@ -58,6 +60,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
         ### My code starting from here
         self.year_selection_dialog = YearSelectionDialog(self)
+        self.about_dialog = AboutDialog(self)
 
         self.climatologyGroup: QGroupBox
         self.monitoringGroup: QGroupBox
@@ -88,6 +91,8 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.exportStatsCheckBox: QCheckBox
         self.exportParametersCheckBox: QCheckBox
 
+        self.aboutButton: QPushButton
+
         self.processButton: QPushButton
 
         self.crossYearsCheckBox.stateChanged.connect(self.cross_years_cb_changed_event)
@@ -98,6 +103,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.loadFileButton.clicked.connect(self.load_file_btn_event)
         self.importParametersButton.clicked.connect(self.import_parameters_btn_event)
         self.processButton.clicked.connect(self.process_btn_event)
+        self.aboutButton.clicked.connect(self.about_btn_event)
 
     def update_fields(self, options: Options):
         self.crossYearsCheckBox.setChecked(options.cross_years)
@@ -264,6 +270,9 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def select_years_btn_event(self):
         self.year_selection_dialog.show()
 
+    def about_btn_event(self):
+        self.about_dialog.show()
+
 class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
     def __init__(self, parent=None):
         super(YearSelectionDialog, self).__init__(parent)
@@ -333,3 +342,8 @@ class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
             child = self.yearsLayout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
+
+class AboutDialog(QDialog, ABOUT_DIALOG_CLASS):
+    def __init__(self, parent=None):
+        super(AboutDialog, self).__init__(parent)
+        self.setupUi(self)
