@@ -10,15 +10,7 @@ class Dataset:
         self.timestamps = col_names
         
         self.properties = Properties(properties_dict=parse_timestamps(self.timestamps))
-        if options is None:
-            self.options = Options( # default options
-                climatology_start=self.properties.year_ids[0],
-                climatology_end=self.properties.year_ids[-1],
-                season_start='Jan-1',
-                season_end='Dec-3',
-                cross_years=False
-                )
-        else: self.options = options
+        self.options = options
         
         default_sub_seasons = define_seasonal_dict(self.options.cross_years)
         if self.options.cross_years:
@@ -48,10 +40,7 @@ class Dataset:
         self.season_start_index = default_sub_seasons.index(self.options.season_start)
         self.season_end_index = default_sub_seasons.index(self.options.season_end)+1
         self.current_season_trim_index = min(self.properties.current_season_length, self.season_end_index) - options.is_forecast
-        print(f'current season length {self.properties.current_season_length}')
-        print(f'current season trim index {self.current_season_trim_index}')
         
-        # print(f'{self.properties.__dict__}\n{self.split_quantity}\n{self.climatology_end_index}\n')
 
         self.places: dict[str, Place] = {}
         for place, timeseries in dataset.items():
@@ -95,7 +84,8 @@ class Place:
         
         self.similar_seasons = get_similar_years(self.current_season, 
                                             split_seasons, 
-                                            parent.properties.year_ids)
+                                            parent.properties.year_ids,
+                                            parent.options.comparison_method)
         if isinstance(parent.properties.selected_years, str):
             self.selected_years = self.similar_seasons[:int(parent.properties.selected_years)]
         if isinstance(parent.properties.selected_years, list):

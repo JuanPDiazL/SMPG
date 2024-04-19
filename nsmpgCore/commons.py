@@ -41,7 +41,8 @@ class Properties:
 class Options:
     def __init__(self, climatology_start=None, climatology_end=None,
                  season_start=None, season_end=None, cross_years=None, selected_years=None,
-                 is_forecast=None, output_types=None, dataset_properties:Properties=None):
+                 is_forecast=None, comparison_method=None, output_web=None, 
+                 output_stats=None, output_parameters=None, dataset_properties:Properties=None):
         # constructs default options from the properties of the dataset
         if dataset_properties is not None:
             self.climatology_start=dataset_properties.year_ids[0]
@@ -51,6 +52,10 @@ class Options:
             self.selected_years=dataset_properties.year_ids
             self.cross_years=False
             self.is_forecast=False
+            self.comparison_method = 'Accumulation'
+            self.output_web: bool = True
+            self.output_stats: bool = True
+            self.output_parameters: bool = False
             return
         self.climatology_start: str = climatology_start
         self.climatology_end: str = climatology_end
@@ -61,10 +66,15 @@ class Options:
 
         self.selected_years: Union(list[str], str) = selected_years
         self.is_forecast: bool = is_forecast
-        self.output_types: list[str] = output_types
+        self.comparison_method: str = comparison_method
 
-    def overwrite(self, options: object):
-        options = options.__dict__
+        self.output_web: bool = output_web
+        self.output_stats: bool = output_stats
+        self.output_parameters: bool = output_parameters
+
+    def overwrite(self, options):
+        if not isinstance(options, dict):
+            options = options.__dict__
         # Iterate over keys
         for key in self.__dict__:
             # If the value in dict1 is None, replace it with the value from dict2
@@ -200,21 +210,23 @@ def slice_by_element(_list: list, start, end=None) -> list:
 
     return sliced_list
 
-def get_similar_years(current_year: np.ndarray, year_list: list[np.ndarray], year_ids: list[str]) -> list[str]:
+comparison_methods_list = [
+    "Each Value",
+    "Accumulation",
+    "Total",
+    "Pearson Correlation",
+]
+
+def get_similar_years(current_year: np.ndarray, year_list: list[np.ndarray], year_ids: list[str], method='Accumulation') -> list[str]:
     year_list = np.array(year_list)[:,:current_year.size]
     current_year_accumulation = np.cumsum(current_year)
     accumulations_list = np.cumsum(year_list, axis=1)
     differences = {
-        'difference_each': np.sum((year_list - current_year) ** 2, axis=1),
-        # 'difference_accumulations': np.sum((accumulations_list - current_year_accumulation) ** 2, axis=1),
-        # 'difference_total': (accumulations_list[:,-1] - current_year_accumulation[-1]) ** 2,
-        # 'inverse pearson correlation': [1 - (sp.pearsonr(arr, current_year).statistic) ** 2 for arr in year_list],
+        'Each Value': np.sum((year_list - current_year) ** 2, axis=1),
+        'Accumulation': np.sum((accumulations_list - current_year_accumulation) ** 2, axis=1),
+        'Total': (accumulations_list[:,-1] - current_year_accumulation[-1]) ** 2,
+        'Pearson Correlation': [1 - (sp.pearsonr(arr, current_year).statistic) ** 2 for arr in year_list],
     }
-    # for k,v in differences.items():
-    #     sort_indexes = np.argsort(v)
-    #     print(f'{k}: {v}')
-    #     print(f'{k} indexes: {sort_indexes}')
-    #     print(f'{k} years ranked: {[year_ids[i] for i in sort_indexes]}')
-    ranked_indexes = np.argsort(differences['difference_each'])
+    ranked_indexes = np.argsort(differences[method])
     ranked_year_ids = [year_ids[i] for i in ranked_indexes]
     return ranked_year_ids

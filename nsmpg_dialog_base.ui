@@ -80,6 +80,9 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
         <property name="placeholderText">
          <string>Select a computation parameters file.</string>
         </property>
@@ -104,14 +107,7 @@
       <string>Year Selection</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_8">
-      <item row="1" column="0">
-       <widget class="QLabel" name="simyrlabel">
-        <property name="text">
-         <string>N. of Similar Years</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="2">
+      <item row="3" column="0" colspan="2">
        <widget class="QRadioButton" name="customYearsRadioButton">
         <property name="enabled">
          <bool>false</bool>
@@ -124,20 +120,17 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QPushButton" name="selectYearsButton">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Select Years</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="similarYearsComboBox">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="simyrlabel">
+        <property name="text">
+         <string>N. of Similar Years</string>
         </property>
        </widget>
       </item>
@@ -154,26 +147,46 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="QPushButton" name="selectYearsButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Select Years</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="compmtdlabel">
+        <property name="text">
+         <string>Comparison Method</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="comparisonMethodComboBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="minimumContentsLength">
+         <number>12</number>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
    <item row="2" column="2">
     <widget class="QGroupBox" name="groupBox_4">
      <property name="title">
-      <string>GroupBox</string>
+      <string>Information</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_11">
       <item row="0" column="0">
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="aboutButton">
         <property name="text">
-         <string>PushButton</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="pushButton_3">
-        <property name="text">
-         <string>PushButton</string>
+         <string>About</string>
         </property>
        </widget>
       </item>
@@ -274,29 +287,44 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QGroupBox" name="groupBox_3">
+    <widget class="QGroupBox" name="OutputGroupBox">
      <property name="title">
-      <string>GroupBox</string>
+      <string>Output Preferences</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_10">
       <item row="1" column="0">
-       <widget class="QCheckBox" name="checkBox_2">
+       <widget class="QCheckBox" name="exportStatsCheckBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
-         <string>CheckBox</string>
+         <string>Export Statistics</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="exportWebCheckBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
-         <string>CheckBox</string>
+         <string>Export Web Report</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QCheckBox" name="checkBox_3">
+       <widget class="QCheckBox" name="exportParametersCheckBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
-         <string>CheckBox</string>
+         <string>Export Current Parameters</string>
         </property>
        </widget>
       </item>

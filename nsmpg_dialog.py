@@ -24,6 +24,7 @@
 
 import os
 import time
+import json
 # import cProfile
 # import pstats
 
@@ -33,7 +34,7 @@ from PyQt5.QtWidgets import *
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset, Options, Properties
-from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps, get_cross_years, get_properties_validated_year_list, yearly_periods
+from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps, get_cross_years, get_properties_validated_year_list, yearly_periods, comparison_methods_list
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
 from .nsmpgCore.exporters.CSVExporter import export_to_csv_files
 
@@ -77,14 +78,17 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.customYearsRadioButton: QRadioButton
         self.similarYearsRadioButton: QRadioButton
         self.similarYearsComboBox: QComboBox
+        self.comparisonMethodComboBox: QComboBox
         self.selectYearsButton: QPushButton
 
         self.observedDataRadioButton: QRadioButton
         self.forecastRadioButton: QRadioButton
 
-        self.processButton: QPushButton
+        self.exportWebCheckBox: QCheckBox
+        self.exportStatsCheckBox: QCheckBox
+        self.exportParametersCheckBox: QCheckBox
 
-        self.datasetInputLineEdit.editingFinished.connect(self.path_changed_event)
+        self.processButton: QPushButton
 
         self.crossYearsCheckBox.stateChanged.connect(self.cross_years_cb_changed_event)
         self.customYearsRadioButton.toggled.connect(self.year_selection_rb_event)
@@ -92,6 +96,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.selectYearsButton.clicked.connect(self.select_years_btn_event)
 
         self.loadFileButton.clicked.connect(self.load_file_btn_event)
+        self.importParametersButton.clicked.connect(self.import_parameters_btn_event)
         self.processButton.clicked.connect(self.process_btn_event)
 
     def update_fields(self, options: Options):
@@ -124,24 +129,39 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.crossYearsCheckBox.setEnabled(True)
         self.processButton.setEnabled(True)
 
-
-        if self.customYearsRadioButton.isChecked():
+        if isinstance(options.selected_years, list):
+            self.customYearsRadioButton.setChecked(True)
             self.selectYearsButton.setEnabled(True)
             self.similarYearsComboBox.setEnabled(False)
+            self.comparisonMethodComboBox.setEnabled(False)
         self.year_selection_dialog.updateYearsList(year_ids)
         self.year_selection_dialog.selected_years = options.selected_years
         self.year_selection_dialog.update_selection()
-        if self.similarYearsRadioButton.isChecked():
-            self.similarYearsComboBox.setEnabled(True)
-            self.selectYearsButton.setEnabled(False)
+
         self.similarYearsComboBox.clear()
         self.similarYearsComboBox.addItems([str(y) for y in range(1, self.dataset_properties.season_quantity+1)])
-        self.similarYearsComboBox.setCurrentIndex(0)
+        if isinstance(options.selected_years, str):
+            self.similarYearsRadioButton.setChecked(True)
+            self.similarYearsComboBox.setEnabled(True)
+            self.similarYearsComboBox.setCurrentText(options.selected_years)
+            self.comparisonMethodComboBox.setEnabled(True)
+            self.comparisonMethodComboBox.setCurrentText(options.comparison_method)
+            self.selectYearsButton.setEnabled(False)
+        self.comparisonMethodComboBox.clear()
+        self.comparisonMethodComboBox.addItems(comparison_methods_list)
+        self.comparisonMethodComboBox.setCurrentText(options.comparison_method)
 
         self.observedDataRadioButton.setEnabled(True)
         self.forecastRadioButton.setEnabled(True)
         if options.is_forecast: self.forecastRadioButton.setChecked(True)
         else: self.observedDataRadioButton.setChecked(True)
+
+        self.exportWebCheckBox.setEnabled(True)
+        self.exportWebCheckBox.setChecked(options.output_web)
+        self.exportStatsCheckBox.setEnabled(True)
+        self.exportStatsCheckBox.setChecked(options.output_stats)
+        self.exportParametersCheckBox.setEnabled(True)
+        self.exportParametersCheckBox.setChecked(options.output_parameters)
 
     # function that reads the dataset from a file.
     def load_file_btn_event(self): 
@@ -175,13 +195,25 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             cross_years=self.crossYearsCheckBox.isChecked(),
             selected_years=self.year_selection_dialog.selected_years if self.customYearsRadioButton.isChecked() else self.similarYearsComboBox.currentText(),
             is_forecast=self.forecastRadioButton.isChecked(),
+            comparison_method=self.comparisonMethodComboBox.currentText(),
+            output_web=self.exportWebCheckBox.isChecked(),
+            output_stats=self.exportStatsCheckBox.isChecked(),
+            output_parameters=self.exportParametersCheckBox.isChecked(),
         )
         self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options)
         
         # output files
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
-        export_to_web_files(destination_path, self.structured_dataset)
-        export_to_csv_files(destination_path, self.structured_dataset)
+        if self.exportWebCheckBox.isChecked():
+            export_to_web_files(destination_path, self.structured_dataset)
+        if self.exportStatsCheckBox.isChecked():
+            export_to_csv_files(destination_path, self.structured_dataset)
+        if self.exportStatsCheckBox.isChecked():
+            json_data = json.dumps(options.__dict__)
+            if isinstance(json_data, bytes): json_data = json_data.decode()
+            os.makedirs(destination_path, exist_ok=True)
+            with open(f'{destination_path}/Parameters.json', 'w') as js_data_wrapper:
+                js_data_wrapper.write(json_data)
         renderFinishTime = time.perf_counter() - renderTime
         QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}').exec()
 
@@ -189,11 +221,17 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             # stats.sort_stats(pstats.SortKey.TIME)
             # stats.dump_stats('snakeviz.prof')
 
-    # placeholder
-    def path_changed_event(self): 
-        print(self.datasetInputLineEdit.text())
-        if self.datasetInputLineEdit.text().__len__() != 0:
-            print('valid')
+    def import_parameters_btn_event(self) -> None:
+        # path reading
+        self.selected_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "JSON files (*.json)")[0]
+        if self.selected_source == "": return
+        self.importParametersLineEdit.setText(self.selected_source)
+
+        with open(self.selected_source, 'r') as json_file:
+            parameters = json.load(json_file)
+        options = Options()
+        options.overwrite(parameters)
+        self.update_fields(options)
 
     def cross_years_cb_changed_event(self):
         sub_season_ids = define_seasonal_dict(self.crossYearsCheckBox.isChecked())
@@ -206,6 +244,10 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             cross_years=self.crossYearsCheckBox.isChecked(),
             selected_years=year_list,
             is_forecast=self.forecastRadioButton.isChecked(),
+            comparison_method=self.comparisonMethodComboBox.currentText(),
+            output_web=self.exportWebCheckBox.isChecked(),
+            output_stats=self.exportStatsCheckBox.isChecked(),
+            output_parameters=self.exportParametersCheckBox.isChecked(),
             )
         self.update_fields(options)
 
@@ -213,8 +255,10 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         if self.customYearsRadioButton.isChecked():
             self.selectYearsButton.setEnabled(True)
             self.similarYearsComboBox.setEnabled(False)
+            self.comparisonMethodComboBox.setEnabled(False)
         elif self.similarYearsRadioButton.isChecked():
             self.similarYearsComboBox.setEnabled(True)
+            self.comparisonMethodComboBox.setEnabled(True)
             self.selectYearsButton.setEnabled(False)
 
     def select_years_btn_event(self):
@@ -250,7 +294,6 @@ class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
                 row_n += 1
                 col_n = 0
         self.year_combo_boxes = cb_list
-        # self.yearsLayout.update()
     
     def select_all_cb_event(self):
         for cb in self.year_combo_boxes:
@@ -271,7 +314,6 @@ class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
         for cb in self.year_combo_boxes:
             if cb.isChecked():
                 self.selected_years.append(cb.text())
-        print(f"Selected years: {self.selected_years}")
         self.select_all_state = self.selectAllCheckBox.isChecked()
         super(YearSelectionDialog, self).accept()
 
