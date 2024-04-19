@@ -140,6 +140,7 @@ const chartColors = {
     'Current Season': '#0000FF',
     'Seasonal Accumulation': '#78ADD2',
     'Current Season Accumulation': '#0000FF',
+    'Forecast': '#FF00FF',
 
     'D0: 31 Pctl.': '#FFFF00',
     'D1: 21 Pctl.': '#FCD37F',
@@ -168,9 +169,11 @@ class AccumulationsBillboardChart {
         };
         this.xs = {
             'data_xs': ascendingArray(this.columnNames.length),
+            'forecast_xs': [this.currentLength-1, this.currentLength],
             'scatter_xs': this.lastCoordinates,
         };
         this.customxs = {
+            'Forecast': 'forecast_xs',
             'LTA±St. Dev.': 'scatter_xs',
             '(33, 67) Pctl.': 'scatter_xs',
         };
@@ -204,6 +207,8 @@ class AccumulationsBillboardChart {
             'LTA±20%': arrayMoreLess20(this.placeData[index]['LTA']),
             'LTA': this.placeData[index]['LTA'],
             'Current Season Accumulation': this.placeData[index]['Current Season Accumulation'],
+            'Forecast': [getLast(this.placeData[index]['Current Season Accumulation']), 
+                getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])],
             'LTA±St. Dev.': [getLast(this.placeData[index]['LTA']) + getLast(this.placeData[index]['St. Dev.']),
             getLast(this.placeData[index]['LTA']) - getLast(this.placeData[index]['St. Dev.']),
             ],
@@ -227,8 +232,10 @@ class CurrentBillboardChart {
         this.placeData = placeData;
         this.columnNames = datasetProperties['sub_season_ids'];
         this.containerElement = containerElement;
+        this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length;
         this.chartTypes = {
             'Current Season': 'bar',
+            'Forecast': 'bar',
             'Clim. Avg.': 'line',
         };
         const chartOptions = {
@@ -244,11 +251,11 @@ class CurrentBillboardChart {
         };
         this.xs = {
             'data_xs': ascendingArray(this.columnNames.length),
-            // 'bar_xs': ascendingArray(datasetProperties['current_season_length'], datasetProperties['sub_season_offset']),
+            'bar_xs': [this.currentLength],
         };
         this.customxs = {
-            'Current Season': 'bar_xs',
             'Current Season': 'data_xs',
+            'Forecast': 'bar_xs',
         };
         this.plot = bb.generate({
             bindto: this.containerElement,
@@ -263,6 +270,7 @@ class CurrentBillboardChart {
         const jsonData = {
             ...this.xs,
             'Current Season': this.placeData[index]['Current Season'],
+            'Forecast': this.placeData[index]['forecast'],
             'Clim. Avg.': this.placeData[index]['Avg.'],
         };
         this.plot.load({
@@ -291,11 +299,13 @@ class EnsembleBillboardChart {
             '(33, 67) Pctl.': 'scatter',
             'E. (33, 67) Pctl.': 'scatter',
         },
-            this.xs = {
-                'data_xs': ascendingArray(this.columnNames.length),
-                'scatter_xs': this.lastCoordinates,
-            };
+        this.xs = {
+            'data_xs': ascendingArray(this.columnNames.length),
+            'scatter_xs': this.lastCoordinates,
+            'forecast_xs': [this.currentLength-1, this.currentLength],
+        };
         this.customxs = {
+            'Forecast': 'forecast_xs',
             'LTA±St. Dev.': 'scatter_xs',
             'E. LTM±St. Dev.': 'scatter_xs',
             '(33, 67) Pctl.': 'scatter_xs',
@@ -331,6 +341,8 @@ class EnsembleBillboardChart {
             'LTA±20%': arrayMoreLess20(this.placeData[index]['LTA']),
             'LTA': this.placeData[index]['LTA'],
             'Current Season Accumulation': this.placeData[index]['Current Season Accumulation'],
+            'Forecast': [getLast(this.placeData[index]['Current Season Accumulation']), 
+                getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])],
             'LTA±St. Dev.': [getLast(this.placeData[index]['LTA']) + getLast(this.placeData[index]['St. Dev.']),
             getLast(this.placeData[index]['LTA']) - getLast(this.placeData[index]['St. Dev.']),
             ],

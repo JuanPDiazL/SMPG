@@ -149,7 +149,7 @@ body {
 
 /* Custom line styles */
 
-.bb-line-LTA, .bb-line-Clim--Avg-, .bb-line-Current-Season-Accumulation {
+.bb-line-LTA, .bb-line-Clim--Avg-, .bb-line-Current-Season-Accumulation, .bb-line-Forecast {
     stroke-width: 4px !important;
 }
 
