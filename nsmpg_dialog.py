@@ -191,7 +191,6 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def process_btn_event(self):
         # with cProfile.Profile() as profile:
         renderTime = time.perf_counter()
-        # default_year_ids = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
         # computation with parameters given from GUI
         options = Options(
             climatology_start=self.climatologyStartComboBox.currentText(),
