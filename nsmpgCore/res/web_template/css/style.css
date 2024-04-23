@@ -19,18 +19,17 @@ body {
 }
 
 .content {
-    /* margin-left: calc(var(--sidebarSize)); */
     max-height: 100vh;
     overflow-y: hidden;
-    /* width: 90%; */
 }
 
 .content-inner {
+    background-color: white;
     overflow-y: auto;
-    margin-left: 5%;
+    margin: auto auto;
     width: 90%;
     max-height: min-content;
-    height: 97vh;
+    height: 96vh;
     box-sizing: border-box;
 }
 
@@ -39,36 +38,6 @@ body {
 }
 
 /* Fonts */
-
-@font-face {
-    font-family: "Font Awesome 6 Free";
-    src: url(fa-solid-900.woff2) format('woff2');
-}
-
-@font-face {
-    font-family: 'Material Symbols Outlined';
-    font-style: normal;
-    src: url(MaterialSymbolsOutlined[FILL\,GRAD\,opsz\,wght].woff2) format('woff');
-  }
-
-  .ms {
-    font-family: 'Material Symbols Outlined';
-    font-weight: normal;
-    font-style: normal;
-    display: inline-block;
-    text-transform: none;
-    letter-spacing: normal;
-    word-wrap: normal;
-    white-space: nowrap;
-    direction: ltr;
-
-    transform: scale(1.5);
-    font-variation-settings: 'FILL' 0, 'GRAD' 0, 'opsz' 24, 'wght' 700;
-}
-
-.ms-fill {
-    font-variation-settings: 'FILL' 1;
-}
 
 @font-face {
     font-family: 'Material Icons';
@@ -149,7 +118,7 @@ body {
 
 /* Custom line styles */
 
-.bb-line-LTA, .bb-line-Clim--Avg-, .bb-line-Current-Season-Accumulation, .bb-line-Forecast {
+.bb-line-LTA, .bb-line-Climatology-Average, .bb-line-Current-Season-Accumulation, .bb-line-Forecast {
     stroke-width: 4px !important;
 }
 
