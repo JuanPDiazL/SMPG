@@ -15,9 +15,13 @@
     <script type="text/javascript" src="./js/d3.v7.min.js"></script>
     <!-- <script type="text/javascript" src="./js/billboard.min.js"></script> -->
     <script type="text/javascript" src="./js/billboard.js"></script>
+    <!-- <script type="text/javascript" src="./js/jquery-3.7.1.min.js"></script> -->
+    <script type="text/javascript" src="./js/jquery-3.7.1.js"></script>
+    <!-- <script type="text/javascript" src="./js/dom-to-image.min.js"></script> -->
+    <script type="text/javascript" src="./js/dom-to-image.js"></script>
 </head>
 
-<body class="darkmode">
+<body class="">
     <div id="leftSidebar" class="w3-sidebar w3-card-4 w3-bar-block w3-animate-left" style="display: none; z-index: 4;">
         
         <header id="leftSidebarHeader" class="w3-container w3-card w3-blue-grey w3-padding-small">
@@ -34,6 +38,7 @@
             <span id="contentHeaderText" style="font-size: 2em;">Template</span>
             <!-- <span><button class="mi w3-button w3-right" onclick="">settings</button></span> -->
             <span><button class="mi w3-button w3-right" onclick="document.body.classList.toggle('darkmode');">dark_mode</button></span>
+            <span><button class="mi w3-button w3-right" onclick="save_reports()">save</button></span>
         </header>
 
         <div class="content-inner w3-padding-small">
@@ -204,6 +209,45 @@
         let previousSelectionElement = sidebarElements[firstPlaceKey];
         sidebarElements[firstPlaceKey].classList.add('selected');
         document.getElementById('contentHeaderText').textContent = firstPlaceKey;
+
+        function save_reports() {
+            const start = Date.now();
+
+            var node = document.querySelector('.content-inner');
+            console.log(node.getBoundingClientRect(), 
+                        [node.clientWidth, node.clientHeight, node.clientTop, node.clientLeft],
+                        node.getClientRects(),
+                        [node.offsetWidth, node.offsetHeight, node.offsetTop, node.offsetLeft],
+                        window.getComputedStyle(node),
+                        [node.scrollWidth, node.scrollHeight, node.scrollTop, node.scrollLeft],
+                        [$(node).width(), $(node).height(), $(node).outerWidth(), $(node).outerHeight(), $(node).innerWidth(), , $(node).innerHeight()],
+            );
+            const options = {
+                'width': node.offsetWidth*1.1,
+                'height': node.scrollHeight,
+            }
+            domtoimage.toPng(node, options)
+                .then(function (dataUrl) {
+                    var img = new Image();
+                    img.src = dataUrl;
+                    document.body.appendChild(img);
+
+                    const link = document.createElement('a');
+                    link.href = dataUrl;
+                    link.download = `${previousSelectionElement.id}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    const end = Date.now();
+                    const executionTime = end - start;
+                    console.log(`Execution time: ${executionTime} ms`);
+                })
+                .catch(function (error) {
+                    console.error('oops, something went wrong!', error);
+                });
+
+        }
     </script>
 </body>
 
