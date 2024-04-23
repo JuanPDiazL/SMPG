@@ -107,14 +107,14 @@ const defaultOptions = {
     },
     point: {
         show: false,
-        pattern: [
-            // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>circle</text></g>",
-            // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>change_history</text></g>",
-            // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>square</text></g>",
-            'circle',
-            "<polygon points='4 0 0 8 8 8'></polygon>",
-            'rectangle',
-        ]
+        // pattern: [
+        //     // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>circle</text></g>",
+        //     // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>change_history</text></g>",
+        //     // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>square</text></g>",
+        //     'circle',
+        //     "<polygon points='4 0 0 8 8 8'></polygon>",
+        //     'rectangle',
+        // ]
     },
     transition: {
         duration: false,
@@ -134,8 +134,9 @@ const defaultOptions = {
 };
 const chartColors = {
     'LTA': '#FF0000',
+    'LTM': '#000000',
     'LTA±20%': '#00AFE5',
-    'Clim. Avg.': '#FF0000',
+    'Climatology Average': '#FF0000',
     'E. LTM': '#000000',
     'Current Season': '#0000FF',
     'Seasonal Accumulation': '#78ADD2',
@@ -207,8 +208,6 @@ class AccumulationsBillboardChart {
             'LTA±20%': arrayMoreLess20(this.placeData[index]['LTA']),
             'LTA': this.placeData[index]['LTA'],
             'Current Season Accumulation': this.placeData[index]['Current Season Accumulation'],
-            'Forecast': [getLast(this.placeData[index]['Current Season Accumulation']), 
-                getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])],
             'LTA±St. Dev.': [getLast(this.placeData[index]['LTA']) + getLast(this.placeData[index]['St. Dev.']),
             getLast(this.placeData[index]['LTA']) - getLast(this.placeData[index]['St. Dev.']),
             ],
@@ -216,6 +215,10 @@ class AccumulationsBillboardChart {
             this.placeData[index]['Pctls.'][1]
             ],
         };
+        if (this.placeData[index]['forecast'][0] != null) {
+            jsonData['Forecast'] = [getLast(this.placeData[index]['Current Season Accumulation']), 
+                getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])];
+        }
         this.plot.load({
             json: jsonData,
             xs: genxs(Object.keys(jsonData), this.columnNames.length, this.customxs),
@@ -236,7 +239,7 @@ class CurrentBillboardChart {
         this.chartTypes = {
             'Current Season': 'bar',
             'Forecast': 'bar',
-            'Clim. Avg.': 'line',
+            'Climatology Average': 'line',
         };
         const chartOptions = {
             axis: { x: { tick: { format: (index) => { return this.columnNames[index]; }, }, }, },
@@ -270,9 +273,11 @@ class CurrentBillboardChart {
         const jsonData = {
             ...this.xs,
             'Current Season': this.placeData[index]['Current Season'],
-            'Forecast': this.placeData[index]['forecast'],
-            'Clim. Avg.': this.placeData[index]['Avg.'],
+            'Climatology Average': this.placeData[index]['Avg.'],
         };
+        if (this.placeData[index]['forecast'][0] != null) {
+            jsonData['Forecast'] = this.placeData[index]['forecast'];
+        }
         this.plot.load({
             json: jsonData,
             xs: genxs(Object.keys(jsonData), this.columnNames.length, this.customxs),
@@ -341,8 +346,6 @@ class EnsembleBillboardChart {
             'LTA±20%': arrayMoreLess20(this.placeData[index]['LTA']),
             'LTA': this.placeData[index]['LTA'],
             'Current Season Accumulation': this.placeData[index]['Current Season Accumulation'],
-            'Forecast': [getLast(this.placeData[index]['Current Season Accumulation']), 
-                getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])],
             'LTA±St. Dev.': [getLast(this.placeData[index]['LTA']) + getLast(this.placeData[index]['St. Dev.']),
             getLast(this.placeData[index]['LTA']) - getLast(this.placeData[index]['St. Dev.']),
             ],
@@ -355,6 +358,10 @@ class EnsembleBillboardChart {
             'E. (33, 67) Pctl.': [this.selectedPlaceData[index]['E. Pctls.'][0],
             this.selectedPlaceData[index]['E. Pctls.'][1]
             ],
+        }
+        if (this.placeData[index]['forecast'][0] != null) {
+            jsonData['Forecast'] = [getLast(this.placeData[index]['Current Season Accumulation']), 
+                getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])];
         }
         this.plot.load({
             json: jsonData,
@@ -378,7 +385,7 @@ class AccumulationsBillboardCurrentChart {
         this.chartTypes = {
             'Seasonal Accumulation': 'bar',
             'Current Season Accumulation': 'bar',
-            'Avg': 'line',
+            'Climatology Average': 'line',
             'D4: 3 Pctl.': 'area',
             'D3: 6 Pctl.': 'area',
             'D2: 11 Pctl.': 'area',
@@ -429,7 +436,7 @@ class AccumulationsBillboardCurrentChart {
             ...this.xs,
             'Seasonal Accumulation': getUpTo(this.seasonalData[index]['Sum'], this.currentLength - 1),
             'Current Season Accumulation': [getLast(this.placeData[index]['Current Season Accumulation'])],
-            'Clim. Avg.': extendScalar(this.placeData[index]['LTA'][this.currentLength-1], this.columnNames.length),
+            'Climatology Average': extendScalar(this.placeData[index]['LTA'][this.currentLength-1], this.columnNames.length),
             'D0: 31 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][4], this.columnNames.length),
             'D1: 21 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][3], this.columnNames.length),
             'D2: 11 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][2], this.columnNames.length),
