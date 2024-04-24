@@ -141,7 +141,9 @@ const chartColors = {
     'Current Season': '#0000FF',
     'Seasonal Accumulation': '#78ADD2',
     'Current Season Accumulation': '#0000FF',
+    'Current Season Total': '#0000FF',
     'Forecast': '#FF00FF',
+    'Forecast Accumulation': '#FF00FF',
 
     'D0: 31 Pctl.': '#FFFF00',
     'D1: 21 Pctl.': '#FCD37F',
@@ -174,7 +176,7 @@ class AccumulationsBillboardChart {
             'scatter_xs': this.lastCoordinates,
         };
         this.customxs = {
-            'Forecast': 'forecast_xs',
+            'Forecast Accumulation': 'forecast_xs',
             'LTA±St. Dev.': 'scatter_xs',
             '(33, 67) Pctl.': 'scatter_xs',
         };
@@ -216,7 +218,7 @@ class AccumulationsBillboardChart {
             ],
         };
         if (this.placeData[index]['forecast'][0] != null) {
-            jsonData['Forecast'] = [getLast(this.placeData[index]['Current Season Accumulation']), 
+            jsonData['Forecast Accumulation'] = [getLast(this.placeData[index]['Current Season Accumulation']), 
                 getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])];
         }
         this.plot.load({
@@ -310,7 +312,7 @@ class EnsembleBillboardChart {
             'forecast_xs': [this.currentLength-1, this.currentLength],
         };
         this.customxs = {
-            'Forecast': 'forecast_xs',
+            'Forecast Accumulation': 'forecast_xs',
             'LTA±St. Dev.': 'scatter_xs',
             'E. LTM±St. Dev.': 'scatter_xs',
             '(33, 67) Pctl.': 'scatter_xs',
@@ -360,7 +362,7 @@ class EnsembleBillboardChart {
             ],
         }
         if (this.placeData[index]['forecast'][0] != null) {
-            jsonData['Forecast'] = [getLast(this.placeData[index]['Current Season Accumulation']), 
+            jsonData['Forecast Accumulation'] = [getLast(this.placeData[index]['Current Season Accumulation']), 
                 getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])];
         }
         this.plot.load({
@@ -384,7 +386,7 @@ class AccumulationsBillboardCurrentChart {
         this.currentLength = this.placeData[firstPlaceKey]['Current Season Accumulation'].length;
         this.chartTypes = {
             'Seasonal Accumulation': 'bar',
-            'Current Season Accumulation': 'bar',
+            'Current Season Total': 'bar',
             'Climatology Average': 'line',
             'D4: 3 Pctl.': 'area',
             'D3: 6 Pctl.': 'area',
@@ -397,7 +399,7 @@ class AccumulationsBillboardCurrentChart {
             'bar_xs': [this.lastCoordinates],
         };
         this.customxs = {
-            'Current Season Accumulation': 'bar_xs',
+            'Current Season Total': 'bar_xs',
         };
         const chartOptions = {
             // title: {text: 'Seasonal Accumulations'},
@@ -435,7 +437,7 @@ class AccumulationsBillboardCurrentChart {
         const jsonData = {
             ...this.xs,
             'Seasonal Accumulation': getUpTo(this.seasonalData[index]['Sum'], this.currentLength - 1),
-            'Current Season Accumulation': [getLast(this.placeData[index]['Current Season Accumulation'])],
+            'Current Season Total': [getLast(this.placeData[index]['Current Season Accumulation'])],
             'Climatology Average': extendScalar(this.placeData[index]['LTA'][this.currentLength-1], this.columnNames.length),
             'D0: 31 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][4], this.columnNames.length),
             'D1: 21 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][3], this.columnNames.length),

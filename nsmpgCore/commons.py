@@ -41,7 +41,7 @@ class Properties:
 class Options:
     def __init__(self, climatology_start=None, climatology_end=None,
                  season_start=None, season_end=None, cross_years=None, selected_years=None,
-                 is_forecast=None, comparison_method=None, output_web=None, 
+                 is_forecast=None, comparison_method=None, output_web=None, output_images=None,
                  output_stats=None, output_parameters=None, dataset_properties:Properties=None):
         # constructs default options from the properties of the dataset
         if dataset_properties is not None:
@@ -54,6 +54,7 @@ class Options:
             self.is_forecast=False
             self.comparison_method = 'Accumulation'
             self.output_web: bool = True
+            self.output_images: bool = False
             self.output_stats: bool = True
             self.output_parameters: bool = False
             return
@@ -69,6 +70,7 @@ class Options:
         self.comparison_method: str = comparison_method
 
         self.output_web: bool = output_web
+        self.output_images: bool = output_images
         self.output_stats: bool = output_stats
         self.output_parameters: bool = output_parameters
 

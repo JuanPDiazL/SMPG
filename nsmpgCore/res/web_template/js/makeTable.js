@@ -14,7 +14,7 @@ function getDataSeasonalAnalysis(placeStats, selectedYearsStats, place) {
     let data = placeStats[place];
     let selectedData = selectedYearsStats[place];
     let tableData = [
-        ['LTM', getLast(selectedData['LTA']), getLast(data['LTA'])],
+        ['LTA', getLast(selectedData['LTA']), getLast(data['LTA'])],
         ['St. Dev.', getLast(selectedData['St. Dev.']), getLast(data['St. Dev.'])],
     ];
     return tableData;

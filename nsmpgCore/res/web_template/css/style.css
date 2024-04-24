@@ -7,7 +7,7 @@ body {
     color:#555;
     background-color: white;
 }
-.darkmode, .darkmode table {
+.darkmode, .darkmode .chart-table, .darkmode .content-inner {
     background-color: #1d2a35 !important;
     color: #ddd !important;
 }
@@ -87,6 +87,7 @@ body {
     position: absolute;
     top: 5px;
     left: 5px;
+    background-color: white !important;
     opacity: .8;
     display: inline-block;
     pointer-events: none;
@@ -118,13 +119,14 @@ body {
 
 /* Custom line styles */
 
-.bb-line-LTA, .bb-line-Climatology-Average, .bb-line-Current-Season-Accumulation, .bb-line-Forecast {
+.bb-line-LTA, .bb-line-Climatology-Average, .bb-line-E--LTM,
+.bb-line-Current-Season-Accumulation, .bb-line-Forecast, 
+.bb-line-Forecast-Accumulation {
     stroke-width: 4px !important;
 }
 
 .bb-line-E--LTM {
-    stroke-width: 4px !important;
-    stroke-dasharray: 6 2;
+    stroke-dasharray: 10 2;
 }
 
 .bb-areas {
