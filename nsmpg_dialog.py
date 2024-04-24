@@ -37,6 +37,7 @@ from .nsmpgCore.structures import Dataset, Options, Properties
 from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps, get_cross_years, get_properties_validated_year_list, yearly_periods, comparison_methods_list
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
 from .nsmpgCore.exporters.CSVExporter import export_to_csv_files
+from .nsmpgCore.exporters.ImageExporter import export_to_image_files
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -88,6 +89,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.forecastRadioButton: QRadioButton
 
         self.exportWebCheckBox: QCheckBox
+        self.exportImagesCheckBox: QCheckBox
         self.exportStatsCheckBox: QCheckBox
         self.exportParametersCheckBox: QCheckBox
 
@@ -164,6 +166,8 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
         self.exportWebCheckBox.setEnabled(True)
         self.exportWebCheckBox.setChecked(options.output_web)
+        self.exportImagesCheckBox.setEnabled(True)
+        self.exportImagesCheckBox.setChecked(options.output_images)
         self.exportStatsCheckBox.setEnabled(True)
         self.exportStatsCheckBox.setChecked(options.output_stats)
         self.exportParametersCheckBox.setEnabled(True)
@@ -202,6 +206,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             is_forecast=self.forecastRadioButton.isChecked(),
             comparison_method=self.comparisonMethodComboBox.currentText(),
             output_web=self.exportWebCheckBox.isChecked(),
+            output_images=self.exportImagesCheckBox.isChecked(),
             output_stats=self.exportStatsCheckBox.isChecked(),
             output_parameters=self.exportParametersCheckBox.isChecked(),
         )
@@ -211,9 +216,11 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
         if self.exportWebCheckBox.isChecked():
             export_to_web_files(destination_path, self.structured_dataset)
+        if self.exportImagesCheckBox.isChecked():
+            export_to_image_files(destination_path, self.structured_dataset)
         if self.exportStatsCheckBox.isChecked():
             export_to_csv_files(destination_path, self.structured_dataset)
-        if self.exportStatsCheckBox.isChecked():
+        if self.exportParametersCheckBox.isChecked():
             json_data = json.dumps(options.__dict__)
             if isinstance(json_data, bytes): json_data = json_data.decode()
             os.makedirs(destination_path, exist_ok=True)
@@ -251,6 +258,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             is_forecast=self.forecastRadioButton.isChecked(),
             comparison_method=self.comparisonMethodComboBox.currentText(),
             output_web=self.exportWebCheckBox.isChecked(),
+            output_images=self.exportImagesCheckBox.isChecked(),
             output_stats=self.exportStatsCheckBox.isChecked(),
             output_parameters=self.exportParametersCheckBox.isChecked(),
             )

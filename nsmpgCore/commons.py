@@ -6,9 +6,9 @@ from typing import Tuple, Union
 # Dictionary that correlates the period name
 # with the number of periods that fit in a year
 yearly_periods = {
-    'month': 12,
-    'dekad': 36,
-    'pentad': 72,
+    'Month': 12,
+    'Dekad': 36,
+    'Pentad': 72,
 }
 
 # properties of the dataset
@@ -83,7 +83,7 @@ class Options:
             if options[key] is not None and key in options:
                 self.__dict__[key] = options[key]
 
-def define_seasonal_dict(july_june=False, period_unit='dekad') -> list:
+def define_seasonal_dict(july_june=False, period_unit='Dekad') -> list:
     """Creates a list of seasonal periods for the given start and period unit.
 
     Args:
@@ -91,7 +91,7 @@ def define_seasonal_dict(july_june=False, period_unit='dekad') -> list:
             Defines the initial month from which the seasons 
             should be defined. Defaults to 0.
         period_unit (str, optional): 
-        Defines the length of each seasonal period. Defaults to 'dekad'.
+        Defines the length of each seasonal period. Defaults to 'Dekad'.
 
     Returns:
         list: List of seasonal periods

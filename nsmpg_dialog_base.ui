@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>480</height>
+    <width>561</width>
+    <height>417</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -292,19 +292,6 @@
       <string>Output Preferences</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_10">
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="exportStatsCheckBox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Export Statistics</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QCheckBox" name="exportWebCheckBox">
         <property name="enabled">
@@ -318,13 +305,36 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="4" column="0">
        <widget class="QCheckBox" name="exportParametersCheckBox">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="text">
          <string>Export Current Parameters</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="exportStatsCheckBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Export Statistics</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="exportImagesCheckBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Export Image Reports</string>
         </property>
        </widget>
       </item>
