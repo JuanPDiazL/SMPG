@@ -41,7 +41,7 @@ class FigureContext:
             'LTA±St. Dev.': '#008000',
             '(33, 67) Pctl.': '#000000',
             'E. LTM': '#000000',
-            'E. LTM±St. Dev.': '#FFA500',
+            'E. LTA±St. Dev.': '#FFA500',
             'E. (33, 67) Pctl.': '#0000FF',
             'D0: 31 Pctl.': '#FFFF00',
             'D1: 21 Pctl.': '#FCD37F',
@@ -58,7 +58,7 @@ class FigureContext:
             'LTA±20%': 'area-line-range',
             'LTA±St. Dev.': 'scatter',
             '(33, 67) Pctl.': 'scatter',
-            'E. LTM±St. Dev.': 'scatter',
+            'E. LTA±St. Dev.': 'scatter',
             'E. (33, 67) Pctl.': 'scatter',
             'D4: 3 Pctl.': 'area',
             'D3: 6 Pctl.': 'area',
@@ -81,7 +81,7 @@ class FigureContext:
             'Forecast': [current_length],
             'LTA±St. Dev.': [monitoring_length-1]*2,
             '(33, 67) Pctl.': [monitoring_length-1]*2,
-            'E. LTM±St. Dev.': [monitoring_length-1]*2,
+            'E. LTA±St. Dev.': [monitoring_length-1]*2,
             'E. (33, 67) Pctl.': [monitoring_length-1]*2,
         }
 
@@ -199,28 +199,29 @@ def make_accumulations_data(place: Place):
     props = place.parent.properties
     selected_season_stats = place.selected_years_seasonal_stats
     selected_place_stats = place.selected_years_place_stats
+    place_stats = place.place_stats
     current_index = len(selected_place_stats['Current Season Accumulation'])-1
     data = {
         **selected_season_stats['Sum'],
-        'LTM': selected_place_stats['LTM'],
-        'LTA±20%': [selected_place_stats['LTA']*1.20, selected_place_stats['LTA']*0.80],
-        'LTA±St. Dev.': [selected_place_stats['LTA'][-1]+selected_place_stats['St. Dev.'][-1], 
-                        selected_place_stats['LTA'][-1]-selected_place_stats['St. Dev.'][-1]],
-        'LTA': selected_place_stats['LTA'],
-        'Current Season Accumulation': selected_place_stats['Current Season Accumulation'],
-        '(33, 67) Pctl.': [selected_place_stats['Pctls.'][0], 
-                           selected_place_stats['Pctls.'][1]],
+        'LTM': place_stats['LTM'],
+        'LTA±20%': [place_stats['LTA']*1.20, place_stats['LTA']*0.80],
+        'LTA±St. Dev.': [place_stats['LTA'][-1]+place_stats['St. Dev.'][-1], 
+                        place_stats['LTA'][-1]-place_stats['St. Dev.'][-1]],
+        'LTA': place_stats['LTA'],
+        'Current Season Accumulation': place_stats['Current Season Accumulation'],
+        '(33, 67) Pctl.': [place_stats['Pctls.'][0], 
+                           place_stats['Pctls.'][1]],
     }
-    if selected_place_stats['forecast'][0] is not None:
+    if place_stats['forecast'][0] is not None:
         data['Forecast Accumulation'] = [
-            selected_place_stats['Current Season Accumulation'][-1], 
-            selected_place_stats['Current Season Accumulation'][-1]+selected_place_stats['forecast'][0]]
+            place_stats['Current Season Accumulation'][-1], 
+            place_stats['Current Season Accumulation'][-1]+place_stats['forecast'][0]]
     table_data_array = [
         [['Assessment at current dekad'],
         ['', 'Sel. Yrs.', 'Clim.'],
         ['Total C. Dk.', selected_place_stats['Current Season Accumulation'][-1], place.place_stats['Current Season Accumulation'][-1]],
-        ['LTA C. Dk.', round(selected_place_stats['LTA'][current_index], 1), round(place.place_stats['LTA'][current_index], 1)],
-        ['C. Dk./LTA', round(selected_place_stats['C. Dk./LTA'][current_index]*100, 1), round(place.place_stats['C. Dk./LTA'][current_index]*100, 1)]],
+        ['LTA C. Dk.', round(selected_place_stats['LTA'][current_index]), round(place.place_stats['LTA'][current_index])],
+        ['C. Dk./LTA Pct.', round(selected_place_stats['C. Dk./LTA'][current_index]*100), round(place.place_stats['C. Dk./LTA'][current_index]*100)]],
     ]
     metadata = {
         'title': 'Seasonal Accumulations',
@@ -244,8 +245,8 @@ def make_current_data(place: Place):
     table_data_array = [
         [['Seasonal Analysis'],
         ['', 'Sel. Yrs.', 'Clim.'],
-        ['LTA', round(selected_place_stats['LTA'][-1], 1), round(place.place_stats['LTA'][-1], 1)],
-        ['St. Dev.', round(selected_place_stats['St. Dev.'][-1], 1), round(place.place_stats['St. Dev.'][-1], 1)]],
+        ['LTA', round(selected_place_stats['LTA'][-1]), round(place.place_stats['LTA'][-1])],
+        ['St. Dev.', round(selected_place_stats['St. Dev.'][-1]), round(place.place_stats['St. Dev.'][-1])]],
     ]
 
     clim_start = props.climatology_year_ids[0]
@@ -264,36 +265,33 @@ def make_ensemble_data(place: Place):
     props = place.parent.properties
     selected_season_stats = place.selected_years_seasonal_stats
     selected_place_stats = place.selected_years_place_stats
+    place_stats = place.place_stats
     data = {
         **selected_season_stats['Ensemble Sum'],
-        'LTA±20%': [selected_place_stats['LTA']*1.20, selected_place_stats['LTA']*0.80],
-        'LTA±St. Dev.': [selected_place_stats['LTA'][-1]+selected_place_stats['St. Dev.'][-1], 
-                        selected_place_stats['LTA'][-1]-selected_place_stats['St. Dev.'][-1]],
-        'LTA': selected_place_stats['LTA'],
-        '(33, 67) Pctl.': [selected_place_stats['Pctls.'][0], 
-                           selected_place_stats['Pctls.'][1]],
+        'LTA±20%': [place_stats['LTA']*1.20, place_stats['LTA']*0.80],
+        'LTA±St. Dev.': [place_stats['LTA'][-1]+place_stats['St. Dev.'][-1], 
+                        place_stats['LTA'][-1]-place_stats['St. Dev.'][-1]],
+        'LTA': place_stats['LTA'],
+        '(33, 67) Pctl.': [place_stats['Pctls.'][0], 
+                           place_stats['Pctls.'][1]],
         'E. LTM': selected_place_stats['E. LTM'],
         'E. (33, 67) Pctl.': [selected_place_stats['E. Pctls.'][0], 
                               selected_place_stats['E. Pctls.'][1]],
-        'E. LTM±St. Dev.': [selected_place_stats['E. LTM'][-1]+selected_place_stats['St. Dev.'][-1], 
-                        selected_place_stats['E. LTM'][-1]-selected_place_stats['St. Dev.'][-1]],
-        'Current Season Accumulation': selected_place_stats['Current Season Accumulation'],
+        'E. LTA±St. Dev.': [selected_place_stats['E. LTA'][-1]+selected_place_stats['St. Dev.'][-1], 
+                        selected_place_stats['E. LTA'][-1]-selected_place_stats['St. Dev.'][-1]],
+        'Current Season Accumulation': place_stats['Current Season Accumulation'],
     }
-    if selected_place_stats['forecast'][0] is not None:
-        data['Forecast Accumulation'] = [
-            selected_place_stats['Current Season Accumulation'][-1], 
-            selected_place_stats['Current Season Accumulation'][-1]+selected_place_stats['forecast'][0]]
     table_data_array = [
         [['Proj. at EoS'],
         ['', 'Sel. Yrs.', 'Clim.'],
-        ['E. LTM', round(selected_place_stats['E. LTM'][-1], 1), round(place.place_stats['E. LTM'][-1], 1)],
-        ['LTA', round(selected_place_stats['LTA'][-1], 1), round(place.place_stats['LTA'][-1], 1)],
-        ['E. LTM/LTA', round(selected_place_stats['E. LTM/LTA'][-1]*100, 1), round(place.place_stats['E. LTM/LTA'][-1]*100, 1)]],
+        ['E. LTM', round(selected_place_stats['E. LTM'][-1]), round(place.place_stats['E. LTM'][-1])],
+        ['LTA', round(selected_place_stats['LTA'][-1]), round(place.place_stats['LTA'][-1])],
+        ['E. LTM/LTA Pct.', round(selected_place_stats['E. LTM/LTA'][-1]*100), round(place.place_stats['E. LTM/LTA'][-1]*100)]],
         [['Prob. at EoS'],
         ['', 'Sel. Yrs.', 'Clim.'],
-        ['Ab. Normal', round(selected_place_stats['E. Probabilities'][2]*100, 1), round(place.place_stats['E. Probabilities'][2]*100, 1)],
-        ['Normal', round(selected_place_stats['E. Probabilities'][1]*100, 1), round(place.place_stats['E. Probabilities'][1]*100, 1)],
-        ['Be. Normal', round(selected_place_stats['E. Probabilities'][0]*100, 1), round(place.place_stats['E. Probabilities'][0]*100, 1)]],
+        ['Ab. Normal', round(selected_place_stats['E. Probabilities'][2]*100), round(place.place_stats['E. Probabilities'][2]*100)],
+        ['Normal', round(selected_place_stats['E. Probabilities'][1]*100), round(place.place_stats['E. Probabilities'][1]*100)],
+        ['Be. Normal', round(selected_place_stats['E. Probabilities'][0]*100), round(place.place_stats['E. Probabilities'][0]*100)]],
     ]
     metadata = {
         'title': 'Seasonal Accumulations',
@@ -326,13 +324,13 @@ def make_accumulations_current_data(place: Place):
     table_data_array = [
         [['Historical Rainfall Statistics'],
         ['', 'Value'],
-        ['Clim. Avg. C. Dk.', round(place_stats['LTA'][current_index], 1)],
-        # ['Sel. Yrs. Avg. C. Dk.', round(selected_place_stats['LTA'][current_index], 1)],
-        ['D0: 31 Pctl.', round(place_stats['Drought Severity Pctls.'][4], 1)],
-        ['D1: 21 Pctl.', round(place_stats['Drought Severity Pctls.'][3], 1)],
-        ['D2: 11 Pctl.', round(place_stats['Drought Severity Pctls.'][2], 1)],
-        ['D3: 6 Pctl.', round(place_stats['Drought Severity Pctls.'][1], 1)],
-        ['D4: 3 Pctl.', round(place_stats['Drought Severity Pctls.'][0], 1)]],
+        ['Clim. Avg. C. Dk.', round(place_stats['LTA'][current_index])],
+        # ['Sel. Yrs. Avg. C. Dk.', round(selected_place_stats['LTA'][current_index])],
+        ['D0: 31 Pctl.', round(place_stats['Drought Severity Pctls.'][4])],
+        ['D1: 21 Pctl.', round(place_stats['Drought Severity Pctls.'][3])],
+        ['D2: 11 Pctl.', round(place_stats['Drought Severity Pctls.'][2])],
+        ['D3: 6 Pctl.', round(place_stats['Drought Severity Pctls.'][1])],
+        ['D4: 3 Pctl.', round(place_stats['Drought Severity Pctls.'][0])]],
     ]
 
     metadata = {

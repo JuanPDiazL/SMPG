@@ -19,6 +19,8 @@
     <script type="text/javascript" src="./js/jquery-3.7.1.js"></script>
     <!-- <script type="text/javascript" src="./js/dom-to-image.min.js"></script> -->
     <script type="text/javascript" src="./js/dom-to-image.js"></script>
+    <!-- <script type="text/javascript" src="./js/html2canvas.min.js"></script> -->
+    <script type="text/javascript" src="./js/html2canvas.js"></script>
 </head>
 
 <body class="">
@@ -131,7 +133,7 @@
         function overlaySVG(table, gSelector) {
             let position = document.querySelector(gSelector).attributes.transform.value.slice('translate('.length, -1).split(',');
             let xPosition = parseFloat(position[0]);
-            table.style.left = `${xPosition + 5}px`;
+            table.style.left = `${xPosition + 15}px`;
         }
 
         function placeUnder(element, anchor) {
@@ -223,29 +225,46 @@
                         [$(node).width(), $(node).height(), $(node).outerWidth(), $(node).outerHeight(), $(node).innerWidth(), , $(node).innerHeight()],
             );
             const options = {
-                'width': node.offsetWidth*1.1,
-                'height': node.scrollHeight,
+                'width': node.offsetWidth * 1.1,
+                'height': node.scrollHeight * 1.1,
+                'windowHeight': node.scrollHeight * 1.1,
             }
-            domtoimage.toPng(node, options)
-                .then(function (dataUrl) {
-                    var img = new Image();
-                    img.src = dataUrl;
-                    document.body.appendChild(img);
 
-                    const link = document.createElement('a');
-                    link.href = dataUrl;
-                    link.download = `${previousSelectionElement.id}.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+            // domtoimage.toPng(node, options)
+            //     .then(function (dataUrl) {
+            //         var img = new Image();
+            //         img.src = dataUrl;
+            //         document.body.appendChild(img);
+
+            //         const link = document.createElement('a');
+            //         link.href = dataUrl;
+            //         link.download = `${previousSelectionElement.id}.png`;
+            //         document.body.appendChild(link);
+            //         link.click();
+            //         document.body.removeChild(link);
                     
-                    const end = Date.now();
-                    const executionTime = end - start;
-                    console.log(`Execution time: ${executionTime} ms`);
-                })
-                .catch(function (error) {
-                    console.error('oops, something went wrong!', error);
+            //         const end = Date.now();
+            //         const executionTime = end - start;
+            //         console.log(`Execution time: ${executionTime} ms`);
+            //     })
+            //     .catch(function (error) {
+            //         console.error('oops, something went wrong!', error);
+            //     });
+
+            html2canvas(node, options).then(canvas => {
+                dataUrl = canvas.toDataURL();
+                // document.body.appendChild(canvas);
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = `${previousSelectionElement.id}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                const end = Date.now();
+                const executionTime = end - start;
                 });
+
 
         }
     </script>
