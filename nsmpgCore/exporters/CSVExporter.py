@@ -24,10 +24,12 @@ def wrap_summary(stats):
             'Probability in Normal': round(stats['E. Probabilities'][1]*100, 1),
             'Probability Above Normal': round(stats['E. Probabilities'][2]*100, 1),
             'E. LTM Pctl.': stats['E. LTM Pctl.'][0],
+            'Current Season Pctl.': stats['Current Season Pctl.'][0],
         }
 
-def export_to_csv_files(destination_path, dataset: Dataset):
-    os.makedirs(destination_path, exist_ok=True)
+def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Statistics'):
+    stats_subfolder_path = os.path.join(destination_path, subFolderName)
+    os.makedirs(stats_subfolder_path, exist_ok=True)
     headers = []
     climatology_stats = []
     climatology_summary = []
@@ -42,8 +44,8 @@ def export_to_csv_files(destination_path, dataset: Dataset):
         selected_years_summary.append(wrap_summary(place.selected_years_place_stats))
         similar_seasons.append(place.similar_seasons)
 
-    pd.DataFrame.from_records(climatology_stats, index=headers).to_csv(f'{destination_path}/climatology_stats.csv')
-    pd.DataFrame.from_records(climatology_summary, index=headers).to_csv(f'{destination_path}/climatology_summary.csv')
-    pd.DataFrame.from_records(selected_years_stats, index=headers).to_csv(f'{destination_path}/selected_years_stats.csv')
-    pd.DataFrame.from_records(selected_years_summary, index=headers).to_csv(f'{destination_path}/selected_years_summary.csv')
-    pd.DataFrame(similar_seasons, index=headers).to_csv(f'{destination_path}/similar_seasons.csv')
+    pd.DataFrame.from_records(climatology_stats, index=headers).to_csv(f'{stats_subfolder_path}/climatology_stats.csv')
+    pd.DataFrame.from_records(climatology_summary, index=headers).to_csv(f'{stats_subfolder_path}/climatology_summary.csv')
+    pd.DataFrame.from_records(selected_years_stats, index=headers).to_csv(f'{stats_subfolder_path}/selected_years_stats.csv')
+    pd.DataFrame.from_records(selected_years_summary, index=headers).to_csv(f'{stats_subfolder_path}/selected_years_summary.csv')
+    pd.DataFrame(similar_seasons, index=headers).to_csv(f'{stats_subfolder_path}/similar_seasons.csv')

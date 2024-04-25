@@ -214,18 +214,18 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         
         # output files
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
-        if self.exportWebCheckBox.isChecked():
-            export_to_web_files(destination_path, self.structured_dataset)
-        if self.exportImagesCheckBox.isChecked():
-            export_to_image_files(destination_path, self.structured_dataset)
         if self.exportStatsCheckBox.isChecked():
             export_to_csv_files(destination_path, self.structured_dataset)
+        if self.exportWebCheckBox.isChecked():
+            export_to_web_files(destination_path, self.structured_dataset)
         if self.exportParametersCheckBox.isChecked():
             json_data = json.dumps(options.__dict__)
             if isinstance(json_data, bytes): json_data = json_data.decode()
             os.makedirs(destination_path, exist_ok=True)
             with open(f'{destination_path}/Parameters.json', 'w') as js_data_wrapper:
                 js_data_wrapper.write(json_data)
+        if self.exportImagesCheckBox.isChecked():
+            export_to_image_files(destination_path, self.structured_dataset)
         renderFinishTime = time.perf_counter() - renderTime
         QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}').exec()
 
