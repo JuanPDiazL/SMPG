@@ -35,10 +35,10 @@ function getLegend(title, color, data, chartTypes = {}, points = {}) {
     let chartType = '';
     switch (chartTypes[title]) {
         case 'scatter':
-            chartType = 'category'
+            chartType = 'fiber_manual_record'
             break;
         case 'area-line-range':
-            chartType = 'signal_cellular_0_bar'
+            chartType = 'area_chart'
             break;
         case 'bar':
             chartType = 'bar_chart'
@@ -153,7 +153,7 @@ const chartColors = {
 
     'LTA±St. Dev.': '#008000',
     '(33, 67) Pctl.': '#000000',
-    'E. LTM±St. Dev.': '#FFA500',
+    'E. LTA±St. Dev.': '#FFA500',
     'E. (33, 67) Pctl.': '#0000FF',
 }
 
@@ -302,19 +302,17 @@ class EnsembleBillboardChart {
         this.chartTypes = {
             'LTA±20%': 'area-line-range',
             'LTA±St. Dev.': 'scatter',
-            'E. LTM±St. Dev.': 'scatter',
+            'E. LTA±St. Dev.': 'scatter',
             '(33, 67) Pctl.': 'scatter',
             'E. (33, 67) Pctl.': 'scatter',
         },
         this.xs = {
             'data_xs': ascendingArray(this.columnNames.length),
             'scatter_xs': this.lastCoordinates,
-            'forecast_xs': [this.currentLength-1, this.currentLength],
         };
         this.customxs = {
-            'Forecast Accumulation': 'forecast_xs',
             'LTA±St. Dev.': 'scatter_xs',
-            'E. LTM±St. Dev.': 'scatter_xs',
+            'E. LTA±St. Dev.': 'scatter_xs',
             '(33, 67) Pctl.': 'scatter_xs',
             'E. (33, 67) Pctl.': 'scatter_xs',
         };
@@ -344,15 +342,15 @@ class EnsembleBillboardChart {
         const jsonData = {
             ...this.xs,
             ...this.seasonalData[index]['Ensemble Sum'],
-            'E. LTM': this.selectedPlaceData[index]['E. LTM'],
             'LTA±20%': arrayMoreLess20(this.placeData[index]['LTA']),
             'LTA': this.placeData[index]['LTA'],
+            'E. LTM': this.selectedPlaceData[index]['E. LTM'],
             'Current Season Accumulation': this.placeData[index]['Current Season Accumulation'],
             'LTA±St. Dev.': [getLast(this.placeData[index]['LTA']) + getLast(this.placeData[index]['St. Dev.']),
             getLast(this.placeData[index]['LTA']) - getLast(this.placeData[index]['St. Dev.']),
             ],
-            'E. LTM±St. Dev.': [getLast(this.selectedPlaceData[index]['E. LTM']) + getLast(this.selectedPlaceData[index]['St. Dev.']),
-            getLast(this.selectedPlaceData[index]['E. LTM']) - getLast(this.selectedPlaceData[index]['St. Dev.']),
+            'E. LTA±St. Dev.': [getLast(this.selectedPlaceData[index]['E. LTA']) + getLast(this.selectedPlaceData[index]['St. Dev.']),
+            getLast(this.selectedPlaceData[index]['E. LTA']) - getLast(this.selectedPlaceData[index]['St. Dev.']),
             ],
             '(33, 67) Pctl.': [this.placeData[index]['Pctls.'][0],
             this.placeData[index]['Pctls.'][1]
@@ -360,10 +358,6 @@ class EnsembleBillboardChart {
             'E. (33, 67) Pctl.': [this.selectedPlaceData[index]['E. Pctls.'][0],
             this.selectedPlaceData[index]['E. Pctls.'][1]
             ],
-        }
-        if (this.placeData[index]['forecast'][0] != null) {
-            jsonData['Forecast Accumulation'] = [getLast(this.placeData[index]['Current Season Accumulation']), 
-                getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])];
         }
         this.plot.load({
             json: jsonData,
