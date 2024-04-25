@@ -111,12 +111,13 @@ class Place:
     def get_place_stats(self, seasonal_accumulations, seasonal_ensemble, common_stats):
         current_accumulation_mon = np.cumsum(self.current_season_monitoring)
         current_index = self.current_season_monitoring.__len__()-1
-        seasonal_current_sums = seasonal_accumulations[:, current_index]
+        seasonal_current_sums = common_stats['seasonal_accumulations'][:, current_index]
         seasonal_sums = np.array([e[-1] for e in seasonal_accumulations])
         ensemble_sums = np.array([e[-1] for e in seasonal_ensemble])
         seasonal_lta = operate_column(seasonal_accumulations, np.average)
         seasonal_pctls = common_stats['climatology_seasonal_pctls']
         ensemble_ltm = operate_column(seasonal_ensemble, np.median)
+        ensemble_lta = operate_column(seasonal_ensemble, np.average)
         ensemble_pctls = percentiles_to_values(ensemble_sums, [33, 67])
         ensemble_pctl_probabilities = np.array([
             np.count_nonzero(ensemble_sums < seasonal_pctls[0]) / len(ensemble_sums),
@@ -124,7 +125,8 @@ class Place:
             np.count_nonzero(ensemble_sums >= seasonal_pctls[1]) / len(ensemble_sums),
         ])
         place_stats = {
-            'Pctls. per Year': percentiles_from_values(seasonal_current_sums),
+            # 'Pctls. per Year': percentiles_from_values(seasonal_current_sums),
+            'Current Season Pctl.': percentiles_from_values(seasonal_current_sums, [common_stats['Current Season Full Accumulation'][-1]]),
             'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sums, (3, 6, 11, 21, 31)),
             'Pctls.': seasonal_pctls,
             'LTM': operate_column(seasonal_accumulations, np.median),
@@ -132,6 +134,7 @@ class Place:
             'C. Dk./LTA': current_accumulation_mon/seasonal_lta[:current_index+1],
             'Avg.': operate_column(list(self.seasons_climatology.values()), np.average),
             'E. LTM': ensemble_ltm,
+            'E. LTA': ensemble_lta,
             'E. LTM/LTA': ensemble_ltm/seasonal_lta,
             'E. LTM Pctl.': percentiles_from_values(seasonal_sums, [ensemble_ltm[-1]]),
             'E. Pctls.': ensemble_pctls,
@@ -164,6 +167,8 @@ class Place:
 
         common_stats = {
             'climatology_seasonal_pctls': climatology_seasonal_pctls,
+            'seasonal_accumulations': seasonal_accumulations,
+            'Current Season Full Accumulation': np.cumsum(self.current_season),
         }
         return (self.get_place_stats(climatology_seasonal_accumulations, climatology_seasonal_ensemble, common_stats),
                 self.get_seasonal_stats(seasonal_accumulations, seasonal_ensemble, self.seasons_monitoring.keys()),
