@@ -64,6 +64,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
         ### My code starting from here
         self.threadpool = QThreadPool()
+        self.pending_tasks = 0
 
         self.year_selection_dialog = YearSelectionDialog(self)
         self.about_dialog = AboutDialog(self)
@@ -221,7 +222,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
         # path reading
         destination_path = QFileDialog.getExistingDirectory(self, 'Open dataset file', self.dataset_source_path)[0]
-        if self.selected_source == "": return
+        if destination_path == "": return
         # check if the selected directory exists and create it if necessary
         path_with_filename = os.path.join(destination_path, self.dataset_filename)
         if path_with_filename not in destination_path:
@@ -249,6 +250,9 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         # output files
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
         self.progress_dialog.show()
+        self.pending_tasks = self.exportStatsCheckBox.isChecked() + \
+                             self.exportWebCheckBox.isChecked() +\
+                             self.exportImagesCheckBox.isChecked()
         workers: list[Worker] = []
         if self.exportStatsCheckBox.isChecked():
             workers.append(Worker(export_to_csv_files, destination_path, self.structured_dataset))
@@ -407,12 +411,9 @@ class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
         
         self.setModal(True)
 
-        self.finished_tasks = 0
-
     def update(self):
-        self.finished_tasks += 1
-        if self.finished_tasks == 3:
-            self.finished_tasks = 0
+        self.parentWidget().pending_tasks -= 1
+        if self.parentWidget().pending_tasks == 0:
             renderFinishTime = time.perf_counter() - self.parentWidget().renderTime
             self.close()
             QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}').exec()
