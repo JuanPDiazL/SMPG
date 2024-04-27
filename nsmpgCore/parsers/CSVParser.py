@@ -5,7 +5,9 @@ def parse_csv(filename:str):
     df = pd.read_csv(filename, header=0, index_col=0)
 
     dataset_context = dict_of_nparrays(df)
-    return dataset_context, df.columns.to_list()
+    rows = df.head()
+    has_duplicates = rows.duplicated().any()
+    return dataset_context, df.columns.to_list(), has_duplicates
 
 # converts a pandas dataframe to a dictionary of numpy arrays
 def dict_of_nparrays(df:pd.DataFrame):

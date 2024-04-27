@@ -182,8 +182,16 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.dataset_filename = ''.join(os.path.basename(self.selected_source).split('.')[:-1])
 
         # parse dataset
-        self.parsed_dataset, self.col_names = parse_csv(self.selected_source)
-        self.dataset_properties = Properties(parse_timestamps(self.col_names))
+        try:
+            self.parsed_dataset, self.col_names, has_duplicates = parse_csv(self.selected_source)
+            self.dataset_properties = Properties(parse_timestamps(self.col_names))
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f'The dataset could not be read.\n\n{str(e)}', QMessageBox.Ok)
+            return
+        if has_duplicates:
+            QMessageBox.warning(self, "Warning", 
+                                'Duplicated place names have been found.\nThe program might produce unexpected results.', 
+                                QMessageBox.Ok)
         default_options = Options(dataset_properties=self.dataset_properties)
 
         # set form fields content from data
@@ -193,6 +201,26 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
     # function to allow the computation of the required data, such as accumulation, ensemble, stats, percentiles, etc
     def process_btn_event(self):
+        # invalid input handling
+        if self.climatologyStartComboBox.currentIndex() > self.climatologyEndComboBox.currentIndex():
+            QMessageBox.critical(self, "Error", 
+                                 'The start of the climatology must be before the end of the climatology', 
+                                 QMessageBox.Ok)
+            return
+        if self.seasonStartComboBox.currentIndex() > self.seasonEndComboBox.currentIndex():
+            QMessageBox.critical(self, "Error", 
+                                 'The start of the season must be before the end of the season.', 
+                                 QMessageBox.Ok)
+            return
+
+        # path reading
+        destination_path = QFileDialog.getExistingDirectory(self, 'Open dataset file', self.dataset_source_path)[0]
+        if self.selected_source == "": return
+        # check if the selected directory exists and create it if necessary
+        path_with_filename = os.path.join(destination_path, self.dataset_filename)
+        if path_with_filename not in destination_path:
+            destination_path = path_with_filename
+        
         # with cProfile.Profile() as profile:
         renderTime = time.perf_counter()
         # computation with parameters given from GUI
@@ -235,14 +263,18 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
     def import_parameters_btn_event(self) -> None:
         # path reading
-        self.selected_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "JSON files (*.json)")[0]
-        if self.selected_source == "": return
-        self.importParametersLineEdit.setText(self.selected_source)
+        parameters_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "JSON files (*.json)")[0]
+        if parameters_source == "": return
 
-        with open(self.selected_source, 'r') as json_file:
-            parameters = json.load(json_file)
-        options = Options()
-        options.overwrite(parameters)
+        try:
+            with open(parameters_source, 'r') as json_file:
+                parameters = json.load(json_file)
+            options = Options()
+            options.overwrite(parameters)
+        except:
+            QMessageBox.critical(self, 'Error', f'Could not load parameters from {parameters_source}')
+            return
+        self.importParametersLineEdit.setText(parameters_source)
         self.update_fields(options)
 
     def cross_years_cb_changed_event(self):
