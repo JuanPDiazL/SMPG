@@ -31,6 +31,7 @@ import json
 # from qgis.PyQt import uic, QtWidgets
 from PyQt5 import uic
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSlot, pyqtSignal
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset, Options, Properties
@@ -46,6 +47,8 @@ YEAR_SELECTION_DIALOG_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'year_selection_dialog.ui'))
 ABOUT_DIALOG_CLASS,_ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'about_dialog.ui'))
+PROGRESS_DIALOG_CLASS,_ = uic.loadUiType(os.path.join(
+    os.path.dirname(__file__), 'progress_dialog.ui'))
 
 
 class NSMPGDialog(QDialog, FORM_CLASS):
@@ -60,8 +63,11 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.setupUi(self)
 
         ### My code starting from here
+        self.threadpool = QThreadPool()
+
         self.year_selection_dialog = YearSelectionDialog(self)
         self.about_dialog = AboutDialog(self)
+        self.progress_dialog = ProgressDialog(self)
 
         self.climatologyGroup: QGroupBox
         self.monitoringGroup: QGroupBox
@@ -222,7 +228,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             destination_path = path_with_filename
         
         # with cProfile.Profile() as profile:
-        renderTime = time.perf_counter()
+        self.renderTime = time.perf_counter()
         # computation with parameters given from GUI
         options = Options(
             climatology_start=self.climatologyStartComboBox.currentText(),
@@ -242,10 +248,12 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         
         # output files
         destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
+        self.progress_dialog.show()
+        workers: list[Worker] = []
         if self.exportStatsCheckBox.isChecked():
-            export_to_csv_files(destination_path, self.structured_dataset)
+            workers.append(Worker(export_to_csv_files, destination_path, self.structured_dataset))
         if self.exportWebCheckBox.isChecked():
-            export_to_web_files(destination_path, self.structured_dataset)
+            workers.append(Worker(export_to_web_files, destination_path, self.structured_dataset))
         if self.exportParametersCheckBox.isChecked():
             json_data = json.dumps(options.__dict__)
             if isinstance(json_data, bytes): json_data = json_data.decode()
@@ -253,9 +261,10 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             with open(f'{destination_path}/Parameters.json', 'w') as js_data_wrapper:
                 js_data_wrapper.write(json_data)
         if self.exportImagesCheckBox.isChecked():
-            export_to_image_files(destination_path, self.structured_dataset)
-        renderFinishTime = time.perf_counter() - renderTime
-        QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}').exec()
+            workers.append(Worker(export_to_image_files, destination_path, self.structured_dataset))
+        for worker in workers:
+            worker.signal_emitter.finished.connect(self.progress_dialog.update)
+            self.threadpool.start(worker)
 
             # stats = pstats.Stats(profile)
             # stats.sort_stats(pstats.SortKey.TIME)
@@ -316,6 +325,8 @@ class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
     def __init__(self, parent=None):
         super(YearSelectionDialog, self).__init__(parent)
         self.setupUi(self)
+
+        self.setModal(True)
 
         self.yearsFrame: QFrame
         self.yearsLayout: QGridLayout
@@ -386,3 +397,38 @@ class AboutDialog(QDialog, ABOUT_DIALOG_CLASS):
     def __init__(self, parent=None):
         super(AboutDialog, self).__init__(parent)
         self.setupUi(self)
+        
+        self.setModal(True)
+
+class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
+    def __init__(self, parent=None):
+        super(ProgressDialog, self).__init__(parent)
+        self.setupUi(self)
+        
+        self.setModal(True)
+
+        self.finished_tasks = 0
+
+    def update(self):
+        self.finished_tasks += 1
+        if self.finished_tasks == 3:
+            self.finished_tasks = 0
+            renderFinishTime = time.perf_counter() - self.parentWidget().renderTime
+            self.close()
+            QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}').exec()
+            return
+
+class Worker(QRunnable):
+    def __init__(self, f, *args):
+        super(Worker, self).__init__()
+        self.signal_emitter = WorkerSignalEmitter()
+        self.f = f
+        self.args = args
+
+    @pyqtSlot()
+    def run(self):
+        self.f(*self.args)
+        self.signal_emitter.finished.emit()
+
+class WorkerSignalEmitter(QObject):
+    finished = pyqtSignal()

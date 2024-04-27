@@ -1,4 +1,8 @@
 import os
+
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 import matplotlib.style as mplstyle
@@ -18,12 +22,23 @@ def export_to_image_files(destination_path, structured_dataset: Dataset, subFold
     image_subfolder_path = os.path.join(destination_path, subFolderName)
     os.makedirs(image_subfolder_path, exist_ok=True)
     context = FigureContext(structured_dataset)
+
+    # save_context = SaveTaskContext(context, image_subfolder_path)
+    # places_length = len(structured_dataset.places.values())
+    # with ThreadPoolExecutor() as executor:
+    #     executor.map(save_image, [context] * places_length, structured_dataset.places.values(), [image_subfolder_path] * places_length)
     
     # update and save plt figures
     for place in structured_dataset.places.values():
         context.update_subplots(place)
-        context.plt_figure.savefig(f'{image_subfolder_path}/{fix_filename(place.id)}.png', dpi=130)
+        context.plt_figure.savefig(os.path.join(image_subfolder_path, f'{fix_filename(place.id)}.png'), dpi=130)
     plt.close('all')
+
+def save_image(context, place: Place, image_subfolder_path):
+    context.update_subplots(place)
+    context.plt_figure.savefig(os.path.join(image_subfolder_path, f'{fix_filename(place.id)}.png'), dpi=130)
+
+
 
 class FigureContext:
     def __init__(self, dataset: Dataset):
