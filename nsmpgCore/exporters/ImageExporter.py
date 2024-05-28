@@ -234,7 +234,7 @@ def make_accumulations_data(place: Place):
     table_data_array = [
         [['Assessment at current dekad'],
         ['', 'Sel. Yrs.', 'Clim.'],
-        ['Total C. Dk.', selected_place_stats['Current Season Accumulation'][-1], place.place_stats['Current Season Accumulation'][-1]],
+        ['Total C. Dk.', round(selected_place_stats['Current Season Accumulation'][-1]), round(place.place_stats['Current Season Accumulation'][-1])],
         ['LTA C. Dk.', round(selected_place_stats['LTA'][current_index]), round(place.place_stats['LTA'][current_index])],
         ['C. Dk./LTA Pct.', round(selected_place_stats['C. Dk./LTA'][current_index]*100), round(place.place_stats['C. Dk./LTA'][current_index]*100)]],
     ]
