@@ -41,7 +41,7 @@ class Properties:
 class Options:
     def __init__(self, climatology_start=None, climatology_end=None,
                  season_start=None, season_end=None, cross_years=None, selected_years=None,
-                 is_forecast=None, comparison_method=None, output_web=None, output_images=None,
+                 is_forecast=None, use_pearson=None, output_web=None, output_images=None,
                  output_stats=None, output_parameters=None, dataset_properties:Properties=None):
         # constructs default options from the properties of the dataset
         if dataset_properties is not None:
@@ -52,7 +52,7 @@ class Options:
             self.selected_years=dataset_properties.year_ids
             self.cross_years=False
             self.is_forecast=False
-            self.comparison_method = 'Accumulation'
+            self.use_pearson = False
             self.output_web: bool = True
             self.output_images: bool = False
             self.output_stats: bool = True
@@ -67,7 +67,7 @@ class Options:
 
         self.selected_years: Union(list[str], str) = selected_years
         self.is_forecast: bool = is_forecast
-        self.comparison_method: str = comparison_method
+        self.use_pearson: bool = use_pearson
 
         self.output_web: bool = output_web
         self.output_images: bool = output_images
@@ -212,21 +212,20 @@ def slice_by_element(_list: list, start, end=None) -> list:
 
     return sliced_list
 
-comparison_methods_list = [
-    "Each Value",
-    "Accumulation",
-    "Total",
-    "Pearson Correlation",
-]
-
-def get_similar_years(current_year: np.ndarray, year_list: list[np.ndarray], year_ids: list[str], method='Accumulation') -> list[str]:
+def get_similar_years(current_year: np.ndarray, year_list: list[np.ndarray], year_ids: list[str], use_pearson=False) -> list[str]:
     year_list = np.array(year_list)[:,:current_year.size]
     current_year_accumulation = np.cumsum(current_year)
     accumulations_list = np.cumsum(year_list, axis=1)
-    if method == 'Each Value': rankings = np.sum((year_list - current_year) ** 2, axis=1)
-    if method == 'Accumulation': rankings = np.sum((accumulations_list - current_year_accumulation) ** 2, axis=1)
-    if method == 'Total': rankings = (accumulations_list[:,-1] - current_year_accumulation[-1]) ** 2
-    if method == 'Pearson Correlation': rankings = [1 - (sp.pearsonr(arr, current_year).statistic) ** 2 for arr in year_list]
-    ranked_indexes = np.argsort(rankings)
+    data_curve_rankings = np.argsort(np.sum((year_list - current_year) ** 2, axis=1))
+    accumulation_curve_rankings = np.argsort(np.sum((accumulations_list - current_year_accumulation) ** 2, axis=1))
+    season_total_rankings = np.argsort((accumulations_list[:,-1] - current_year_accumulation[-1]) ** 2)
+    sum_of_rankings = data_curve_rankings + accumulation_curve_rankings + season_total_rankings
+    # print(data_curve_rankings, '\n', accumulation_curve_rankings, '\n', season_total_rankings)
+    if use_pearson:
+        pearson_correlation_rankings = np.argsort([1 - (sp.pearsonr(arr, current_year).statistic) ** 2 for arr in year_list])
+        sum_of_rankings += pearson_correlation_rankings
+        # print(pearson_correlation_rankings)
+    ranked_indexes = np.argsort(sum_of_rankings)
+    # print( '\n', ranked_indexes, '\n')
     ranked_year_ids = [year_ids[i] for i in ranked_indexes]
     return ranked_year_ids

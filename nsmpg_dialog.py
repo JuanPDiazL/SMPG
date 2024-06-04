@@ -35,7 +35,7 @@ from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSlot, pyqtSignal
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset, Options, Properties
-from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps, get_cross_years, get_properties_validated_year_list, yearly_periods, comparison_methods_list
+from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps, get_cross_years, get_properties_validated_year_list, yearly_periods
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
 from .nsmpgCore.exporters.CSVExporter import export_to_csv_files
 from .nsmpgCore.exporters.ImageExporter import export_to_image_files
@@ -89,7 +89,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.customYearsRadioButton: QRadioButton
         self.similarYearsRadioButton: QRadioButton
         self.similarYearsComboBox: QComboBox
-        self.comparisonMethodComboBox: QComboBox
+        self.usePearsonCheckBox: QCheckBox
         self.selectYearsButton: QPushButton
 
         self.observedDataRadioButton: QRadioButton
@@ -148,7 +148,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             self.customYearsRadioButton.setChecked(True)
             self.selectYearsButton.setEnabled(True)
             self.similarYearsComboBox.setEnabled(False)
-            self.comparisonMethodComboBox.setEnabled(False)
+            self.usePearsonCheckBox.setEnabled(False)
         self.year_selection_dialog.updateYearsList(year_ids)
         self.year_selection_dialog.selected_years = options.selected_years
         self.year_selection_dialog.update_selection()
@@ -159,12 +159,9 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             self.similarYearsRadioButton.setChecked(True)
             self.similarYearsComboBox.setEnabled(True)
             self.similarYearsComboBox.setCurrentText(options.selected_years)
-            self.comparisonMethodComboBox.setEnabled(True)
-            self.comparisonMethodComboBox.setCurrentText(options.comparison_method)
+            self.usePearsonCheckBox.setEnabled(True)
             self.selectYearsButton.setEnabled(False)
-        self.comparisonMethodComboBox.clear()
-        self.comparisonMethodComboBox.addItems(comparison_methods_list)
-        self.comparisonMethodComboBox.setCurrentText(options.comparison_method)
+        self.usePearsonCheckBox.setChecked(options.use_pearson)
 
         self.observedDataRadioButton.setEnabled(True)
         self.forecastRadioButton.setEnabled(True)
@@ -239,7 +236,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             cross_years=self.crossYearsCheckBox.isChecked(),
             selected_years=self.year_selection_dialog.selected_years if self.customYearsRadioButton.isChecked() else self.similarYearsComboBox.currentText(),
             is_forecast=self.forecastRadioButton.isChecked(),
-            comparison_method=self.comparisonMethodComboBox.currentText(),
+            use_pearson=self.usePearsonCheckBox.isChecked(),
             output_web=self.exportWebCheckBox.isChecked(),
             output_images=self.exportImagesCheckBox.isChecked(),
             output_stats=self.exportStatsCheckBox.isChecked(),
@@ -301,7 +298,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             cross_years=self.crossYearsCheckBox.isChecked(),
             selected_years=year_list,
             is_forecast=self.forecastRadioButton.isChecked(),
-            comparison_method=self.comparisonMethodComboBox.currentText(),
+            use_pearson=self.usePearsonCheckBox.isChecked(),
             output_web=self.exportWebCheckBox.isChecked(),
             output_images=self.exportImagesCheckBox.isChecked(),
             output_stats=self.exportStatsCheckBox.isChecked(),
@@ -313,10 +310,10 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         if self.customYearsRadioButton.isChecked():
             self.selectYearsButton.setEnabled(True)
             self.similarYearsComboBox.setEnabled(False)
-            self.comparisonMethodComboBox.setEnabled(False)
+            self.usePearsonCheckBox.setEnabled(False)
         elif self.similarYearsRadioButton.isChecked():
             self.similarYearsComboBox.setEnabled(True)
-            self.comparisonMethodComboBox.setEnabled(True)
+            self.usePearsonCheckBox.setEnabled(True)
             self.selectYearsButton.setEnabled(False)
 
     def select_years_btn_event(self):

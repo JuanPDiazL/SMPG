@@ -85,7 +85,7 @@ class Place:
         self.similar_seasons = get_similar_years(self.current_season, 
                                             split_seasons, 
                                             parent.properties.year_ids,
-                                            parent.options.comparison_method)
+                                            parent.options.use_pearson)
         if isinstance(parent.properties.selected_years, str):
             self.selected_years = self.similar_seasons[:int(parent.properties.selected_years)]
         if isinstance(parent.properties.selected_years, list):
