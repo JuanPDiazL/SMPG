@@ -118,11 +118,17 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.climatologyStartComboBox.setEnabled(True)
         self.climatologyStartComboBox.clear()
         self.climatologyStartComboBox.addItems(year_ids)
-        self.climatologyStartComboBox.setCurrentText(options.climatology_start)
+        if '1991' in year_ids:
+            self.climatologyStartComboBox.setCurrentText('1991')
+        else:
+            self.climatologyStartComboBox.setCurrentText(options.climatology_start)
         self.climatologyEndComboBox.setEnabled(True)
         self.climatologyEndComboBox.clear()
         self.climatologyEndComboBox.addItems(year_ids)
-        self.climatologyEndComboBox.setCurrentText(options.climatology_end)
+        if '2020' in year_ids:
+            self.climatologyEndComboBox.setCurrentText('2020')
+        else:
+            self.climatologyEndComboBox.setCurrentText(options.climatology_end)
 
         self.seasonStartComboBox.setEnabled(True)
         self.seasonStartComboBox.clear()
@@ -177,7 +183,11 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def load_file_btn_event(self): 
         # path reading
         self.selected_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
-        if self.selected_source == "": return
+        if self.selected_source == "":
+            QMessageBox.warning(self, "Warning", 
+                                'No dataset was selected.', 
+                                QMessageBox.Ok)
+            return
         self.dataset_source_path = os.path.normpath(os.path.dirname(self.selected_source))
         self.dataset_filename = ''.join(os.path.basename(self.selected_source).split('.')[:-1])
 
@@ -284,8 +294,8 @@ class NSMPGDialog(QDialog, FORM_CLASS):
                 parameters = json.load(json_file)
             options = Options()
             options.overwrite(parameters)
-        except:
-            QMessageBox.critical(self, 'Error', f'Could not load parameters from {parameters_source}')
+        except Exception as e:
+            QMessageBox.critical(self, 'Error', f'Could not load parameters from {parameters_source}.\n\n{str(e)}')
             return
         self.importParametersLineEdit.setText(parameters_source)
         self.update_fields(options)
