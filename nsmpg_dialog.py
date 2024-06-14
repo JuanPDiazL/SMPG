@@ -215,12 +215,19 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             return
 
         # path reading
-        destination_path = QFileDialog.getExistingDirectory(self, 'Open dataset file', self.dataset_source_path)[0]
-        if destination_path == "": return
-        # check if the selected directory exists and create it if necessary
-        path_with_filename = os.path.join(destination_path, self.dataset_filename)
-        if path_with_filename not in destination_path:
-            destination_path = path_with_filename
+        self.destination_path = os.path.normpath(QFileDialog.getExistingDirectory(self, 'Save results', self.dataset_source_path))
+        if self.destination_path == "":
+            QMessageBox.warning(self, "Warning", 
+                                'No export folder was selected.', 
+                                QMessageBox.Ok)
+            return
+        
+        # ask for creating subfolder
+        dlg = QMessageBox.information(self, "Create new folder?", 
+                            f'Do you want to create a folder for the report files?\nThe folder {self.dataset_filename} at the path {self.destination_path} will be created.', 
+                            QMessageBox.Yes, QMessageBox.No)
+        if dlg == QMessageBox.Yes:
+            self.destination_path = os.path.join(self.destination_path, self.dataset_filename)
         
         # with cProfile.Profile() as profile:
         self.renderTime = time.perf_counter()
@@ -242,24 +249,23 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options)
         
         # output files
-        destination_path = os.path.join(self.dataset_source_path, self.dataset_filename)
         self.progress_dialog.show()
         self.pending_tasks = self.exportStatsCheckBox.isChecked() + \
                              self.exportWebCheckBox.isChecked() +\
                              self.exportImagesCheckBox.isChecked()
         workers: list[Worker] = []
         if self.exportStatsCheckBox.isChecked():
-            workers.append(Worker(export_to_csv_files, destination_path, self.structured_dataset))
+            workers.append(Worker(export_to_csv_files, self.destination_path, self.structured_dataset))
         if self.exportWebCheckBox.isChecked():
-            workers.append(Worker(export_to_web_files, destination_path, self.structured_dataset))
+            workers.append(Worker(export_to_web_files, self.destination_path, self.structured_dataset))
         if self.exportParametersCheckBox.isChecked():
             json_data = json.dumps(options.__dict__)
             if isinstance(json_data, bytes): json_data = json_data.decode()
-            os.makedirs(destination_path, exist_ok=True)
-            with open(f'{destination_path}/Parameters.json', 'w') as js_data_wrapper:
+            os.makedirs(self.destination_path, exist_ok=True)
+            with open(f'{self.destination_path}/Parameters.json', 'w') as js_data_wrapper:
                 js_data_wrapper.write(json_data)
         if self.exportImagesCheckBox.isChecked():
-            workers.append(Worker(export_to_image_files, destination_path, self.structured_dataset))
+            workers.append(Worker(export_to_image_files, self.destination_path, self.structured_dataset))
         for worker in workers:
             worker.signal_emitter.finished.connect(self.progress_dialog.update)
             self.threadpool.start(worker)
@@ -408,7 +414,7 @@ class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
         if self.parentWidget().pending_tasks == 0:
             renderFinishTime = time.perf_counter() - self.parentWidget().renderTime
             self.close()
-            QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}').exec()
+            QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}\nThe reports were saved at {self.parentWidget().destination_path}').exec()
             return
 
 class Worker(QRunnable):
