@@ -6,7 +6,7 @@
 
 [general]
 name=New SMPG
-qgisMinimumVersion=3.0
+qgisMinimumVersion=3.36
 description=New implementation of SMPG
 version=1.0.2
 author=Juan Pablo Diaz Lombana
