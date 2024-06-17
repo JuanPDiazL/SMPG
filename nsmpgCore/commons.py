@@ -1,7 +1,7 @@
 import re
 import numpy as np
 import scipy.stats as sp
-from typing import Tuple, Union
+from typing import Optional, Union
 
 # Dictionary that correlates the period name
 # with the number of periods that fit in a year
@@ -21,7 +21,7 @@ class Properties:
         self.place_ids : list[str]
         self.year_ids: list[str]
         self.climatology_year_ids: list[str]
-        self.selected_years: Union(list[str], str)
+        self.selected_years: Union[list[str], str]
         
         self.sub_season_ids: list[str]
         self.sub_season_monitoring_ids: list[str]
