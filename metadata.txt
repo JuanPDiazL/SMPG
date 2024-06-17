@@ -40,6 +40,7 @@ deprecated=False
 # (or upgraded) can be specified.
 # Check the documentation for more information.
 # plugin_dependencies=
+# plugin_dependencies=
 
 
 Category of the plugin: Raster, Vector, Database or Web
