@@ -18,6 +18,20 @@ body {
     background-color: inherit !important;
 }
 
+#placeSearch {
+    /* width: 100%; */
+    margin: 10px;
+    /* font-size: 18px; */
+    /* padding: 11px;
+    border: 1px solid #ddd; */
+}
+
+#placeList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
 .content {
     max-height: 100vh;
     overflow-y: hidden;
