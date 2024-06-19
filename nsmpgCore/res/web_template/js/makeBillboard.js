@@ -145,6 +145,7 @@ const chartColors = {
     'Forecast': '#FF00FF',
     'Forecast Accumulation': '#FF00FF',
 
+    '67 Pctl.': '#00FF00',
     'D0: 31 Pctl.': '#FFFF00',
     'D1: 21 Pctl.': '#FCD37F',
     'D2: 11 Pctl.': '#FFAA00',
@@ -382,11 +383,12 @@ class AccumulationsBillboardCurrentChart {
             'Seasonal Accumulation': 'bar',
             'Current Season Total': 'bar',
             'Climatology Average': 'line',
-            'D4: 3 Pctl.': 'area',
-            'D3: 6 Pctl.': 'area',
-            'D2: 11 Pctl.': 'area',
-            'D1: 21 Pctl.': 'area',
-            'D0: 31 Pctl.': 'area',
+            'D4: 3 Pctl.': 'line',
+            'D3: 6 Pctl.': 'line',
+            'D2: 11 Pctl.': 'line',
+            'D1: 21 Pctl.': 'line',
+            'D0: 31 Pctl.': 'line',
+            '67 Pctl.': 'line',
         };
         this.xs = {
             'data_xs': ascendingArray(this.columnNames.length),
@@ -408,7 +410,7 @@ class AccumulationsBillboardCurrentChart {
             size: getSize(this.containerElement),
             point: { show: true, },
             groups: [
-                ['D4: 3 Pctl.', 'D3: 6 Pctl.', 'D2: 11 Pctl.', 'D1: 21 Pctl.', 'D0: 31 Pctl.',],
+                ['D4: 3 Pctl.', 'D3: 6 Pctl.', 'D2: 11 Pctl.', 'D1: 21 Pctl.', 'D0: 31 Pctl.', '67 Pctl.'],
             ],
             bar: {
                 zerobased: false,
@@ -433,6 +435,7 @@ class AccumulationsBillboardCurrentChart {
             'Seasonal Accumulation': getUpTo(this.seasonalData[index]['Sum'], this.currentLength - 1),
             'Current Season Total': [getLast(this.placeData[index]['Current Season Accumulation'])],
             'Climatology Average': extendScalar(this.placeData[index]['LTA'][this.currentLength-1], this.columnNames.length),
+            '67 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][5], this.columnNames.length),
             'D0: 31 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][4], this.columnNames.length),
             'D1: 21 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][3], this.columnNames.length),
             'D2: 11 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][2], this.columnNames.length),
