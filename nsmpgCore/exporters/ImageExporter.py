@@ -331,7 +331,7 @@ def make_accumulations_current_data(place: Place):
         'Seasonal Accumulations': [s[current_index] for s in season_stats['Sum'].values()],
         'Current Season Total': [selected_place_stats['Current Season Accumulation'][-1]],
         'Climatology Average': [place_stats['LTA'][current_index]] * x_length,
-        '67 Pctl.': [place_stats['Drought Severity Pctls.'][5]] * x_length,
+        '67 Pctl.': [place_stats['Drought Severity Pctls.'][4]] * x_length,
         'D0: 31 Pctl.': [place_stats['Drought Severity Pctls.'][4]] * x_length,
         'D1: 21 Pctl.': [place_stats['Drought Severity Pctls.'][3]] * x_length,
         'D2: 11 Pctl.': [place_stats['Drought Severity Pctls.'][2]] * x_length,
