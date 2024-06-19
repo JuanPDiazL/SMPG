@@ -31,7 +31,7 @@
             <span><button class="mi w3-button w3-right" onclick="w3_close()">close</button></span>
         </header>
 
-        <input type="text" id="placeSearch" onkeyup="searchFunction()" placeholder="Search Place">
+        <input type="text" id="placeSearch" onkeyup="searchFunction()" onkeydown="confirmSearch(event)" autocomplete="off" placeholder="Search place">
 
         <ul id="placeList">
 
@@ -164,10 +164,19 @@
             for (i = 0; i < li.length; i++) {
                 a = li[i].getElementsByTagName("a")[0];
                 if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
-                li[i].style.display = "";
+                    li[i].classList.remove('place-hidden');
                 } else {
-                li[i].style.display = "none";
+                    li[i].classList.add('place-hidden');
                 }
+            }
+        }
+
+        function confirmSearch(event) {
+            if(event.key === 'Enter') {
+                const placeList = document.getElementById("placeList");
+                const selectedPlace = placeList.querySelector('.place-list-element:not(.place-hidden)');
+                selectedPlace.firstChild.click();
+                console.log(selectedPlace, 'clicked');
             }
         }
 
@@ -176,6 +185,7 @@
             const sidebarList = document.getElementById('placeList');
             for (const place of data) {
                 const listElement = document.createElement('li');
+                listElement.className = 'place-list-element';
                 const placeLink = document.createElement('a');
                 listElement.appendChild(placeLink);
                 sidebarElements[place] = placeLink;
