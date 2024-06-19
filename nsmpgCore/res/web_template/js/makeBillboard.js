@@ -382,11 +382,11 @@ class AccumulationsBillboardCurrentChart {
             'Seasonal Accumulation': 'bar',
             'Current Season Total': 'bar',
             'Climatology Average': 'line',
-            'D4: 3 Pctl.': 'area',
-            'D3: 6 Pctl.': 'area',
-            'D2: 11 Pctl.': 'area',
-            'D1: 21 Pctl.': 'area',
-            'D0: 31 Pctl.': 'area',
+            'D4: 3 Pctl.': 'line',
+            'D3: 6 Pctl.': 'line',
+            'D2: 11 Pctl.': 'line',
+            'D1: 21 Pctl.': 'line',
+            'D0: 31 Pctl.': 'line',
         };
         this.xs = {
             'data_xs': ascendingArray(this.columnNames.length),

@@ -75,11 +75,11 @@ class FigureContext:
             '(33, 67) Pctl.': 'scatter',
             'E. LTA±St. Dev.': 'scatter',
             'E. (33, 67) Pctl.': 'scatter',
-            'D4: 3 Pctl.': 'area',
-            'D3: 6 Pctl.': 'area',
-            'D2: 11 Pctl.': 'area',
-            'D1: 21 Pctl.': 'area',
-            'D0: 31 Pctl.': 'area',
+            # 'D4: 3 Pctl.': 'area',
+            # 'D3: 6 Pctl.': 'area',
+            # 'D2: 11 Pctl.': 'area',
+            # 'D1: 21 Pctl.': 'area',
+            # 'D0: 31 Pctl.': 'area',
         }
 
         x_period_labels = dataset.properties.sub_season_monitoring_ids
@@ -330,11 +330,11 @@ def make_accumulations_current_data(place: Place):
         'Seasonal Accumulations': [s[current_index] for s in season_stats['Sum'].values()],
         'Current Season Total': [selected_place_stats['Current Season Accumulation'][-1]],
         'Climatology Average': [place_stats['LTA'][current_index]] * x_length,
-        'D0: 31 Pctl.': place_stats['Drought Severity Pctls.'][4],
-        'D1: 21 Pctl.': place_stats['Drought Severity Pctls.'][3],
-        'D2: 11 Pctl.': place_stats['Drought Severity Pctls.'][2],
-        'D3: 6 Pctl.': place_stats['Drought Severity Pctls.'][1],
-        'D4: 3 Pctl.': place_stats['Drought Severity Pctls.'][0],
+        'D0: 31 Pctl.': [place_stats['Drought Severity Pctls.'][4]] * x_length,
+        'D1: 21 Pctl.': [place_stats['Drought Severity Pctls.'][3]] * x_length,
+        'D2: 11 Pctl.': [place_stats['Drought Severity Pctls.'][2]] * x_length,
+        'D3: 6 Pctl.': [place_stats['Drought Severity Pctls.'][1]] * x_length,
+        'D4: 3 Pctl.': [place_stats['Drought Severity Pctls.'][0]] * x_length,
     }
     table_data_array = [
         [['Historical Rainfall Statistics'],
@@ -342,10 +342,11 @@ def make_accumulations_current_data(place: Place):
         ['Clim. Avg. C. Dk.', round(place_stats['LTA'][current_index])],
         # ['Sel. Yrs. Avg. C. Dk.', round(selected_place_stats['LTA'][current_index])],
         ['D0: 31 Pctl.', round(place_stats['Drought Severity Pctls.'][4])],
-        ['D1: 21 Pctl.', round(place_stats['Drought Severity Pctls.'][3])],
+        # ['D1: 21 Pctl.', round(place_stats['Drought Severity Pctls.'][3])],
         ['D2: 11 Pctl.', round(place_stats['Drought Severity Pctls.'][2])],
-        ['D3: 6 Pctl.', round(place_stats['Drought Severity Pctls.'][1])],
-        ['D4: 3 Pctl.', round(place_stats['Drought Severity Pctls.'][0])]],
+        # ['D3: 6 Pctl.', round(place_stats['Drought Severity Pctls.'][1])],
+        # ['D4: 3 Pctl.', round(place_stats['Drought Severity Pctls.'][0])]
+        ],
     ]
 
     metadata = {
