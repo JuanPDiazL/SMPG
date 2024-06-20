@@ -226,7 +226,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
         # path reading
         self.destination_path = os.path.normpath(QFileDialog.getExistingDirectory(self, 'Save results', self.dataset_source_path))
-        if self.destination_path == "":
+        if self.destination_path == ".":
             QMessageBox.warning(self, "Warning", 
                                 'No export folder was selected.', 
                                 QMessageBox.Ok)
