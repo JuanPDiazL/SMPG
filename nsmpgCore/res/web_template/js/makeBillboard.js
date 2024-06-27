@@ -173,7 +173,6 @@ class AccumulationsBillboardChart {
         };
         this.xs = {
             'data_xs': ascendingArray(this.columnNames.length),
-            'forecast_xs': [this.currentLength-1, this.currentLength],
             'scatter_xs': this.lastCoordinates,
         };
         this.customxs = {
@@ -221,6 +220,7 @@ class AccumulationsBillboardChart {
         if (this.placeData[index]['forecast'][0] != null) {
             jsonData['Forecast Accumulation'] = [getLast(this.placeData[index]['Current Season Accumulation']), 
                 getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])];
+            jsonData['forecast_xs'] = [this.currentLength-1, this.currentLength];
         }
         this.plot.load({
             json: jsonData,
@@ -257,7 +257,6 @@ class CurrentBillboardChart {
         };
         this.xs = {
             'data_xs': ascendingArray(this.columnNames.length),
-            'bar_xs': [this.currentLength],
         };
         this.customxs = {
             'Current Season': 'data_xs',
@@ -280,6 +279,7 @@ class CurrentBillboardChart {
         };
         if (this.placeData[index]['forecast'][0] != null) {
             jsonData['Forecast'] = this.placeData[index]['forecast'];
+            jsonData['bar_xs'] = [this.currentLength];
         }
         this.plot.load({
             json: jsonData,
