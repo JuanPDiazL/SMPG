@@ -286,7 +286,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
     def import_parameters_btn_event(self) -> None:
         # path reading
-        parameters_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "JSON files (*.json)")[0]
+        parameters_source = QFileDialog.getOpenFileName(self, 'Open parameters file', None, "JSON files (*.json)")[0]
         if parameters_source == "": return
 
         try:
