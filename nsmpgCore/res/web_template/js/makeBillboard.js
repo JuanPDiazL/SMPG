@@ -199,7 +199,6 @@ class AccumulationsBillboardChart {
             data: { json: {}, },
             ..._.merge(defaultOptions, chartOptions)
         });
-        this.update(firstPlaceKey);
         window.addEventListener('resize', () => onResize(containerElement, this.plot));
     }
     update(index) {
@@ -267,7 +266,6 @@ class CurrentBillboardChart {
             data: { json: {}, },
             ..._.merge(defaultOptions, chartOptions)
         });
-        this.update(firstPlaceKey);
         window.addEventListener('resize', () => onResize(this.containerElement, this.plot));
     }
 
@@ -336,7 +334,6 @@ class EnsembleBillboardChart {
             data: { json: {}, },
             ..._.merge(defaultOptions, chartOptions)
         });
-        this.update(firstPlaceKey);
         window.addEventListener('resize', () => onResize(containerElement, this.plot));
     }
     update(index) {
@@ -424,8 +421,6 @@ class AccumulationsBillboardCurrentChart {
             data: { json: {}, },
             ..._.merge(defaultOptions, chartOptions)
         });
-        this.update(firstPlaceKey);
-
         window.addEventListener('resize', () => onResize(containerElement, this.plot));
     }
 

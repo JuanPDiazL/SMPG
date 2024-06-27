@@ -54,10 +54,10 @@
 
             <div class="w3-row-padding">
 
-                <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
+                <div id="card1" class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
                         <header class="w3-container w3-blue-grey">
-                            <p>Seasonal Accumulations</p>
+                            <p id="plot1Title" class="card-title">Seasonal Accumulations</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-small">
                             <div id="chart1"></div>
@@ -66,10 +66,10 @@
                     </div>
                 </div>
 
-                <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
+                <div id="card2" class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
                         <header class="w3-container w3-blue-grey">
-                            <p>Current Rainfall Status</p>
+                            <p id="plot2Title" class="card-title">Current Rainfall Status</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-small">
                             <div id="chart2" class="chart"></div>
@@ -82,10 +82,10 @@
 
             <div class="w3-row-padding">
 
-                <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
+                <div id="card3" class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
                         <header class="w3-container w3-blue-grey">
-                            <p>Ensemble</p>
+                            <p id="plot3Title" class="card-title">Ensemble</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-small">
                             <div id="chart3"></div>
@@ -94,10 +94,10 @@
                     </div>
                 </div>
 
-                <div class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
+                <div id="card4" class="w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
                     <div class="w3-card">
                         <header class="w3-container w3-blue-grey">
-                            <p>Seasonal Rainfall Accumulation Up to Current Dekad</p>
+                            <p id="plot4Title" class="card-title">Seasonal Rainfall Accumulation Up to Current Dekad</p>
                         </header>
                         <div class="plot-container w3-container w3-padding-small">
                             <div id="chart4"></div>
@@ -180,6 +180,22 @@
             }
         }
 
+        function updateDocument(place) {
+            document.getElementById('contentHeaderText').textContent = place;
+            const plot2Title = `Current Rainfall Status (${datasetProperties.current_season_id}). Climatology: [${datasetProperties.climatology_year_ids[0]}, ${getLast(datasetProperties.climatology_year_ids)}]`;
+            const plot4Title = `Seasonal Rainfall Accumulation Up to Current Dekad for ${place}`;
+            bb1.update(place);
+            bb2.update(place);
+            bb3.update(place);
+            bb4.update(place);
+            table1.update(getDataAssessmentCD(placeStats, selectedYearsPlaceStats, place));
+            table2.update(getDataSeasonalAnalysis(placeStats, selectedYearsPlaceStats, place));
+            table3.update(getDataProjectionEoS(placeStats, selectedYearsPlaceStats, place));
+            table4.update(getDataProbabilityEoS(placeStats, selectedYearsPlaceStats, place));
+            document.getElementById('plot2Title').textContent = plot2Title;
+            document.getElementById('plot4Title').textContent = plot4Title;
+        }
+
         let sidebarElements = {};
         function makeSelectionMenu(data) {
             const sidebarList = document.getElementById('placeList');
@@ -193,16 +209,8 @@
                 placeLink.className = 'w3-bar-item w3-button';
                 placeLink.innerHTML = place;
                 placeLink.addEventListener('click', function () {
+                    updateDocument(place);
                     placeLink.classList.add('selected');
-                    document.getElementById('contentHeaderText').textContent = place;
-                    bb1.update(place);
-                    bb2.update(place);
-                    bb3.update(place);
-                    bb4.update(place);
-                    table1.update(getDataAssessmentCD(placeStats, selectedYearsPlaceStats, place));
-                    table2.update(getDataSeasonalAnalysis(placeStats, selectedYearsPlaceStats, place));
-                    table3.update(getDataProjectionEoS(placeStats, selectedYearsPlaceStats, place));
-                    table4.update(getDataProbabilityEoS(placeStats, selectedYearsPlaceStats, place));
                     if (previousSelectionElement) {
                         previousSelectionElement.classList.remove('selected');
                     }
@@ -226,23 +234,16 @@
             seasonalStats, placeStats, datasetProperties, '#chart4');
 
         let table1 = new statsTable('#chart1', 'Assessment at Current Dekad');
-        table1.update(getDataAssessmentCD(
-            placeStats, selectedYearsPlaceStats, firstPlaceKey));
         overlaySVG(table1.table, '#chart1 .bb-main');
 
-
         let table2 = new statsTable('#chart2', 'Seasonal Analysis');
-        table2.update(getDataSeasonalAnalysis(
-            placeStats, selectedYearsPlaceStats, firstPlaceKey));
         overlaySVG(table2.table , '#chart2 .bb-main');
 
         let table3 = new statsTable('#chart3', 'Projection at EoS');
-        table3.update(getDataProjectionEoS(
-            placeStats, selectedYearsPlaceStats, firstPlaceKey));
         overlaySVG(table3.table, '#chart3 .bb-main');
         let table4 = new statsTable('#chart3', 'Probability at EoS');
-        table4.update(getDataProbabilityEoS(
-            placeStats, selectedYearsPlaceStats, firstPlaceKey));
+
+        updateDocument(firstPlaceKey);
         placeUnder(table4.table, table3.table);
         
         makeSelectionMenu(datasetProperties['place_ids']);
