@@ -19,11 +19,11 @@ body {
 }
 
 #placeSearch {
-    /* width: 100%; */
-    margin: 10px;
+    width: 90%;
+    margin: 5%;
     /* font-size: 18px; */
-    /* padding: 11px;
-    border: 1px solid #ddd; */
+    /* padding: 11px; */
+    /* border: 1px solid #ddd; */
 }
 
 #placeList {
