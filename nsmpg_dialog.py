@@ -368,7 +368,7 @@ class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
             self.yearsLayout.addWidget(check_box, row_n, col_n)
             cb_list.append(check_box)
             col_n += 1
-            if col_n == 4:
+            if col_n == 10:
                 row_n += 1
                 col_n = 0
         self.year_combo_boxes = cb_list
