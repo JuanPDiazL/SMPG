@@ -28,6 +28,7 @@ def wrap_summary(stats):
         }
 
 def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Statistics'):
+    suffix = f'[{dataset.name}][season {dataset.properties.current_season_id} dekad {dataset.properties.current_season_length}]'
     stats_subfolder_path = os.path.join(destination_path, subFolderName)
     os.makedirs(stats_subfolder_path, exist_ok=True)
     headers = []
@@ -44,8 +45,8 @@ def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Stati
         selected_years_summary.append(wrap_summary(place.selected_years_place_stats))
         similar_seasons.append(place.similar_seasons)
 
-    pd.DataFrame.from_records(climatology_stats, index=headers).to_csv(f'{stats_subfolder_path}/climatology_stats.csv')
-    pd.DataFrame.from_records(climatology_summary, index=headers).to_csv(f'{stats_subfolder_path}/climatology_summary.csv')
-    pd.DataFrame.from_records(selected_years_stats, index=headers).to_csv(f'{stats_subfolder_path}/selected_years_stats.csv')
-    pd.DataFrame.from_records(selected_years_summary, index=headers).to_csv(f'{stats_subfolder_path}/selected_years_summary.csv')
-    pd.DataFrame(similar_seasons, index=headers).to_csv(f'{stats_subfolder_path}/similar_seasons.csv')
+    pd.DataFrame.from_records(climatology_stats, index=headers).to_csv(f'{stats_subfolder_path}/climatology_stats{suffix}.csv')
+    pd.DataFrame.from_records(climatology_summary, index=headers).to_csv(f'{stats_subfolder_path}/climatology_summary{suffix}.csv')
+    pd.DataFrame.from_records(selected_years_stats, index=headers).to_csv(f'{stats_subfolder_path}/selected_years_stats{suffix}.csv')
+    pd.DataFrame.from_records(selected_years_summary, index=headers).to_csv(f'{stats_subfolder_path}/selected_years_summary{suffix}.csv')
+    pd.DataFrame(similar_seasons, index=headers).to_csv(f'{stats_subfolder_path}/similar_seasons{suffix}.csv')
