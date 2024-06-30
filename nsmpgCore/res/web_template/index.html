@@ -196,10 +196,9 @@
             document.getElementById('plot4Title').textContent = plot4Title;
         }
 
-        let sidebarElements = {};
         function makeSelectionMenu(data) {
             const sidebarList = document.getElementById('placeList');
-            for (const place of data) {
+            for (const place of data.toSorted()) {
                 const listElement = document.createElement('li');
                 listElement.className = 'place-list-element';
                 const placeLink = document.createElement('a');
@@ -246,6 +245,7 @@
         updateDocument(firstPlaceKey);
         placeUnder(table4.table, table3.table);
         
+        let sidebarElements = {};
         makeSelectionMenu(datasetProperties['place_ids']);
         let previousSelectionElement = sidebarElements[firstPlaceKey];
         sidebarElements[firstPlaceKey].classList.add('selected');
