@@ -422,7 +422,7 @@ class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
     def update(self):
         self.parentWidget().pending_tasks -= 1
         if self.parentWidget().pending_tasks == 0:
-            renderFinishTime = time.perf_counter() - self.parentWidget().renderTime
+            renderFinishTime = round(time.perf_counter() - self.parentWidget().renderTime, 1)
             self.close()
             QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}\nThe reports were saved at {self.parentWidget().destination_path}').exec()
             return
