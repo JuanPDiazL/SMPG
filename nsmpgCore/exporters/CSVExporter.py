@@ -28,7 +28,7 @@ def wrap_summary(stats):
         }
 
 def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Statistics'):
-    suffix = f'[{dataset.name}][season {dataset.properties.current_season_id} dekad {dataset.properties.current_season_length}]'
+    suffix = f' [{dataset.name}] [dek{dataset.properties.current_season_id}{dataset.properties.current_season_length}]'
     stats_subfolder_path = os.path.join(destination_path, subFolderName)
     os.makedirs(stats_subfolder_path, exist_ok=True)
     headers = []
