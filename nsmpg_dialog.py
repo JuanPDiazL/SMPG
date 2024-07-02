@@ -29,9 +29,12 @@ import json
 # import pstats
 
 # from qgis.PyQt import uic, QtWidgets
+
 from PyQt5 import uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSlot, pyqtSignal
+from .year_selection_dialog import YearSelectionDialog
+from .progress_dialog import ProgressDialog
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset, Options, Properties
@@ -43,10 +46,6 @@ from .nsmpgCore.exporters.ImageExporter import export_to_image_files
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'nsmpg_dialog_base.ui'))
-YEAR_SELECTION_DIALOG_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'year_selection_dialog.ui'))
-PROGRESS_DIALOG_CLASS,_ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'progress_dialog.ui'))
 
 
 class NSMPGDialog(QDialog, FORM_CLASS):
@@ -339,93 +338,6 @@ Last Year: {dataset_properties.year_ids[-1]}
 Current Year: {dataset_properties.current_season_id}
 Dekads in Current Year: {dataset_properties.current_season_length}'''
         self.datasetInfoLabel.setText(dg_text)
-
-class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
-    def __init__(self, parent=None):
-        super(YearSelectionDialog, self).__init__(parent)
-        self.setupUi(self)
-
-        self.setModal(True)
-
-        self.yearsFrame: QFrame
-        self.yearsLayout: QGridLayout
-        self.selectAllCheckBox: QCheckBox
-        self.select_all_state = False
-        self.year_combo_boxes: list[QCheckBox] = []
-        self.selected_years: list[str] = []
-
-        self.selectAllCheckBox.clicked.connect(self.select_all_cb_event)
-
-    def updateYearsList(self, year_list):
-        self.clear_years_layout()
-        self.selectAllCheckBox.setChecked(False)
-        cb_list = []
-        col_n = 0
-        row_n = 0
-        for year in year_list:
-            check_box = QCheckBox(year)
-            check_box.clicked.connect(self.year_combo_boxes_changed)
-            self.yearsLayout.addWidget(check_box, row_n, col_n)
-            cb_list.append(check_box)
-            col_n += 1
-            if col_n == 10:
-                row_n += 1
-                col_n = 0
-        self.year_combo_boxes = cb_list
-    
-    def select_all_cb_event(self):
-        for cb in self.year_combo_boxes:
-            cb.setChecked(self.selectAllCheckBox.isChecked())
-
-    def update_selection(self):
-        all_checked = True
-        for cb in self.year_combo_boxes:
-            if cb.text() in self.selected_years:
-                cb.setChecked(True)
-            else:
-                cb.setChecked(False)
-                all_checked &= False
-        self.selectAllCheckBox.setChecked(all_checked)
-
-    def accept(self) -> None:
-        self.selected_years = []
-        for cb in self.year_combo_boxes:
-            if cb.isChecked():
-                self.selected_years.append(cb.text())
-        self.select_all_state = self.selectAllCheckBox.isChecked()
-        super(YearSelectionDialog, self).accept()
-
-    def reject(self) -> None:
-        self.update_selection()
-        super(YearSelectionDialog, self).reject()
-
-    def year_combo_boxes_changed(self):
-        for cb in self.year_combo_boxes:
-            if cb.isChecked() == False:
-                self.selectAllCheckBox.setChecked(False)
-                return
-        self.selectAllCheckBox.setChecked(True)
-
-    def clear_years_layout(self):
-        while self.yearsLayout.count():
-            child = self.yearsLayout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-
-class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
-    def __init__(self, parent=None):
-        super(ProgressDialog, self).__init__(parent)
-        self.setupUi(self)
-        
-        self.setModal(True)
-
-    def update(self):
-        self.parentWidget().pending_tasks -= 1
-        if self.parentWidget().pending_tasks == 0:
-            renderFinishTime = round(time.perf_counter() - self.parentWidget().renderTime, 1)
-            self.close()
-            QMessageBox(text=f'Task completed.\nProcessing time: {renderFinishTime}\nThe reports were saved at {self.parentWidget().destination_path}').exec()
-            return
 
 class Worker(QRunnable):
     def __init__(self, f, *args):
