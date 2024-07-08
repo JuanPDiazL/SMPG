@@ -16,7 +16,7 @@ class Dataset:
         if self.options.cross_years:
             self.season_shift = (yearly_periods[self.properties.period_unit_id] // 2)
             self.properties.year_ids = get_cross_years(self.properties.year_ids)
-            self.properties.current_season_id = get_cross_years([self.properties.current_season_id])
+            self.properties.current_season_id = get_cross_years([self.properties.current_season_id])[0]
         else:
             self.season_shift = 0
             self.properties.year_ids = self.properties.year_ids
