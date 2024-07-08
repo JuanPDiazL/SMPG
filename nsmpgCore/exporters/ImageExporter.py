@@ -311,7 +311,7 @@ def make_accumulations_current_data(place: Place):
     place_stats = place.place_stats
     selected_place_stats = place.selected_years_place_stats
     current_index = len(selected_place_stats['Current Season Accumulation'])-1
-    x_ticks = props.year_ids + [props.current_season_id]
+    x_ticks = props.year_ids + props.current_season_id
     x_length = len(x_ticks)
     data = {
         'Seasonal Accumulations': [s[current_index] for s in season_stats['Sum'].values()],
