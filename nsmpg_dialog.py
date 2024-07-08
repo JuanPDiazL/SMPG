@@ -38,7 +38,10 @@ from .progress_dialog import ProgressDialog
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset, Options, Properties
-from .nsmpgCore.commons import define_seasonal_dict, parse_timestamps, get_cross_years, get_properties_validated_year_list, yearly_periods
+from .nsmpgCore.utils import (
+    define_seasonal_dict, parse_timestamps, 
+    get_properties_validated_year_list
+    )
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
 from .nsmpgCore.exporters.CSVExporter import export_to_csv_files
 from .nsmpgCore.exporters.ImageExporter import export_to_image_files

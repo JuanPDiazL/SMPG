@@ -1,6 +1,6 @@
 from numpy import ndarray
 import numpy as np
-from .commons import *
+from .utils import *
 
 # stores and processes all the information in the dataset
 # a dataset contains data of places
