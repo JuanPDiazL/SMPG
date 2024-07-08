@@ -6,16 +6,16 @@
 
 [general]
 name=New SMPG
-qgisMinimumVersion=3.36
-description=New implementation of SMPG
-version=1.0.2
-author=Juan Pablo Diaz Lombana
-email=email.not@defined.com
+qgisMinimumVersion=3.22
+description=The new implementation of SMPG tool
+version=1.0.3
+author=Diaz Lombana Juan Pablo
+email=juan.lombana@correounivalle.edu.co
 
-about=New implementation of SMPG
+about=The new implementation of SMPG tool
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/JuanPDiazL/NeoSMPG/issues
+repository=https://github.com/JuanPDiazL/NeoSMPG
 # End of mandatory metadata
 
 # Recommended items:
@@ -27,7 +27,7 @@ hasProcessingProvider=no
 # Tags are comma separated with spaces allowed
 tags=python
 
-homepage=http://homepage
+homepage=https://github.com/JuanPDiazL/NeoSMPG
 category=Plugins
 icon=icon.png
 # experimental flag
@@ -39,7 +39,6 @@ deprecated=False
 # Since QGIS 3.8, a comma separated list of plugins to be installed
 # (or upgraded) can be specified.
 # Check the documentation for more information.
-# plugin_dependencies=
 # plugin_dependencies=
 
 
