@@ -126,7 +126,7 @@ class FigureContext:
         axis.set_xlabel(metadata['x label'])
         axis.set_ylabel(metadata['y label'])
         axis.grid()
-        axis.set_xticks(x_coords, x_ticks, rotation='35', fontsize=font_size)
+        axis.set_xticks(x_coords, x_ticks, rotation=35, fontsize=font_size)
         axis.set_xlim([-.5, x_length-.5])
         for id, plot_data in plot_data.items():
             # print(id, plot_data)
