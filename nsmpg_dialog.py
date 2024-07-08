@@ -29,6 +29,9 @@ import json
 # import pstats
 
 # from qgis.PyQt import uic, QtWidgets
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import *
+from qgis.PyQt.QtCore import QObject, QRunnable, QThreadPool, pyqtSlot, pyqtSignal
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import *
