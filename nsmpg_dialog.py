@@ -33,9 +33,7 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import *
 from qgis.PyQt.QtCore import QObject, QRunnable, QThreadPool, pyqtSlot, pyqtSignal
 
-from PyQt5 import uic
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSlot, pyqtSignal
+from .map_settings_dialog import MapSettingsDialog
 from .year_selection_dialog import YearSelectionDialog
 from .progress_dialog import ProgressDialog
 
@@ -71,6 +69,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
         self.year_selection_dialog = YearSelectionDialog(self)
         self.progress_dialog = ProgressDialog(self)
+        self.map_settings_dialog = MapSettingsDialog(self)
 
         self.climatologyGroup: QGroupBox
         self.monitoringGroup: QGroupBox
@@ -101,10 +100,13 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.exportImagesCheckBox: QCheckBox
         self.exportStatsCheckBox: QCheckBox
         self.exportParametersCheckBox: QCheckBox
+        self.mappingButton: QPushButton
 
         self.datasetInfoLabel: QLabel
 
         self.processButton: QPushButton
+
+        self.mappingButton.clicked.connect(self.mapping_button_event)
 
         self.crossYearsCheckBox.stateChanged.connect(self.cross_years_cb_changed_event)
         self.customYearsRadioButton.toggled.connect(self.year_selection_rb_event)
@@ -183,6 +185,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.exportStatsCheckBox.setChecked(options.output_stats)
         self.exportParametersCheckBox.setEnabled(True)
         self.exportParametersCheckBox.setChecked(options.output_parameters)
+        self.mappingButton.setEnabled(True)
 
     # function that reads the dataset from a file.
     def load_file_btn_event(self): 
@@ -336,6 +339,9 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
     def select_years_btn_event(self):
         self.year_selection_dialog.show()
+
+    def mapping_button_event(self):
+        self.map_settings_dialog.show()
 
     def update_dialog_info(self, dataset_properties: Properties):
         dg_text = \
