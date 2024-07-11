@@ -190,12 +190,13 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     # function that reads the dataset from a file.
     def load_file_btn_event(self): 
         # path reading
-        self.selected_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
+        temp_dataset_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
         if self.selected_source == "":
             QMessageBox.warning(self, "Warning", 
                                 'No dataset was selected.', 
                                 QMessageBox.Ok)
             return
+        self.selected_source = temp_dataset_source
         self.dataset_source_path = os.path.normpath(os.path.dirname(self.selected_source))
         self.dataset_filename = ''.join(os.path.basename(self.selected_source).split('.')[:-1])
 
@@ -294,18 +295,18 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
     def import_parameters_btn_event(self) -> None:
         # path reading
-        parameters_source = QFileDialog.getOpenFileName(self, 'Open parameters file', None, "JSON files (*.json)")[0]
-        if parameters_source == "": return
-
+        temp_parameters_source = QFileDialog.getOpenFileName(self, 'Open parameters file', None, "JSON files (*.json)")[0]
+        if self.parameters_source == "": return
+        self.parameters_source = temp_parameters_source
         try:
-            with open(parameters_source, 'r') as json_file:
+            with open(self.parameters_source, 'r') as json_file:
                 parameters = json.load(json_file)
             options = Options()
             options.overwrite(parameters)
         except Exception as e:
-            QMessageBox.critical(self, 'Error', f'Could not load parameters from {parameters_source}.\n\n{str(e)}')
+            QMessageBox.critical(self, 'Error', f'Could not load parameters from {self.parameters_source}.\n\n{str(e)}')
             return
-        self.importParametersLineEdit.setText(parameters_source)
+        self.importParametersLineEdit.setText(self.parameters_source)
         self.update_fields(options)
 
     def cross_years_cb_changed_event(self):
