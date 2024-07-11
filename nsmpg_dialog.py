@@ -25,6 +25,7 @@
 import os
 import time
 import json
+import traceback
 # import cProfile
 # import pstats
 
@@ -191,7 +192,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def load_file_btn_event(self): 
         # path reading
         temp_dataset_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
-        if self.selected_source == "":
+        if temp_dataset_source == "":
             QMessageBox.warning(self, "Warning", 
                                 'No dataset was selected.', 
                                 QMessageBox.Ok)
@@ -205,7 +206,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             self.parsed_dataset, self.col_names, has_duplicates = parse_csv(self.selected_source)
             self.dataset_properties = Properties(parse_timestamps(self.col_names))
         except Exception as e:
-            QMessageBox.critical(self, "Error", f'The dataset could not be read.\n\n{str(e)}', QMessageBox.Ok)
+            QMessageBox.critical(self, "Error", f'The dataset could not be read.\n\n{str(e)}\n\n{traceback.format_exc()}', QMessageBox.Ok)
             return
         if has_duplicates:
             QMessageBox.warning(self, "Warning", 
@@ -296,7 +297,11 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def import_parameters_btn_event(self) -> None:
         # path reading
         temp_parameters_source = QFileDialog.getOpenFileName(self, 'Open parameters file', None, "JSON files (*.json)")[0]
-        if self.parameters_source == "": return
+        if temp_parameters_source == "": 
+            QMessageBox.warning(self, "Warning", 
+                                'No dataset was selected.', 
+                                QMessageBox.Ok)
+            return
         self.parameters_source = temp_parameters_source
         try:
             with open(self.parameters_source, 'r') as json_file:
@@ -304,7 +309,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             options = Options()
             options.overwrite(parameters)
         except Exception as e:
-            QMessageBox.critical(self, 'Error', f'Could not load parameters from {self.parameters_source}.\n\n{str(e)}')
+            QMessageBox.critical(self, 'Error', f'Could not load parameters from {self.parameters_source}.\n\n{str(e)}\n\n{traceback.format_exc()}')
             return
         self.importParametersLineEdit.setText(self.parameters_source)
         self.update_fields(options)
