@@ -43,6 +43,7 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
 
         self.mapSelectionComboBox: QComboBox
         self.loadShapefileButton: QPushButton
+        self.shapefilePathLineEdit: QLineEdit
         self.excludeLabel: QLabel
         self.includeLabel: QLabel
         self.blackList: QListWidget
@@ -51,19 +52,17 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         self.removeButton: QPushButton
         self.targetLabel: QLabel
         self.targetFieldComboBox: QComboBox
+        self.exportPNGMapsCheckBox: QCheckBox
 
-        self.export_toggle_widgets = [self.blackList, self.whiteList, 
-                                      self.addButton, self.removeButton, 
-                                      self.excludeLabel, self.includeLabel, 
-                                      self.targetLabel, self.targetFieldComboBox]
-
-        self.loadShapefileButton.hide()
-        self.update_attributes_list()
+        self.import_widgets = [self.loadShapefileButton, self.shapefilePathLineEdit]
 
         self.mapSelectionComboBox.currentIndexChanged.connect(self.map_selection_combobox_event)
         self.loadShapefileButton.clicked.connect(self.shp_event)
         self.addButton.clicked.connect(lambda: self.list_move_event(self.blackList, self.whiteList))
         self.removeButton.clicked.connect(lambda: self.list_move_event(self.whiteList, self.blackList))
+
+        self.set_show_import_widgets(False)
+        self.update_attributes_list()
         
     def list_move_event(self, source_list: QListWidget, destination_list: QListWidget):
         for item in source_list.selectedItems():
@@ -72,9 +71,9 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
 
     def map_selection_combobox_event(self, index):
         if index == 0: 
-            self.loadShapefileButton.show()
+            self.set_show_import_widgets(True)
             return
-        else: self.loadShapefileButton.hide()
+        else: self.set_show_import_widgets(False)
 
         if index > 0:
             selected_map_index = max(0, index - 1)
@@ -108,13 +107,8 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         print(get_fields(self.map_layer))
         statistics = load_layer(self.csv_source)
 
-        if not self.map_layer.isValid() and statistics.isValid():
-            print("Layer failed to load!")
+    def set_show_import_widgets(self, show=True):
+        if show: 
+            for w in self.import_widgets: w.show()
         else: 
-            QgsProject.instance().addMapLayer(self.map_layer)
-            QgsProject.instance().addMapLayer(statistics)
-
-            join_layers(statistics, self.map_layer, 'ADM2_CODE')
-            
-            self.style_source = QFileDialog.getOpenFileName(self, 'Open style file', None, "QGIS QML style file (*.qml)")[0]
-            apply_style_file(self.style_source, self.map_layer, 'climatology_summary_Probability Below Normal')
+            for w in self.import_widgets: w.hide()
