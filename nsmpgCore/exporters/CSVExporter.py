@@ -45,8 +45,15 @@ def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Stati
         selected_years_summary.append(wrap_summary(place.selected_years_place_stats))
         similar_seasons.append(place.similar_seasons)
 
-    pd.DataFrame.from_records(climatology_stats, index=headers).to_csv(f'{stats_subfolder_path}/climatology_stats{filename_suffix}.csv')
-    pd.DataFrame.from_records(climatology_summary, index=headers).to_csv(f'{stats_subfolder_path}/climatology_summary{filename_suffix}.csv')
-    pd.DataFrame.from_records(selected_years_stats, index=headers).to_csv(f'{stats_subfolder_path}/selected_years_stats{filename_suffix}.csv')
-    pd.DataFrame.from_records(selected_years_summary, index=headers).to_csv(f'{stats_subfolder_path}/selected_years_summary{filename_suffix}.csv')
+    data_path_relation = {
+        'climatology_stats': [climatology_stats, f'{stats_subfolder_path}/climatology_stats{filename_suffix}.csv'],
+        'climatology_summary': [climatology_summary, f'{stats_subfolder_path}/climatology_summary{filename_suffix}.csv'],
+        'selected_years_stats': [selected_years_stats, f'{stats_subfolder_path}/selected_years_stats{filename_suffix}.csv'],
+        'selected_years_summary': [selected_years_summary, f'{stats_subfolder_path}/selected_years_summary{filename_suffix}.csv'],
+    }
+
+    for v in data_path_relation.values():
+        pd.DataFrame.from_records(v[0], index=headers).to_csv(v[1])
     pd.DataFrame(similar_seasons, index=headers).to_csv(f'{stats_subfolder_path}/similar_seasons{filename_suffix}.csv')
+
+    return data_path_relation

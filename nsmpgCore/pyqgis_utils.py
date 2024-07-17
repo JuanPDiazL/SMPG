@@ -3,15 +3,13 @@ import os
 from qgis.core import (
     QgsProject,
     QgsVectorLayer,
-    QgsVectorLayerJoinInfo, 
-    QgsSymbol,
-    QgsRendererRange,
+    QgsVectorLayerJoinInfo,
     QgsGraduatedSymbolRenderer,
-    QgsApplication,
-    QgsGradientColorRamp
+    QgsGradientColorRamp,
+    QgsClassificationQuantile,
 )
 
-def load_layer(source: str):
+def load_layer_file(source: str):
     source = os.path.normpath(source)
     basename_split = os.path.splitext(os.path.basename(source))
     filename = basename_split[0]
@@ -22,7 +20,9 @@ def load_layer(source: str):
         return QgsVectorLayer(f'file:///{source}?type=csv&detectTypes=yes&geomType=none', filename, "delimitedtext")
 
 def get_fields(layer :QgsVectorLayer) -> list[str]:
-    return layer.fields().names()
+    if layer is not None:
+        return layer.fields().names()
+    return []
 
 def get_vector_layers() -> list[QgsVectorLayer]:
     layers: dict[str, QgsVectorLayer] = QgsProject.instance().mapLayers()
@@ -34,53 +34,46 @@ def get_vector_layers() -> list[QgsVectorLayer]:
 
 def join_layers(data_layer: QgsVectorLayer, target_layer: QgsVectorLayer, target_field: str):
     join = QgsVectorLayerJoinInfo()
+    print(data_layer.attributeAlias(0))
     join.setJoinLayer(data_layer)
     join.setJoinFieldName('field_1')
     join.setTargetFieldName(target_field)
     join.setUsingMemoryCache(True)
     target_layer.addJoin(join)
 
+def add_to_project(*layers: QgsVectorLayer) -> None:
+    for layer in layers:
+        if not layer.isValid():
+            print("Layer failed to load!")
+        else: 
+            QgsProject.instance().addMapLayer(layer)
+
+def add_to_group(layer: QgsVectorLayer, group_name: str) -> None:
+    root = QgsProject.instance().layerTreeRoot()
+    group = root.findGroup(group_name)
+    if group is None:
+        group = root.addGroup(group_name)
+    group.addLayer(layer)
+
 def apply_style_file(source: str, map: QgsVectorLayer, attribute: str):
     map.loadNamedStyle(source)
     map.renderer().setClassAttribute(attribute)
     map.triggerRepaint()
 
-# def apply_default_style(map: QgsVectorLayer):
-#     ranges_list = [
-#         [0, 50, '0 - 50', '#000000'],
-#         [50, 100, '50 - 100', '#FFFFFF']
-#     ]
-
-#     renderer_ranges = []
-#     for min, max, label, color in ranges_list:
-#         symbol = QgsSymbol.defaultSymbol(map.geometryType())
-#         symbol.setColor(QColor(color))
-#         renderer_ranges.append(QgsRendererRange(min, max, symbol, label))
-
-#     renderer = QgsGraduatedSymbolRenderer('', renderer_ranges)
-#     renderer.setClassificationMethod(QgsApplication.classificationMethodRegistry().method("Quantile"))
-#     renderer.setClassAttribute('climatology_summary_Probability Below Normal')
-#     map.setRenderer(renderer)
-
-def applyGraduatedSymbologyStandardMode(layer: QgsVectorLayer, field: str, n_classes, class_method):
-    symbol = QgsSymbol.defaultSymbol(layer.geometryType())
-    colorRamp = QgsGradientColorRamp.create({'color1':'255,0,0,255', 'color2':'0,0,255,255','stops':'0.25;255,255,0,255:0.50;0,255,0,255:0.75;0,255,255,255'})
-    renderer = QgsGraduatedSymbolRenderer.createRenderer( layer, field, n_classes, class_method, symbol, colorRamp )
-    #renderer.setSizeScaleField("LABELRANK")
-    layer.setRenderer( renderer )
-
-    class_methods = { 
-        QgsApplication.classificationMethodRegistry().method("EqualInterval") : "Equal Interval",
-        QgsApplication.classificationMethodRegistry().method("Quantile")      : "Quantile",
-        QgsApplication.classificationMethodRegistry().method("Jenks")         : "Natural Breaks (Jenks)",
-        QgsApplication.classificationMethodRegistry().method("StdDev")        : "Standard Deviation",
-        QgsApplication.classificationMethodRegistry().method("Pretty")        : "Pretty Breaks",
+def apply_default_symbology(map_layer: QgsVectorLayer, class_attribute: str, nclasses=10):
+    color_ramp_properties = {
+        'color1':'255,255,255,255', 
+        'stops':'0.25;192,192,192,255:0.50;128,128,128,255:0.75;64,64,64,255',
+        'color2':'0,0,0,255',
         }
+    color_ramp = QgsGradientColorRamp.create(color_ramp_properties)
+    renderer = QgsGraduatedSymbolRenderer()
+    renderer.setSourceColorRamp(color_ramp)
+    renderer.setClassAttribute(class_attribute)
+    renderer.setClassificationMethod(QgsClassificationQuantile())
+    renderer.updateClasses(map_layer, nclasses)
+    map_layer.setRenderer(renderer)
 
-    targetField = 'POP_OTHER'
-    n_classes = 6
-    for class_method in class_methods.keys():
-        layer = QgsVectorLayer('C:/data/ne_10m_populated_places.shp', class_methods[class_method] , 'ogr')
-        if layer.isValid():
-            applyGraduatedSymbologyStandardMode( layer, targetField, n_classes, class_method)
-            QgsProject.instance().addMapLayers([layer])
+def rename_layer(layer: QgsVectorLayer, name='', prefix='', suffix=''):
+    if name == '': name = layer.name()
+    layer.setName(prefix + name + suffix)

@@ -183,7 +183,7 @@
       <item row="5" column="0">
        <widget class="QPushButton" name="mappingButton">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="text">
          <string>Mapping Preferences</string>

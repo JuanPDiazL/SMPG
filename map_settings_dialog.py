@@ -1,28 +1,26 @@
 
 import os
 
-from PyQt5 import QtGui
-
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import *
 
 from .nsmpgCore.pyqgis_utils import (
-    apply_style_file,
     get_fields,
     get_vector_layers,
-    join_layers,
-    load_layer
+    load_layer_file
 )
 
 from qgis.core import (
-    QgsProject,
     QgsVectorLayer,
 )
 
 MAP_SETTINGS_DIALOG_CLASS,_ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'map_settings_dialog.ui'))
 
+IMPORT_SHP_TEXT = 'Import map from shapefile...'
+
 class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
+
     def __init__(self, parent=None):
         """Constructor."""
         super(MapSettingsDialog, self).__init__(parent)
@@ -39,7 +37,14 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
                   'Probability in Normal', 'Probability Above Normal', 'E. LTM Pctl.', 
                   'Current Season Pctl.']
         
+        self.temp_map_layer = None
         self.map_layer = None
+        self.settings = {
+            'selected_map': '',
+            'shp_source': '',
+            'selected_fields': [],
+            'join_field': '',
+        }
 
         self.mapSelectionComboBox: QComboBox
         self.loadShapefileButton: QPushButton
@@ -52,19 +57,17 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         self.removeButton: QPushButton
         self.targetLabel: QLabel
         self.targetFieldComboBox: QComboBox
-        self.exportPNGMapsCheckBox: QCheckBox
 
         self.import_widgets = [self.loadShapefileButton, self.shapefilePathLineEdit]
 
         self.mapSelectionComboBox.currentIndexChanged.connect(self.map_selection_combobox_event)
-        self.loadShapefileButton.clicked.connect(self.shp_event)
-        self.addButton.clicked.connect(lambda: self.list_move_event(self.blackList, self.whiteList))
-        self.removeButton.clicked.connect(lambda: self.list_move_event(self.whiteList, self.blackList))
+        self.loadShapefileButton.clicked.connect(self.load_shapefile_button_event)
+        self.addButton.clicked.connect(lambda: self.list_move_element(self.blackList, self.whiteList))
+        self.removeButton.clicked.connect(lambda: self.list_move_element(self.whiteList, self.blackList))
 
         self.set_show_import_widgets(False)
-        self.update_attributes_list()
         
-    def list_move_event(self, source_list: QListWidget, destination_list: QListWidget):
+    def list_move_element(self, source_list: QListWidget, destination_list: QListWidget):
         for item in source_list.selectedItems():
             item_index = source_list.row(item)
             destination_list.addItem(source_list.takeItem(item_index))
@@ -77,38 +80,77 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
 
         if index > 0:
             selected_map_index = max(0, index - 1)
-            fields = get_fields(self.map_relations[selected_map_index][0])
-            self.targetFieldComboBox.clear()
-            self.targetFieldComboBox.addItems(fields)
+            self.temp_map_layer = self.map_relations[selected_map_index][0]
 
-    def update_attributes_list(self):
-        self.blackList.addItems(self.fields)
-
-    def showEvent(self, a0):
-        self.update_map_combobox()
-        return super().showEvent(a0)
+        self.update_target_field_combobox()
 
     def update_map_combobox(self):
         maps: dict[QgsVectorLayer] = get_vector_layers()
         self.map_relations = [(map, map.id(), map.name()) for map in maps]
 
-        map_names = ['Import map from shapefile...'] + [item[2] for item in self.map_relations]
+        map_names = [IMPORT_SHP_TEXT] + [item[2] for item in self.map_relations]
 
         default_selection = min(1, map_names.__len__())
         self.mapSelectionComboBox.clear()
         self.mapSelectionComboBox.addItems(map_names)
         self.mapSelectionComboBox.setCurrentIndex(default_selection)
 
-    def shp_event(self):
-        self.shp_source = QFileDialog.getOpenFileName(self, 'Open shapefile', None, "shapefiles (*.shp)")[0]
-        self.csv_source = QFileDialog.getOpenFileName(self, 'Open stats file', None, "shapefiles (*.csv)")[0]
+    def update_target_field_combobox(self):
+        fields = get_fields(self.temp_map_layer)
+        self.targetFieldComboBox.clear()
+        self.targetFieldComboBox.addItems(fields)
 
-        self.map_layer = load_layer(self.shp_source)
-        print(get_fields(self.map_layer))
-        statistics = load_layer(self.csv_source)
+    def load_shapefile_button_event(self):
+        temp_shp_source = QFileDialog.getOpenFileName(self, 'Open shapefile', None, "shapefiles (*.shp)")[0]
+        if temp_shp_source == "":
+            QMessageBox.warning(self, "Warning", 
+                                'No shapefile was selected.', 
+                                QMessageBox.Ok)
+            return
+        self.shp_source = temp_shp_source
+        layer_preload = load_layer_file(self.shp_source)
+        if not layer_preload.isValid(): return # continue if layer is valid
+        self.temp_map_layer = layer_preload
+        self.update_target_field_combobox()
+        self.shapefilePathLineEdit.setText(self.shp_source)
+
+    def update_settings(self, settings: dict):
+        self.mapSelectionComboBox.setCurrentText(settings['selected_map'])
+        self.shapefilePathLineEdit.setText(settings['shp_source'])
+
+        self.blackList.clear()
+        self.whiteList.clear()
+        for item in self.fields:
+            if item in settings['selected_fields']:
+                self.whiteList.addItem(item)
+            else:
+                self.blackList.addItem(item)
+
+        self.targetFieldComboBox.setCurrentText(settings['join_field'])
 
     def set_show_import_widgets(self, show=True):
         if show: 
             for w in self.import_widgets: w.show()
         else: 
             for w in self.import_widgets: w.hide()
+
+    def get_list_items(self, list_widget: QListWidget):
+        return [list_widget.item(i).text() for i in range(list_widget.count())]
+
+    def showEvent(self, a0):
+        self.update_map_combobox()
+        self.update_settings(self.settings)
+        return super().showEvent(a0)
+    
+    def accept(self) -> None:
+        self.settings['selected_map'] = self.mapSelectionComboBox.currentText()
+        if self.mapSelectionComboBox.currentText() == IMPORT_SHP_TEXT:
+            self.settings['shp_source'] = self.shapefilePathLineEdit.text()
+        self.settings['selected_fields'] = self.get_list_items(self.whiteList)
+        self.settings['join_field'] = self.targetFieldComboBox.currentText()
+        self.map_layer = self.temp_map_layer
+        super(MapSettingsDialog, self).accept()
+
+    def reject(self) -> None:
+        self.temp_map_layer = None
+        super(MapSettingsDialog, self).reject()

@@ -44,6 +44,14 @@ from .nsmpgCore.utils import (
     define_seasonal_dict, parse_timestamps, 
     get_properties_validated_year_list
     )
+from .nsmpgCore.pyqgis_utils import (
+    load_layer_file,
+    join_layers,
+    add_to_project,
+    apply_default_symbology,
+    rename_layer
+)
+    
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
 from .nsmpgCore.exporters.CSVExporter import export_to_csv_files
 from .nsmpgCore.exporters.ImageExporter import export_to_image_files
@@ -270,12 +278,13 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         
         # output files
         self.progress_dialog.show()
-        self.pending_tasks = self.exportStatsCheckBox.isChecked() + \
-                             self.exportWebCheckBox.isChecked() +\
-                             self.exportImagesCheckBox.isChecked()
+        self.pending_tasks = self.exportWebCheckBox.isChecked() +\
+            self.exportImagesCheckBox.isChecked()
+            # self.exportStatsCheckBox.isChecked() + \
         workers: list[Worker] = []
         if self.exportStatsCheckBox.isChecked():
-            workers.append(Worker(export_to_csv_files, self.destination_path, self.structured_dataset))
+            # workers.append(Worker(export_to_csv_files, self.destination_path, self.structured_dataset))
+            self.csv_output_files = export_to_csv_files(self.destination_path, self.structured_dataset)
         if self.exportWebCheckBox.isChecked():
             workers.append(Worker(export_to_web_files, self.destination_path, self.structured_dataset))
         if self.exportParametersCheckBox.isChecked():
@@ -290,6 +299,22 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             worker.signal_emitter.finished.connect(self.progress_dialog.update)
             self.threadpool.start(worker)
 
+        map_settings = self.map_settings_dialog.settings
+        map_layer = self.map_settings_dialog.map_layer
+        selected_csv = 'selected_years_summary'
+        stats_layer = load_layer_file(self.csv_output_files[selected_csv][1])
+        join_field = map_settings['join_field']
+        selected_stats = map_settings['selected_fields']
+        add_to_project(stats_layer)
+        
+        for stat in selected_stats:
+            class_attribute = f'{os.path.splitext(os.path.basename(self.csv_output_files[selected_csv][1]))[0]}_{stat}'
+            clone = map_layer.clone()
+            rename_layer(clone, suffix=f'_{stat}')
+            add_to_project(clone)
+            join_layers(stats_layer, clone, join_field)
+            apply_default_symbology(clone, class_attribute)
+            
             # stats = pstats.Stats(profile)
             # stats.sort_stats(pstats.SortKey.TIME)
             # stats.dump_stats('snakeviz.prof')

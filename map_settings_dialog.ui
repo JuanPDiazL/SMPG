@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Map Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="4" column="0">
@@ -21,33 +21,23 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0" colspan="4">
-    <widget class="QComboBox" name="mapSelectionComboBox">
-     <property name="placeholderText">
-      <string>Please select a map.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="excludeLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+   <item row="14" column="1" colspan="2">
+    <widget class="QPushButton" name="removeButton">
      <property name="text">
-      <string>Exclude from mapping</string>
+      <string>&lt;</string>
      </property>
     </widget>
    </item>
-   <item row="12" column="0" rowspan="6">
+   <item row="11" column="0" rowspan="6">
     <widget class="QListWidget" name="blackList">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::DoubleClicked</set>
      </property>
      <property name="defaultDropAction">
       <enum>Qt::MoveAction</enum>
@@ -63,51 +53,14 @@
      </property>
     </widget>
    </item>
-   <item row="15" column="1" colspan="2">
-    <widget class="QPushButton" name="removeButton">
-     <property name="text">
-      <string>&lt;</string>
-     </property>
-    </widget>
-   </item>
-   <item row="14" column="1" colspan="2">
+   <item row="13" column="1" colspan="2">
     <widget class="QPushButton" name="addButton">
      <property name="text">
       <string>&gt;</string>
      </property>
     </widget>
    </item>
-   <item row="7" column="3">
-    <widget class="QLabel" name="includeLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Include for mapping</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1" colspan="3">
-    <widget class="QLineEdit" name="shapefilePathLineEdit">
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-     <property name="placeholderText">
-      <string>Select a shapefile.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="20" column="0">
-    <widget class="QCheckBox" name="exportPNGMapsCheckBox">
-     <property name="text">
-      <string>Export PNG Maps</string>
-     </property>
-    </widget>
-   </item>
-   <item row="12" column="3" rowspan="6">
+   <item row="11" column="3" rowspan="6">
     <widget class="QListWidget" name="whiteList">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -126,22 +79,48 @@
      </property>
     </widget>
    </item>
-   <item row="19" column="0" colspan="3">
-    <widget class="QComboBox" name="targetFieldComboBox">
-     <property name="placeholderText">
-      <string>Please select the target field</string>
-     </property>
-    </widget>
-   </item>
-   <item row="21" column="0" colspan="4">
+   <item row="19" column="0" colspan="4">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
      </property>
     </widget>
    </item>
+   <item row="6" column="3">
+    <widget class="QLabel" name="includeLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Include for mapping</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="4">
+    <widget class="QComboBox" name="mapSelectionComboBox">
+     <property name="placeholderText">
+      <string>Please select a map.</string>
+     </property>
+    </widget>
+   </item>
+   <item row="17" column="0">
+    <widget class="QLabel" name="targetLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Join Target Field</string>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="0">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="maplabel">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -153,8 +132,25 @@
      </property>
     </widget>
    </item>
-   <item row="18" column="0">
-    <widget class="QLabel" name="targetLabel">
+   <item row="4" column="1" colspan="3">
+    <widget class="QLineEdit" name="shapefilePathLineEdit">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="placeholderText">
+      <string>Select a shapefile.</string>
+     </property>
+    </widget>
+   </item>
+   <item row="18" column="0" colspan="3">
+    <widget class="QComboBox" name="targetFieldComboBox">
+     <property name="placeholderText">
+      <string>Please select the target field</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="excludeLabel">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -162,12 +158,45 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Target Field</string>
+      <string>Exclude from mapping</string>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>226</x>
+     <y>327</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>226</x>
+     <y>173</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>226</x>
+     <y>327</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>226</x>
+     <y>173</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
