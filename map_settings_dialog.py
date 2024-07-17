@@ -143,11 +143,35 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         return super().showEvent(a0)
     
     def accept(self) -> None:
-        self.settings['selected_map'] = self.mapSelectionComboBox.currentText()
-        if self.mapSelectionComboBox.currentText() == IMPORT_SHP_TEXT:
-            self.settings['shp_source'] = self.shapefilePathLineEdit.text()
+        temp_selected_map = self.mapSelectionComboBox.currentText()
+        if temp_selected_map == IMPORT_SHP_TEXT:
+            shp_path = self.shapefilePathLineEdit.text()
+            if shp_path == '' or not os.path.exists(shp_path):
+                QMessageBox.warning(self, 'Warning', 
+                                    f'No valid shapefile was selected.',
+                                    QMessageBox.Ok)
+                return
+            self.settings['selected_map'] = temp_selected_map
+            self.settings['shp_source'] = shp_path
+        else: 
+            self.shapefilePathLineEdit.setText('')
+            self.settings['shp_source'] = ''
+            
+        temp_join_field = self.targetFieldComboBox.currentText()
+        if temp_join_field == '':
+            QMessageBox.warning(self, "Warning", 
+                                'No join field was selected.', 
+                                QMessageBox.Ok)
+            return
+        self.settings['join_field'] = temp_join_field
+        
         self.settings['selected_fields'] = self.get_list_items(self.whiteList)
-        self.settings['join_field'] = self.targetFieldComboBox.currentText()
+        if len(self.settings['selected_fields']) == 0:
+            self.map_layer = None
+            QMessageBox.information(self, "Information", 
+                                'No features were selected for mapping. \nNo maps will be generated.', 
+                                QMessageBox.Ok)
+            
         self.map_layer = self.temp_map_layer
         super(MapSettingsDialog, self).accept()
 
