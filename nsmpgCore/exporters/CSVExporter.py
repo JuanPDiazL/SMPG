@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from ..structures import Dataset, Place
+from ..structures import Dataset
 
 def wrap_stats(stats):
     return {

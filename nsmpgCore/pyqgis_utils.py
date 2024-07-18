@@ -1,5 +1,5 @@
-
 import os
+
 from qgis.core import (
     QgsProject,
     QgsVectorLayer,
@@ -7,6 +7,7 @@ from qgis.core import (
     QgsGraduatedSymbolRenderer,
     QgsGradientColorRamp,
     QgsClassificationQuantile,
+    QgsMessageLog,
 )
 
 def load_layer_file(source: str):
@@ -34,7 +35,6 @@ def get_vector_layers() -> list[QgsVectorLayer]:
 
 def join_layers(data_layer: QgsVectorLayer, target_layer: QgsVectorLayer, target_field: str):
     join = QgsVectorLayerJoinInfo()
-    print(data_layer.attributeAlias(0))
     join.setJoinLayer(data_layer)
     join.setJoinFieldName('field_1')
     join.setTargetFieldName(target_field)
@@ -44,7 +44,7 @@ def join_layers(data_layer: QgsVectorLayer, target_layer: QgsVectorLayer, target
 def add_to_project(*layers: QgsVectorLayer) -> None:
     for layer in layers:
         if not layer.isValid():
-            print("Layer failed to load!")
+            QgsMessageLog.logMessage('Could not load the layer.')
         else: 
             QgsProject.instance().addMapLayer(layer)
 

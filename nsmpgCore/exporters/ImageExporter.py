@@ -129,7 +129,6 @@ class FigureContext:
         axis.set_xticks(x_coords, x_ticks, rotation=35, fontsize=font_size)
         axis.set_xlim([-.5, x_length-.5])
         for id, plot_data in plot_data.items():
-            # print(id, plot_data)
             is_season_and_many_seasons = is_many_seasons and (id in metadata['selected years'])
 
             x = self.custom_x[id] if id in self.custom_x else range(x_length)
