@@ -32,7 +32,11 @@ import traceback
 # from qgis.PyQt import uic, QtWidgets
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import *
-from qgis.PyQt.QtCore import QObject, QRunnable, QThreadPool, pyqtSlot, pyqtSignal
+
+from qgis.core import (
+    QgsTask, 
+    QgsTaskManager,
+)
 
 from .map_settings_dialog import MapSettingsDialog
 from .year_selection_dialog import YearSelectionDialog
@@ -75,8 +79,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.setupUi(self)
 
         ### My code starting from here
-        self.threadpool = QThreadPool()
-        self.pending_tasks = 0
+        self.task_manager = QgsTaskManager(self)
 
         self.year_selection_dialog = YearSelectionDialog(self)
         self.progress_dialog = ProgressDialog(self)
@@ -280,27 +283,49 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         
         # output files
         self.progress_dialog.show()
-        self.pending_tasks = self.exportWebCheckBox.isChecked() +\
-            self.exportImagesCheckBox.isChecked()
-            # self.exportStatsCheckBox.isChecked() + \
-        workers: list[Worker] = []
+        long_tasks: list[LongTaskHandler] = []
         if self.exportStatsCheckBox.isChecked():
-            # workers.append(Worker(export_to_csv_files, self.destination_path, self.structured_dataset))
-            self.csv_selected_years_summary = export_to_csv_files(self.destination_path, self.structured_dataset)
+            csv_task = LongTaskHandler('CSV Export Task', export_to_csv_files, self.destination_path, self.structured_dataset)
+            long_tasks.append(csv_task)
+            if len(self.map_settings_dialog.settings['selected_fields']) != 0:
+                map_task = LongTaskHandler(
+                    'Summary Mapping Task',
+                    generate_layers_from_csv, 
+                    self.map_settings_dialog.settings,
+                    self.map_settings_dialog.map_layer,
+                    # the last argument will be passed by the LongTaskHandler after csv_task finishes
+                )
+                map_task.setDependentLayers([self.map_settings_dialog.map_layer])
+                csv_task.addNextTask(map_task)
+                long_tasks.append(map_task)
+
         if self.exportWebCheckBox.isChecked():
-            workers.append(Worker(export_to_web_files, self.destination_path, self.structured_dataset))
+            long_tasks.append(LongTaskHandler(
+                'Web Report Export Task', 
+                export_to_web_files, 
+                self.destination_path, 
+                self.structured_dataset
+            ))
+
         if self.exportParametersCheckBox.isChecked():
-            workers.append(Worker(export_parameters, self.destination_path, self.structured_dataset))
-        if self.exportImagesCheckBox.isChecked():
-            workers.append(Worker(export_to_image_files, self.destination_path, self.structured_dataset))
-        for worker in workers:
-            worker.signal_emitter.finished.connect(self.progress_dialog.update)
-            self.threadpool.start(worker)
+            long_tasks.append(LongTaskHandler(
+                'Parameters Export Task', 
+                export_parameters, 
+                self.destination_path, 
+                self.structured_dataset
+                ))
             
-        generate_layers_from_csv(self.map_settings_dialog.settings,
-                                 self.map_settings_dialog.map_layer,
-                                 self.csv_selected_years_summary,
-        )
+        if self.exportImagesCheckBox.isChecked():
+            long_tasks.append(LongTaskHandler(
+                'Static Reports Export Task', 
+                export_to_image_files, 
+                self.destination_path, 
+                self.structured_dataset
+                ))
+        
+        for task in long_tasks:
+            self.task_manager.addTask(task)
+        self.task_manager.allTasksFinished.connect(lambda: self.progress_dialog.finish_wait(self.task_manager, long_tasks))
             
             # stats = pstats.Stats(profile)
             # stats.sort_stats(pstats.SortKey.TIME)
@@ -369,17 +394,62 @@ Current Year: {dataset_properties.current_season_id}
 Dekads in Current Year: {dataset_properties.current_season_length}'''
         self.datasetInfoLabel.setText(dg_text)
 
-class Worker(QRunnable):
-    def __init__(self, f, *args):
-        super(Worker, self).__init__()
-        self.signal_emitter = WorkerSignalEmitter()
-        self.f = f
+class LongTaskHandler(QgsTask):
+    def __init__(self, description, fn, *args, nextTask=None, dependentLayers=[], **kwargs):
+        super().__init__(description, QgsTask.CanCancel)
+        self.fn = fn
         self.args = args
+        self.kwargs = kwargs
+        self.title = description
+        self.result = None
+        self.exception = None
+        self.debug = False
+        self.time = 0
 
-    @pyqtSlot()
+        self.setDependentLayers(dependentLayers)
+        self.nextTask = None
+        if nextTask is not None:
+            self.addNextTask(nextTask)
+
     def run(self):
-        self.f(*self.args)
-        self.signal_emitter.finished.emit()
+        if self.debug: print(f'{self.description()} started')
+        if self.isCanceled():
+            return False
+        try:
+            self.result = self.fn(*self.args)
+            return True
+        except Exception as e:
+            self.exception = e
+            return False
 
-class WorkerSignalEmitter(QObject):
-    finished = pyqtSignal()
+    def finished(self, result):
+        # when task completed successfully
+        if result:
+            ...
+            if self.nextTask is not None:
+                self.nextTask.args =  (*self.nextTask.args, self.result)
+            self.time = self.elapsedTime()
+            if self.debug: print(f'{self.description()} completed')
+            return
+        # when task did not complete successfully
+        if self.exception is not None:
+            if self.debug: print(f'{self.description()} raised an exeception')
+            if self.nextTask is not None:
+                self.nextTask.cancel()
+                self.nextTask.unhold()
+            return
+        if self.debug: print(f'{self.description()} terminated')
+
+    def cancel(self):
+        # do something before cancelling
+        if self.debug: print(f'{self.description()} got cancelled')
+        if self.nextTask is not None:
+            self.nextTask.cancel()
+            self.nextTask.unhold()
+
+        super().cancel()
+
+    def addNextTask(self, task: QgsTask):
+        self.nextTask = task
+        task.hold()
+        super().taskCompleted.connect(task.unhold)
