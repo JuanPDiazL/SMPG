@@ -55,6 +55,8 @@ from .nsmpgCore.pyqgis_utils import (
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
 from .nsmpgCore.exporters.CSVExporter import export_to_csv_files
 from .nsmpgCore.exporters.ImageExporter import export_to_image_files
+from .nsmpgCore.exporters.ParameterExporter import export_parameters
+from .nsmpgCore.exporters.QGISExporter import generate_layers_from_csv
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -284,37 +286,21 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         workers: list[Worker] = []
         if self.exportStatsCheckBox.isChecked():
             # workers.append(Worker(export_to_csv_files, self.destination_path, self.structured_dataset))
-            self.csv_output_files = export_to_csv_files(self.destination_path, self.structured_dataset)
+            self.csv_selected_years_summary = export_to_csv_files(self.destination_path, self.structured_dataset)
         if self.exportWebCheckBox.isChecked():
             workers.append(Worker(export_to_web_files, self.destination_path, self.structured_dataset))
         if self.exportParametersCheckBox.isChecked():
-            json_data = json.dumps(options.__dict__)
-            if isinstance(json_data, bytes): json_data = json_data.decode()
-            os.makedirs(self.destination_path, exist_ok=True)
-            with open(f'{self.destination_path}/Parameters.json', 'w') as js_data_wrapper:
-                js_data_wrapper.write(json_data)
+            workers.append(Worker(export_parameters, self.destination_path, self.structured_dataset))
         if self.exportImagesCheckBox.isChecked():
             workers.append(Worker(export_to_image_files, self.destination_path, self.structured_dataset))
         for worker in workers:
             worker.signal_emitter.finished.connect(self.progress_dialog.update)
             self.threadpool.start(worker)
-
-        map_settings = self.map_settings_dialog.settings
-        if len(map_settings['selected_fields']) != 0:
-            map_layer = self.map_settings_dialog.map_layer
-            selected_csv = 'selected_years_summary'
-            stats_layer = load_layer_file(self.csv_output_files[selected_csv][1])
-            join_field = map_settings['join_field']
-            selected_stats = map_settings['selected_fields']
-            add_to_project(stats_layer)
             
-            for stat in selected_stats:
-                class_attribute = f'{os.path.splitext(os.path.basename(self.csv_output_files[selected_csv][1]))[0]}_{stat}'
-                clone = map_layer.clone()
-                rename_layer(clone, suffix=f'_{stat}')
-                add_to_project(clone)
-                join_layers(stats_layer, clone, join_field)
-                apply_default_symbology(clone, class_attribute)
+        generate_layers_from_csv(self.map_settings_dialog.settings,
+                                 self.map_settings_dialog.map_layer,
+                                 self.csv_selected_years_summary,
+        )
             
             # stats = pstats.Stats(profile)
             # stats.sort_stats(pstats.SortKey.TIME)

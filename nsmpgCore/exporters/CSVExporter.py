@@ -56,4 +56,5 @@ def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Stati
         pd.DataFrame.from_records(v[0], index=headers).to_csv(v[1])
     pd.DataFrame(similar_seasons, index=headers).to_csv(f'{stats_subfolder_path}/similar_seasons{filename_suffix}.csv')
 
-    return data_path_relation
+    # return path to selected years summary table
+    return data_path_relation['selected_years_summary'][1]
