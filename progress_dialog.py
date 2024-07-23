@@ -3,7 +3,10 @@ import time
 import traceback
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import *
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QMessageBox,
+)
 
 from qgis.core import (
     QgsTask, 

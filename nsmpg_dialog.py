@@ -31,7 +31,18 @@ import traceback
 
 # from qgis.PyQt import uic, QtWidgets
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import *
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QMessageBox,
+    QFileDialog,
+    QGroupBox,
+    QPushButton,
+    QLineEdit,
+    QCheckBox,
+    QComboBox,
+    QRadioButton,
+    QLabel,
+)
 
 from qgis.core import (
     QgsTask, 
