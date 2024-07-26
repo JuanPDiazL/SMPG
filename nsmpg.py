@@ -61,7 +61,7 @@ class NSMPG:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&New SMPG')
+        self.menu = self.tr(u'&QSMPG')
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -163,7 +163,7 @@ class NSMPG:
         icon_path = ':/plugins/nsmpg/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'New SMPG'),
+            text=self.tr(u'QSMPG'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -175,7 +175,7 @@ class NSMPG:
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&New SMPG'),
+                self.tr(u'&QSMPG'),
                 action)
             self.iface.removeToolBarIcon(action)
 
