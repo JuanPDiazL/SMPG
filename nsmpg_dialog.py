@@ -132,6 +132,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.processButton: QPushButton
 
         self.mappingButton.clicked.connect(self.mapping_button_event)
+        self.exportStatsCheckBox.stateChanged.connect(self.export_stats_cb_changed_event)
 
         self.crossYearsCheckBox.stateChanged.connect(self.cross_years_cb_changed_event)
         self.customYearsRadioButton.toggled.connect(self.year_selection_rb_event)
@@ -210,7 +211,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.exportStatsCheckBox.setChecked(options.output_stats)
         self.exportParametersCheckBox.setEnabled(True)
         self.exportParametersCheckBox.setChecked(options.output_parameters)
-        self.mappingButton.setEnabled(True)
+        self.mappingButton.setEnabled(options.output_stats)
 
     # function that reads the dataset from a file.
     def load_file_btn_event(self): 
@@ -390,6 +391,9 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             self.similarYearsComboBox.setEnabled(True)
             self.usePearsonCheckBox.setEnabled(True)
             self.selectYearsButton.setEnabled(False)
+
+    def export_stats_cb_changed_event(self):
+        self.mappingButton.setEnabled(self.exportStatsCheckBox.isChecked())
 
     def select_years_btn_event(self):
         self.year_selection_dialog.show()
