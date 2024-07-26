@@ -35,5 +35,5 @@ class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
                 try: raise exception
                 except Exception as e:
                     QMessageBox.critical(self, "Error", f'{task.title} raised an exception\n{str(e)}\n\n{traceback.format_exc()}', QMessageBox.Ok)
-        QMessageBox.information(self, 'NeoSMPG: Task Completed', f'Task completed.\nTime elapsed: {total_time}\nThe outputs were saved at {self.parentWidget().destination_path}', QMessageBox.Ok)
+        QMessageBox.information(self, 'Task Completed', f'Task completed.\nTime elapsed: {total_time}\nThe outputs were saved at {self.parentWidget().destination_path}', QMessageBox.Ok)
         return
