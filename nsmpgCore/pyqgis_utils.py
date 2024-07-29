@@ -60,6 +60,25 @@ def apply_style_file(source: str, map: QgsVectorLayer, attribute: str):
     map.renderer().setClassAttribute(attribute)
     map.triggerRepaint()
 
+def apply_default_attr_style(map_layer: QgsVectorLayer, class_attribute: str) -> None:
+    layer_styles_folder = os.path.join(os.path.dirname(__file__), 'res', 'layer_styles')
+    attribute_style_relation = {
+        # 'C. Dk./LTA Pct.':          '',
+        # 'E. LTM/LTA Pct.':          '',
+        'Probability Below Normal': 'prob_below_normal_polygons',
+        'Probability in Normal':    'prob_above_normal_polygons',
+        'Probability Above Normal': 'prob_above_normal_polygons',
+        'E. LTM Pctl.':             'SMPG_most prob scenario at EOS_wet',
+        'Current Season Pctl.':     'SMPG_precipitation_percentile',
+    }
+    for attribute_key in attribute_style_relation:
+        if class_attribute.rfind(attribute_key) != -1:
+            style_file = attribute_style_relation[attribute_key]
+            style_file_path = os.path.join(layer_styles_folder, f'{style_file}.qml')
+            apply_style_file(style_file_path, map_layer, class_attribute)
+            return
+    apply_default_symbology(map_layer, class_attribute)
+
 def apply_default_symbology(map_layer: QgsVectorLayer, class_attribute: str, nclasses=10):
     color_ramp_properties = {
         'color1':'255,255,255,255', 
