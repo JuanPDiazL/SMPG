@@ -2,7 +2,16 @@
 import os
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import *
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QMessageBox,
+    QFileDialog,
+    QPushButton,
+    QLineEdit,
+    QComboBox,
+    QLabel,
+    QListWidget,
+)
 
 from .nsmpgCore.pyqgis_utils import (
     get_fields,
