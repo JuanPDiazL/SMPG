@@ -116,7 +116,7 @@ class Place:
         ensemble_sums = np.array([e[-1] for e in seasonal_ensemble])
         seasonal_lta = operate_column(seasonal_accumulations, np.average)
         seasonal_pctls = common_stats['climatology_seasonal_pctls']
-        ensemble_ltm = operate_column(seasonal_ensemble, np.median)
+        ensemble_median = operate_column(seasonal_ensemble, np.median)
         ensemble_lta = operate_column(seasonal_ensemble, np.average)
         ensemble_pctls = percentiles_to_values(ensemble_sums, [33, 67])
         ensemble_pctl_probabilities = np.array([
@@ -129,14 +129,14 @@ class Place:
             'Current Season Pctl.': percentiles_from_values(seasonal_current_sums, [common_stats['Current Season Full Accumulation'][-1]]),
             'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sums, (3, 6, 11, 21, 31, 67)),
             'Pctls.': seasonal_pctls,
-            'LTM': operate_column(seasonal_accumulations, np.median),
+            'Median': operate_column(seasonal_accumulations, np.median),
             'LTA': seasonal_lta,
             'C. Dk./LTA': current_accumulation_mon/seasonal_lta[:current_index+1],
             'Avg.': operate_column(list(self.seasons_climatology.values()), np.average),
-            'E. LTM': ensemble_ltm,
+            'Ensemble Med.': ensemble_median,
             'E. LTA': ensemble_lta,
-            'E. LTM/LTA': ensemble_ltm/seasonal_lta,
-            'E. LTM Pctl.': percentiles_from_values(seasonal_sums, [ensemble_ltm[-1]]),
+            'Ensemble Med./LTA': ensemble_median/seasonal_lta,
+            'Ensemble Med. Pctl.': percentiles_from_values(seasonal_sums, [ensemble_median[-1]]),
             'E. Pctls.': ensemble_pctls,
             'E. Probabilities': ensemble_pctl_probabilities,
             'St. Dev.': operate_column(seasonal_accumulations, np.std),

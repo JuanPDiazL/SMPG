@@ -36,12 +36,12 @@ class FigureContext:
             'Forecast': '#FF00FF',
             'Forecast Accumulation': '#FF00FF',
             'LTA': '#FF0000',
-            'LTM': '#000000',
+            'Median': '#000000',
             'LTA±20%': '#00AFE5',
             'Climatology Average': '#FF0000',
             'LTA±St. Dev.': '#008000',
             '(33, 67) Pctl.': '#000000',
-            'E. LTM': '#000000',
+            'Ensemble Med.': '#000000',
             'E. LTA±St. Dev.': '#FFA500',
             'E. (33, 67) Pctl.': '#0000FF',
             '67 Pctl.': '#00FF00',
@@ -87,9 +87,9 @@ class FigureContext:
             'E. (33, 67) Pctl.': [monitoring_length-1]*2,
         }
 
-        self.thick_lines = ['Climatology Average', 'LTA', 'LTM', 'E. LTM', 
+        self.thick_lines = ['Climatology Average', 'LTA', 'Median', 'Ensemble Med.', 
                             'Current Season Accumulation', 'Forecast Accumulation']
-        self.dashed_lines = ['E. LTM']
+        self.dashed_lines = ['Ensemble Med.']
 
         self.plt_figure = plt.figure(
             num=0,
@@ -204,7 +204,7 @@ def make_accumulations_data(place: Place):
     current_index = len(selected_place_stats['Current Season Accumulation'])-1
     data = {
         **selected_season_stats['Sum'],
-        'LTM': place_stats['LTM'],
+        'Median': place_stats['Median'],
         'LTA±20%': [place_stats['LTA']*1.20, place_stats['LTA']*0.80],
         'LTA±St. Dev.': [place_stats['LTA'][-1]+place_stats['St. Dev.'][-1], 
                         place_stats['LTA'][-1]-place_stats['St. Dev.'][-1]],
@@ -275,7 +275,7 @@ def make_ensemble_data(place: Place):
         'LTA': place_stats['LTA'],
         '(33, 67) Pctl.': [place_stats['Pctls.'][0], 
                            place_stats['Pctls.'][1]],
-        'E. LTM': selected_place_stats['E. LTM'],
+        'Ensemble Med.': selected_place_stats['Ensemble Med.'],
         'E. (33, 67) Pctl.': [selected_place_stats['E. Pctls.'][0], 
                               selected_place_stats['E. Pctls.'][1]],
         'E. LTA±St. Dev.': [selected_place_stats['E. LTA'][-1]+selected_place_stats['St. Dev.'][-1], 
@@ -285,9 +285,9 @@ def make_ensemble_data(place: Place):
     table_data_array = [
         [['Proj. at EoS'],
         ['', 'Sel. Yrs.', 'Clim.'],
-        ['E. LTM', round(selected_place_stats['E. LTM'][-1]), round(place.place_stats['E. LTM'][-1])],
+        ['Ensemble Med.', round(selected_place_stats['Ensemble Med.'][-1]), round(place.place_stats['Ensemble Med.'][-1])],
         ['LTA', round(selected_place_stats['LTA'][-1]), round(place.place_stats['LTA'][-1])],
-        ['E. LTM/LTA Pct.', round(selected_place_stats['E. LTM/LTA'][-1]*100), round(place.place_stats['E. LTM/LTA'][-1]*100)]],
+        ['Ensemble Med./LTA Pct.', round(selected_place_stats['Ensemble Med./LTA'][-1]*100), round(place.place_stats['Ensemble Med./LTA'][-1]*100)]],
         [['Prob. at EoS'],
         ['', 'Sel. Yrs.', 'Clim.'],
         ['Ab. Normal', round(selected_place_stats['E. Probabilities'][2]*100), round(place.place_stats['E. Probabilities'][2]*100)],
@@ -300,7 +300,7 @@ def make_ensemble_data(place: Place):
         'x ticks': props.sub_season_monitoring_ids,
         'x label': f'Time ({props.period_unit_id}s)',
         'y label': 'Rainfall (mm)',
-        'table width': 0.4,
+        'table width': 0.56,
     }
     return data, table_data_array, metadata
 

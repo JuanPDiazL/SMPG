@@ -6,12 +6,12 @@ def wrap_stats(stats):
     return {
             'LTA': stats['LTA'][-1],
             'LTA up to Current Season': stats['LTA'][stats['Current Season Accumulation'].size-1],
-            'LTM': stats['LTM'][-1],
+            'Median': stats['Median'][-1],
             '33 Pctl.': stats['Pctls.'][0],
             '67 Pctl.': stats['Pctls.'][1],
             'St. Dev.': stats['St. Dev.'][-1],
             'Current Season Sum': stats['Current Season Accumulation'][-1],
-            'E. LTM': stats['E. LTM'][-1],
+            'Ensemble Med.': stats['Ensemble Med.'][-1],
             '33 E. Pctl.': stats['E. Pctls.'][0],
             '67 E. Pctl.': stats['E. Pctls.'][1],
         }
@@ -19,11 +19,11 @@ def wrap_stats(stats):
 def wrap_summary(stats):
     return {
             'C. Dk./LTA Pct.': stats['C. Dk./LTA'][-1]*100,
-            'E. LTM/LTA Pct.': stats['E. LTM/LTA'][-1]*100,
+            'Ensemble Med./LTA Pct.': stats['Ensemble Med./LTA'][-1]*100,
             'Probability Below Normal': round(stats['E. Probabilities'][0]*100, 1),
             'Probability in Normal': round(stats['E. Probabilities'][1]*100, 1),
             'Probability Above Normal': round(stats['E. Probabilities'][2]*100, 1),
-            'E. LTM Pctl.': stats['E. LTM Pctl.'][0],
+            'Ensemble Med. Pctl.': stats['Ensemble Med. Pctl.'][0],
             'Current Season Pctl.': stats['Current Season Pctl.'][0],
         }
 

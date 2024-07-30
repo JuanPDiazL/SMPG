@@ -135,13 +135,13 @@ body {
 
 /* Custom line styles */
 
-.bb-line-LTA, .bb-line-Climatology-Average, .bb-line-E--LTM,
+.bb-line-LTA, .bb-line-Climatology-Average, .bb-line-Ensemble-Med-,
 .bb-line-Current-Season-Accumulation, .bb-line-Forecast, 
 .bb-line-Forecast-Accumulation {
     stroke-width: 4px !important;
 }
 
-.bb-line-E--LTM {
+.bb-line-Ensemble-Med- {
     stroke-dasharray: 10 2;
 }
 
