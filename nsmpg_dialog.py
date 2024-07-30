@@ -276,6 +276,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.datasetInputLineEdit.setText(self.selected_source)
 
         self.update_fields(Parameters())
+        self.year_selection_dialog.selected_years = self.dataset_properties.year_ids
         self.update_dialog_info(self.dataset_properties)
 
     # function to allow the computation of the required data, such as accumulation, ensemble, stats, percentiles, etc
