@@ -39,7 +39,7 @@ class Properties:
 
 # computation parameters
 class Parameters:
-    def __init__(self, options={}, **kwargs) -> None:
+    def __init__(self, parameters={}, **kwargs) -> None:
         # climatology defaults
         self.climatology_start: str | None = None
         self.climatology_end: str | None = None
@@ -59,11 +59,11 @@ class Parameters:
         self.output_parameters = False
         self.mapping_attributes: list[str] = []
 
-        self.set_parameters(options, **kwargs)
+        self.set_parameters(parameters, **kwargs)
 
-    def set_parameters(self, options={}, **kwargs) -> dict:
+    def set_parameters(self, parameters={}, **kwargs) -> dict:
         non_attributes = {}
-        all_parameters = {**options, **kwargs}
+        all_parameters = {**parameters, **kwargs}
         for key, value in all_parameters.items():
             if hasattr(self, key):
                 setattr(self, key, value)

@@ -5,15 +5,15 @@ from .utils import *
 # stores and processes all the information in the dataset
 # a dataset contains data of places
 class Dataset:
-    def __init__(self, name: str, dataset: dict, col_names: list[str], options: Parameters) -> None:
+    def __init__(self, name: str, dataset: dict, col_names: list[str], parameters: Parameters) -> None:
         self.name = name
         self.timestamps = col_names
         
         self.properties = Properties(properties_dict=parse_timestamps(self.timestamps))
-        self.options = options
+        self.parameters = parameters
         
-        default_sub_seasons = define_seasonal_dict(self.options.cross_years)
-        if self.options.cross_years:
+        default_sub_seasons = define_seasonal_dict(self.parameters.cross_years)
+        if self.parameters.cross_years:
             self.season_shift = (yearly_periods[self.properties.period_unit_id] // 2)
             self.properties.year_ids = get_cross_years(self.properties.year_ids)
             self.properties.current_season_id = get_cross_years([self.properties.current_season_id])[0]
@@ -21,7 +21,7 @@ class Dataset:
             self.season_shift = 0
             self.properties.year_ids = self.properties.year_ids
 
-        if self.options.cross_years and (self.properties.current_season_length <= self.season_shift):
+        if self.parameters.cross_years and (self.properties.current_season_length <= self.season_shift):
             self.properties.current_season_id = self.properties.year_ids.pop()
             self.split_quantity = self.properties.season_quantity - 1
             self.climatology_end_index = self.season_shift + self.properties.current_season_index - yearly_periods[self.properties.period_unit_id]
@@ -30,16 +30,16 @@ class Dataset:
             self.split_quantity = self.properties.season_quantity
             self.climatology_end_index = self.season_shift + self.properties.current_season_index
             self.properties.current_season_length -= self.season_shift
-        self.properties.climatology_year_ids = slice_by_element(self.properties.year_ids, self.options.climatology_start, self.options.climatology_end)
+        self.properties.climatology_year_ids = slice_by_element(self.properties.year_ids, self.parameters.climatology_start, self.parameters.climatology_end)
         self.properties.sub_season_ids = default_sub_seasons
-        self.properties.selected_years = self.options.selected_years
-        self.properties.sub_season_monitoring_ids = slice_by_element(default_sub_seasons, self.options.season_start, self.options.season_end)
-        self.properties.sub_season_offset = default_sub_seasons.index(self.options.season_start)
+        self.properties.selected_years = self.parameters.selected_years
+        self.properties.sub_season_monitoring_ids = slice_by_element(default_sub_seasons, self.parameters.season_start, self.parameters.season_end)
+        self.properties.sub_season_offset = default_sub_seasons.index(self.parameters.season_start)
         self.properties.place_ids = list(dataset.keys())
 
-        self.season_start_index = default_sub_seasons.index(self.options.season_start)
-        self.season_end_index = default_sub_seasons.index(self.options.season_end)+1
-        self.current_season_trim_index = min(self.properties.current_season_length, self.season_end_index) - options.is_forecast
+        self.season_start_index = default_sub_seasons.index(self.parameters.season_start)
+        self.season_end_index = default_sub_seasons.index(self.parameters.season_end)+1
+        self.current_season_trim_index = min(self.properties.current_season_length, self.season_end_index) - parameters.is_forecast
         
 
         self.places: dict[str, Place] = {}
@@ -73,7 +73,7 @@ class Place:
         split_seasons: list[ndarray] = np.split(timeseries[parent.season_shift : parent.climatology_end_index], 
                               parent.split_quantity)
         self.current_season: ndarray = timeseries[parent.climatology_end_index : ]
-        if parent.options.is_forecast: 
+        if parent.parameters.is_forecast: 
             self.forecast_value = self.current_season[-1]
             self.current_season = self.current_season[:-1]
         else: self.forecast_value = None
@@ -85,7 +85,7 @@ class Place:
         self.similar_seasons = get_similar_years(self.current_season, 
                                             split_seasons, 
                                             parent.properties.year_ids,
-                                            parent.options.use_pearson)
+                                            parent.parameters.use_pearson)
         if isinstance(parent.properties.selected_years, str):
             self.selected_years = self.similar_seasons[:int(parent.properties.selected_years)]
         if isinstance(parent.properties.selected_years, list):

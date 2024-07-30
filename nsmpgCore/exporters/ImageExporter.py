@@ -71,8 +71,8 @@ class FigureContext:
 
         x_period_labels = dataset.properties.sub_season_monitoring_ids
         monitoring_length = len(x_period_labels)
-        current_length = dataset.properties.current_season_length-dataset.options.is_forecast
-        current_mon_length = dataset.properties.current_season_length-dataset.properties.sub_season_offset-dataset.options.is_forecast
+        current_length = dataset.properties.current_season_length-dataset.parameters.is_forecast
+        current_mon_length = dataset.properties.current_season_length-dataset.properties.sub_season_offset-dataset.parameters.is_forecast
         season_quantity = len(dataset.properties.year_ids)
         self.custom_x = {
             'Current Season': range(current_length),
