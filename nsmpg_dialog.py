@@ -271,12 +271,11 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             QMessageBox.warning(self, "Warning", 
                                 'Duplicated place names have been found.\nThe program might produce unexpected results.', 
                                 QMessageBox.Ok)
-        default_parameters = Parameters()
 
         # set form fields content from data
         self.datasetInputLineEdit.setText(self.selected_source)
 
-        self.update_fields(default_parameters)
+        self.update_fields(Parameters())
         self.update_dialog_info(self.dataset_properties)
 
     # function to allow the computation of the required data, such as accumulation, ensemble, stats, percentiles, etc
@@ -386,6 +385,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def cross_years_cb_changed_event(self):
         parameters = Parameters(
             {
+                **self.get_parameters_from_widgets(),
                 'climatology_start': None,
                 'climatology_end': None,
                 'season_start': None,
