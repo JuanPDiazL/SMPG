@@ -2,7 +2,12 @@
 import os
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import *
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QCheckBox,
+    QFrame,
+    QGridLayout
+)
 
 
 YEAR_SELECTION_DIALOG_CLASS, _ = uic.loadUiType(os.path.join(
