@@ -54,9 +54,9 @@ from .year_selection_dialog import YearSelectionDialog
 from .progress_dialog import ProgressDialog
 
 from .nsmpgCore.parsers.CSVParser import parse_csv
-from .nsmpgCore.structures import Dataset, Options, Properties
+from .nsmpgCore.structures import Dataset
 from .nsmpgCore.utils import (
-    define_seasonal_dict, parse_timestamps, 
+    Parameters, Properties, define_seasonal_dict, parse_timestamps, 
     get_properties_validated_year_list
     )
 from .nsmpgCore.pyqgis_utils import (
@@ -143,7 +143,30 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.importParametersButton.clicked.connect(self.import_parameters_btn_event)
         self.processButton.clicked.connect(self.process_btn_event)
 
-    def update_fields(self, options: Options):
+    def get_parameters_from_widgets(self):
+        selected_years = None
+        if self.customYearsRadioButton.isChecked():
+            selected_years = self.year_selection_dialog.selected_years
+        else:
+            selected_years = self.similarYearsComboBox.currentText()
+
+        return {
+            "climatology_start": self.climatologyStartComboBox.currentText(),
+            "climatology_end": self.climatologyEndComboBox.currentText(),
+            "season_start": self.seasonStartComboBox.currentText(),
+            "season_end": self.seasonEndComboBox.currentText(),
+            "cross_years": self.crossYearsCheckBox.isChecked(),
+            "selected_years": selected_years,
+            "is_forecast": self.forecastRadioButton.isChecked(),
+            "use_pearson": self.usePearsonCheckBox.isChecked(),
+            "output_web": self.exportWebCheckBox.isChecked(),
+            "output_images": self.exportImagesCheckBox.isChecked(),
+            "output_stats": self.exportStatsCheckBox.isChecked(),
+            "output_parameters": self.exportParametersCheckBox.isChecked(),
+            "mapping_attributes": self.map_settings_dialog.settings['selected_fields'],
+        }
+
+    def update_fields(self, options: Parameters):
         self.crossYearsCheckBox.setChecked(options.cross_years)
         year_ids = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
         sub_season_ids = define_seasonal_dict(self.crossYearsCheckBox.isChecked())
@@ -153,6 +176,8 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.climatologyStartComboBox.addItems(year_ids)
         if '1991' in year_ids:
             self.climatologyStartComboBox.setCurrentText('1991')
+        elif options.climatology_start is None:
+            self.climatologyStartComboBox.setCurrentText(year_ids[0])
         else:
             self.climatologyStartComboBox.setCurrentText(options.climatology_start)
         self.climatologyEndComboBox.setEnabled(True)
@@ -160,17 +185,25 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.climatologyEndComboBox.addItems(year_ids)
         if '2020' in year_ids:
             self.climatologyEndComboBox.setCurrentText('2020')
+        elif options.climatology_end is None:
+            self.climatologyEndComboBox.setCurrentText(year_ids[-1])
         else:
             self.climatologyEndComboBox.setCurrentText(options.climatology_end)
 
         self.seasonStartComboBox.setEnabled(True)
         self.seasonStartComboBox.clear()
         self.seasonStartComboBox.addItems(sub_season_ids)
-        self.seasonStartComboBox.setCurrentText(options.season_start)
+        if options.season_start is None:
+            self.seasonStartComboBox.setCurrentText(sub_season_ids[0])
+        else:
+            self.seasonStartComboBox.setCurrentText(options.season_start)
         self.seasonEndComboBox.setEnabled(True)
         self.seasonEndComboBox.clear()
         self.seasonEndComboBox.addItems(sub_season_ids)
-        self.seasonEndComboBox.setCurrentText(options.season_end)
+        if options.season_end is None:
+            self.seasonEndComboBox.setCurrentText(sub_season_ids[-1])
+        else:
+            self.seasonEndComboBox.setCurrentText(options.season_end)
 
         self.importParametersLineEdit.setEnabled(True)
         self.importParametersButton.setEnabled(True)
@@ -179,7 +212,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.crossYearsCheckBox.setEnabled(True)
         self.processButton.setEnabled(True)
 
-        if isinstance(options.selected_years, list):
+        if isinstance(options.selected_years, list) or options.selected_years is None:
             self.customYearsRadioButton.setChecked(True)
             self.selectYearsButton.setEnabled(True)
             self.similarYearsComboBox.setEnabled(False)
@@ -212,6 +245,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.exportParametersCheckBox.setEnabled(True)
         self.exportParametersCheckBox.setChecked(options.output_parameters)
         self.mappingButton.setEnabled(options.output_stats)
+        self.map_settings_dialog.settings['selected_fields'] = options.mapping_attributes
 
     # function that reads the dataset from a file.
     def load_file_btn_event(self): 
@@ -237,7 +271,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             QMessageBox.warning(self, "Warning", 
                                 'Duplicated place names have been found.\nThe program might produce unexpected results.', 
                                 QMessageBox.Ok)
-        default_options = Options(dataset_properties=self.dataset_properties)
+        default_options = Parameters()
 
         # set form fields content from data
         self.datasetInputLineEdit.setText(self.selected_source)
@@ -277,20 +311,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         # with cProfile.Profile() as profile:
         self.renderTime = time.perf_counter()
         # computation with parameters given from GUI
-        options = Options(
-            climatology_start=self.climatologyStartComboBox.currentText(),
-            climatology_end=self.climatologyEndComboBox.currentText(),
-            season_start=self.seasonStartComboBox.currentText(),
-            season_end=self.seasonEndComboBox.currentText(),
-            cross_years=self.crossYearsCheckBox.isChecked(),
-            selected_years=self.year_selection_dialog.selected_years if self.customYearsRadioButton.isChecked() else self.similarYearsComboBox.currentText(),
-            is_forecast=self.forecastRadioButton.isChecked(),
-            use_pearson=self.usePearsonCheckBox.isChecked(),
-            output_web=self.exportWebCheckBox.isChecked(),
-            output_images=self.exportImagesCheckBox.isChecked(),
-            output_stats=self.exportStatsCheckBox.isChecked(),
-            output_parameters=self.exportParametersCheckBox.isChecked(),
-        )
+        options = Parameters(self.get_parameters_from_widgets())
         self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, options)
         
         # output files
@@ -355,8 +376,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         try:
             with open(self.parameters_source, 'r') as json_file:
                 parameters = json.load(json_file)
-            options = Options()
-            options.overwrite(parameters)
+            options = Parameters(parameters)
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Could not load parameters from {self.parameters_source}.\n\n{str(e)}\n\n{traceback.format_exc()}')
             return
@@ -366,20 +386,16 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def cross_years_cb_changed_event(self):
         sub_season_ids = define_seasonal_dict(self.crossYearsCheckBox.isChecked())
         year_list = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
-        options = Options(
-            climatology_start=year_list[0],
-            climatology_end=year_list[-1],
-            season_start=sub_season_ids[0],
-            season_end=sub_season_ids[-1],
-            cross_years=self.crossYearsCheckBox.isChecked(),
-            selected_years=year_list,
-            is_forecast=self.forecastRadioButton.isChecked(),
-            use_pearson=self.usePearsonCheckBox.isChecked(),
-            output_web=self.exportWebCheckBox.isChecked(),
-            output_images=self.exportImagesCheckBox.isChecked(),
-            output_stats=self.exportStatsCheckBox.isChecked(),
-            output_parameters=self.exportParametersCheckBox.isChecked(),
-            )
+        options = Parameters(
+            {
+                'climatology_start': None,
+                'climatology_end': None,
+                'season_start': None,
+                'season_end': None,
+                'selected_years': None,
+                'cross_years': self.crossYearsCheckBox.isChecked(),
+            }
+        )
         self.update_fields(options)
 
     def year_selection_rb_event(self):

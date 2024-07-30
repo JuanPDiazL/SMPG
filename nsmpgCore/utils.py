@@ -37,51 +37,42 @@ class Properties:
     def update(self, properties: dict):
         self.__dict__.update(properties)
 
-# options for the computation
-class Options:
-    def __init__(self, climatology_start=None, climatology_end=None,
-                 season_start=None, season_end=None, cross_years=None, selected_years=None,
-                 is_forecast=None, use_pearson=None, output_web=None, output_images=None,
-                 output_stats=None, output_parameters=None, dataset_properties:Properties=None):
-        # constructs default options from the properties of the dataset
-        if dataset_properties is not None:
-            self.climatology_start=dataset_properties.year_ids[0]
-            self.climatology_end=dataset_properties.year_ids[-1]
-            self.season_start='Jan-1'
-            self.season_end='Dec-3'
-            self.selected_years=dataset_properties.year_ids
-            self.cross_years=False
-            self.is_forecast=False
-            self.use_pearson = False
-            self.output_web: bool = True
-            self.output_images: bool = False
-            self.output_stats: bool = True
-            self.output_parameters: bool = False
-            return
-        self.climatology_start: str = climatology_start
-        self.climatology_end: str = climatology_end
+# computation parameters
+class Parameters:
+    def __init__(self, options={}, **kwargs) -> None:
+        # climatology defaults
+        self.climatology_start: str | None = None
+        self.climatology_end: str | None = None
+        # monitoring season defaults
+        self.season_start: str | None = None
+        self.season_end: str | None = None
+        self.cross_years = False
+        # year selection defaults
+        self.selected_years: list[str] | int | None = None
+        self.use_pearson = False
+        # forecasting defaults
+        self.is_forecast = False
+        # output defaults
+        self.output_web = True
+        self.output_images = False
+        self.output_stats = True
+        self.output_parameters = False
+        self.mapping_attributes: list[str] = []
 
-        self.season_start: str = season_start
-        self.season_end: str = season_end
-        self.cross_years: bool = cross_years
+        self.set_parameters(options, **kwargs)
 
-        self.selected_years: Union(list[str], str) = selected_years
-        self.is_forecast: bool = is_forecast
-        self.use_pearson: bool = use_pearson
-
-        self.output_web: bool = output_web
-        self.output_images: bool = output_images
-        self.output_stats: bool = output_stats
-        self.output_parameters: bool = output_parameters
-
-    def overwrite(self, options):
-        if not isinstance(options, dict):
-            options = options.__dict__
-        # Iterate over keys
-        for key in self.__dict__:
-            # If the value in dict1 is None, replace it with the value from dict2
-            if options[key] is not None and key in options:
-                self.__dict__[key] = options[key]
+    def set_parameters(self, options={}, **kwargs) -> dict:
+        non_attributes = {}
+        all_parameters = {**options, **kwargs}
+        for key, value in all_parameters.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+            else:
+                non_attributes[key] = value
+        return non_attributes
+    
+    def to_dict(self):
+        return {k: getattr(self, k) for k in dir(self) if not k.startswith('_') and k != 'to_dict'}
 
 def define_seasonal_dict(july_june=False, period_unit='Dekad') -> list:
     """Creates a list of seasonal periods for the given start and period unit.

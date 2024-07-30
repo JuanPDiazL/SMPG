@@ -46,14 +46,14 @@ class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
             cb.setChecked(self.selectAllCheckBox.isChecked())
 
     def update_selection(self):
-        all_checked = True
+        are_all_checked = True
         for cb in self.year_combo_boxes:
-            if cb.text() in self.selected_years:
+            if self.selected_years is None or cb.text() in self.selected_years:
                 cb.setChecked(True)
             else:
                 cb.setChecked(False)
-                all_checked &= False
-        self.selectAllCheckBox.setChecked(all_checked)
+                are_all_checked &= False
+        self.selectAllCheckBox.setChecked(are_all_checked)
 
     def accept(self) -> None:
         self.selected_years = []

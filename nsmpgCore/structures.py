@@ -5,7 +5,7 @@ from .utils import *
 # stores and processes all the information in the dataset
 # a dataset contains data of places
 class Dataset:
-    def __init__(self, name: str, dataset: dict, col_names: list[str], options: Options) -> None:
+    def __init__(self, name: str, dataset: dict, col_names: list[str], options: Parameters) -> None:
         self.name = name
         self.timestamps = col_names
         
