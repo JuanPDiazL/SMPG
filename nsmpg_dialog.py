@@ -78,14 +78,25 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class NSMPGDialog(QDialog, FORM_CLASS):
+    """Main Dialog of the plugin
+
+    This is the main dialog of QSMPG. It allows users to select 
+    their dataset and most parameters for processing the dataset. 
+    It displays information about the dataset and provides 
+    fields for users to input their preferred options.
+    """
     def __init__(self, parent=None):
-        """Constructor."""
+        """This is the constructor for the class.
+
+        It initializes the GUI elements and sets up the connections between them.
+        """
         super(NSMPGDialog, self).__init__(parent)
         self.setupUi(self)
 
         # task manager object that executes the processing tasks in threads.
         self.task_manager = QgsTaskManager(self) 
 
+        # child dialogs
         self.year_selection_dialog = YearSelectionDialog(self)
         self.progress_dialog = ProgressDialog(self)
         self.map_settings_dialog = MapSettingsDialog(self)
@@ -96,32 +107,39 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.importParametersButton: QPushButton
         self.importParametersLineEdit: QLineEdit
         
+        # climatology group
         self.climatologyStartComboBox: QComboBox
         self.climatologyEndComboBox: QComboBox
 
+        # season monitoring group
         self.crossYearsCheckBox: QCheckBox
         self.seasonStartComboBox: QComboBox
         self.seasonEndComboBox: QComboBox
 
+        # year selection group
         self.customYearsRadioButton: QRadioButton
         self.similarYearsRadioButton: QRadioButton
         self.similarYearsComboBox: QComboBox
         self.usePearsonCheckBox: QCheckBox
         self.selectYearsButton: QPushButton
 
+        # analysis group
         self.observedDataRadioButton: QRadioButton
         self.forecastRadioButton: QRadioButton
 
+        # outputs group
         self.exportWebCheckBox: QCheckBox
         self.exportImagesCheckBox: QCheckBox
         self.exportStatsCheckBox: QCheckBox
         self.exportParametersCheckBox: QCheckBox
         self.mappingButton: QPushButton
 
+        # information group
         self.datasetInfoLabel: QLabel
 
         self.processButton: QPushButton
 
+        # signal connections
         self.mappingButton.clicked.connect(self.mapping_button_event)
         self.exportStatsCheckBox.stateChanged.connect(self.export_stats_cb_changed_event)
 
@@ -135,6 +153,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.processButton.clicked.connect(self.process_btn_event)
 
     def get_parameters_from_widgets(self):
+        """Get parameters from widgets and return them as a dictionary."""
         selected_years = None
         if self.customYearsRadioButton.isChecked():
             selected_years = self.year_selection_dialog.selected_years
@@ -158,10 +177,20 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         }
 
     def update_fields(self, parameters: Parameters):
+        """Update the UI fields based on the given `parameters` object.
+
+        This method enables the fields in the dialog when a dataset is loaded,
+        then it updates the fields with the given `parameters` object's values.
+
+        Args:
+            parameters (Parameters):
+                The Parameters object containing the settings and values to be set.
+        """
         self.crossYearsCheckBox.setChecked(parameters.cross_years)
         year_ids = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
         sub_season_ids = define_seasonal_dict(self.crossYearsCheckBox.isChecked())
 
+        # update climatology
         self.climatologyStartComboBox.setEnabled(True)
         self.climatologyStartComboBox.clear()
         self.climatologyStartComboBox.addItems(year_ids)
@@ -177,6 +206,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         else:
             self.climatologyEndComboBox.setCurrentText(parameters.climatology_end)
 
+        # update monitoring season
         self.seasonStartComboBox.setEnabled(True)
         self.seasonStartComboBox.clear()
         self.seasonStartComboBox.addItems(sub_season_ids)
@@ -192,6 +222,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         else:
             self.seasonEndComboBox.setCurrentText(parameters.season_end)
 
+        # enable other widgets
         self.importParametersLineEdit.setEnabled(True)
         self.importParametersButton.setEnabled(True)
         self.customYearsRadioButton.setEnabled(True)
@@ -199,6 +230,8 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.crossYearsCheckBox.setEnabled(True)
         self.processButton.setEnabled(True)
 
+        # update year selection
+        # for custom years
         if isinstance(parameters.selected_years, list) or parameters.selected_years is None:
             self.customYearsRadioButton.setChecked(True)
             self.selectYearsButton.setEnabled(True)
@@ -207,7 +240,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.year_selection_dialog.updateYearsList(year_ids)
         self.year_selection_dialog.selected_years = parameters.selected_years
         self.year_selection_dialog.update_selection()
-
+        # for similar years
         self.similarYearsComboBox.clear()
         self.similarYearsComboBox.addItems([str(y) for y in range(1, self.dataset_properties.season_quantity+1)])
         if isinstance(parameters.selected_years, str):
@@ -218,11 +251,13 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             self.selectYearsButton.setEnabled(False)
         self.usePearsonCheckBox.setChecked(parameters.use_pearson)
 
+        # update analysis type
         self.observedDataRadioButton.setEnabled(True)
         self.forecastRadioButton.setEnabled(True)
         if parameters.is_forecast: self.forecastRadioButton.setChecked(True)
         else: self.observedDataRadioButton.setChecked(True)
 
+        # update outputs
         self.exportWebCheckBox.setEnabled(True)
         self.exportWebCheckBox.setChecked(parameters.output_web)
         self.exportImagesCheckBox.setEnabled(True)
@@ -236,6 +271,12 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
     # function that reads the dataset from a file.
     def load_file_btn_event(self): 
+        """Event handler for `loadFileButton`, it loads the dataset file.
+        
+        This is an event handler for when the user clicks the "Load Rainfall Dataset (.csv)" button. 
+        It reads the selected dataset from a file and parses it to create a structured data object. 
+        It also updates the dialog's fields with default values based on the selected dataset properties.
+        """
         # path reading
         temp_dataset_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
         if temp_dataset_source == "":
@@ -268,6 +309,13 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
     # function to allow the computation of the required data, such as accumulation, ensemble, stats, percentiles, etc
     def process_btn_event(self):
+        """Event handler for `processButton`, it outputs the processed data.
+        
+        This is an event handler for when the user clicks the "Process" button. 
+        It checks for any invalid input in the form and then performs 
+        the computation of required data using the options given by the user. 
+        It also displays a progress dialog while the tasks are being executed.
+        """
         # invalid input handling
         if self.climatologyStartComboBox.currentIndex() > self.climatologyEndComboBox.currentIndex():
             QMessageBox.critical(self, "Error", 
@@ -342,12 +390,22 @@ class NSMPGDialog(QDialog, FORM_CLASS):
                 ))
         
         self.renderTime = time.perf_counter()
+        # add tasks to task manager and run them
         for task in long_tasks:
             self.task_manager.addTask(task)
+
+        # triggers event on progress dialog when finished
         self.task_manager.allTasksFinished.connect(lambda: self.progress_dialog.finish_wait(self.task_manager, long_tasks))
 
     def import_parameters_btn_event(self) -> None:
-        # path reading
+        """Event handler for `importParametersButton`, it loads a parameters file.
+
+        This is an event handler for when the user clicks 
+        the "Import Parameters" button. 
+        It reads the selected parameters from a JSON file and updates 
+        the dialog's fields with those values.
+        """
+        # source selection
         temp_parameters_source = QFileDialog.getOpenFileName(self, 'Open parameters file', None, "JSON files (*.json)")[0]
         if temp_parameters_source == "": 
             QMessageBox.warning(self, "Warning", 
@@ -355,6 +413,8 @@ class NSMPGDialog(QDialog, FORM_CLASS):
                                 QMessageBox.Ok)
             return
         self.parameters_source = temp_parameters_source
+
+        # file reading
         try:
             with open(self.parameters_source, 'r') as json_file:
                 parameters = json.load(json_file)
@@ -362,10 +422,19 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Could not load parameters from {self.parameters_source}.\n\n{str(e)}\n\n{traceback.format_exc()}')
             return
+        
+        # field updates
         self.importParametersLineEdit.setText(self.parameters_source)
         self.update_fields(parameters)
 
     def cross_years_cb_changed_event(self):
+        """Event handler for `crossYearsCheckBox`, it switches cross-years.
+
+        This method is called whenever the "Cross-Year Seasons (July-June)" 
+        checkbox changes state. 
+        It updates the list of years available in the "Selected Years" combobox 
+        based on whether or not the user has selected to cross years.
+        """
         parameters = Parameters(
             {
                 **self.get_parameters_from_widgets(),
@@ -380,6 +449,12 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.update_fields(parameters)
 
     def year_selection_rb_event(self):
+        """Event handler for year selection RadioButtons.
+        
+        This method is called whenever the user selects a radio button indicating 
+        whether they want to select specific years or use similar years. 
+        It enables or disables the appropriate fields in the dialog based on their selection.
+        """
         if self.customYearsRadioButton.isChecked():
             self.selectYearsButton.setEnabled(True)
             self.similarYearsComboBox.setEnabled(False)
@@ -390,15 +465,39 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             self.selectYearsButton.setEnabled(False)
 
     def export_stats_cb_changed_event(self):
+        """Event handler for `exportStatsCheckBox`.
+        
+        It enables or disables the "Mapping Preferences" button 
+        based on the state of the "Export Statistics" checkbox.
+        """
         self.mappingButton.setEnabled(self.exportStatsCheckBox.isChecked())
 
     def select_years_btn_event(self):
+        """Event handler for `selectYearsButton`.
+        
+        This is an event handler for when the user clicks the "Select Years" button. 
+        It displays a dialog that allows the user to select specific years from the dataset.
+        """
         self.year_selection_dialog.show()
 
     def mapping_button_event(self):
+        """Event handler for `mappingButton`.
+        
+        This method is called whenever the user selects the "Mapping Preferences" 
+        button. It opens a new dialog that allows to configure the generation 
+        of the maps.
+        """
         self.map_settings_dialog.show()
 
     def update_dialog_info(self, dataset_properties: Properties):
+        """Updates the label that contains information about the datset.
+        
+        This method updates the dataset information label with 
+        relevant information about the selected dataset.
+
+        Args:
+            dataset_properties (Properties): Properties of the dataset
+        """
         dg_text = \
 f'''First Year: {dataset_properties.year_ids[0]}
 Last Year: {dataset_properties.year_ids[-1]}
@@ -407,7 +506,37 @@ Dekads in Current Year: {dataset_properties.current_season_length}'''
         self.datasetInfoLabel.setText(dg_text)
 
 class TaskHandler(QgsTask):
+    """Class for handling tasks to be run in other threads.
+
+    It provides an interface for handling tasks that will run in other threads.
+    
+    Attributes:
+        fn (function): The function to be executed.
+        args (list): The arguments to be passed to the function.
+        kwargs (dict): The keyword arguments to be passed to the function.
+        title (str): A string containing the title of the task.
+        result: The result of the task, which is set in finished 
+            after the task completes successfully.
+        exception (Exception): An exception raised by the task if 
+            it raises an exception during its execution.
+        debug (bool): A flag indicating whether to print debug information or not.
+        time (int): The time elapsed since the task started.
+    """
     def __init__(self, description, fn, *args, nextTask=None, dependentLayers=[], **kwargs):
+        """
+        Initializes the task handler with the given description, function, 
+        arguments, and keyword arguments. It also sets up the next task 
+        to be executed after this one is completed successfully.
+        
+        Args:
+            description (str): A string describing the task.
+            fn (function): The function to be executed.
+            args (list): The arguments to be passed to the function.
+            nextTask (TaskHandler): A task that will run after this task.
+            dependantLayers (list[QgsVectorLayer]): A list of layers 
+                that this task depends on.
+            kwargs (dict): The keyword arguments to be passed to the function.
+        """
         super().__init__(description, QgsTask.CanCancel)
         self.fn = fn
         self.args = args
@@ -424,6 +553,12 @@ class TaskHandler(QgsTask):
             self.addNextTask(nextTask)
 
     def run(self):
+        """Executes the function given to the task handler.
+
+        Executes the given function with the given arguments and keyword 
+        arguments. If the task is cancelled or raises an exception, 
+        it returns False. Otherwise, it returns True.
+        """
         if self.debug: print(f'{self.description()} started')
         if self.isCanceled():
             return False
@@ -435,6 +570,19 @@ class TaskHandler(QgsTask):
             return False
 
     def finished(self, result):
+        """Called when the task is finished. 
+        
+        When the task finishes successfully, it sets the result of the task 
+        to the return value of the function executed in `run`, and updates 
+        the time elapsed since the task started. If there is a next task, 
+        it adds the result of this task as an argument to the next task and starts it.
+        When the task finishes unsuccessfully (with an exception or by cancelling),
+        it sets the exception of the task to the exception (if any) 
+        raised by the function and cancels the next task (if any).
+
+        Args:
+            result (bool): if the function completes successfully or not.
+        """
         # when task completed successfully
         if result:
             ...
@@ -453,7 +601,10 @@ class TaskHandler(QgsTask):
         if self.debug: print(f'{self.description()} terminated')
 
     def cancel(self):
-        # do something before cancelling
+        """Called when the task is cancelled. 
+
+        It cancels the next task and then calls the parent class's `cancel` method.
+        """
         if self.debug: print(f'{self.description()} got cancelled')
         if self.nextTask is not None:
             self.nextTask.cancel()
@@ -462,6 +613,13 @@ class TaskHandler(QgsTask):
         super().cancel()
 
     def addNextTask(self, task: QgsTask):
+        """
+        Adds a new task to be executed after this one completes successfully. 
+        The new task is held until it is started by the `finished` method.
+
+        Args:
+            task (QgsTask): the task to be executed after this one is completed.
+        """
         self.nextTask = task
         task.hold()
         super().taskCompleted.connect(task.unhold)
