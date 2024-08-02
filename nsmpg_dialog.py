@@ -29,7 +29,6 @@ import traceback
 # import cProfile
 # import pstats
 
-# from qgis.PyQt import uic, QtWidgets
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QDialog,
@@ -82,24 +81,16 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(NSMPGDialog, self).__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
-        ### My code starting from here
-        self.task_manager = QgsTaskManager(self)
+        # task manager object that executes the processing tasks in threads.
+        self.task_manager = QgsTaskManager(self) 
 
         self.year_selection_dialog = YearSelectionDialog(self)
         self.progress_dialog = ProgressDialog(self)
         self.map_settings_dialog = MapSettingsDialog(self)
 
-        self.climatologyGroup: QGroupBox
-        self.monitoringGroup: QGroupBox
-        self.yearSelectionGroup: QGroupBox
-
+        # input group
         self.loadFileButton: QPushButton
         self.datasetInputLineEdit: QLineEdit
         self.importParametersButton: QPushButton
@@ -304,20 +295,18 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         if dlg == QMessageBox.Yes:
             self.destination_path = os.path.join(self.destination_path, self.dataset_filename)
         
-        # with cProfile.Profile() as profile:
-        self.renderTime = time.perf_counter()
         # computation with parameters given from GUI
         parameters = Parameters(self.get_parameters_from_widgets())
         self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, parameters)
         
-        # output files
         self.progress_dialog.show()
-        long_tasks: list[LongTaskHandler] = []
+        # add selected output tasks to a list of tasks
+        long_tasks: list[TaskHandler] = []
         if self.exportStatsCheckBox.isChecked():
-            csv_task = LongTaskHandler('CSV Export Task', export_to_csv_files, self.destination_path, self.structured_dataset)
+            csv_task = TaskHandler('CSV Export Task', export_to_csv_files, self.destination_path, self.structured_dataset)
             long_tasks.append(csv_task)
             if len(self.map_settings_dialog.settings['selected_fields']) != 0:
-                map_task = LongTaskHandler(
+                map_task = TaskHandler(
                     'Summary Mapping Task',
                     generate_layers_from_csv, 
                     self.map_settings_dialog.settings,
@@ -329,7 +318,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
                 long_tasks.append(map_task)
 
         if self.exportWebCheckBox.isChecked():
-            long_tasks.append(LongTaskHandler(
+            long_tasks.append(TaskHandler(
                 'Web Report Export Task', 
                 export_to_web_files, 
                 self.destination_path, 
@@ -337,7 +326,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
             ))
 
         if self.exportParametersCheckBox.isChecked():
-            long_tasks.append(LongTaskHandler(
+            long_tasks.append(TaskHandler(
                 'Parameters Export Task', 
                 export_parameters, 
                 self.destination_path, 
@@ -345,20 +334,17 @@ class NSMPGDialog(QDialog, FORM_CLASS):
                 ))
             
         if self.exportImagesCheckBox.isChecked():
-            long_tasks.append(LongTaskHandler(
+            long_tasks.append(TaskHandler(
                 'Static Reports Export Task', 
                 export_to_image_files, 
                 self.destination_path, 
                 self.structured_dataset
                 ))
         
+        self.renderTime = time.perf_counter()
         for task in long_tasks:
             self.task_manager.addTask(task)
         self.task_manager.allTasksFinished.connect(lambda: self.progress_dialog.finish_wait(self.task_manager, long_tasks))
-            
-            # stats = pstats.Stats(profile)
-            # stats.sort_stats(pstats.SortKey.TIME)
-            # stats.dump_stats('snakeviz.prof')
 
     def import_parameters_btn_event(self) -> None:
         # path reading
@@ -420,7 +406,7 @@ Current Year: {dataset_properties.current_season_id}
 Dekads in Current Year: {dataset_properties.current_season_length}'''
         self.datasetInfoLabel.setText(dg_text)
 
-class LongTaskHandler(QgsTask):
+class TaskHandler(QgsTask):
     def __init__(self, description, fn, *args, nextTask=None, dependentLayers=[], **kwargs):
         super().__init__(description, QgsTask.CanCancel)
         self.fn = fn
