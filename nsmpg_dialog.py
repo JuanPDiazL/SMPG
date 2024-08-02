@@ -174,18 +174,14 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.climatologyStartComboBox.setEnabled(True)
         self.climatologyStartComboBox.clear()
         self.climatologyStartComboBox.addItems(year_ids)
-        if '1991' in year_ids:
-            self.climatologyStartComboBox.setCurrentText('1991')
-        elif parameters.climatology_start is None:
+        if parameters.climatology_start is None:
             self.climatologyStartComboBox.setCurrentText(year_ids[0])
         else:
             self.climatologyStartComboBox.setCurrentText(parameters.climatology_start)
         self.climatologyEndComboBox.setEnabled(True)
         self.climatologyEndComboBox.clear()
         self.climatologyEndComboBox.addItems(year_ids)
-        if '2020' in year_ids:
-            self.climatologyEndComboBox.setCurrentText('2020')
-        elif parameters.climatology_end is None:
+        if parameters.climatology_end is None:
             self.climatologyEndComboBox.setCurrentText(year_ids[-1])
         else:
             self.climatologyEndComboBox.setCurrentText(parameters.climatology_end)

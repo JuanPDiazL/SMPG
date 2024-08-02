@@ -41,8 +41,8 @@ class Properties:
 class Parameters:
     def __init__(self, parameters={}, **kwargs) -> None:
         # climatology defaults
-        self.climatology_start: str | None = None
-        self.climatology_end: str | None = None
+        self.climatology_start: str | None = '1991'
+        self.climatology_end: str | None = '2020'
         # monitoring season defaults
         self.season_start: str | None = None
         self.season_end: str | None = None
