@@ -26,8 +26,6 @@ import os
 import time
 import json
 import traceback
-# import cProfile
-# import pstats
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
@@ -58,13 +56,6 @@ from .nsmpgCore.utils import (
     Parameters, Properties, define_seasonal_dict, parse_timestamps, 
     get_properties_validated_year_list
     )
-from .nsmpgCore.pyqgis_utils import (
-    load_layer_file,
-    join_layers,
-    add_to_project,
-    apply_default_symbology,
-    rename_layer
-)
     
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
 from .nsmpgCore.exporters.CSVExporter import export_to_csv_files
@@ -269,7 +260,6 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.mappingButton.setEnabled(parameters.output_stats)
         self.map_settings_dialog.settings['selected_fields'] = parameters.mapping_attributes
 
-    # function that reads the dataset from a file.
     def load_file_btn_event(self): 
         """Event handler for `loadFileButton`, it loads the dataset file.
         
@@ -307,7 +297,6 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.year_selection_dialog.selected_years = self.dataset_properties.year_ids
         self.update_dialog_info(self.dataset_properties)
 
-    # function to allow the computation of the required data, such as accumulation, ensemble, stats, percentiles, etc
     def process_btn_event(self):
         """Event handler for `processButton`, it outputs the processed data.
         
