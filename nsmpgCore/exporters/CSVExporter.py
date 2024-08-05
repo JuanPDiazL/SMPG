@@ -3,6 +3,15 @@ import pandas as pd
 from ..structures import Dataset
 
 def wrap_stats(stats):
+    """Wraps the statistical data for a place in a dictionary.
+
+    Args:
+        stats (dict): The statistical data for a place.
+
+    Returns:
+        wrapped_stats (dict): A dictionary of statistical data with some 
+            additional formatting.
+    """
     return {
             'LTA': stats['LTA'][-1],
             'LTA up to Current Season': stats['LTA'][stats['Current Season Accumulation'].size-1],
@@ -17,6 +26,15 @@ def wrap_stats(stats):
         }
 
 def wrap_summary(stats):
+    """Wraps the summary data for a place in a dictionary.
+
+    Args:
+        stats (dict): The summary data for a place.
+
+    Returns:
+        wrapped_stats (dict): A dictionary of summary data with some additional 
+            formatting.
+    """
     return {
             'C. Dk./LTA Pct.': stats['C. Dk./LTA'][-1]*100,
             'Ensemble Med./LTA Pct.': stats['Ensemble Med./LTA'][-1]*100,
@@ -28,6 +46,20 @@ def wrap_summary(stats):
         }
 
 def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Statistics'):
+    """
+    Exports the statistical and summary data for a dataset to CSV files in a 
+    specified folder.
+
+    Args:
+        destination_path (str): The path to the folder where the CSV files will 
+            be saved.
+        dataset (Dataset): The dataset whose data will be exported.
+        subFolderName (str, optional): The name of the subfolder where the CSV 
+            files will be saved. Defaults to 'Statistics'.
+
+    Returns:
+        str: the path to the selected years summary file.
+    """
     filename_suffix = f' [{dataset.name}] [dek{dataset.properties.current_season_id}{dataset.properties.current_season_length}]'
     stats_subfolder_path = os.path.join(destination_path, subFolderName)
     os.makedirs(stats_subfolder_path, exist_ok=True)

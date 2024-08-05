@@ -3,16 +3,33 @@ import os
 import shutil as sh
 from ..structures import Dataset
 
-# converts dict to javascript object. workaround for standalone web files
+# workaround for standalone web files
 def data_py_to_js(data: dict, destination_path: str, data_name: str):
+    """
+    Converts a Python dictionary to a JavaScript object and saves it to a file.
+
+    Args:
+        data (dict): The Python dictionary to convert.
+        destination_path (str): The path where the JavaScript file will be 
+            saved.
+        data_name (str): The name of the JavaScript variable that will hold the 
+            converted data.
+    """
     json_data = json.dumps(data)
     os.makedirs(destination_path, exist_ok=True)
     with open(f'{destination_path}/{data_name}.js', 'w') as js_data_wrapper:
         if isinstance(data, dict): js_data_wrapper.write(f'var {data_name} = {json_data};')
         else: js_data_wrapper.write(f'var {data_name} = {data};')
 
-# outputs all the required data for a dynamic web report.
 def export_to_web_files(destination_path, structured_dataset: Dataset, subFolderName='Dynamic_Web_Report'):
+    """Outputs all the required data for a dynamic web report.
+
+    Args:
+        destination_path (str): The path where the web report will be saved.
+        structured_dataset (Dataset): The dataset to export.
+        subFolderName (str, optional): The name of the subfolder that will hold 
+            the web report. Defaults to 'Dynamic_Web_Report'.
+    """
     # Create the destination folder if it doesn't exist
     web_subfolder_path = os.path.join(destination_path, subFolderName)
     os.makedirs(web_subfolder_path, exist_ok=True)
