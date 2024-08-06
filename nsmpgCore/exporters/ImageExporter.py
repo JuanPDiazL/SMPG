@@ -295,7 +295,7 @@ def make_ensemble_data(place: Place):
         ['Be. Normal', round(selected_place_stats['E. Probabilities'][0]*100), round(place.place_stats['E. Probabilities'][0]*100)]],
     ]
     metadata = {
-        'title': 'Seasonal Accumulations',
+        'title': 'Ensemble',
         'selected years': place.selected_years,
         'x ticks': props.sub_season_monitoring_ids,
         'x label': f'Time ({props.period_unit_id}s)',
