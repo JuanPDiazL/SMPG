@@ -134,10 +134,10 @@ const defaultOptions = {
 };
 const chartColors = {
     'LTA': '#FF0000',
-    'LTM': '#000000',
+    'Median': '#000000',
     'LTA±20%': '#00AFE5',
     'Climatology Average': '#FF0000',
-    'E. LTM': '#000000',
+    'Ensemble Med.': '#000000',
     'Current Season': '#0000FF',
     'Seasonal Accumulation': '#78ADD2',
     'Current Season Accumulation': '#0000FF',
@@ -205,7 +205,7 @@ class AccumulationsBillboardChart {
         const jsonData = {
             ...this.xs,
             ...this.seasonalData[index]['Sum'],
-            'LTM': this.placeData[index]['LTM'],
+            'Median': this.placeData[index]['Median'],
             'LTA±20%': arrayMoreLess20(this.placeData[index]['LTA']),
             'LTA': this.placeData[index]['LTA'],
             'Current Season Accumulation': this.placeData[index]['Current Season Accumulation'],
@@ -342,7 +342,7 @@ class EnsembleBillboardChart {
             ...this.seasonalData[index]['Ensemble Sum'],
             'LTA±20%': arrayMoreLess20(this.placeData[index]['LTA']),
             'LTA': this.placeData[index]['LTA'],
-            'E. LTM': this.selectedPlaceData[index]['E. LTM'],
+            'Ensemble Med.': this.selectedPlaceData[index]['Ensemble Med.'],
             'Current Season Accumulation': this.placeData[index]['Current Season Accumulation'],
             'LTA±St. Dev.': [getLast(this.placeData[index]['LTA']) + getLast(this.placeData[index]['St. Dev.']),
             getLast(this.placeData[index]['LTA']) - getLast(this.placeData[index]['St. Dev.']),

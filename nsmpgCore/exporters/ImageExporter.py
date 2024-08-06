@@ -9,12 +9,39 @@ plt.switch_backend('agg')
 from ..structures import Dataset, Place
 
 def fix_filename(sourcestring,  removestring="#%&}{$!\'\"@+`|:/,=.\\[]<>*?\n\t"):
+    """
+    Replaces special characters in a string with underscores.
+
+    Args:
+        sourcestring (str): The string to be processed.
+        removestring (str): A string containing the special characters to be removed.
+
+    Returns:
+        str: The modified string with special characters replaced with underscores.
+    """
     return ''.join([c if c not in removestring else '_' for c in sourcestring])
 
 def expand_value(value: float, length: int):
+    """
+    Creates a list of repeated values.
+
+    Args:
+        value (float): The value to be repeated.
+        length (int): The number of times the value should be repeated.
+
+    Returns:
+        list: A list containing the repeated value.
+    """
     return [value] * length
 
 def export_to_image_files(destination_path, structured_dataset: Dataset, subFolderName='Static_Image_Reports'):
+    """Exports data to image files in a specified destination folder.
+
+    Args:
+        destination_path (str): The path to the destination folder.
+        structured_dataset (Dataset): A dataset object containing the data to be exported.
+        subFolderName (str, optional): The name of the subfolder within the destination folder. Defaults to 'Static_Image_Reports'.
+    """
     # Create the destination folder if it doesn't exist
     image_subfolder_path = os.path.join(destination_path, subFolderName)
     os.makedirs(image_subfolder_path, exist_ok=True)
@@ -27,6 +54,25 @@ def export_to_image_files(destination_path, structured_dataset: Dataset, subFold
     plt.close('all')
 
 class FigureContext:
+    """
+    A context manager for generating plots based on a given Dataset.
+    This class provides a standardized way to configure and create multiple 
+    axes for plotting various types of data, including accumulations, current 
+    seasons, forecasts, and more. It is designed to be used within the scope 
+    of an ImageExporter instance.
+
+    Attributes:
+        plot_colors (dict): A dictionary mapping dataset types to specific 
+            colors used in the plots.
+        plot_types (dict): A dictionary mapping dataset types to the type of 
+            plot to use (e.g., 'bar', 'line', 'area').
+        custom_x (dict): A dictionary mapping dataset types to customized 
+            x-axis values for each plot.
+        thick_lines (list): A list of line styles that should be displayed 
+            with a thicker line width.
+        dashed_lines (list): A list of line styles that should be displayed 
+            with a dashed line style.
+    """
     def __init__(self, dataset: Dataset):
         self.plot_colors = {
             'Current Season': '#0000FF',
@@ -36,12 +82,12 @@ class FigureContext:
             'Forecast': '#FF00FF',
             'Forecast Accumulation': '#FF00FF',
             'LTA': '#FF0000',
-            'LTM': '#000000',
+            'Median': '#000000',
             'LTA±20%': '#00AFE5',
             'Climatology Average': '#FF0000',
             'LTA±St. Dev.': '#008000',
             '(33, 67) Pctl.': '#000000',
-            'E. LTM': '#000000',
+            'Ensemble Med.': '#000000',
             'E. LTA±St. Dev.': '#FFA500',
             'E. (33, 67) Pctl.': '#0000FF',
             '67 Pctl.': '#00FF00',
@@ -71,8 +117,8 @@ class FigureContext:
 
         x_period_labels = dataset.properties.sub_season_monitoring_ids
         monitoring_length = len(x_period_labels)
-        current_length = dataset.properties.current_season_length-dataset.options.is_forecast
-        current_mon_length = dataset.properties.current_season_length-dataset.properties.sub_season_offset-dataset.options.is_forecast
+        current_length = dataset.properties.current_season_length-dataset.parameters.is_forecast
+        current_mon_length = dataset.properties.current_season_length-dataset.properties.sub_season_offset-dataset.parameters.is_forecast
         season_quantity = len(dataset.properties.year_ids)
         self.custom_x = {
             'Current Season': range(current_length),
@@ -87,9 +133,9 @@ class FigureContext:
             'E. (33, 67) Pctl.': [monitoring_length-1]*2,
         }
 
-        self.thick_lines = ['Climatology Average', 'LTA', 'LTM', 'E. LTM', 
+        self.thick_lines = ['Climatology Average', 'LTA', 'Median', 'Ensemble Med.', 
                             'Current Season Accumulation', 'Forecast Accumulation']
-        self.dashed_lines = ['E. LTM']
+        self.dashed_lines = ['Ensemble Med.']
 
         self.plt_figure = plt.figure(
             num=0,
@@ -106,12 +152,32 @@ class FigureContext:
         self.axis4_accumulations_current = self.plt_figure.add_subplot(self.plot_grid[1, 1:3])
 
     def update_subplots(self, place: Place):
+        """
+        Updates the subplots based on the given Place.
+
+        This method calls the `update_plot` method for each axis in turn,
+        passing the corresponding data to plot.
+        
+        Parameters:
+            place (Place): The Place instance containing the data and metadata.
+        """
         self.update_plot(self.axis1_accumulations, make_accumulations_data(place))
         self.update_plot(self.axis2_current, make_current_data(place))
         self.update_plot(self.axis3_ensemble, make_ensemble_data(place))
         self.update_plot(self.axis4_accumulations_current, make_accumulations_current_data(place))
 
     def update_plot(self, axis: Axes, data: tuple):
+        """Updates the plot for a given axis.
+
+        This method is called by `update_subplots` to create or update the 
+        plots in each axis. It uses the provided data and metadata to configure 
+        the plot.
+
+        Parameters:
+            axis (Axes): The axis to update.
+            data (tuple): A tuple containing the plot data, table data array,
+                and metadata for the plot.
+        """
         axis.clear()
         plot_data, table_data_array, metadata = data
         is_many_seasons = len(metadata['selected years']) > 10
@@ -129,7 +195,6 @@ class FigureContext:
         axis.set_xticks(x_coords, x_ticks, rotation=35, fontsize=font_size)
         axis.set_xlim([-.5, x_length-.5])
         for id, plot_data in plot_data.items():
-            # print(id, plot_data)
             is_season_and_many_seasons = is_many_seasons and (id in metadata['selected years'])
 
             x = self.custom_x[id] if id in self.custom_x else range(x_length)
@@ -185,7 +250,6 @@ class FigureContext:
 
                 anchor_xy = [bbox[0], bbox[1]-cell_height-0.025]
             
-            
         axis.legend(
             loc='upper center',
             bbox_to_anchor=(0.5, -0.30),
@@ -198,6 +262,20 @@ class FigureContext:
         )
 
 def make_accumulations_data(place: Place):
+    """
+    Creates a tuple containing the plot data, table data array, and metadata 
+    for the seasonal rainfall accumulation.
+
+    Parameters:
+        place (Place): The Place instance containing the relevant data and 
+            metadata.
+
+    Returns:
+        A tuple of three elements:
+            1. Dictionary with statistical for the given place.
+            2. A list of table data for the axis tables.
+            3. Dictionary with metadata for the plot.
+    """
     props = place.parent.properties
     selected_season_stats = place.selected_years_seasonal_stats
     selected_place_stats = place.selected_years_place_stats
@@ -205,7 +283,7 @@ def make_accumulations_data(place: Place):
     current_index = len(selected_place_stats['Current Season Accumulation'])-1
     data = {
         **selected_season_stats['Sum'],
-        'LTM': place_stats['LTM'],
+        'Median': place_stats['Median'],
         'LTA±20%': [place_stats['LTA']*1.20, place_stats['LTA']*0.80],
         'LTA±St. Dev.': [place_stats['LTA'][-1]+place_stats['St. Dev.'][-1], 
                         place_stats['LTA'][-1]-place_stats['St. Dev.'][-1]],
@@ -236,6 +314,21 @@ def make_accumulations_data(place: Place):
     return data, table_data_array, metadata
 
 def make_current_data(place: Place):
+    """
+    Creates a tuple containing the plot data, table data array, and metadata
+    for the current rainfall status.
+    
+    Parameters:
+        place (Place): The Place instance containing the relevant data and
+            metadata.
+        
+    Returns:
+        A tuple of three elements:
+            1. Dictionary with current season and climatology average data,
+                as well as forecast data if available.
+            2. A list of table data for the axis tables.
+            3. Dictionary with metadata for the plot.
+    """
     props = place.parent.properties
     selected_place_stats = place.selected_years_place_stats
     data = {
@@ -264,6 +357,20 @@ def make_current_data(place: Place):
     return data, table_data_array, metadata
 
 def make_ensemble_data(place: Place):
+    """
+    Creates a tuple containing the plot data, table data array, and metadata
+    for the ensemble.
+    
+    Parameters:
+        place (Place): The Place instance containing the relevant data and
+            metadata.
+        
+    Returns:
+        A tuple of three elements:
+            1. Dictionary with ensemble accumulations and statistics.
+            2. A list of table data for the axis tables.
+            3. Dictionary with metadata for the plot.
+    """
     props = place.parent.properties
     selected_season_stats = place.selected_years_seasonal_stats
     selected_place_stats = place.selected_years_place_stats
@@ -276,7 +383,7 @@ def make_ensemble_data(place: Place):
         'LTA': place_stats['LTA'],
         '(33, 67) Pctl.': [place_stats['Pctls.'][0], 
                            place_stats['Pctls.'][1]],
-        'E. LTM': selected_place_stats['E. LTM'],
+        'Ensemble Med.': selected_place_stats['Ensemble Med.'],
         'E. (33, 67) Pctl.': [selected_place_stats['E. Pctls.'][0], 
                               selected_place_stats['E. Pctls.'][1]],
         'E. LTA±St. Dev.': [selected_place_stats['E. LTA'][-1]+selected_place_stats['St. Dev.'][-1], 
@@ -286,9 +393,9 @@ def make_ensemble_data(place: Place):
     table_data_array = [
         [['Proj. at EoS'],
         ['', 'Sel. Yrs.', 'Clim.'],
-        ['E. LTM', round(selected_place_stats['E. LTM'][-1]), round(place.place_stats['E. LTM'][-1])],
+        ['Ensemble Med.', round(selected_place_stats['Ensemble Med.'][-1]), round(place.place_stats['Ensemble Med.'][-1])],
         ['LTA', round(selected_place_stats['LTA'][-1]), round(place.place_stats['LTA'][-1])],
-        ['E. LTM/LTA Pct.', round(selected_place_stats['E. LTM/LTA'][-1]*100), round(place.place_stats['E. LTM/LTA'][-1]*100)]],
+        ['Ensemble Med./LTA Pct.', round(selected_place_stats['Ensemble Med./LTA'][-1]*100), round(place.place_stats['Ensemble Med./LTA'][-1]*100)]],
         [['Prob. at EoS'],
         ['', 'Sel. Yrs.', 'Clim.'],
         ['Ab. Normal', round(selected_place_stats['E. Probabilities'][2]*100), round(place.place_stats['E. Probabilities'][2]*100)],
@@ -301,11 +408,25 @@ def make_ensemble_data(place: Place):
         'x ticks': props.sub_season_monitoring_ids,
         'x label': f'Time ({props.period_unit_id}s)',
         'y label': 'Rainfall (mm)',
-        'table width': 0.4,
+        'table width': 0.56,
     }
     return data, table_data_array, metadata
 
 def make_accumulations_current_data(place: Place):
+    """
+    Creates a tuple containing the plot data, table data array, and metadata
+    for seasonal rainfall accumulations up to current period.
+    
+    Parameters:
+        place (Place): The Place instance containing the relevant data and
+            metadata.
+        
+    Returns:
+        A tuple of three elements:
+            1. Dictionary with seasonal accumulations and statistics.
+            2. A list of table data for the axis tables.
+            3. Dictionary with metadata for the plot.
+    """
     props = place.parent.properties
     season_stats = place.seasonal_stats
     place_stats = place.place_stats

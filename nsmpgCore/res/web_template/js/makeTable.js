@@ -23,9 +23,9 @@ function getDataProjectionEoS(placeStats, selectedYearsStats, place) {
     let data = placeStats[place];
     let selectedData = selectedYearsStats[place];
     let tableData = [
-        ['E. LTM', getLast(selectedData['E. LTM']), getLast(data['E. LTM'])],
+        ['Ensemble Med.', getLast(selectedData['Ensemble Med.']), getLast(data['Ensemble Med.'])],
         ['LTA', getLast(selectedData['LTA']), getLast(data['LTA'])],
-        ['E. LTM/LTA Pct.', getLast(selectedData['E. LTM/LTA']) * 100, getLast(data['E. LTM/LTA']) * 100],
+        ['Ensemble Med./LTA Pct.', getLast(selectedData['Ensemble Med./LTA']) * 100, getLast(data['Ensemble Med./LTA']) * 100],
     ];
     return tableData;
 }
