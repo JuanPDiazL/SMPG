@@ -296,7 +296,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.datasetInputLineEdit.setText(self.selected_source)
         default_parameters = Parameters()
         default_parameters.set_parameters(
-            get_default_parameters_from_properties(self.dataset_properties)
+            get_default_parameters_from_properties(self.dataset_properties, ['selected_years'])
             )
         self.update_fields(default_parameters)
         self.year_selection_dialog.selected_years = self.dataset_properties.year_ids
