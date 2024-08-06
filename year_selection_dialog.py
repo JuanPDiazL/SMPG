@@ -14,8 +14,7 @@ YEAR_SELECTION_DIALOG_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'year_selection_dialog.ui'))
 
 class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
-    """
-    A dialog box for selecting years.
+    """A dialog box for selecting years.
 
     Attributes:
         select_all_state (bool): The state of the "select all" checkbox.
@@ -94,14 +93,16 @@ class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
     def reject(self) -> None:
         """
         Reverts the state of the year selection boxes when the dialog box is 
-        rejected."""
+        rejected.
+        """
         self.update_selection()
         super(YearSelectionDialog, self).reject()
 
     def year_combo_boxes_changed(self):
         """
         Toggles the state of the "select all" checkbox when any year selection 
-        box is changed."""
+        box is changed.
+        """
         for cb in self.year_combo_boxes:
             if cb.isChecked() == False:
                 self.selectAllCheckBox.setChecked(False)

@@ -18,7 +18,8 @@ PROGRESS_DIALOG_CLASS,_ = uic.loadUiType(os.path.join(
 
 class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
     """
-    A dialog window to display progress information while tasks are being executed.
+    A dialog window to display progress information while tasks are being 
+    executed.
     """
     def __init__(self, parent=None):
         super(ProgressDialog, self).__init__(parent)
@@ -28,11 +29,13 @@ class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
 
     def finish_wait(self, task_manager: QgsTaskManager, tasks: list[QgsTask]):
         """
-        Finishes the wait state and displays a message box with the total time elapsed.
+        Finishes the wait state and displays a message box with the total time 
+        elapsed.
 
         Args:
             task_manager (QgsTaskManager): The task manager.
-            tasks (list[QgsTask]): A list of tasks executed by the task manager.
+            tasks (list[QgsTask]): A list of tasks executed by the task 
+                manager.
         """
         task_manager.allTasksFinished.disconnect() # Disconnect the signal to prevent re-execution
         total_time = round(time.perf_counter() - self.parentWidget().renderTime, 1)

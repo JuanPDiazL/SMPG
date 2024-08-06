@@ -78,7 +78,8 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """This is the constructor for the class.
 
-        It initializes the GUI elements and sets up the connections between them.
+        It initializes the GUI elements and sets up the connections between 
+        them.
         """
         super(NSMPGDialog, self).__init__(parent)
         self.setupUi(self)
@@ -173,8 +174,8 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         then it updates the fields with the given `parameters` object's values.
 
         Args:
-            parameters (Parameters):
-                The Parameters object containing the settings and values to be set.
+            parameters (Parameters): The Parameters object containing the 
+                settings and values to be set.
         """
         self.crossYearsCheckBox.setChecked(parameters.cross_years)
         year_ids = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
@@ -262,9 +263,11 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def load_file_btn_event(self): 
         """Event handler for `loadFileButton`, it loads the dataset file.
         
-        This is an event handler for when the user clicks the "Load Rainfall Dataset (.csv)" button. 
-        It reads the selected dataset from a file and parses it to create a structured data object. 
-        It also updates the dialog's fields with default values based on the selected dataset properties.
+        This is an event handler for when the user clicks the "Load Rainfall 
+        Dataset (.csv)" button. It reads the selected dataset from a file and 
+        parses it to create a structured data object. It also updates the 
+        dialog's fields with default values based on the selected dataset 
+        properties.
         """
         # path reading
         temp_dataset_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
@@ -389,12 +392,12 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.task_manager.allTasksFinished.connect(lambda: self.progress_dialog.finish_wait(self.task_manager, long_tasks))
 
     def import_parameters_btn_event(self) -> None:
-        """Event handler for `importParametersButton`, it loads a parameters file.
+        """
+        Event handler for `importParametersButton`, it loads a parameters file.
 
-        This is an event handler for when the user clicks 
-        the "Import Parameters" button. 
-        It reads the selected parameters from a JSON file and updates 
-        the dialog's fields with those values.
+        This is an event handler for when the user clicks the 
+        "Import Parameters" button. It reads the selected parameters from a 
+        JSON file and updates the dialog's fields with those values.
         """
         # source selection
         temp_parameters_source = QFileDialog.getOpenFileName(self, 'Open parameters file', None, "JSON files (*.json)")[0]
@@ -445,9 +448,10 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def year_selection_rb_event(self):
         """Event handler for year selection RadioButtons.
         
-        This method is called whenever the user selects a radio button indicating 
-        whether they want to select specific years or use similar years. 
-        It enables or disables the appropriate fields in the dialog based on their selection.
+        This method is called whenever the user selects a radio button 
+        indicating whether they want to select specific years or use similar 
+        years. It enables or disables the appropriate fields in the dialog 
+        based on their selection.
         """
         if self.customYearsRadioButton.isChecked():
             self.selectYearsButton.setEnabled(True)
@@ -469,25 +473,26 @@ class NSMPGDialog(QDialog, FORM_CLASS):
     def select_years_btn_event(self):
         """Event handler for `selectYearsButton`.
         
-        This is an event handler for when the user clicks the "Select Years" button. 
-        It displays a dialog that allows the user to select specific years from the dataset.
+        This is an event handler for when the user clicks the "Select Years" 
+        button. It displays a dialog that allows the user to select specific 
+        years from the dataset.
         """
         self.year_selection_dialog.show()
 
     def mapping_button_event(self):
         """Event handler for `mappingButton`.
         
-        This method is called whenever the user selects the "Mapping Preferences" 
-        button. It opens a new dialog that allows to configure the generation 
-        of the maps.
+        This method is called whenever the user selects the 
+        "Mapping Preferences" button. It opens a new dialog that allows to 
+        configure the generation of the maps.
         """
         self.map_settings_dialog.show()
 
     def update_dialog_info(self, dataset_properties: Properties):
         """Updates the label that contains information about the datset.
         
-        This method updates the dataset information label with 
-        relevant information about the selected dataset.
+        This method updates the dataset information label with relevant 
+        information about the selected dataset.
 
         Args:
             dataset_properties (Properties): Properties of the dataset
@@ -513,7 +518,8 @@ class TaskHandler(QgsTask):
             after the task completes successfully.
         exception (Exception): An exception raised by the task if 
             it raises an exception during its execution.
-        debug (bool): A flag indicating whether to print debug information or not.
+        debug (bool): A flag indicating whether to print debug information or 
+            not.
         time (int): The time elapsed since the task started.
     """
     def __init__(self, description, fn, *args, nextTask=None, dependentLayers=[], **kwargs):
@@ -550,8 +556,8 @@ class TaskHandler(QgsTask):
         """Executes the function given to the task handler.
 
         Executes the given function with the given arguments and keyword 
-        arguments. If the task is cancelled or raises an exception, 
-        it returns False. Otherwise, it returns True.
+        arguments. If the task is cancelled or raises an exception, it returns 
+        False. Otherwise, it returns True.
         """
         if self.debug: print(f'{self.description()} started')
         if self.isCanceled():
@@ -569,10 +575,10 @@ class TaskHandler(QgsTask):
         When the task finishes successfully, it sets the result of the task 
         to the return value of the function executed in `run`, and updates 
         the time elapsed since the task started. If there is a next task, 
-        it adds the result of this task as an argument to the next task and starts it.
-        When the task finishes unsuccessfully (with an exception or by cancelling),
-        it sets the exception of the task to the exception (if any) 
-        raised by the function and cancels the next task (if any).
+        it adds the result of this task as an argument to the next task and 
+        starts it. When the task finishes unsuccessfully (with an exception or 
+        by cancelling), it sets the exception of the task to the exception 
+        (if any) raised by the function and cancels the next task (if any).
 
         Args:
             result (bool): if the function completes successfully or not.
@@ -597,7 +603,8 @@ class TaskHandler(QgsTask):
     def cancel(self):
         """Called when the task is cancelled. 
 
-        It cancels the next task and then calls the parent class's `cancel` method.
+        It cancels the next task and then calls the parent class's `cancel` 
+        method.
         """
         if self.debug: print(f'{self.description()} got cancelled')
         if self.nextTask is not None:
@@ -612,7 +619,8 @@ class TaskHandler(QgsTask):
         The new task is held until it is started by the `finished` method.
 
         Args:
-            task (QgsTask): the task to be executed after this one is completed.
+            task (QgsTask): the task to be executed after this one is 
+                completed.
         """
         self.nextTask = task
         task.hold()

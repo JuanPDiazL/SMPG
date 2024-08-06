@@ -298,8 +298,7 @@ def percentiles_from_values(data, values=None) -> np.ndarray:
     return sp.percentileofscore(data, values, kind='rank')
 
 def operate_each(data, f):
-    """
-    Apply the function `f` to each element in the array `data`.
+    """Apply the function `f` to each element in the array `data`.
 
     Parameters:
         data (np.ndarray): The array of values that will be operated on.
@@ -313,8 +312,7 @@ def operate_each(data, f):
     return np.array([f(data[:i]) for i in range(1, len(data))])
 
 def operate_column(data, f) -> np.ndarray:
-    """
-    Apply the function `f` to each column of the array `data`.
+    """Apply the function `f` to each column of the array `data`.
 
     Parameters:
         data (np.ndarray): The array of values that will be operated on.
@@ -347,7 +345,8 @@ def percentiles_to_values(data: np.ndarray, percentiles=(3, 6, 11, 21, 31)) -> n
 
 def get_ensemble(current_data, post_data) -> np.ndarray:
     """
-    Calculate the ensemble of two arrays by cumulatively summing their elements.
+    Calculate the ensemble of two arrays by cumulatively summing their 
+    elements.
 
     Parameters:
         current_data (np.ndarray): The first array to be used in the 

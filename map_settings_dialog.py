@@ -142,7 +142,8 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
 
         Args:
             settings (dict): A dictionary containing the current map settings.
-                Expected keys are 'shp_source', 'selected_map', and 'join_field'.
+                Expected keys are 'shp_source', 'selected_map', and 
+                'join_field'.
         """
         if settings['shp_source'] == "":
             self.useProjectLayerRadioButton.setChecked(True)

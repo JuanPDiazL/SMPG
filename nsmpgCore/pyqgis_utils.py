@@ -60,7 +60,8 @@ def join_layers(data_layer: QgsVectorLayer, target_layer: QgsVectorLayer, target
     Args:
         data_layer (QgsVectorLayer): The layer to join from.
         target_layer (QgsVectorLayer): The layer to join to.
-        target_field (str): The field in the target layer that will be used for joining.
+        target_field (str): The field in the target layer that will be used for 
+            joining.
     """
     join = QgsVectorLayerJoinInfo()
     join.setJoinLayer(data_layer)
@@ -109,13 +110,15 @@ def apply_style_file(source: str, map: QgsVectorLayer, attribute: str):
 def apply_default_attr_style(map_layer: QgsVectorLayer, class_attribute: str) -> None:
     """Apply a default attribute style to the given map layer.
     
-    If the class_attribute is recognized, this function will apply a pre-defined 
-    attribute style to the layer. Otherwise, it will fall back to applying a 
-    default symbology.
+    If the class_attribute is recognized, this function will apply a 
+    pre-defined attribute style to the layer. Otherwise, it will fall back to 
+    applying a default symbology.
     
     Args:
-        map_layer (QgsVectorLayer): The layer object that will receive the style.
-        class_attribute (str): A string representing the attribute on which the style is based.
+        map_layer (QgsVectorLayer): The layer object that will receive the 
+            style.
+        class_attribute (str): A string representing the attribute on which the 
+            style is based.
     """
     layer_styles_folder = os.path.join(os.path.dirname(__file__), 'res', 'layer_styles')
     attribute_style_relation = {
@@ -144,9 +147,12 @@ def apply_default_symbology(map_layer: QgsVectorLayer, class_attribute: str, ncl
     ramp with three stops: 0.25 (white), 0.50 (gray), and 0.75 (black).
 
     Args:
-        map_layer (QgsVectorLayer): The layer object that will receive the symbology.
-        class_attribute (str): A string representing the attribute on which the symbology is based.
-        nclasses (int): An integer representing the number of classes for the symbology.
+        map_layer (QgsVectorLayer): The layer object that will receive the 
+            symbology.
+        class_attribute (str): A string representing the attribute on which the 
+            symbology is based.
+        nclasses (int): An integer representing the number of classes for the 
+            symbology.
     """
     color_ramp_properties = {
         'color1':'255,255,255,255', 
@@ -167,8 +173,10 @@ def rename_layer(layer: QgsVectorLayer, name='', prefix='', suffix=''):
     Args:
         layer (QgsVectorLayer): The layer to rename.
         name (str, optional): The new name for the layer. Defaults to ''.
-        prefix (str, optional): A prefix to add to the new name. Defaults to ''.
-        suffix (str, optional): A suffix to add to the new name. Defaults to ''.
+        prefix (str, optional): A prefix to add to the new name. 
+            Defaults to ''.
+        suffix (str, optional): A suffix to add to the new name. 
+            Defaults to ''.
     """
     if name == '': name = layer.name()
     layer.setName(prefix + name + suffix)

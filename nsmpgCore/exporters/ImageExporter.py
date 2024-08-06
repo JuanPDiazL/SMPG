@@ -62,11 +62,16 @@ class FigureContext:
     of an ImageExporter instance.
 
     Attributes:
-        plot_colors (dict): A dictionary mapping dataset types to specific colors used in the plots.
-        plot_types (dict): A dictionary mapping dataset types to the type of plot to use (e.g., 'bar', 'line', 'area').
-        custom_x (dict): A dictionary mapping dataset types to customized x-axis values for each plot.
-        thick_lines (list): A list of line styles that should be displayed with a thicker line width.
-        dashed_lines (list): A list of line styles that should be displayed with a dashed line style.
+        plot_colors (dict): A dictionary mapping dataset types to specific 
+            colors used in the plots.
+        plot_types (dict): A dictionary mapping dataset types to the type of 
+            plot to use (e.g., 'bar', 'line', 'area').
+        custom_x (dict): A dictionary mapping dataset types to customized 
+            x-axis values for each plot.
+        thick_lines (list): A list of line styles that should be displayed 
+            with a thicker line width.
+        dashed_lines (list): A list of line styles that should be displayed 
+            with a dashed line style.
     """
     def __init__(self, dataset: Dataset):
         self.plot_colors = {
@@ -164,9 +169,9 @@ class FigureContext:
     def update_plot(self, axis: Axes, data: tuple):
         """Updates the plot for a given axis.
 
-        This method is called by `update_subplots` to create or update
-        the plots in each axis. It uses the provided data and metadata
-        to configure the plot.
+        This method is called by `update_subplots` to create or update the 
+        plots in each axis. It uses the provided data and metadata to configure 
+        the plot.
 
         Parameters:
             axis (Axes): The axis to update.

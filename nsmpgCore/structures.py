@@ -161,8 +161,7 @@ class Place:
         self.place_stats, self.seasonal_stats, self.selected_years_place_stats, self.selected_years_seasonal_stats = self.get_stats()
 
     def get_place_stats(self, seasonal_accumulations, seasonal_ensemble, common_stats):
-        """
-        Calculates and returns the place statistics for a given season.
+        """Calculates and returns the place statistics for a given season.
 
         Args:
             seasonal_accumulations (ndarray): The accumulated values.
@@ -210,8 +209,7 @@ class Place:
         return place_stats
 
     def get_seasonal_stats(self, seasonal_accumulations, seasonal_ensemble, year_ids):
-        """
-        Calculates and returns the seasonal statistics.
+        """Calculates and returns the seasonal statistics.
 
         Args:
             seasonal_accumulations (ndarray): The accumulated values.
@@ -228,12 +226,12 @@ class Place:
         return seasonal_stats
 
     def get_stats(self):
-        """
-        Calculates and returns the overall statistics.
+        """Calculates and returns the overall statistics.
 
         Returns:
             tuple: A tuple containing the place statistics, seasonal statistics,
-                selected years place statistics, and selected years seasonal statistics.
+                selected years place statistics, and selected years seasonal 
+                statistics.
         """
         seasonal_accumulations = np.cumsum(list(self.seasons_monitoring.values()), axis=1)
         seasonal_ensemble = [get_ensemble(self.current_season_monitoring, s) for s in list(self.seasons_monitoring.values())]
