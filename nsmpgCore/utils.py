@@ -419,6 +419,21 @@ def get_similar_years(current_year: np.ndarray, year_list: list[np.ndarray],
     return ranked_year_ids
 
 def get_default_parameters_from_properties(properties: Properties, keys: str = None) -> dict:
+    """
+    Returns a dictionary of default parameters based on the given properties.
+
+    The returned dictionary contains the default values for 'climatology_start',
+    'climatology_end', and 'selected_years' keys. If specific keys are provided,
+    only those will be included in the output dictionary.
+
+    Args:
+        properties (Properties): An object containing properties.
+        keys (str, optional): A list of specific keys to include in the output
+            dictionary. Defaults to None.
+
+    Returns:
+        dict: A dictionary of default parameters with the specified keys.
+    """
     if keys is None:
         keys = ['climatology_start', 'climatology_end', 'selected_years']
     defaults = {
