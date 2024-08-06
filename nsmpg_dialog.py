@@ -54,7 +54,7 @@ from .nsmpgCore.parsers.CSVParser import parse_csv
 from .nsmpgCore.structures import Dataset
 from .nsmpgCore.utils import (
     Parameters, Properties, define_seasonal_dict, parse_timestamps, 
-    get_properties_validated_year_list
+    get_properties_validated_year_list, get_default_parameters_from_properties,
     )
     
 from .nsmpgCore.exporters.WebExporter import export_to_web_files
@@ -66,7 +66,6 @@ from .nsmpgCore.exporters.QGISExporter import generate_layers_from_csv
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'nsmpg_dialog_base.ui'))
-
 
 class NSMPGDialog(QDialog, FORM_CLASS):
     """Main Dialog of the plugin
@@ -185,14 +184,14 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.climatologyStartComboBox.setEnabled(True)
         self.climatologyStartComboBox.clear()
         self.climatologyStartComboBox.addItems(year_ids)
-        if parameters.climatology_start is None:
+        if parameters.climatology_start is None or parameters.climatology_start not in year_ids:
             self.climatologyStartComboBox.setCurrentText(year_ids[0])
         else:
             self.climatologyStartComboBox.setCurrentText(parameters.climatology_start)
         self.climatologyEndComboBox.setEnabled(True)
         self.climatologyEndComboBox.clear()
         self.climatologyEndComboBox.addItems(year_ids)
-        if parameters.climatology_end is None:
+        if parameters.climatology_end is None or parameters.climatology_end not in year_ids:
             self.climatologyEndComboBox.setCurrentText(year_ids[-1])
         else:
             self.climatologyEndComboBox.setCurrentText(parameters.climatology_end)
@@ -201,14 +200,14 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         self.seasonStartComboBox.setEnabled(True)
         self.seasonStartComboBox.clear()
         self.seasonStartComboBox.addItems(sub_season_ids)
-        if parameters.season_start is None:
+        if parameters.season_start is None or parameters.season_start not in sub_season_ids:
             self.seasonStartComboBox.setCurrentText(sub_season_ids[0])
         else:
             self.seasonStartComboBox.setCurrentText(parameters.season_start)
         self.seasonEndComboBox.setEnabled(True)
         self.seasonEndComboBox.clear()
         self.seasonEndComboBox.addItems(sub_season_ids)
-        if parameters.season_end is None:
+        if parameters.season_end is None or parameters.season_end not in sub_season_ids:
             self.seasonEndComboBox.setCurrentText(sub_season_ids[-1])
         else:
             self.seasonEndComboBox.setCurrentText(parameters.season_end)
@@ -292,8 +291,11 @@ class NSMPGDialog(QDialog, FORM_CLASS):
 
         # set form fields content from data
         self.datasetInputLineEdit.setText(self.selected_source)
-
-        self.update_fields(Parameters())
+        default_parameters = Parameters()
+        default_parameters.set_parameters(
+            get_default_parameters_from_properties(self.dataset_properties)
+            )
+        self.update_fields(default_parameters)
         self.year_selection_dialog.selected_years = self.dataset_properties.year_ids
         self.update_dialog_info(self.dataset_properties)
 
@@ -424,6 +426,9 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         It updates the list of years available in the "Selected Years" combobox 
         based on whether or not the user has selected to cross years.
         """
+        default_years = get_properties_validated_year_list(
+            self.dataset_properties, self.crossYearsCheckBox.isChecked()
+        )
         parameters = Parameters(
             {
                 **self.get_parameters_from_widgets(),
@@ -431,7 +436,7 @@ class NSMPGDialog(QDialog, FORM_CLASS):
                 'climatology_end': None,
                 'season_start': None,
                 'season_end': None,
-                'selected_years': None,
+                'selected_years': default_years,
                 'cross_years': self.crossYearsCheckBox.isChecked(),
             }
         )

@@ -418,3 +418,13 @@ def get_similar_years(current_year: np.ndarray, year_list: list[np.ndarray],
     ranked_indexes = np.argsort(sum_of_rankings)
     ranked_year_ids = [year_ids[i] for i in ranked_indexes]
     return ranked_year_ids
+
+def get_default_parameters_from_properties(properties: Properties, keys: str = None) -> dict:
+    if keys is None:
+        keys = ['climatology_start', 'climatology_end', 'selected_years']
+    defaults = {
+        'climatology_start': properties.year_ids[0],
+        'climatology_end': properties.year_ids[-1],
+        'selected_years': properties.year_ids,
+    }
+    return dict(map(lambda k: (k, defaults[k]), keys))
