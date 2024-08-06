@@ -28,15 +28,20 @@ MAP_SETTINGS_DIALOG_CLASS,_ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'map_settings_dialog.ui'))
 
 class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
-
+    """A dialog window for selecting map settings.
+    
+    Attributes:
+        fields (list): List of possible fields to generate the maps from.
+        temp_map_layer (QgsVectorLayer): Temporary vector layer selected from 
+            shapefile or vector layer.
+        map_layer (QgsVectorLayer): The actual map layer selected by user.
+        settings (dict): Dictionary containing user-selected settings, 
+            including shp_source, selected_map, join_field, and 
+            selected_fields.
+    """
     def __init__(self, parent=None):
         """Constructor."""
         super(MapSettingsDialog, self).__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
         self.setModal(True)
@@ -45,8 +50,8 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
                   'Probability in Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
                   'Current Season Pctl.']
         
-        self.temp_map_layer = None
-        self.map_layer = None
+        self.temp_map_layer: QgsVectorLayer = None
+        self.map_layer: QgsVectorLayer = None
         self.settings = {
             'selected_map': '',
             'shp_source': '',
@@ -81,16 +86,28 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         self.source_selection_rb_event()
         
     def list_move_element(self, source_list: QListWidget, destination_list: QListWidget):
+        """Move an item from the source list to the destination list.
+
+        Args:
+            source_list (QListWidget): The original list.
+            destination_list (QListWidget): The target list.
+        """
         for item in source_list.selectedItems():
             item_index = source_list.row(item)
             destination_list.addItem(source_list.takeItem(item_index))
 
     def map_selection_combobox_event(self, index):
+        """Update the selected map layer and display its fields.
+
+        Args:
+            index (int): The current index of the combo box.
+        """
         self.shapefilePathLineEdit.setText("")
         self.temp_map_layer = self.map_relations[index][0]
         self.update_target_field_combobox_content()
 
     def update_map_combobox_content(self):
+        """Update the content of the map selection combo box."""
         maps = get_vector_layers()
         self.map_relations = [(map, map.id(), map.name()) for map in maps]
         map_names = [item[2] for item in self.map_relations]
@@ -104,6 +121,7 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         self.targetFieldComboBox.addItems(fields)
 
     def load_shapefile_button_event(self):
+        """Load a new shapefile and update the widgets."""
         temp_shp_source = QFileDialog.getOpenFileName(self, 'Open shapefile', None, "shapefiles (*.shp)")[0]
         if temp_shp_source == "":
             QMessageBox.warning(self, "Warning", 
@@ -119,6 +137,13 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         self.shapefilePathLineEdit.setText(self.shp_source)
 
     def update_input_states(self, settings: dict):
+        """
+        Updates the GUI state based on the provided map settings dictionary.
+
+        Args:
+            settings (dict): A dictionary containing the current map settings.
+                Expected keys are 'shp_source', 'selected_map', and 'join_field'.
+        """
         if settings['shp_source'] == "":
             self.useProjectLayerRadioButton.setChecked(True)
             self.update_map_combobox_content()
@@ -139,6 +164,10 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         self.targetFieldComboBox.setCurrentText(settings['join_field'])
 
     def source_selection_rb_event(self):
+        """
+        Update the widgets based on whether a shapefile or project layer is 
+        selected.
+        """
         if self.useProjectLayerRadioButton.isChecked():
             for w in self.use_project_layer_widgets: w.show()
             for w in self.import_shp_widgets: w.hide()
@@ -147,13 +176,24 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
             for w in self.use_project_layer_widgets: w.hide()
 
     def get_list_items(self, list_widget: QListWidget):
+        """Retrieves a list of items from a given QListWidget.
+
+        Args:
+            list_widget (QListWidget): The QListWidget instance to retrieve 
+                items from.
+
+        Returns:
+            list: A list of strings representing the items in the QListWidget.
+        """
         return [list_widget.item(i).text() for i in range(list_widget.count())]
 
     def showEvent(self, a0):
+        """Function to run when the dialog is oppened."""
         self.update_input_states(self.settings)
         return super().showEvent(a0)
     
     def accept(self) -> None:
+        """Close the dialog and save settings."""
         if self.useShapefileRadioButton.isChecked():
             shp_path = self.shapefilePathLineEdit.text()
             if shp_path == '' or not os.path.exists(shp_path):
@@ -193,5 +233,6 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         super(MapSettingsDialog, self).accept()
 
     def reject(self) -> None:
+        """Closes the dialog without saving changes."""
         self.temp_map_layer = None
         super(MapSettingsDialog, self).reject()

@@ -2,10 +2,26 @@ from numpy import ndarray
 import numpy as np
 from .utils import *
 
-# stores and processes all the information in the dataset
-# a dataset contains data of places
+# TODO: remove conversion methods from this class to dedicated functions
 class Dataset:
+    """A class to represent a dataset.
+
+    Attributes:
+        name (str): Name of the dataset.
+        timestamps (list[str]): List of column names from the dataset.
+        properties (Properties): Properties of the dataset.
+        parameters (Parameters): Computation parameters.
+        places (dict[str, Place]): Dictionary of place objects.
+    """
     def __init__(self, name: str, dataset: dict, col_names: list[str], parameters: Parameters) -> None:
+        """Constructor
+
+        Args:
+            name (str): name of the dataset.
+            dataset (dict): data contained in the dataset.
+            col_names (list[str]): column names from the dataset.
+            parameters (Parameters): computation parameters.
+        """
         self.name = name
         self.timestamps = col_names
         
@@ -47,6 +63,14 @@ class Dataset:
             self.places[place] = Place(place, timeseries, self)
     
     def place_stats_to_dict(self, type='all'):
+        """Convert place statistics to a dictionary.
+
+        Args:
+            type (str): Type of statistics. Default is 'all'.
+
+        Returns:
+            dict: Dictionary containing place statistics.
+        """
         place_data_dict = {}
         for place_id, place in self.places.items():
             if type == 'selected': place_stats = place.selected_years_place_stats
@@ -55,6 +79,14 @@ class Dataset:
         return place_data_dict
     
     def season_stats_to_dict(self, type='all'):
+        """Convert seasonal statistics to a dictionary.
+
+        Args:
+            type (str): Type of statistics. Default is 'all'.
+
+        Returns:
+            dict: Dictionary containing seasonal statistics.
+        """
         seasonal_data_dict = {}
         for place_id, place in self.places.items():
             if type =='selected': season_stats = place.selected_years_seasonal_stats
@@ -64,8 +96,28 @@ class Dataset:
                 seasonal_data_dict[place_id][key] = dict(map(lambda v: (v[0], v[1].tolist() if isinstance(v[1], np.ndarray) else v), season_stats[key].items()))
         return seasonal_data_dict
 
-# a place contains data for the seasons and computes its stats
 class Place:
+    """Represents a place with associated time series data.
+
+    Attributes:
+        id (str): Unique identifier of the place.
+        timeseries (ndarray): Time series data for the place.
+        parent (Dataset): Parent dataset that contains this place.
+        current_season (ndarray): Current season's data.
+        forecast_value (float or None): Forecast value in the current season.
+        seasons_monitoring (dict[str, ndarray]): Data within the monitoring 
+            season.
+        seasons_monitoring_selected (dict[str, ndarray]): Selected year's data 
+            within the monitoring season.
+        seasons_monitoring_climatology (dict[str, ndarray]): Climatology data 
+            within the monitoring season.
+        place_stats (tuple): Statistics for the place.
+        seasonal_stats (tuple): Seasonal statistics.
+        selected_years_place_stats (tuple): Selected years place statistics.
+        selected_years_seasonal_stats (tuple): Selected years seasonal 
+            statistics.
+    """
+        
     def __init__(self, place_id: str, timeseries: ndarray, parent: Dataset) -> None:
         self.id = place_id
         self.timeseries = timeseries
@@ -109,6 +161,17 @@ class Place:
         self.place_stats, self.seasonal_stats, self.selected_years_place_stats, self.selected_years_seasonal_stats = self.get_stats()
 
     def get_place_stats(self, seasonal_accumulations, seasonal_ensemble, common_stats):
+        """
+        Calculates and returns the place statistics for a given season.
+
+        Args:
+            seasonal_accumulations (ndarray): The accumulated values.
+            seasonal_ensemble (list or tuple): The ensemble values.
+            common_stats (dict): The common statistics.
+
+        Returns:
+            dict: The calculated place statistics.
+        """
         current_accumulation_mon = np.cumsum(self.current_season_monitoring)
         current_index = self.current_season_monitoring.__len__()-1
         seasonal_current_sums = common_stats['seasonal_accumulations'][:, current_index]
@@ -147,6 +210,17 @@ class Place:
         return place_stats
 
     def get_seasonal_stats(self, seasonal_accumulations, seasonal_ensemble, year_ids):
+        """
+        Calculates and returns the seasonal statistics.
+
+        Args:
+            seasonal_accumulations (ndarray): The accumulated values.
+            seasonal_ensemble (list or tuple): The ensemble values.
+            year_ids (list or tuple): The year IDs.
+
+        Returns:
+            dict: The calculated seasonal statistics.
+        """
         seasonal_stats = {
             'Sum': dict(map(lambda v: (v[0], v[1]), zip(year_ids, seasonal_accumulations))),
             'Ensemble Sum': dict(map(lambda v: (v[0], v[1]), zip(year_ids, seasonal_ensemble))),
@@ -154,6 +228,13 @@ class Place:
         return seasonal_stats
 
     def get_stats(self):
+        """
+        Calculates and returns the overall statistics.
+
+        Returns:
+            tuple: A tuple containing the place statistics, seasonal statistics,
+                selected years place statistics, and selected years seasonal statistics.
+        """
         seasonal_accumulations = np.cumsum(list(self.seasons_monitoring.values()), axis=1)
         seasonal_ensemble = [get_ensemble(self.current_season_monitoring, s) for s in list(self.seasons_monitoring.values())]
 
