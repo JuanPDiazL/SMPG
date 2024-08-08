@@ -1,5 +1,5 @@
 #/***************************************************************************
-# NSMPG
+# QSMPG
 #
 # New implementation of SMPG
 #							 -------------------
@@ -38,15 +38,15 @@ LOCALES =
 # translation
 SOURCES = \
 	__init__.py \
-	nsmpg.py nsmpg_dialog.py
+	qsmpg.py qsmpg_dialog.py
 
-PLUGINNAME = nsmpg
+PLUGINNAME = qsmpg
 
 PY_FILES = \
 	__init__.py \
-	nsmpg.py nsmpg_dialog.py
+	qsmpg.py qsmpg_dialog.py
 
-UI_FILES = nsmpg_dialog_base.ui
+UI_FILES = qsmpg_dialog_base.ui
 
 EXTRAS = metadata.txt icon.png
 

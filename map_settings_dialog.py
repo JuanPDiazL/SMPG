@@ -14,7 +14,7 @@ from qgis.PyQt.QtWidgets import (
     QRadioButton,
 )
 
-from .nsmpgCore.pyqgis_utils import (
+from .qsmpgCore.pyqgis_utils import (
     get_fields,
     get_vector_layers,
     load_layer_file

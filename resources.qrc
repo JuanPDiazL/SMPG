@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/nsmpg" >
+    <qresource prefix="/plugins/qsmpg" >
         <file>icon.png</file>
     </qresource>
 </RCC>
