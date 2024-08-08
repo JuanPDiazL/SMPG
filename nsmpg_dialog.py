@@ -347,7 +347,8 @@ class NSMPGDialog(QDialog, FORM_CLASS):
         if self.exportStatsCheckBox.isChecked():
             csv_task = TaskHandler('CSV Export Task', export_to_csv_files, self.destination_path, self.structured_dataset)
             long_tasks.append(csv_task)
-            if len(self.map_settings_dialog.settings['selected_fields']) != 0:
+            if not (self.map_settings_dialog.map_layer is None or 
+                len(self.map_settings_dialog.settings['selected_fields']) == 0):
                 map_task = TaskHandler(
                     'Summary Mapping Task',
                     generate_layers_from_csv, 
