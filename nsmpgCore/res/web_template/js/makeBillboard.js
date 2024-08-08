@@ -431,7 +431,7 @@ class AccumulationsBillboardCurrentChart {
             'Current Season Total': [getLast(this.placeData[index]['Current Season Accumulation'])],
             'Climatology Average': extendScalar(this.placeData[index]['LTA'][this.currentLength-1], this.columnNames.length),
             '67 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][5], this.columnNames.length),
-            'D0: 31 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][4], this.columnNames.length),
+            '33 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][4], this.columnNames.length),
             'D1: 21 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][3], this.columnNames.length),
             'D2: 11 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][2], this.columnNames.length),
             'D3: 6 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][1], this.columnNames.length),

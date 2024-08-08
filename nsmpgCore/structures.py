@@ -186,7 +186,7 @@ class Place:
         place_stats = {
             # 'Pctls. per Year': percentiles_from_values(seasonal_current_sums),
             'Current Season Pctl.': percentiles_from_values(seasonal_current_sums, [current_accumulation_mon[-1]]),
-            'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sums, (3, 6, 11, 21, 31, 67)),
+            'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sums, (3, 6, 11, 21, 33, 67)),
             'Pctls.': seasonal_pctls,
             'Median': operate_column(seasonal_accumulations, np.median),
             'LTA': seasonal_lta,
