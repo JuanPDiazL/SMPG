@@ -192,6 +192,7 @@
             table2.update(getDataSeasonalAnalysis(placeStats, selectedYearsPlaceStats, place));
             table3.update(getDataProjectionEoS(placeStats, selectedYearsPlaceStats, place));
             table4.update(getDataProbabilityEoS(placeStats, selectedYearsPlaceStats, place));
+            table5.update(getPercentileTable(placeStats, selectedYearsPlaceStats, place));
             document.getElementById('plot2Title').textContent = plot2Title;
             document.getElementById('plot4Title').textContent = plot4Title;
         }
@@ -241,6 +242,8 @@
         let table3 = new statsTable('#chart3', 'Projection at EoS');
         overlaySVG(table3.table, '#chart3 .bb-main');
         let table4 = new statsTable('#chart3', 'Probability at EoS');
+        let table5 = new statsTable('#chart4', 'Historical Rainfall Statistics', ['Value', '']);
+        overlaySVG(table5.table, '#chart4 .bb-main');
 
         updateDocument(firstPlaceKey);
         placeUnder(table4.table, table3.table);

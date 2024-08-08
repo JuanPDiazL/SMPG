@@ -40,6 +40,17 @@ function getDataProbabilityEoS(placeStats, selectedYearsStats, place) {
     return tableData;
 }
 
+function getPercentileTable(placeStats, selectedYearsStats, place) {
+    let data = placeStats[place];
+    let selectedData = selectedYearsStats[place];
+    let tableData = [
+        ['67 Percentile', selectedData['Drought Severity Pctls.'][5], data['Drought Severity Pctls.'][5]],
+        ['33 Percentile', selectedData['Drought Severity Pctls.'][4], data['Drought Severity Pctls.'][4]],
+        ['11 Percentile', selectedData['Drought Severity Pctls.'][2], data['Drought Severity Pctls.'][2]],
+    ];
+    return tableData;
+}
+
 class statsTable {
     constructor(container, title, headers=['Sel. Yrs.', 'Clim.']) {
         this.container = container;
