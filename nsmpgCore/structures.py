@@ -130,9 +130,6 @@ class Place:
             self.current_season = self.current_season[:-1]
         else: self.forecast_value = None
         self.current_season_monitoring = self.current_season[parent.season_start_index:parent.current_season_trim_index]
-        # compensation for slice out of bounds
-        self.current_season_monitoring = self.current_season_monitoring if self.current_season_monitoring.__len__() != 0 else np.array([0])
-        
         
         self.similar_seasons = get_similar_years(self.current_season, 
                                             split_seasons, 
@@ -188,7 +185,7 @@ class Place:
         ])
         place_stats = {
             # 'Pctls. per Year': percentiles_from_values(seasonal_current_sums),
-            'Current Season Pctl.': percentiles_from_values(seasonal_current_sums, [common_stats['Current Season Full Accumulation'][-1]]),
+            'Current Season Pctl.': percentiles_from_values(seasonal_current_sums, [current_accumulation_mon[-1]]),
             'Drought Severity Pctls.': percentiles_to_values(seasonal_current_sums, (3, 6, 11, 21, 31, 67)),
             'Pctls.': seasonal_pctls,
             'Median': operate_column(seasonal_accumulations, np.median),
