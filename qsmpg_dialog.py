@@ -130,6 +130,14 @@ class QSMPGDialog(QDialog, FORM_CLASS):
 
         self.processButton: QPushButton
 
+        # output groupbox
+        self.output_checkboxes = [
+            self.exportStatsCheckBox,
+            self.exportWebCheckBox,
+            self.exportParametersCheckBox,
+            self.exportImagesCheckBox,
+        ]
+
         # signal connections
         self.mappingButton.clicked.connect(self.mapping_button_event)
         self.exportStatsCheckBox.stateChanged.connect(self.export_stats_cb_changed_event)
@@ -322,6 +330,15 @@ class QSMPGDialog(QDialog, FORM_CLASS):
                                  QMessageBox.Ok)
             return
 
+        for output in self.output_checkboxes:
+            if output.isChecked():
+                break
+        else:
+            QMessageBox.warning(self, "Warning", 
+                                'Please select at least one option from Output Preferences.', 
+                                QMessageBox.Ok)
+            return
+        
         # path reading
         self.destination_path = os.path.normpath(QFileDialog.getExistingDirectory(self, 'Save results', self.dataset_source_path))
         if self.destination_path == ".":
@@ -341,7 +358,6 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         parameters = Parameters(self.get_parameters_from_widgets())
         self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, parameters)
         
-        self.progress_dialog.show()
         # add selected output tasks to a list of tasks
         long_tasks: list[TaskHandler] = []
         if self.exportStatsCheckBox.isChecked():
@@ -383,7 +399,8 @@ class QSMPGDialog(QDialog, FORM_CLASS):
                 self.destination_path, 
                 self.structured_dataset
                 ))
-        
+
+        self.progress_dialog.show()
         self.renderTime = time.perf_counter()
         # add tasks to task manager and run them
         for task in long_tasks:
