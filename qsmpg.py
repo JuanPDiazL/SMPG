@@ -171,7 +171,6 @@ class QSMPG:
         # will be set False in run()
         self.first_start = True
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -180,7 +179,6 @@ class QSMPG:
                 action)
             self.iface.removeToolBarIcon(action)
         self.dlg.reject()
-
 
     def run(self):
         """Run method that performs all the real work"""
