@@ -192,6 +192,7 @@ class QSMPG:
 
         # show the dialog
         self.dlg.show()
+        self.dlg.activateWindow()
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
