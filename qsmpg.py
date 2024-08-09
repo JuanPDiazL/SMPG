@@ -179,6 +179,7 @@ class QSMPG:
                 self.tr(u'&QSMPG'),
                 action)
             self.iface.removeToolBarIcon(action)
+        self.dlg.reject()
 
 
     def run(self):
