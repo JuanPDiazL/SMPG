@@ -302,6 +302,7 @@ class QSMPGDialog(QDialog, FORM_CLASS):
 
         # set form fields content from data
         self.datasetInputLineEdit.setText(self.selected_source)
+        self.importParametersLineEdit.setText('')
         default_parameters = Parameters()
         default_parameters.set_parameters(
             get_default_parameters_from_properties(self.dataset_properties, ['selected_years'])
