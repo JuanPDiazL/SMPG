@@ -127,7 +127,7 @@ def apply_default_attr_style(map_layer: QgsVectorLayer, class_attribute: str) ->
         'Probability Below Normal': 'prob_below_normal_polygons',
         'Probability in Normal':    'prob_above_normal_polygons',
         'Probability Above Normal': 'prob_above_normal_polygons',
-        'Ensemble Med. Pctl.':      'SMPG_most prob scenario at EOS_wet',
+        'Ensemble Med. Pctl.':      'SMPG_precipitation_percentile',
         'Current Season Pctl.':     'SMPG_precipitation_percentile',
     }
     for attribute_key in attribute_style_relation:
