@@ -2,4 +2,5 @@
 .vscode
 **/*.code-workspace
 **/*.prof
+**/.*
 qsmpgCore/res/web_template/data
