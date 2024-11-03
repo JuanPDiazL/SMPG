@@ -62,6 +62,7 @@ class QSMPG:
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&QSMPG')
+        self.master_dlg = None
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -178,7 +179,8 @@ class QSMPG:
                 self.tr(u'&QSMPG'),
                 action)
             self.iface.removeToolBarIcon(action)
-        self.dlg.reject()
+        if self.master_dlg is not None:
+            self.master_dlg.reject()
 
     def run(self):
         """Run method that performs all the real work"""
@@ -187,13 +189,13 @@ class QSMPG:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
-            self.dlg = QSMPGDialog()
+            self.master_dlg = QSMPGDialog()
 
         # show the dialog
-        self.dlg.show()
-        self.dlg.activateWindow()
+        self.master_dlg.show()
+        self.master_dlg.activateWindow()
         # Run the dialog event loop
-        result = self.dlg.exec_()
+        result = self.master_dlg.exec_()
         # See if OK was pressed
         if result:
             # Do something useful here - delete the line containing pass and
