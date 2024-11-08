@@ -7,7 +7,7 @@ body {
     color:#555;
     background-color: white;
 }
-.darkmode, .darkmode .chart-table, .darkmode .content-inner {
+.darkmode, .darkmode .chart-table, .darkmode .content-body {
     background-color: #1d2a35 !important;
     color: #ddd !important;
 }
@@ -19,8 +19,8 @@ body {
 }
 
 #placeSearch {
-    width: 90%;
-    margin: 5%;
+    width: 100%;
+    margin: auto;
     /* font-size: 18px; */
     /* padding: 11px; */
     /* border: 1px solid #ddd; */
@@ -39,7 +39,7 @@ body {
     overflow-y: hidden;
 }
 
-.content-inner {
+.content-body {
     background-color: white;
     overflow-y: auto;
     margin: auto auto;

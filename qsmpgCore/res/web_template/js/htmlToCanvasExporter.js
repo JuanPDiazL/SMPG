@@ -1,7 +1,7 @@
 function save_reports() {
     const start = Date.now();
 
-    var node = document.querySelector('.content-inner');
+    var node = document.querySelector('.content-body');
     console.log(node.getBoundingClientRect(), 
                 [node.clientWidth, node.clientHeight, node.clientTop, node.clientLeft],
                 node.getClientRects(),
