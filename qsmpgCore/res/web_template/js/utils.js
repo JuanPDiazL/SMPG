@@ -5,24 +5,25 @@ function getCookie(cname) {
     let name = cname + "=";
     let decodedCookie = decodeURIComponent(document.cookie);
     let ca = decodedCookie.split(';');
-    for(let i = 0; i <ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) == ' ') {
-        c = c.substring(1);
-      }
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
-      }
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
     }
     return "";
-  }
+}
+
 function setCookie(name, value) {
     var date = new Date();
     date.setDate(date.getDate() + 1); // expire in 1 day
-  
+
     document.cookie = `${name}=; expires=${date.toUTCString()};`;
     document.cookie += `${value}`;
-  }
+}
 
 function setDarkMode(value) {
     setCookie(DARKMODE_COOKIE_NAME, value);
@@ -31,7 +32,7 @@ function setDarkMode(value) {
     } else {
         document.body.classList.remove('darkmode');
     }
-  }
+}
 
 function toggleDarkMode() {
     setCookie(DARKMODE_COOKIE_NAME, document.body.classList.toggle('darkmode'));
