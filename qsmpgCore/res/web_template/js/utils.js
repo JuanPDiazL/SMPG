@@ -1,3 +1,49 @@
+const QSMPG_COOKIE_PREFIX = 'QSMPG_';
+const DARKMODE_COOKIE_NAME = `${QSMPG_COOKIE_PREFIX}DARKMODE`
+
+function getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for(let i = 0; i <ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+function setCookie(name, value) {
+    var date = new Date();
+    date.setDate(date.getDate() + 1); // expire in 1 day
+  
+    document.cookie = `${name}=; expires=${date.toUTCString()};`;
+    document.cookie += `${value}`;
+  }
+
+function setDarkMode(value) {
+    setCookie(DARKMODE_COOKIE_NAME, value);
+    if (value === "true") {
+        document.body.classList.add('darkmode');
+    } else {
+        document.body.classList.remove('darkmode');
+    }
+  }
+
+function toggleDarkMode() {
+    setCookie(DARKMODE_COOKIE_NAME, document.body.classList.toggle('darkmode'));
+}
+
+function getUrlParams() {
+    return new URLSearchParams(window.location.search);
+}
+function getUrlParamsObject() {
+    const urlSearchParams = getUrlParams();
+    return Object.fromEntries(urlSearchParams.entries());
+}
 
 function getLast(arr) {
     return arr[arr.length - 1];

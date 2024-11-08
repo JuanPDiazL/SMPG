@@ -24,6 +24,8 @@
 </head>
 
 <body class="">
+    <script src="./js/utils.js"></script>
+
     <div id="leftSidebar" class="w3-sidebar w3-card-4 w3-bar-block w3-animate-left" style="display: none; z-index: 4;">
         
         <header id="leftSidebarHeader" class="w3-container w3-card w3-blue-grey w3-padding-small">
@@ -31,7 +33,8 @@
             <span><button class="mi w3-button w3-right" onclick="w3_close()">close</button></span>
         </header>
         <div class="w3-container w3-padding-small">
-            <input type="text" id="placeSearch" onkeyup="searchFunction()" onkeydown="confirmSearch(event)" autocomplete="off" placeholder="Search place">
+            <button class="w3-button w3-light-gray w3-hover-blue-grey" id="openMap" onclick="">Go to map</button>
+            <input class="w3-input w3-margin-bottom" type="text" id="placeSearch" onkeyup="searchFunction()" onkeydown="confirmSearch(event)" autocomplete="off" placeholder="Search place">
 
         <ul id="placeList">
 
@@ -46,7 +49,7 @@
             <span><button class="mi w3-button w3-left" onclick="w3_open()">menu</button></span>
             <span id="contentHeaderText" style="font-size: 2em;">Template</span>
             <!-- <span><button class="mi w3-button w3-right" onclick="">settings</button></span> -->
-            <span><button class="mi w3-button w3-right" onclick="document.body.classList.toggle('darkmode');">dark_mode</button></span>
+            <span><button class="mi w3-button w3-right" onclick="toggleDarkMode()">dark_mode</button></span>
             <span><button class="mi w3-button w3-right" onclick="save_reports()">save</button></span>
         </header>
 
@@ -122,9 +125,11 @@
     <script src="./js/makeBillboard.js"></script>
     <script src="./js/makeTable.js"></script>
     <script src="./js/htmlToCanvasExporter.js"></script>
-    <script src="./js/utils.js"></script>
-
     <script>
+        let params = getUrlParamsObject();
+
+        setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
+
         let firstPlaceKey = datasetProperties['place_ids'][0];
 
         let bb1 = new AccumulationsBillboardChart(
