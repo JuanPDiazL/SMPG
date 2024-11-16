@@ -1,3 +1,4 @@
+"use strict";
 function save_reports() {
     const start = Date.now();
 

@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 function arrayMoreLess20(numbers) {
     return numbers.map(n => [n * (1 + .2), n, n * (1 - .2)]);
