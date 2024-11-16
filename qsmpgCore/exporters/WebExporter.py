@@ -1,6 +1,13 @@
+import base64
 import json
 import os
 import shutil as sh
+
+from qgis.core import (
+    QgsVectorLayer,
+    QgsJsonExporter,
+)
+
 from ..structures import Dataset
 
 # workaround for standalone web files
@@ -21,7 +28,18 @@ def data_py_to_js(data: dict, destination_path: str, data_name: str):
         if isinstance(data, dict): js_data_wrapper.write(f'var {data_name} = {json_data};')
         else: js_data_wrapper.write(f'var {data_name} = {data};')
 
-def export_to_web_files(destination_path, structured_dataset: Dataset, subFolderName='Dynamic_Web_Report'):
+def layer_to_geojson(layer: QgsVectorLayer) -> dict:
+    """Converts a vector layer into GeoJSON"""
+    exporter = QgsJsonExporter()
+    return exporter.exportFeatures(layer.getFeatures())
+
+def layer_to_base64(layer: QgsVectorLayer) -> str:
+    """Converts a vector layer into base64"""
+    shp_path = layer.source()
+    with open(shp_path, 'rb') as shp_file:
+        return base64.b64encode(shp_file.read()).decode()
+
+def export_to_web_files(destination_path, structured_dataset: Dataset, vector_layer: QgsVectorLayer, subFolderName='Dynamic_Web_Report'):
     """Outputs all the required data for a dynamic web report.
 
     Args:
@@ -42,6 +60,10 @@ def export_to_web_files(destination_path, structured_dataset: Dataset, subFolder
     data_destination_path = os.path.join(web_subfolder_path, 'data')
     os.makedirs(data_destination_path, exist_ok=True)
 
+    # layer as geojson
+    if vector_layer is not None:
+        layer_geojson = layer_to_geojson(vector_layer)
+        data_py_to_js(layer_geojson, data_destination_path, 'layer')
     # outputs all the required data for the web report
     # non filtered
     place_stats_dict = structured_dataset.place_stats_to_dict()

@@ -12,6 +12,7 @@ from qgis.PyQt.QtWidgets import (
     QLabel,
     QListWidget,
     QRadioButton,
+    QCheckBox,
 )
 
 from .qsmpgCore.pyqgis_utils import (
@@ -39,6 +40,9 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
             including shp_source, selected_map, join_field, and 
             selected_fields.
     """
+
+    useShpForWebCheckBox: QCheckBox
+
     def __init__(self, parent=None):
         """Constructor."""
         super(MapSettingsDialog, self).__init__(parent)
@@ -57,6 +61,7 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
             'shp_source': '',
             'selected_fields': [],
             'join_field': '',
+            'use_shp_for_web': True,
         }
 
         self.useProjectLayerRadioButton: QRadioButton
@@ -153,6 +158,7 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
             self.useShapefileRadioButton.setChecked(True)
             self.mapSelectionComboBox.setCurrentIndex(-1)
         self.shapefilePathLineEdit.setText(settings['shp_source'])
+        self.useShpForWebCheckBox.setChecked(settings['use_shp_for_web'])
 
         self.blackList.clear()
         self.whiteList.clear()
@@ -190,6 +196,8 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
 
     def showEvent(self, a0):
         """Function to run when the dialog is oppened."""
+        exports_web = self.parent().exportWebCheckBox.isChecked()
+        self.useShpForWebCheckBox.setEnabled(exports_web)
         self.update_input_states(self.settings)
         return super().showEvent(a0)
     
@@ -230,6 +238,8 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
                                 'No features were selected for mapping. \nNo maps will be generated.', 
                                 QMessageBox.Ok)
             
+
+        self.settings['use_shp_for_web'] = self.useShpForWebCheckBox.isChecked()
         self.map_layer = self.temp_map_layer
         super(MapSettingsDialog, self).accept()
 

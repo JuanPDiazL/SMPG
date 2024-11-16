@@ -382,7 +382,9 @@ class QSMPGDialog(QDialog, FORM_CLASS):
                 'Web Report Export Task', 
                 export_to_web_files, 
                 self.destination_path, 
-                self.structured_dataset
+                self.structured_dataset,
+                self.map_settings_dialog.map_layer,
+                f'{self.dataset_filename}_Web_Report'
             ))
 
         if self.exportParametersCheckBox.isChecked():
