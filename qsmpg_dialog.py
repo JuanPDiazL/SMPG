@@ -362,7 +362,12 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         # add selected output tasks to a list of tasks
         long_tasks: list[TaskHandler] = []
         if self.exportStatsCheckBox.isChecked():
-            csv_task = TaskHandler('CSV Export Task', export_to_csv_files, self.destination_path, self.structured_dataset)
+            csv_task = TaskHandler(
+                'CSV Export Task', 
+                export_to_csv_files, 
+                self.destination_path, 
+                self.structured_dataset, 
+                )
             long_tasks.append(csv_task)
             if not (self.map_settings_dialog.map_layer is None or 
                 len(self.map_settings_dialog.settings['selected_fields']) == 0):
@@ -371,7 +376,7 @@ class QSMPGDialog(QDialog, FORM_CLASS):
                     generate_layers_from_csv, 
                     self.map_settings_dialog.settings,
                     self.map_settings_dialog.map_layer,
-                    # the last argument will be passed by the LongTaskHandler after csv_task finishes
+                    # the last argument `summary_csv_path` will be passed by the LongTaskHandler after csv_task finishes
                 )
                 map_task.setDependentLayers([self.map_settings_dialog.map_layer])
                 csv_task.addNextTask(map_task)
