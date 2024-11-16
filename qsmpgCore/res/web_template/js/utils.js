@@ -1,6 +1,70 @@
 "use strict";
 const QSMPG_COOKIE_PREFIX = 'QSMPG_';
-const DARKMODE_COOKIE_NAME = `${QSMPG_COOKIE_PREFIX}DARKMODE`
+const DARKMODE_COOKIE_NAME = `${QSMPG_COOKIE_PREFIX}DARKMODE`;
+const MENU_HIDE_STATE_COOKIE_NAME = `${QSMPG_COOKIE_PREFIX}MENU_HIDE_STATE`;
+
+const BODY_ELEMENT = document.body;
+
+const HIDE_CLASS = 'w3-hide';
+
+function navigateTo(queryParams={}, keepOlpParams=true) {
+    const oldParams = keepOlpParams? getHashParamsObject() : {};
+    const newParams = {...oldParams, ...queryParams };
+    const paramsString = new URLSearchParams(newParams).toString();
+    window.location.hash = paramsString;
+}
+
+function handleNavigation() {
+    const params = getHashParamsObject();
+    const mode = params['mode'];
+    const place = params['place'];
+    let mapRoot = $('#mapRoot');
+    let plotsRoot = $('#plotsRoot');
+    let firstPlaceKey = datasetProperties['place_ids'][0];
+    
+    switch (mode) {
+        case "map":
+            mapRoot.removeClass(HIDE_CLASS);
+            plotsRoot.addClass(HIDE_CLASS);
+            break;
+        case "plots":
+            plotsRoot.removeClass(HIDE_CLASS);
+            mapRoot.addClass(HIDE_CLASS);
+            break;
+        case "test":
+            mapRoot.removeClass(HIDE_CLASS);
+            plotsRoot.removeClass(HIDE_CLASS);
+            break;
+        default:
+            mapRoot.removeClass(HIDE_CLASS);
+            plotsRoot.addClass(HIDE_CLASS);
+            break;
+    }
+
+    let selectedPlace = null;
+    if (Object.values(datasetProperties["place_ids"]).includes(params.place)){
+        selectedPlace = params.place;
+    }
+    else{
+        selectedPlace = firstPlaceKey
+    }
+    updateDocument(selectedPlace);
+    window.dispatchEvent(new Event('resize'));
+    previousSelectionElement = sidebarElements[selectedPlace];
+}
+
+function getHashParams(param=null) {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1)); // Remove the leading '#'
+    if (param) {
+        return hashParams.get(param);
+     } else {
+        return hashParams;
+     }
+}
+function getHashParamsObject() {
+    const urlSearchParams = getHashParams();
+    return Object.fromEntries(urlSearchParams.entries());
+}
 
 function getCookie(cname) {
     let name = cname + "=";
@@ -22,8 +86,11 @@ function setCookie(name, value) {
     var date = new Date();
     date.setDate(date.getDate() + 1); // expire in 1 day
 
-    document.cookie = `${name}=; expires=${date.toUTCString()};`;
-    document.cookie += `${value}`;
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; SameSite=Strict`;
+}
+
+function goToMap() {
+    navigateTo({"mode": "map"});
 }
 
 function setDarkMode(value) {
@@ -39,27 +106,24 @@ function toggleDarkMode() {
     setCookie(DARKMODE_COOKIE_NAME, document.body.classList.toggle('darkmode'));
 }
 
-function getUrlParams() {
-    return new URLSearchParams(window.location.search);
-}
-function getUrlParamsObject() {
-    const urlSearchParams = getUrlParams();
-    return Object.fromEntries(urlSearchParams.entries());
-}
 
 function getLast(arr) {
     return arr[arr.length - 1];
 }
 
-function w3_open() {
-    document.getElementById("leftSidebar").style.display = "block";
-    document.getElementById("myOverlay").style.display = "block";
+function setMenuState(value) {
+    setCookie(MENU_HIDE_STATE_COOKIE_NAME, value);
+    if (value === "true") {
+        BODY_ELEMENT.classList.add('sidebar-closed');
+    } else {
+        BODY_ELEMENT.classList.remove('sidebar-closed');
+    }
 }
 
-function w3_close() {
-    document.getElementById("leftSidebar").style.display = "none";
-    document.getElementById("myOverlay").style.display = "none";
-}
+function menuToggle() {
+    setCookie(MENU_HIDE_STATE_COOKIE_NAME, BODY_ELEMENT.classList.toggle('sidebar-closed'));
+    window.dispatchEvent(new Event('resize'));
+  }
 
 function overlaySVG(table, gSelector) {
     let position = document.querySelector(gSelector).attributes.transform.value.slice('translate('.length, -1).split(',');
@@ -119,10 +183,17 @@ function updateDocument(place) {
     table5.update(getPercentileTable(placeStats, selectedYearsPlaceStats, place));
     document.getElementById('plot2Title').textContent = plot2Title;
     document.getElementById('plot4Title').textContent = plot4Title;
+
+    if(typeof previousSelectionElement !== "undefined" && previousSelectionElement != null) {
+        previousSelectionElement.classList.remove('selected');
+    }
+    sidebarElements[place].classList.add('selected');
+    $('#contentHeaderText').textContent = place;
 }
 
 function makeSelectionMenu(data) {
     const sidebarList = document.getElementById('placeList');
+    let sidebarElements = {};
     for (const place of data.toSorted()) {
         const listElement = document.createElement('li');
         listElement.className = 'place-list-element';
@@ -130,16 +201,12 @@ function makeSelectionMenu(data) {
         listElement.appendChild(placeLink);
         sidebarElements[place] = placeLink;
         placeLink.id = place;
-        placeLink.className = 'w3-bar-item w3-button';
+        placeLink.className = 'w3-bar-item w3-button w3-ripple';
         placeLink.innerHTML = place;
         placeLink.addEventListener('click', function () {
-            updateDocument(place);
-            placeLink.classList.add('selected');
-            if (previousSelectionElement) {
-                previousSelectionElement.classList.remove('selected');
-            }
-            previousSelectionElement = placeLink;
+            navigateTo({"place": place, "mode": "plots"});
         });
         sidebarList.appendChild(listElement);
     }
+    return sidebarElements;
 }
