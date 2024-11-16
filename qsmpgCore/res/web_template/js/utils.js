@@ -41,15 +41,14 @@ function handleNavigation() {
             break;
     }
 
-    let selectedPlace = null;
-    if (Object.values(datasetProperties["place_ids"]).includes(params.place)){
-        selectedPlace = params.place;
+    let selectedPlace = "";
+    if (Object.values(datasetProperties["place_ids"]).includes(place)){
+        selectedPlace = place;
     }
     else{
         selectedPlace = firstPlaceKey
     }
     updateDocument(selectedPlace);
-    placeUnder(table4.table, table3.table);
     window.dispatchEvent(new Event('resize'));
     previousSelectionElement = sidebarElements[selectedPlace];
 }
