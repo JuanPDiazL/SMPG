@@ -165,6 +165,7 @@ class AccumulationsBillboardChart {
         this.columnNames = datasetProperties['sub_season_monitoring_ids'];
         this.containerElement = containerElement;
         this.lastCoordinates = new Array(2).fill(datasetProperties['sub_season_monitoring_ids'].length - 1);
+        const firstPlaceKey = Object.keys(this.placeData)[0];
         this.currentLength = this.placeData[firstPlaceKey]['Current Season Accumulation'].length;
         this.chartTypes = {
             'LTA±20%': 'area-line-range',
@@ -237,6 +238,7 @@ class CurrentBillboardChart {
         this.placeData = placeData;
         this.columnNames = datasetProperties['sub_season_ids'];
         this.containerElement = containerElement;
+        const firstPlaceKey = Object.keys(this.placeData)[0];
         this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length;
         this.chartTypes = {
             'Current Season': 'bar',
@@ -297,6 +299,7 @@ class EnsembleBillboardChart {
         this.columnNames = datasetProperties['sub_season_monitoring_ids'];
         this.containerElement = containerElement;
         this.lastCoordinates = new Array(2).fill(datasetProperties['sub_season_monitoring_ids'].length - 1);
+        const firstPlaceKey = Object.keys(this.placeData)[0];
         this.currentLength = this.placeData[firstPlaceKey]['Current Season Accumulation'].length;
         this.chartTypes = {
             'LTA±20%': 'area-line-range',
@@ -375,6 +378,7 @@ class AccumulationsBillboardCurrentChart {
         this.placeData = placeData;
         this.containerElement = containerElement;
         this.lastCoordinates = this.columnNames.length - 1;
+        const firstPlaceKey = Object.keys(this.placeData)[0];
         this.currentLength = this.placeData[firstPlaceKey]['Current Season Accumulation'].length;
         this.chartTypes = {
             'Seasonal Accumulation': 'bar',
