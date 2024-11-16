@@ -49,6 +49,7 @@ function handleNavigation() {
         selectedPlace = firstPlaceKey
     }
     updateDocument(selectedPlace);
+    placeUnder(table4.table, table3.table);
     window.dispatchEvent(new Event('resize'));
     previousSelectionElement = sidebarElements[selectedPlace];
 }
