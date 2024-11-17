@@ -122,12 +122,6 @@ function menuToggle() {
     window.dispatchEvent(new Event('resize'));
   }
 
-function overlaySVG(table, gSelector) {
-    let position = document.querySelector(gSelector).attributes.transform.value.slice('translate('.length, -1).split(',');
-    let xPosition = parseFloat(position[0]);
-    table.style.left = `${xPosition + 15}px`;
-}
-
 function placeUnder(element, anchor) {
     const bbox = anchor.getBoundingClientRect();
     const xPos = anchor.style.left;

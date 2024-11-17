@@ -150,7 +150,7 @@ body {
 .chart-table {
     position: absolute;
     top: 5px;
-    left: 5px;
+    left: 8%;
     background-color: white !important;
     opacity: .8;
     display: inline-block;

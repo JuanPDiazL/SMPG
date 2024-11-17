@@ -155,16 +155,10 @@
                 seasonalStats, placeStats, datasetProperties, '#chart4');
 
             table1 = new statsTable('#chart1', 'Assessment at Current Dekad');
-            overlaySVG(table1.table, '#chart1 .bb-main');
-
             table2 = new statsTable('#chart2', 'Seasonal Analysis');
-            overlaySVG(table2.table , '#chart2 .bb-main');
-
             table3 = new statsTable('#chart3', 'Projection at EoS');
-            overlaySVG(table3.table, '#chart3 .bb-main');
             table4 = new statsTable('#chart3', 'Probability at EoS');
             table5 = new statsTable('#chart4', 'Historical Rainfall Statistics', ['Value', '']);
-            overlaySVG(table5.table, '#chart4 .bb-main');
             
             sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
             handleNavigation(); // initial update
