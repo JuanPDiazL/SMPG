@@ -20,8 +20,6 @@ function handleNavigation() {
     const place = params['place'];
     let mapRoot = $('#mapRoot');
     let plotsRoot = $('#plotsRoot');
-    let firstPlaceKey = datasetProperties['place_ids'][0];
-    
     switch (mode) {
         case "map":
             mapRoot.removeClass(HIDE_CLASS);
@@ -49,7 +47,6 @@ function handleNavigation() {
         selectedPlace = firstPlaceKey
     }
     updateDocument(selectedPlace);
-    window.dispatchEvent(new Event('resize'));
     previousSelectionElement = sidebarElements[selectedPlace];
 }
 

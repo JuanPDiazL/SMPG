@@ -20,17 +20,6 @@ function ascendingArray(n, offset=0) {
     }
     return arr;
 }
-function getSize(containerElement) {
-    return {
-        width: parseInt(d3.select(containerElement).style('width'), 10),
-        // height: parseInt(d3.select(containerElement).style('height'), 10),
-        height: parseInt(d3.select(containerElement).style('width'), 10) * (9 / 16),
-    }
-}
-function onResize(containerElement, plot) {
-    const size = getSize(containerElement);
-    plot.resize(size);
-}
 function getLegend(title, color, data, chartTypes = {}, points = {}) {
     let chartType = '';
     switch (chartTypes[title]) {
@@ -104,17 +93,30 @@ const defaultOptions = {
     tooltip: {
         order: 'desc',
         grouped: true,
+        position: function (data, width, height, element, pos) {
+            let svg = element;
+            while (svg && svg.tagName !== 'svg') {
+                svg = svg.parentElement;
+            }
+            svg = $(svg);
+            const viewBox = svg.attr('viewBox').split(' ').map(Number);
+            const svgWidth = svg.width();
+            const svgHeight  = svg.height();
+            const scaleX = svgWidth / viewBox[2];
+            const scaleY  = svgHeight / viewBox[3];
+            let transformedX = pos.xAxis * scaleX;
+            const transformedY = pos.y * scaleY;
+            if(transformedX + width > svgWidth) {
+                transformedX -= width;
+            }
+            return {
+                top: transformedY,
+                left: transformedX
+            };
+        },
     },
     point: {
         show: false,
-        // pattern: [
-        //     // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>circle</text></g>",
-        //     // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>change_history</text></g>",
-        //     // "<g><text x='0' y='6' class='mi-fill' style='font-size:7px'>square</text></g>",
-        //     'circle',
-        //     "<polygon points='4 0 0 8 8 8'></polygon>",
-        //     'rectangle',
-        // ]
     },
     transition: {
         duration: false,
@@ -130,6 +132,13 @@ const defaultOptions = {
     },
     bar: {
         front: true,
+    },
+    size: {
+        width: 800,
+        height: 450,
+    },
+    resize: {
+        auto: "viewBox"
     },
 };
 const chartColors = {
@@ -191,7 +200,6 @@ class AccumulationsBillboardChart {
                     template: (title, color, data) => getLegend(title, color, data, this.chartTypes),
                 },
             },
-            size: getSize(this.containerElement),
             point: { show: true, },
         };
 
@@ -200,7 +208,6 @@ class AccumulationsBillboardChart {
             data: { json: {}, },
             ..._.merge(defaultOptions, chartOptions)
         });
-        window.addEventListener('resize', () => onResize(containerElement, this.plot));
     }
     update(index) {
         const jsonData = {
@@ -254,7 +261,6 @@ class CurrentBillboardChart {
                     template: (title, color, data) => getLegend(title, color, data, this.chartTypes),
                 },
             },
-            size: getSize(this.containerElement),
         };
         this.xs = {
             'data_xs': ascendingArray(this.columnNames.length),
@@ -268,7 +274,6 @@ class CurrentBillboardChart {
             data: { json: {}, },
             ..._.merge(defaultOptions, chartOptions)
         });
-        window.addEventListener('resize', () => onResize(this.containerElement, this.plot));
     }
 
     update(index) {
@@ -328,7 +333,6 @@ class EnsembleBillboardChart {
                     template: (title, color, data) => getLegend(title, color, data, this.chartTypes),
                 },
             },
-            size: getSize(this.containerElement),
             point: { show: true, },
         };
 
@@ -337,7 +341,6 @@ class EnsembleBillboardChart {
             data: { json: {}, },
             ..._.merge(defaultOptions, chartOptions)
         });
-        window.addEventListener('resize', () => onResize(containerElement, this.plot));
     }
     update(index) {
         const jsonData = {
@@ -408,7 +411,6 @@ class AccumulationsBillboardCurrentChart {
                     template: (title, color, data) => getLegend(title, color, data, this.chartTypes),
                 },
             },
-            size: getSize(this.containerElement),
             point: { show: true, },
             groups: [
                 ['D4: 3 Pctl.', 'D3: 6 Pctl.', 'D2: 11 Pctl.', 'D1: 21 Pctl.', 'D0: 31 Pctl.', '67 Pctl.'],
@@ -425,7 +427,6 @@ class AccumulationsBillboardCurrentChart {
             data: { json: {}, },
             ..._.merge(defaultOptions, chartOptions)
         });
-        window.addEventListener('resize', () => onResize(containerElement, this.plot));
     }
 
     update(index) {

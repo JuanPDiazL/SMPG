@@ -162,9 +162,23 @@ body {
     box-shadow: #000 1px 1px 1px;
 }
 
+#plotsRoot {
+    height: 100%;
+}
+
+.plots-row {
+    /* height: 50%; */
+}
+
+.plot-card {
+    /* width: 50%;
+    height: 100%; */
+}
+
 .plot-container {
     position: relative;
-    width: auto;
+    width: 100%;
+    /* height: 100%; */
     aspect-ratio: 16/9;
     padding-bottom: 0 !important;
 }
