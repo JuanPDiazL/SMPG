@@ -94,19 +94,23 @@ const defaultOptions = {
         order: 'desc',
         grouped: true,
         position: function (data, width, height, element, pos) {
+            // get root svg from element
             let svg = element;
             while (svg && svg.tagName !== 'svg') {
                 svg = svg.parentElement;
             }
+            // use jquery to get properties of root svg
             svg = $(svg);
             const viewBox = svg.attr('viewBox').split(' ').map(Number);
             const svgWidth = svg.width();
             const svgHeight  = svg.height();
+            // calculate final coordinates
             const scaleX = svgWidth / viewBox[2];
             const scaleY  = svgHeight / viewBox[3];
             let transformedX = pos.xAxis * scaleX;
             const transformedY = pos.y * scaleY;
             if(transformedX + width > svgWidth) {
+                // avoid out of bounds
                 transformedX -= width;
             }
             return {
