@@ -1,22 +1,59 @@
 "use strict";
+function cropCanvas(canvas, x1, y1, x2, y2) {
+    // Get cropped original canvas data
+    var imgData = canvas.getContext('2d').getImageData(x1, y1, x2, y2);
+
+    // Create a new temporary canvas
+    var tempCanvas = document.createElement('canvas');
+    var tempContext = tempCanvas.getContext('2d');
+    tempCanvas.width = x2 - x1;
+    tempCanvas.height = y2 - y1;
+    tempContext.putImageData(imgData, 0, 0);
+
+    return tempCanvas;
+}
+
 function save_reports() {
     const start = Date.now();
+    let node = document.getElementById('contentRoot')
 
-    var node = document.querySelector('#contentBody');
+    let params = getHashParamsObject();
+    let name;
+    switch (params['mode']) {
+        case 'map':
+            name = 'map';
+            break;
+
+        case 'plots':
+            name = params['place'];
+            break;
+
+        default:
+            name = 'map';
+            break;
+    }
+    
+    // add offset to fix bad rendering
     const options = {
-        'width': node.offsetWidth,
-        'height': node.scrollHeight,
+        'width': node.scrollWidth + node.offsetLeft, 
+        'height': node.scrollHeight + node.offsetTop,
+        'windowWidth': node.outerWidth,
+        'windowHeight': node.outerHeight,
+        'backgroundColor': null,
+        'ignoreElements': (element) => {
+            return element.classList.contains('capture-ignore');
+        },
+        'logging': false,
     }
 
-    domtoimage.toPng(node, options)
-        .then(function (dataUrl) {
-            var img = new Image();
-            img.src = dataUrl;
-            // document.body.appendChild(img);
+    html2canvas(node, options)
+        .then(function (canvas) {
+            const tempCanvas = cropCanvas(canvas, 0, 0, node.scrollWidth, node.scrollHeight)
+            let dataUrl = tempCanvas.toDataURL();
 
             const link = document.createElement('a');
             link.href = dataUrl;
-            link.download = `${previousSelectionElement.id}.png`;
+            link.download = `${name}.png`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

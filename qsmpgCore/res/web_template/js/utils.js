@@ -87,7 +87,7 @@ function setCookie(name, value) {
 }
 
 function goToMap() {
-    navigateTo({"mode": "map"});
+    navigateTo({"mode": "map"}, false);
 }
 
 function setDarkMode(value) {
