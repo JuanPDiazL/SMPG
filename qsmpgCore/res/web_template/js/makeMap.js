@@ -4,6 +4,7 @@ function drawMap(layer) {
     const layerArea = d3.geoArea(layer);
     const layerBounds = d3.geoBounds(layer);
 
+    let fieldId = parameters["target_id_field"];
     let divElement = $("#mapRoot");
     let width = 800;
     let height = 800;
@@ -40,7 +41,7 @@ function drawMap(layer) {
     svg.select("#mapPolygons").selectAll(".country")
         .data(layer.features)
         .enter().append("path")
-        .attr("class", d => `country country-${d.properties.ADM2_NAME} w3-ripple`)
+        .attr("class", d => `country country-${d.properties[fieldId]} w3-ripple`)
         .attr("d", d3.geoPath().projection(projection))
         .style("fill", d => `lightgray`) // Color for the polygons
         .style("stroke", "black")
@@ -57,14 +58,14 @@ function drawMap(layer) {
             .style("display", "none")
         })
         .on("click", (event, d) => {
-            navigateTo({"place": d.properties.ADM2_CODE, "mode": "plots"});
+            navigateTo({"place": d.properties[fieldId], "mode": "plots"});
         })
 
     // draw labels
     svg.select("#mapLabels").selectAll(".map-text-label")
         .data(layer.features)
         .enter().append("text")
-        .text(d => d.properties.ADM2_NAME)
+        .text(d => d.properties[fieldId])
         .attr("class", "map-text-label")
         .attr("transform", d => `translate(${projection(d3.geoCentroid(d))})`)
         .attr("font-family", "Arial, sans-serif")

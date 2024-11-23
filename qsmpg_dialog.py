@@ -203,6 +203,7 @@ class QSMPGDialog(QDialog, FORM_CLASS):
             "output_stats": self.exportStatsCheckBox.isChecked(),
             "output_parameters": self.exportParametersCheckBox.isChecked(),
             "mapping_attributes": self.map_settings_dialog.settings['selected_fields'],
+            "target_id_field": self.targetFieldComboBox.currentText(),
         }
 
     def update_fields(self, parameters: Parameters):
@@ -297,6 +298,8 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         self.exportParametersCheckBox.setChecked(parameters.output_parameters)
         self.mappingButton.setEnabled(parameters.output_stats)
         self.map_settings_dialog.settings['selected_fields'] = parameters.mapping_attributes
+        if parameters.target_id_field in get_fields(self.selected_layer):
+            self.targetFieldComboBox.setCurrentText(parameters.target_id_field)
 
     def load_file_btn_event(self): 
         """Event handler for `loadFileButton`, it loads the dataset file.

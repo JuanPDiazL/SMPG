@@ -100,6 +100,8 @@ class Parameters:
             parameters (dict, optional): A dictionary of parameters. 
                 Defaults to {}.
         """
+        # input defaults
+        self.target_id_field: str = ''
         # climatology defaults
         self.climatology_start: str | None = '1991'
         self.climatology_end: str | None = '2020'

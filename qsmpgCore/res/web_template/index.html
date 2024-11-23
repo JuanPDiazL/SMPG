@@ -111,6 +111,8 @@
 
     <script>// Globals
         layer = null;
+        parameters = null;
+        property_ids = null;
         
         previousSelectionElement = null;
         bb1 = null;
@@ -126,6 +128,7 @@
     </script>
 
     <script src="./data/datasetProperties.js"></script>
+    <script src="./data/parameters.js"></script>
     <script src="./data/placeStats.js"></script>
     <script src="./data/seasonalStats.js"></script>
     <script src="./data/selectedYearsPlaceStats.js"></script>
@@ -166,6 +169,7 @@
             handleNavigation(); // initial update
             placeUnder(table4.table, table3.table);
             if(layer !== null) {
+                property_ids = Object.keys(Object.values(layer["features"])[0]["properties"]);
                 drawMap(layer);
             }
             window.onhashchange = handleNavigation; // update everything when when the url changes

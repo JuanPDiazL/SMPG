@@ -78,3 +78,5 @@ def export_to_web_files(destination_path, structured_dataset: Dataset, vector_la
 
     properties_dict = structured_dataset.properties.__dict__
     data_py_to_js(properties_dict, data_destination_path, 'datasetProperties')
+    parameters_dict = structured_dataset.parameters.__dict__
+    data_py_to_js(parameters_dict, data_destination_path, 'parameters')
