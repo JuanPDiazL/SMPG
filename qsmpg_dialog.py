@@ -75,6 +75,45 @@ class QSMPGDialog(QDialog, FORM_CLASS):
     It displays information about the dataset and provides 
     fields for users to input their preferred options.
     """
+
+    # input group
+    loadFileButton: QPushButton
+    datasetInputLineEdit: QLineEdit
+    importParametersButton: QPushButton
+    importParametersLineEdit: QLineEdit
+    
+    # climatology group
+    climatologyStartComboBox: QComboBox
+    climatologyEndComboBox: QComboBox
+
+    # season monitoring group
+    crossYearsCheckBox: QCheckBox
+    seasonStartComboBox: QComboBox
+    seasonEndComboBox: QComboBox
+
+    # year selection group
+    customYearsRadioButton: QRadioButton
+    similarYearsRadioButton: QRadioButton
+    similarYearsComboBox: QComboBox
+    usePearsonCheckBox: QCheckBox
+    selectYearsButton: QPushButton
+
+    # analysis group
+    observedDataRadioButton: QRadioButton
+    forecastRadioButton: QRadioButton
+
+    # outputs group
+    exportWebCheckBox: QCheckBox
+    exportImagesCheckBox: QCheckBox
+    exportStatsCheckBox: QCheckBox
+    exportParametersCheckBox: QCheckBox
+    mappingButton: QPushButton
+
+    # information group
+    datasetInfoLabel: QLabel
+
+    processButton: QPushButton
+
     def __init__(self, parent=None):
         """This is the constructor for the class.
 
@@ -91,44 +130,6 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         self.year_selection_dialog = YearSelectionDialog(self)
         self.progress_dialog = ProgressDialog(self)
         self.map_settings_dialog = MapSettingsDialog(self)
-
-        # input group
-        self.loadFileButton: QPushButton
-        self.datasetInputLineEdit: QLineEdit
-        self.importParametersButton: QPushButton
-        self.importParametersLineEdit: QLineEdit
-        
-        # climatology group
-        self.climatologyStartComboBox: QComboBox
-        self.climatologyEndComboBox: QComboBox
-
-        # season monitoring group
-        self.crossYearsCheckBox: QCheckBox
-        self.seasonStartComboBox: QComboBox
-        self.seasonEndComboBox: QComboBox
-
-        # year selection group
-        self.customYearsRadioButton: QRadioButton
-        self.similarYearsRadioButton: QRadioButton
-        self.similarYearsComboBox: QComboBox
-        self.usePearsonCheckBox: QCheckBox
-        self.selectYearsButton: QPushButton
-
-        # analysis group
-        self.observedDataRadioButton: QRadioButton
-        self.forecastRadioButton: QRadioButton
-
-        # outputs group
-        self.exportWebCheckBox: QCheckBox
-        self.exportImagesCheckBox: QCheckBox
-        self.exportStatsCheckBox: QCheckBox
-        self.exportParametersCheckBox: QCheckBox
-        self.mappingButton: QPushButton
-
-        # information group
-        self.datasetInfoLabel: QLabel
-
-        self.processButton: QPushButton
 
         # output groupbox
         self.output_checkboxes = [
