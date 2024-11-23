@@ -109,19 +109,9 @@
         </div>
     </div>
 
-    <script src="./data/datasetProperties.js"></script>
-    <script src="./data/placeStats.js"></script>
-    <script src="./data/seasonalStats.js"></script>
-    <script src="./data/selectedYearsPlaceStats.js"></script>
-    <script src="./data/selectedYearsSeasonalStats.js"></script>
-    <script src="./data/layer.js"></script>
-
-    <script src="./js/makeBillboard.js"></script>
-    <script src="./js/makeTable.js"></script>
-    <script src="./js/makeMap.js"></script>
-    <script src="./js/htmlToCanvasExporter.js"></script>
     <script>// Globals
-        firstPlaceKey = datasetProperties['place_ids'][0];
+        layer = null;
+        
         previousSelectionElement = null;
         bb1 = null;
         bb2 = null;
@@ -134,7 +124,20 @@
         table5 = null
         sidebarElements = [];
     </script>
+
+    <script src="./data/datasetProperties.js"></script>
+    <script src="./data/placeStats.js"></script>
+    <script src="./data/seasonalStats.js"></script>
+    <script src="./data/selectedYearsPlaceStats.js"></script>
+    <script src="./data/selectedYearsSeasonalStats.js"></script>
+    <script src="./data/layer.js"></script>
+
+    <script src="./js/makeBillboard.js"></script>
+    <script src="./js/makeTable.js"></script>
+    <script src="./js/makeMap.js"></script>
+    <script src="./js/htmlToCanvasExporter.js"></script>
     <script>"use strict";
+        let firstPlaceKey = datasetProperties['place_ids'][0];
         $(document).ready(() => {
             $('#noscriptMessage').hide();
             
@@ -162,7 +165,9 @@
             sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
             handleNavigation(); // initial update
             placeUnder(table4.table, table3.table);
-            drawMap(layer);
+            if(layer !== null) {
+                drawMap(layer);
+            }
             window.onhashchange = handleNavigation; // update everything when when the url changes
         });
     </script>

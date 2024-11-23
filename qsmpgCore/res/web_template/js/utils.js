@@ -22,9 +22,13 @@ function handleNavigation() {
     let plotsRoot = $('#plotsRoot');
     switch (mode) {
         case "map":
-            mapRoot.removeClass(HIDE_CLASS);
-            plotsRoot.addClass(HIDE_CLASS);
-            break;
+            if (layer !== null) {
+                console.log('map exist');
+                
+                mapRoot.removeClass(HIDE_CLASS);
+                plotsRoot.addClass(HIDE_CLASS);
+                break;
+            }
         case "plots":
             plotsRoot.removeClass(HIDE_CLASS);
             mapRoot.addClass(HIDE_CLASS);
@@ -34,8 +38,16 @@ function handleNavigation() {
             plotsRoot.removeClass(HIDE_CLASS);
             break;
         default:
-            mapRoot.removeClass(HIDE_CLASS);
-            plotsRoot.addClass(HIDE_CLASS);
+            if (layer !== null) {
+                console.log('map exist');
+                
+                mapRoot.removeClass(HIDE_CLASS);
+                plotsRoot.addClass(HIDE_CLASS);
+                break;
+            } else {
+                mapRoot.addClass(HIDE_CLASS);
+                plotsRoot.removeClass(HIDE_CLASS);
+            }
             break;
     }
 
