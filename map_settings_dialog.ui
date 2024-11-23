@@ -14,146 +14,14 @@
    <string>Map Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="19" column="0" colspan="2">
+   <item row="16" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
      </property>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QGroupBox" name="mapSourceTypeGroup">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="title">
-      <string>Select a vector layer to use</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <property name="checkable">
-      <bool>false</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <property name="verticalSpacing">
-       <number>6</number>
-      </property>
-      <item row="0" column="1">
-       <widget class="QRadioButton" name="useShapefileRadioButton">
-        <property name="text">
-         <string>From Shapefile</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="QComboBox" name="mapSelectionComboBox">
-        <property name="placeholderText">
-         <string>Please select a map.</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QRadioButton" name="useProjectLayerRadioButton">
-        <property name="text">
-         <string>From Project</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QWidget" name="widget" native="true">
-        <layout class="QGridLayout" name="gridLayout_5">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item row="0" column="0">
-          <widget class="QPushButton" name="loadShapefileButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Load Shapefile</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="shapefilePathLineEdit">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="placeholderText">
-            <string>Select a shapefile.</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="18" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>Join Target Field</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_4">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QComboBox" name="targetFieldComboBox">
-        <property name="placeholderText">
-         <string>Please select the target field</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="6" column="0" colspan="2">
+   <item row="4" column="0" colspan="2">
     <widget class="QGroupBox" name="attributeSelectionGroup">
      <property name="title">
       <string>Attribute Selection</string>
@@ -259,19 +127,6 @@
        </widget>
       </item>
      </layout>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QCheckBox" name="useShpForWebCheckBox">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Use this shapefile in web plots</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
     </widget>
    </item>
   </layout>

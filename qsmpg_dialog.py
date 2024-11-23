@@ -56,6 +56,9 @@ from .qsmpgCore.utils import (
     Parameters, Properties, define_seasonal_dict, parse_timestamps, 
     get_properties_validated_year_list, get_default_parameters_from_properties,
     )
+from .qsmpgCore.pyqgis_utils import (
+    get_fields, get_vector_layers, load_layer_file, get_root,
+)
     
 from .qsmpgCore.exporters.WebExporter import export_to_web_files
 from .qsmpgCore.exporters.CSVExporter import export_to_csv_files
@@ -81,6 +84,15 @@ class QSMPGDialog(QDialog, FORM_CLASS):
     datasetInputLineEdit: QLineEdit
     importParametersButton: QPushButton
     importParametersLineEdit: QLineEdit
+    
+    useProjectLayerRadioButton: QRadioButton
+    useShapefileRadioButton: QRadioButton
+    mapSelectionComboBox: QComboBox
+    refreshLayersPushButton: QPushButton
+    loadShapefileButton: QPushButton
+    shapefilePathLineEdit: QLineEdit
+    targetLabel: QLabel
+    targetFieldComboBox: QComboBox
     
     # climatology group
     climatologyStartComboBox: QComboBox
@@ -122,6 +134,9 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         """
         super(QSMPGDialog, self).__init__(parent)
         self.setupUi(self)
+        self.setGeometry(0, 0, 0, 0)
+
+        self.selected_layer = None
 
         # task manager object that executes the processing tasks in threads.
         self.task_manager = QgsTaskManager(self) 
@@ -151,6 +166,20 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         self.loadFileButton.clicked.connect(self.load_file_btn_event)
         self.importParametersButton.clicked.connect(self.import_parameters_btn_event)
         self.processButton.clicked.connect(self.process_btn_event)
+
+        self.import_shp_widgets = [self.loadShapefileButton, self.shapefilePathLineEdit]
+        self.use_project_layer_widgets = [self.mapSelectionComboBox, self.refreshLayersPushButton]
+
+        self.useProjectLayerRadioButton.toggled.connect(self.source_selection_rb_event)
+        self.useShapefileRadioButton.toggled.connect(self.source_selection_rb_event)
+        self.mapSelectionComboBox.currentTextChanged.connect(self.map_selection_combobox_event)
+        self.refreshLayersPushButton.pressed.connect(self.update_map_combobox_content)
+        self.loadShapefileButton.clicked.connect(self.load_shapefile_button_event)
+        get_root().addedChildren.connect(self.update_map_combobox_content)
+        get_root().removedChildren.connect(self.update_map_combobox_content)
+        
+        self.source_selection_rb_event()
+        self.update_map_combobox_content()
 
     def get_parameters_from_widgets(self):
         """Get parameters from widgets and return them as a dictionary."""
@@ -370,16 +399,17 @@ class QSMPGDialog(QDialog, FORM_CLASS):
                 self.structured_dataset, 
                 )
             long_tasks.append(csv_task)
-            if not (self.map_settings_dialog.map_layer is None or 
+            if not (self.selected_layer is None or 
                 len(self.map_settings_dialog.settings['selected_fields']) == 0):
                 map_task = TaskHandler(
                     'Summary Mapping Task',
                     generate_layers_from_csv, 
-                    self.map_settings_dialog.settings,
-                    self.map_settings_dialog.map_layer,
+                    self.selected_layer,
+                    self.targetFieldComboBox.currentText(),
+                    self.map_settings_dialog.settings['selected_fields'],
                     # the last argument `summary_csv_path` will be passed by the LongTaskHandler after csv_task finishes
                 )
-                map_task.setDependentLayers([self.map_settings_dialog.map_layer])
+                map_task.setDependentLayers([self.selected_layer])
                 csv_task.addNextTask(map_task)
                 long_tasks.append(map_task)
 
@@ -389,7 +419,7 @@ class QSMPGDialog(QDialog, FORM_CLASS):
                 export_to_web_files, 
                 self.destination_path, 
                 self.structured_dataset,
-                self.map_settings_dialog.map_layer,
+                self.selected_layer,
                 f'{self.dataset_filename}_Web_Report'
             ))
 
@@ -530,6 +560,71 @@ Last Year: {dataset_properties.year_ids[-1]}
 Current Year: {dataset_properties.current_season_id}
 Dekads in Current Year: {dataset_properties.current_season_length}'''
         self.datasetInfoLabel.setText(dg_text)
+
+    def map_selection_combobox_event(self, text: str):
+        """Update the selected map layer and display its fields.
+
+        Args:
+            text (str): The current text of the combo box.
+        """
+        if text != '' and text in get_vector_layers().keys():
+            self.shapefilePathLineEdit.setText("")
+            self.selected_layer = get_vector_layers()[text]
+        else: self.selected_layer = None
+        self.update_target_field_combobox_content()
+
+    def update_map_combobox_content(self):
+        """Update the content of the map selection combo box."""
+        maps = get_vector_layers()
+        map_names = maps.keys()
+        self.mapSelectionComboBox.clear()
+        self.mapSelectionComboBox.addItems(map_names)
+
+    def update_target_field_combobox_content(self):
+        """Update the content of the target field combo box."""
+        fields = get_fields(self.selected_layer)
+        self.targetFieldComboBox.clear()
+        self.targetFieldComboBox.addItems(fields)
+
+    def load_shapefile_button_event(self):
+        """Load a new shapefile and update the widgets."""
+        temp_shp_source = QFileDialog.getOpenFileName(self, 'Open shapefile', None, "shapefiles (*.shp)")[0]
+        if temp_shp_source == "":
+            QMessageBox.warning(self, "Warning", 
+                                'No shapefile was selected.', 
+                                QMessageBox.Ok)
+            return
+        shp_source = temp_shp_source
+        layer_preload = load_layer_file(shp_source)
+        if not layer_preload.isValid(): 
+            QMessageBox.critical(self, "Error", 
+                                'The selected shapefile is not valid.', 
+                                QMessageBox.Ok)
+            return
+        self.selected_layer = layer_preload
+        self.update_target_field_combobox_content()
+        self.shapefilePathLineEdit.setText(shp_source)
+
+
+    def source_selection_rb_event(self):
+        """
+        Update the widgets based on whether a shapefile or project layer is 
+        selected and remove the previously selected layer.
+        """
+        self.selected_layer = None
+        use_layer = self.useProjectLayerRadioButton.isChecked()
+        use_shp = self.useShapefileRadioButton.isChecked()
+        for w in self.use_project_layer_widgets: w.setHidden(not use_layer and use_shp)
+        for w in self.import_shp_widgets: w.setHidden(not use_shp and use_layer)
+        if use_shp: self.mapSelectionComboBox.setCurrentIndex(-1)
+        if use_layer: self.shapefilePathLineEdit.setText('')
+        self.update_target_field_combobox_content()
+        self.setGeometry(0, 0, 0, 0)
+
+    def showEvent(self, a0):
+        """Function to run when the dialog is oppened."""
+        self.update_map_combobox_content()
+        return super().showEvent(a0)
 
 class TaskHandler(QgsTask):
     """Class for handling tasks to be run in other threads.
