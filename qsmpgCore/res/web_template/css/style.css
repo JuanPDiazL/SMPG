@@ -166,14 +166,14 @@ body {
     height: 100%;
 }
 
-.plots-row {
-    /* height: 50%; */
+/* .plots-row {
+    height: 50%;
 }
 
 .plot-card {
-    /* width: 50%;
-    height: 100%; */
-}
+    width: 50%;
+    height: 100%;
+} */
 
 .plot-container {
     position: relative;
