@@ -2,7 +2,7 @@ import os
 
 from ..pyqgis_utils import *
 
-def generate_layers_from_csv(map_settings: dict, map_layer, summary_csv_path: str):
+def generate_layers_from_csv(map_layer, join_field: str, selected_stats: list[str], summary_csv_path: str):
     """
     Generates QGIS vector layers from a CSV file and adds them to the project.
 
@@ -15,8 +15,6 @@ def generate_layers_from_csv(map_settings: dict, map_layer, summary_csv_path: st
             be used for generating the layers.
     """
     stats_layer = load_layer_file(summary_csv_path)
-    join_field = map_settings['join_field']
-    selected_stats = map_settings['selected_fields']
     add_to_project(stats_layer)
     
     for stat in selected_stats:

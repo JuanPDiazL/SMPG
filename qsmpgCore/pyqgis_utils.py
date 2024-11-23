@@ -39,19 +39,16 @@ def get_fields(layer :QgsVectorLayer) -> list[str]:
         return layer.fields().names()
     return []
 
-def get_vector_layers() -> list[QgsVectorLayer]:
+def get_vector_layers() -> dict[str, QgsVectorLayer]:
     """Get all vector layers in the project.
 
     Get all vector layers in the project that have the provider "ogr".
 
     Returns:
-        list[QgsVectorLayer]: A list of vector layers in the project.
+        dict[str, QgsVectorLayer]: A dictionary of vector layers in the project.
     """
-    layers: dict[str, QgsVectorLayer] = QgsProject.instance().mapLayers()
-    vector_layers = []
-    for layer in layers.values():
-        if layer.providerType() == 'ogr':
-            vector_layers.append(layer)
+    layers: dict[str, QgsVectorLayer] = QgsProject.instance().mapLayers().values()
+    vector_layers = {v.name(): v for v in layers if v.providerType() == 'ogr'}
     return vector_layers
 
 def join_layers(data_layer: QgsVectorLayer, target_layer: QgsVectorLayer, target_field: str):
@@ -180,3 +177,6 @@ def rename_layer(layer: QgsVectorLayer, name='', prefix='', suffix=''):
     """
     if name == '': name = layer.name()
     layer.setName(prefix + name + suffix)
+
+def get_root():
+    return QgsProject.instance().layerTreeRoot()
