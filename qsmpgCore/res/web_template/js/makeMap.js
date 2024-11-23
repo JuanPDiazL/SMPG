@@ -5,6 +5,7 @@ function drawMap(layer) {
     const layerBounds = d3.geoBounds(layer);
 
     let fieldId = parameters["target_id_field"];
+    const FONT_SIZE = 13;
     let divElement = $("#mapRoot");
     let width = 800;
     let height = 800;
@@ -69,7 +70,7 @@ function drawMap(layer) {
         .attr("class", "map-text-label")
         .attr("transform", d => `translate(${projection(d3.geoCentroid(d))})`)
         .attr("font-family", "Arial, sans-serif")
-        .attr("font-size", "13")
+        .attr("font-size", FONT_SIZE)
         .style("pointer-events", "none")
         .style("display", d => {
             const areaRatio = d3.geoArea(d) / layerArea;
