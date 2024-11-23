@@ -23,8 +23,6 @@ function handleNavigation() {
     switch (mode) {
         case "map":
             if (layer !== null) {
-                console.log('map exist');
-                
                 mapRoot.removeClass(HIDE_CLASS);
                 plotsRoot.addClass(HIDE_CLASS);
                 break;
@@ -39,8 +37,6 @@ function handleNavigation() {
             break;
         default:
             if (layer !== null) {
-                console.log('map exist');
-                
                 mapRoot.removeClass(HIDE_CLASS);
                 plotsRoot.addClass(HIDE_CLASS);
                 break;
