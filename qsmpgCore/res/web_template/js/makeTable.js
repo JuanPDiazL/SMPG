@@ -73,7 +73,6 @@ class statsTable {
         </thead>
         `;
         this.tableBody = this.table.appendChild(document.createElement('tbody'));
-        document.querySelector(container).appendChild(this.table);
     }
 
     update(tableData) {

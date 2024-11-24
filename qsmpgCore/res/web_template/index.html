@@ -71,8 +71,9 @@
                                     <header class="w3-container w3-blue-grey">
                                         <p id="plot1Title" class="card-title">Seasonal Accumulations</p>
                                     </header>
-                                    <div class="plot-container w3-container w3-padding-small">
+                                    <div id="container1" class="plot-container w3-container w3-padding-small">
                                         <div id="chart1"></div>
+                                        <div class="table-container"></div>
                                         <div id="legend1" class="legend-container w3-container w3-padding-small"></div>
                                     </div>
                                 </div>
@@ -82,8 +83,9 @@
                                     <header class="w3-container w3-blue-grey">
                                         <p id="plot2Title" class="card-title">Current Rainfall Status</p>
                                     </header>
-                                    <div class="plot-container w3-container w3-padding-small">
+                                    <div id="container2" class="plot-container w3-container w3-padding-small">
                                         <div id="chart2" class="chart"></div>
+                                        <div class="table-container"></div>
                                         <div id="legend2" class="legend-container w3-container w3-padding-small"></div>
                                     </div>
                                 </div>
@@ -95,8 +97,9 @@
                                     <header class="w3-container w3-blue-grey">
                                         <p id="plot3Title" class="card-title">Ensemble</p>
                                     </header>
-                                    <div class="plot-container w3-container w3-padding-small">
+                                    <div id="container3" class="plot-container w3-container w3-padding-small">
                                         <div id="chart3"></div>
+                                        <div class="table-container"></div>
                                         <div id="legend3" class="legend-container w3-container w3-padding-small"></div>
                                     </div>
                                 </div>
@@ -106,8 +109,9 @@
                                     <header class="w3-container w3-blue-grey">
                                         <p id="plot4Title" class="card-title">Seasonal Rainfall Accumulation Up to Current Dekad</p>
                                     </header>
-                                    <div class="plot-container w3-container w3-padding-small">
+                                    <div id="container4" class="plot-container w3-container w3-padding-small">
                                         <div id="chart4"></div>
+                                        <div class="table-container"></div>
                                         <div id="legend4" class="legend-container w3-container w3-padding-small"></div>
                                     </div>
                                 </div>
@@ -172,12 +176,12 @@
             bb4 = new AccumulationsBillboardCurrentChart(
                 seasonalStats, placeStats, datasetProperties, '#chart4');
 
-            table1 = new statsTable('#chart1', 'Assessment at Current Dekad');
-            table2 = new statsTable('#chart2', 'Seasonal Analysis');
-            table3 = new statsTable('#chart3', 'Projection at EoS');
-            table4 = new statsTable('#chart3', 'Probability at EoS');
-            table5 = new statsTable('#chart4', 'Historical Rainfall Statistics', ['Value', '']);
-            table6 = new statsTable('#chart4', 'Current Season Statistics', ['Value', '']);
+            table1 = new statsTable('#container1 .table-container', 'Assessment at Current Dekad');
+            table2 = new statsTable('#container2 .table-container', 'Seasonal Analysis');
+            table3 = new statsTable('#container3 .table-container', 'Projection at EoS');
+            table4 = new statsTable('#container3 .table-container', 'Probability at EoS');
+            table5 = new statsTable('#container4 .table-container', 'Historical Rainfall Statistics', ['Value', '']);
+            table6 = new statsTable('#container4 .table-container', 'Current Season Statistics', ['Value', '']);
 
             
             sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
