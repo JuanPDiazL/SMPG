@@ -46,6 +46,7 @@ function handleNavigation() {
             }
             break;
     }
+    
 
     let selectedPlace = "";
     if (Object.values(datasetProperties["place_ids"]).includes(place)){
@@ -56,6 +57,7 @@ function handleNavigation() {
     }
     updateDocument(selectedPlace);
     previousSelectionElement = sidebarElements[selectedPlace];
+    placeUnder(table4.table, table3.table);
 }
 
 function getHashParams(param=null) {
