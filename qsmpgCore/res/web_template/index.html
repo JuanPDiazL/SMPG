@@ -135,7 +135,8 @@
         table2 = null;
         table3 = null;
         table4 = null;
-        table5 = null
+        table5 = null;
+        table6 = null;
         sidebarElements = [];
     </script>
 
@@ -176,6 +177,8 @@
             table3 = new statsTable('#chart3', 'Projection at EoS');
             table4 = new statsTable('#chart3', 'Probability at EoS');
             table5 = new statsTable('#chart4', 'Historical Rainfall Statistics', ['Value', '']);
+            table6 = new statsTable('#chart4', 'Current Season Statistics', ['Value', '']);
+
             
             sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
             handleNavigation(); // initial update

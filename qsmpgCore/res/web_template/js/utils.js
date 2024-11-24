@@ -58,6 +58,7 @@ function handleNavigation() {
     updateDocument(selectedPlace);
     previousSelectionElement = sidebarElements[selectedPlace];
     placeUnder(table4.table, table3.table);
+    placeUnder(table6.table, table5.table);
 }
 
 function getHashParams(param=null) {
@@ -182,6 +183,7 @@ function updateDocument(place) {
     table3.update(getDataProjectionEoS(placeStats, selectedYearsPlaceStats, place));
     table4.update(getDataProbabilityEoS(placeStats, selectedYearsPlaceStats, place));
     table5.update(getPercentileTable(placeStats, selectedYearsPlaceStats, place));
+    table6.update(getCurrentSeasonTable(placeStats, selectedYearsPlaceStats, place));
     document.getElementById('plot2Title').textContent = plot2Title;
     document.getElementById('plot4Title').textContent = plot4Title;
 

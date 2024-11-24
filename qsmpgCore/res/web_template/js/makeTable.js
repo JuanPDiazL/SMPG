@@ -50,6 +50,14 @@ function getPercentileTable(placeStats, selectedYearsStats, place) {
     ];
     return tableData;
 }
+function getCurrentSeasonTable(placeStats, selectedYearsStats, place) {
+    let data = placeStats[place];
+    let selectedData = selectedYearsStats[place];
+    let tableData = [
+        ['Current Season Pctl.', selectedData['Current Season Pctl.'][0], data['Current Season Pctl.'][0]],
+    ];
+    return tableData;
+}
 
 class statsTable {
     constructor(container, title, headers=['Sel. Yrs.', 'Clim.']) {
