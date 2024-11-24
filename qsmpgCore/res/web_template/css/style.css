@@ -237,3 +237,13 @@ path {
     max-height: 100%;
     /* border: 1px solid #ccc; */
 }
+
+#mapOverlay {
+    position: absolute;
+    right: 5px;
+    text-align: right;
+}
+
+#mapTooltip {
+    min-height: 1em;
+}

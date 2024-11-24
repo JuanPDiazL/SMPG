@@ -47,6 +47,16 @@
             <div id="contentRoot">
                 <div id="contentBody" class="w3-padding-small">
                     <div id="mapRoot" class="w3-hide">
+                        <div id="mapOverlay" class="capture-ignore">
+                            <div id="mapTooltip">
+                                <span id="mapTooltipStaticText">Selected Polygon: </span>
+                                <span id="mapTooltipText"></span>
+                            </div>
+                            <br>
+                            <div id="mapForm">
+                                <label>Label Feature </label><select name="feature" id="featureSelect"></select>
+                            </div>
+                        </div>
                         <svg id="mapSvg">
                             <defs id="mapDefs"></defs>
                             <g id="mapPolygons"></g>
@@ -113,8 +123,10 @@
         layer = null;
         parameters = null;
         property_ids = null;
+        fieldId = null;
         
         previousSelectionElement = null;
+        selectNode = null;
         bb1 = null;
         bb2 = null;
         bb3 = null;
@@ -170,6 +182,11 @@
             placeUnder(table4.table, table3.table);
             if(layer !== null) {
                 property_ids = Object.keys(Object.values(layer["features"])[0]["properties"]);
+                fieldId = parameters["target_id_field"];
+
+                selectNode = d3.select("#featureSelect").node();
+                updateSelect(selectNode, property_ids);
+                selectNode.value = fieldId;
                 drawMap(layer);
             }
             window.onhashchange = handleNavigation; // update everything when when the url changes

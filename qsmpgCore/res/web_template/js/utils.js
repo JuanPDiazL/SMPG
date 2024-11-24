@@ -209,3 +209,12 @@ function makeSelectionMenu(data) {
     }
     return sidebarElements;
 }
+
+function updateSelect(node, items) {
+    items.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item;  // You can set a value attribute if needed
+        option.text = item;   // Set the text content of the option
+        node.appendChild(option);
+    });
+}

@@ -4,7 +4,6 @@ function drawMap(layer) {
     const layerArea = d3.geoArea(layer);
     const layerBounds = d3.geoBounds(layer);
 
-    let fieldId = parameters["target_id_field"];
     const FONT_SIZE = 13;
     let divElement = $("#mapRoot");
     let width = 800;
@@ -17,7 +16,6 @@ function drawMap(layer) {
         .attr("width", width)
         .attr("height", height)
 
-
     // const shadow = svg.select("#mapDefs")
     //     .append("filter")
     //     .attr("id", "shadow")
@@ -28,15 +26,21 @@ function drawMap(layer) {
     //     .attr("flood-color", "rgb(0,0,0)")
     //     .attr("flood-opacity", 1)
 
+    // define tooltip
+    const tooltip = d3.select("#mapTooltipText")
+
     // draw selection bounding box rectangle
-    const mapSelectorPath = svg.select("#mapSelector").append("path")
+    const mapSelectorPath = svg.select("#mapSelector").selectAll(".selection-path")
+        .data([null])
+        .enter()
+        .append("path")
         .attr("class","selection-path")
         // .attr("filter", "url(#shadow)")
         .style("fill", "none")
         .style("stroke", "red")
         .style("stroke-width", 4)
         .style("stroke-linejoin", "round")
-        .style("pointer-events", "none")
+        .style("pointer-events", "none");
 
     // Draw the map
     svg.select("#mapPolygons").selectAll(".country")
@@ -53,17 +57,22 @@ function drawMap(layer) {
             mapSelectorPath
             .attr("d", d3.geoPath().projection(projection)(d))
             .style("display", null)
+            let displayLabeltext = d.properties[selectNode.value];
+            const idText = d.properties[fieldId]
+            displayLabeltext += displayLabeltext === idText? "" : ` (${idText})`
+            tooltip.text(displayLabeltext);
         })
         .on("mouseout", (event, d) => {
             mapSelectorPath
             .style("display", "none")
+            tooltip.text("");
         })
         .on("click", (event, d) => {
             navigateTo({"place": d.properties[fieldId], "mode": "plots"});
         })
 
     // draw labels
-    svg.select("#mapLabels").selectAll(".map-text-label")
+    const labels = svg.select("#mapLabels").selectAll(".map-text-label")
         .data(layer.features)
         .enter().append("text")
         .text(d => d.properties[fieldId])
@@ -89,4 +98,9 @@ function drawMap(layer) {
     .attr("height", null)
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0, 0, ${width}, ${height}`)
+    selectNode.addEventListener("change", function() {
+        const displayId = this.value;
+        // Update label text based on the selected property
+        labels.text(d => d.properties[displayId]);
+    });
 }
