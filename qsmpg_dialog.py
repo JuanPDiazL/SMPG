@@ -134,7 +134,6 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         """
         super(QSMPGDialog, self).__init__(parent)
         self.setupUi(self)
-        self.setGeometry(0, 0, 0, 0)
 
         self.selected_layer = None
 
@@ -622,7 +621,6 @@ Dekads in Current Year: {dataset_properties.current_season_length}'''
         if use_shp: self.mapSelectionComboBox.setCurrentIndex(-1)
         if use_layer: self.shapefilePathLineEdit.setText('')
         self.update_target_field_combobox_content()
-        self.setGeometry(0, 0, 0, 0)
 
     def showEvent(self, a0):
         """Function to run when the dialog is oppened."""
