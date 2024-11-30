@@ -3,6 +3,8 @@
 body {
     --sidebarWidth: 15em;
     --mainWidth: 85%;
+    --dark-bg-color: #1d2a35;
+    --dark-stroke-color: #2d3a45;
     line-height: .9;
     height: 100vh;
 }
@@ -18,11 +20,11 @@ body {
 .darkmode #openMapBtn:not(:hover),
 .darkmode #placeSearch,
 .darkmode .bb text {
-    background-color: #1d2a35 !important;
+    background-color: var(--dark-bg-color) !important;
     color: #ddd !important;
     fill: #aaa;
 }.darkmode .bb-grid line {
-    stroke: #2d3a45;
+    stroke: var(--dark-stroke-color);
 }
 
 .qsmpg-left {
@@ -254,6 +256,10 @@ path {
 
 #mapOverlay {
     position: absolute;
+    background-color: #fffc;
+}.darkmode #mapOverlay {
+    position: absolute;
+    background-color: #1d2a35cc;
 }
 
 #mapTooltip {
