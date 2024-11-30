@@ -25,6 +25,20 @@ body {
     stroke: #2d3a45;
 }
 
+.qsmpg-left {
+    left: calc(var(--sidebarWidth) + 1em);
+    text-align: left;
+
+}.sidebar-closed .qsmpg-left {
+    left: 1em;
+    text-align: left;
+}
+.qsmpg-right {
+    right: 1em;
+    text-align: right;
+}
+
+
 #leftSidebar {
     width: var(--sidebarWidth);
     background-color: inherit !important;
@@ -240,8 +254,6 @@ path {
 
 #mapOverlay {
     position: absolute;
-    right: 5px;
-    text-align: right;
 }
 
 #mapTooltip {

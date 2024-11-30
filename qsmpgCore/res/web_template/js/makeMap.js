@@ -65,7 +65,7 @@ function drawMap(layer) {
         .on("mouseout", (event, d) => {
             mapSelectorPath
             .style("display", "none")
-            tooltip.text("");
+            tooltip.text("None");
         })
         .on("click", (event, d) => {
             navigateTo({"place": d.properties[fieldId], "mode": "plots"});
