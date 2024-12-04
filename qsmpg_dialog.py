@@ -26,6 +26,7 @@ import os
 import time
 import json
 import traceback
+import webbrowser
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
@@ -121,6 +122,7 @@ class QSMPGDialog(QDialog, FORM_CLASS):
 
     # information group
     datasetInfoLabel: QLabel
+    helpButton: QPushButton
 
     processButton: QPushButton
 
@@ -171,6 +173,7 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         self.mapSelectionComboBox.currentTextChanged.connect(self.map_selection_combobox_event)
         self.refreshLayersPushButton.pressed.connect(self.update_map_combobox_content)
         self.loadShapefileButton.clicked.connect(self.load_shapefile_button_event)
+        self.helpButton.clicked.connect(lambda: webbrowser.open('https://help.fews.net/en/tools/v3/smpg-tool'))
         get_root().addedChildren.connect(self.update_map_combobox_content)
         get_root().removedChildren.connect(self.update_map_combobox_content)
         
