@@ -62,7 +62,6 @@ from .qsmpgCore.pyqgis_utils import (
     
 from .qsmpgCore.exporters.WebExporter import export_to_web_files
 from .qsmpgCore.exporters.CSVExporter import export_to_csv_files
-from .qsmpgCore.exporters.ImageExporter import export_to_image_files
 from .qsmpgCore.exporters.ParameterExporter import export_parameters
 from .qsmpgCore.exporters.QGISExporter import generate_layers_from_csv
 
@@ -116,7 +115,6 @@ class QSMPGDialog(QDialog, FORM_CLASS):
 
     # outputs group
     exportWebCheckBox: QCheckBox
-    exportImagesCheckBox: QCheckBox
     exportStatsCheckBox: QCheckBox
     exportParametersCheckBox: QCheckBox
     mappingButton: QPushButton
@@ -150,7 +148,6 @@ class QSMPGDialog(QDialog, FORM_CLASS):
             self.exportStatsCheckBox,
             self.exportWebCheckBox,
             self.exportParametersCheckBox,
-            self.exportImagesCheckBox,
         ]
 
         # signal connections
@@ -198,7 +195,6 @@ class QSMPGDialog(QDialog, FORM_CLASS):
             "is_forecast": self.forecastRadioButton.isChecked(),
             "use_pearson": self.usePearsonCheckBox.isChecked(),
             "output_web": self.exportWebCheckBox.isChecked(),
-            "output_images": self.exportImagesCheckBox.isChecked(),
             "output_stats": self.exportStatsCheckBox.isChecked(),
             "output_parameters": self.exportParametersCheckBox.isChecked(),
             "mapping_attributes": self.map_settings_dialog.settings['selected_fields'],
@@ -289,8 +285,6 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         # update outputs
         self.exportWebCheckBox.setEnabled(True)
         self.exportWebCheckBox.setChecked(parameters.output_web)
-        self.exportImagesCheckBox.setEnabled(True)
-        self.exportImagesCheckBox.setChecked(parameters.output_images)
         self.exportStatsCheckBox.setEnabled(True)
         self.exportStatsCheckBox.setChecked(parameters.output_stats)
         self.exportParametersCheckBox.setEnabled(True)
@@ -433,14 +427,6 @@ class QSMPGDialog(QDialog, FORM_CLASS):
                 self.structured_dataset
                 ))
             
-        if self.exportImagesCheckBox.isChecked():
-            long_tasks.append(TaskHandler(
-                'Static Reports Export Task', 
-                export_to_image_files, 
-                self.destination_path, 
-                self.structured_dataset
-                ))
-
         self.progress_dialog.show()
         self.renderTime = time.perf_counter()
         # add tasks to task manager and run them
@@ -560,6 +546,7 @@ class QSMPGDialog(QDialog, FORM_CLASS):
 f'''First Year: {dataset_properties.year_ids[0]}
 Last Year: {dataset_properties.year_ids[-1]}
 Current Year: {dataset_properties.current_season_id}
+Years in Dataset: {dataset_properties.season_quantity}
 Dekads in Current Year: {dataset_properties.current_season_length}'''
         self.datasetInfoLabel.setText(dg_text)
 
