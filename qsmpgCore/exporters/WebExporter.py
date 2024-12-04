@@ -1,4 +1,5 @@
-import base64
+import pandas as pd
+import numpy as np
 import json
 import os
 import shutil as sh
@@ -10,34 +11,55 @@ from qgis.core import (
 
 from ..structures import Dataset
 
-# workaround for standalone web files
-def data_py_to_js(data: dict, destination_path: str, data_name: str):
-    """
-    Converts a Python dictionary to a JavaScript object and saves it to a file.
+def serialize_dict(input_dict: dict):
+    '''Recursively serializes a dictionary and its nested dictionaries to a flattened format.
 
     Args:
-        data (dict): The Python dictionary to convert.
-        destination_path (str): The path where the JavaScript file will be 
-            saved.
-        data_name (str): The name of the JavaScript variable that will hold the 
-            converted data.
-    """
-    json_data = json.dumps(data)
+        input_dict (dict): The dictionary to be serialized.
+
+    Returns:
+        dict: the serializable dictionary.
+    '''
+    serialized_dict = {}
+    for key, value in input_dict.items():
+        if isinstance(value, np.ndarray):
+            serialized_dict[key] = value.tolist()
+        elif isinstance(value, pd.DataFrame):
+            serialized_dict[key] = f'{value.round(1).to_csv()}'
+        elif isinstance(value, dict):
+            # Recursively serialize any nested dictionaries
+            serialized_dict[key] = serialize_dict(value)
+        else:
+            serialized_dict[key] = value
+    return serialized_dict
+
+def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
+    '''Convert a dictionary of Python objects to JavaScript code.
+
+    This function takes a dictionary of Python objects (e.g. DataFrames, dictionaries)
+    and generates JavaScript code that can be used to recreate the original data in a web page.
+
+    Args:
+        data_bundle (dict): A dictionary where each key is a variable name and each value
+                             is a Python object to be converted to JavaScript.
+        destination_path (str): The path where the generated JavaScript file will be saved.
+        filename (str): The name of the JavaScript file that will be generated.
+    '''
+    js_text = ''
+    for name, data in data_bundle.items():
+        if isinstance(data, pd.DataFrame):
+            js_text += f'var {name} = `{data.to_csv()}`;'
+        if isinstance(data, dict):
+            js_text += f'var {name} = {json.dumps(serialize_dict(data))};'
+
     os.makedirs(destination_path, exist_ok=True)
-    with open(f'{destination_path}/{data_name}.js', 'w') as js_data_wrapper:
-        if isinstance(data, dict): js_data_wrapper.write(f'var {data_name} = {json_data};')
-        else: js_data_wrapper.write(f'var {data_name} = {data};')
+    with open(f'{destination_path}/{filename}.js', 'w') as js_data_wrapper:
+        js_data_wrapper.write(js_text)
 
 def layer_to_geojson(layer: QgsVectorLayer) -> dict:
     """Converts a vector layer into GeoJSON"""
     exporter = QgsJsonExporter()
     return exporter.exportFeatures(layer.getFeatures())
-
-def layer_to_base64(layer: QgsVectorLayer) -> str:
-    """Converts a vector layer into base64"""
-    shp_path = layer.source()
-    with open(shp_path, 'rb') as shp_file:
-        return base64.b64encode(shp_file.read()).decode()
 
 def export_to_web_files(destination_path, structured_dataset: Dataset, vector_layer: QgsVectorLayer, subFolderName='Dynamic_Web_Report'):
     """Outputs all the required data for a dynamic web report.
@@ -45,6 +67,7 @@ def export_to_web_files(destination_path, structured_dataset: Dataset, vector_la
     Args:
         destination_path (str): The path where the web report will be saved.
         structured_dataset (Dataset): The dataset to export.
+        vector_layer (QgsVectorLayer): The vector layer to export to the web report.
         subFolderName (str, optional): The name of the subfolder that will hold 
             the web report. Defaults to 'Dynamic_Web_Report'.
     """
@@ -65,18 +88,35 @@ def export_to_web_files(destination_path, structured_dataset: Dataset, vector_la
         layer_geojson = layer_to_geojson(vector_layer)
         data_py_to_js(layer_geojson, data_destination_path, 'layer')
     # outputs all the required data for the web report
-    # non filtered
-    place_stats_dict = structured_dataset.place_stats_to_dict()
-    data_py_to_js(place_stats_dict, data_destination_path, 'placeStats')
-    season_stats_dict = structured_dataset.season_stats_to_dict()
-    data_py_to_js(season_stats_dict, data_destination_path, 'seasonalStats')
-    # filtered
-    selected_years_place_stats_dict = structured_dataset.place_stats_to_dict('selected')
-    data_py_to_js(selected_years_place_stats_dict, data_destination_path, 'selectedYearsPlaceStats')
-    selected_years_season_stats_dict = structured_dataset.season_stats_to_dict('selected')
-    data_py_to_js(selected_years_season_stats_dict, data_destination_path, 'selectedYearsSeasonalStats')
 
-    properties_dict = structured_dataset.properties.__dict__
-    data_py_to_js(properties_dict, data_destination_path, 'datasetProperties')
-    parameters_dict = structured_dataset.parameters.__dict__
-    data_py_to_js(parameters_dict, data_destination_path, 'parameters')
+    places = structured_dataset.places
+    
+    properties = {
+        'datasetProperties': structured_dataset.properties.__dict__,
+        'parameters': structured_dataset.parameters.__dict__,
+    }
+    data_py_to_js(properties, data_destination_path, 'properties')
+
+    general_stats = {
+        'place_general_stats_csv': pd.DataFrame(
+        [p.place_general_stats for p in places.values()]),
+        'seasonal_general_stats_csv': pd.DataFrame(
+        [p.seasonal_general_stats for p in places.values()]),
+        'selected_seasons_general_stats_csv': pd.DataFrame(
+        [p.selected_seasons_general_stats for p in places.values()]),
+    }
+    data_py_to_js(general_stats, data_destination_path, 'general_stats')
+
+    seasonal_stats = {
+        'seasonal_cumsum': {k:v.seasonal_cumsum for k, v in places.items()},
+        'seasonal_ensemble': {k:v.seasonal_ensemble for k, v in places.items()},
+        'seasonal_long_term_stats': {k:v.seasonal_long_term_stats for k, v in places.items()},
+    }
+    data_py_to_js(seasonal_stats, data_destination_path, 'seasonal_stats')
+
+    selected_seasons_stats = {
+        'selected_seasons_cumsum': {k:v.selected_seasons_cumsum for k, v in places.items()},
+        'selected_seasons_ensemble': {k:v.selected_seasons_ensemble for k, v in places.items()},
+        'selected_seasons_long_term_stats': {k:v.selected_seasons_long_term_stats for k, v in places.items()},
+    }
+    data_py_to_js(selected_seasons_stats, data_destination_path, 'selected_seasons_stats')

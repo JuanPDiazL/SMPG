@@ -1,6 +1,7 @@
 import re
 import numpy as np
 import scipy.stats as sp
+import pandas as pd
 from typing import Optional, Union
 
 # Dictionary that correlates the period name
@@ -84,8 +85,6 @@ class Parameters:
             forecast period. Defaults to False.
         output_web (bool): A boolean indicating whether to output the web 
             reports. Defaults to True.
-        output_images (bool): A boolean indicating whether to output the image 
-            report files. Defaults to False.
         output_stats (bool): A boolean indicating whether to output the 
             statistical results as CSV. Defaults to True.
         output_parameters (bool): A boolean indicating whether to output the 
@@ -344,22 +343,24 @@ def percentiles_to_values(data: np.ndarray, percentiles=(3, 6, 11, 21, 31)) -> n
     """
     return np.percentile(data, percentiles)
 
-def get_ensemble(current_data, post_data) -> np.ndarray:
+def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFrame:
     """
     Calculate the ensemble of two arrays by cumulatively summing their 
     elements.
 
     Parameters:
-        current_data (np.ndarray): The first array to be used in the 
+        current_data (ndarray): The array to be used in the 
             calculation of the ensemble.
-        post_data (np.ndarray): The second array to be used in the calculation 
+        post_data (DataFrame): A DataFrame to be used in the calculation 
             of the ensemble.
 
     Returns:
-        np.ndarray: An array containing the cumulative sum of the elements of 
-            `current_data` and `post_data`.
+        DataFrame: A DataFrame containing the cumulative sum of the elements of 
+            `fixed_data` and `post_data`.
     """
-    return np.cumsum(np.concatenate((current_data, post_data[len(current_data):])))
+    fixed_series_indexes = post_data.columns[:len(fixed_data)]
+    fixed_series = pd.Series(fixed_data, index=fixed_series_indexes)
+    return post_data.iloc[:, len(fixed_data):].apply(lambda row: pd.concat([fixed_series, row]).cumsum(), axis=1)
 
 def slice_by_element(_list: list, start, end=None) -> list:
     """Slice a list by the position of a given element.
@@ -384,36 +385,38 @@ def slice_by_element(_list: list, start, end=None) -> list:
 
     return sliced_list
 
-def get_similar_years(current_year: np.ndarray, year_list: list[np.ndarray], 
-                      year_ids: list[str], use_pearson=False) -> list[str]:
+def get_similar_years(reference_year: np.ndarray, year_df: pd.DataFrame, 
+                      use_pearson=False) -> list[str]:
     """
-    Get the years that are similar to the current year based on certain 
-    criteria, such as rank of a curve, total accumulation, and Pearson 
+    Get the year ids that are similar to the reference year based on certain 
+    criteria, such as difference of curves, total accumulation, and Pearson 
     correlation.
 
-    Parameters:
-        current_year (np.ndarray): The current year that will be used for 
-            comparison.
-        year_list (list[np.ndarray]): A list of arrays containing the years to 
-            be compared with `current_year`.
-        year_ids (list[str]): A list of IDs corresponding to each year in 
-            `year_list`.
-        use_pearson (bool, optional): Whether or not to use Pearson correlation 
-            as a criteria for similarity. Defaults to False.
+    Args:
+        reference_year (ndarray): A 1D numpy array representing the values for 
+            a specific reference year.
+        year_df (DataFrame): A pandas DataFrame with columns containing the 
+            time series data for each year. The index will be treated as the ID of 
+            the years in ascending order.
+        use_pearson (bool, optional):
+            A flag indicating whether to also calculate and consider Pearson's
+            r-statistic for correlation between the reference year and each other 
+            year. Defaults to False.
 
     Returns:
-        list[str]: A list containing the IDs of the years that are similar to 
-            `current_year`.
+        list[str]: A list containing the IDs of the most similar years based on 
+            certain criteria.
     """
-    year_list = np.array(year_list)[:,:current_year.size]
-    current_year_accumulation = np.cumsum(current_year)
-    accumulations_list = np.cumsum(year_list, axis=1)
-    data_curve_rankings = np.argsort(np.sum((year_list - current_year) ** 2, axis=1))
-    accumulation_curve_rankings = np.argsort(np.sum((accumulations_list - current_year_accumulation) ** 2, axis=1))
-    season_total_rankings = np.argsort((accumulations_list[:,-1] - current_year_accumulation[-1]) ** 2)
-    sum_of_rankings = data_curve_rankings + accumulation_curve_rankings + season_total_rankings
+    year_df = year_df.iloc[:,:reference_year.size]
+    year_ids = list(year_df.index)
+    current_year_accumulation = np.cumsum(reference_year)
+    accumulations = year_df.cumsum(axis=1)
+    curve_diff_rankings = np.argsort(np.sum((year_df - reference_year) ** 2, axis=1))
+    accumulation_curve_rankings = np.argsort(np.sum((accumulations - current_year_accumulation) ** 2, axis=1))
+    season_total_rankings = np.argsort((accumulations.iloc[:,-1] - current_year_accumulation[-1]) ** 2)
+    sum_of_rankings = curve_diff_rankings + accumulation_curve_rankings + season_total_rankings
     if use_pearson:
-        pearson_correlation_rankings = np.argsort([1 - (sp.pearsonr(arr, current_year).statistic) ** 2 for arr in year_list])
+        pearson_correlation_rankings = np.argsort([1 - (sp.pearsonr(arr, reference_year).statistic) ** 2 for arr in year_df])
         sum_of_rankings += pearson_correlation_rankings
     ranked_indexes = np.argsort(sum_of_rankings)
     ranked_year_ids = [year_ids[i] for i in ranked_indexes]
