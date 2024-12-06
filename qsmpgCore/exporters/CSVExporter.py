@@ -38,11 +38,11 @@ def wrap_summary(place_general_stats: dict, seasonal_general_stats: pd.Series):
         Series: A new pandas Series with the wrapped summary data.
     """
     return pd.Series({
-        'C. Dk./LTA Pct.': seasonal_general_stats['C. Dk./LTA']*100,
-        'Ensemble Med./LTA Pct.': seasonal_general_stats['Ensemble Med./LTA']*100,
-        'Probability Below Normal': seasonal_general_stats['E. Prob. Below Normal']*100,
-        'Probability in Normal': seasonal_general_stats['E. Prob. Between Normal']*100,
-        'Probability Above Normal': seasonal_general_stats['E. Prob. Above Normal']*100,
+        'C. Dk./LTA Pct.': seasonal_general_stats['C. Dk./LTA Pct.'],
+        'Ensemble Med./LTA Pct.': seasonal_general_stats['Ensemble Med./LTA Pct.'],
+        'Probability Below Normal': seasonal_general_stats['E. Prob. Below Normal Pct.'],
+        'Probability in Normal': seasonal_general_stats['E. Prob. Between Normal Pct.'],
+        'Probability Above Normal': seasonal_general_stats['E. Prob. Above Normal Pct.'],
         'Ensemble Med. Pctl.': seasonal_general_stats['Ensemble Med. Pctl.'],
         'Current Season Pctl.': place_general_stats['Current Season Pctl.'],
     }
