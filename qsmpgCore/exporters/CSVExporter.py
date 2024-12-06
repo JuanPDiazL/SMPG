@@ -14,16 +14,16 @@ def wrap_stats(place_general_stats: dict, seasonal_general_stats: pd.Series):
    
     """
     return pd.Series({
-        'Current Season Sum': place_general_stats['Current Season Accumulation'][-1],
+        'Current Season Total': place_general_stats.loc['Current Season Total'],
         'LTA': seasonal_general_stats['LTA'],
         'LTA up to Current Season': seasonal_general_stats['LTA up to Current Season'],
         'Median': seasonal_general_stats['Median'],
         'Ensemble Med.': seasonal_general_stats['Ensemble Med.'],
         'St. Dev.': seasonal_general_stats['St. Dev.'],
-        '33 Pctl.': place_general_stats['Pctls.'][0],
-        '67 Pctl.': place_general_stats['Pctls.'][1],
-        '33 E. Pctl.': seasonal_general_stats['33 E. Pctl.'],
-        '67 E. Pctl.': seasonal_general_stats['67 E. Pctl.'],
+        'Climatology 33 Pctl.': place_general_stats['Climatology 33 Pctl.'],
+        'Climatology 67 Pctl.': place_general_stats['Climatology 67 Pctl.'],
+        'Ensemble 33 Pctl.': seasonal_general_stats['Ensemble 33 Pctl.'],
+        'Ensemble 67 Pctl.': seasonal_general_stats['Ensemble 67 Pctl.'],
     }
     , name=seasonal_general_stats.name)
 

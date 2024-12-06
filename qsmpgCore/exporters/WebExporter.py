@@ -3,6 +3,7 @@ import numpy as np
 import json
 import os
 import shutil as sh
+from ...libraries.pytopojson.pytopojson.topology import Topology
 
 from qgis.core import (
     QgsVectorLayer,
@@ -23,11 +24,10 @@ def serialize_dict(input_dict: dict):
     serialized_dict = {}
     for key, value in input_dict.items():
         if isinstance(value, np.ndarray):
-            serialized_dict[key] = value.tolist()
+            serialized_dict[key] = value.round(0).tolist()
         elif isinstance(value, pd.DataFrame):
-            serialized_dict[key] = f'{value.round(1).to_csv()}'
+            serialized_dict[key] = f'{value.round(0).to_csv()}'
         elif isinstance(value, dict):
-            # Recursively serialize any nested dictionaries
             serialized_dict[key] = serialize_dict(value)
         else:
             serialized_dict[key] = value
@@ -45,21 +45,22 @@ def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
         destination_path (str): The path where the generated JavaScript file will be saved.
         filename (str): The name of the JavaScript file that will be generated.
     '''
-    js_text = ''
+    vars = []
     for name, data in data_bundle.items():
         if isinstance(data, pd.DataFrame):
-            js_text += f'var {name} = `{data.to_csv()}`;'
+            vars.append(f'var {name} = `{data.round(0).to_csv()}`;')
         if isinstance(data, dict):
-            js_text += f'var {name} = {json.dumps(serialize_dict(data))};'
+            vars.append(f'var {name} = {json.dumps(serialize_dict(data))};')
 
     os.makedirs(destination_path, exist_ok=True)
     with open(f'{destination_path}/{filename}.js', 'w') as js_data_wrapper:
-        js_data_wrapper.write(js_text)
+        js_data_wrapper.write('\n\n'.join(vars))
 
-def layer_to_geojson(layer: QgsVectorLayer) -> dict:
+def layer_to_topojson(layer: QgsVectorLayer) -> dict:
     """Converts a vector layer into GeoJSON"""
     exporter = QgsJsonExporter()
-    return exporter.exportFeatures(layer.getFeatures())
+    geojson: dict = json.loads(exporter.exportFeatures(layer.getFeatures()))
+    return Topology()({'map': geojson})
 
 def export_to_web_files(destination_path, structured_dataset: Dataset, vector_layer: QgsVectorLayer, subFolderName='Dynamic_Web_Report'):
     """Outputs all the required data for a dynamic web report.
@@ -85,8 +86,8 @@ def export_to_web_files(destination_path, structured_dataset: Dataset, vector_la
 
     # layer as geojson
     if vector_layer is not None:
-        layer_geojson = layer_to_geojson(vector_layer)
-        data_py_to_js(layer_geojson, data_destination_path, 'layer')
+        layer_topojson = layer_to_topojson(vector_layer)
+        data_py_to_js({'topojson_map': layer_topojson}, data_destination_path, 'topojson_map')
     # outputs all the required data for the web report
 
     places = structured_dataset.places
@@ -100,6 +101,9 @@ def export_to_web_files(destination_path, structured_dataset: Dataset, vector_la
     general_stats = {
         'place_general_stats_csv': pd.DataFrame(
         [p.place_general_stats for p in places.values()]),
+        'place_long_term_stats_csv': {k:v.place_long_term_stats for k, v in places.items()},
+        'seasonal_current_totals_csv': pd.DataFrame(
+        [p.seasonal_current_totals for p in places.values()]),
         'seasonal_general_stats_csv': pd.DataFrame(
         [p.seasonal_general_stats for p in places.values()]),
         'selected_seasons_general_stats_csv': pd.DataFrame(
