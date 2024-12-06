@@ -53,7 +53,7 @@ class Dataset:
         self.properties.selected_years = self.parameters.selected_years
         self.properties.sub_season_monitoring_ids = slice_by_element(default_sub_seasons, self.parameters.season_start, self.parameters.season_end)
         self.properties.sub_season_offset = default_sub_seasons.index(self.parameters.season_start)
-        self.properties.place_ids = dataset.index.tolist()
+        self.properties.place_ids = dataset.index.astype(str).tolist()
         self.season_start_index = default_sub_seasons.index(self.parameters.season_start)
         self.season_end_index = default_sub_seasons.index(self.parameters.season_end)+1
         self.current_season_trim_index = min(self.properties.current_season_length, self.season_end_index) - parameters.is_forecast
