@@ -120,14 +120,6 @@ body {
 /* Fonts */
 
 @font-face {
-    font-family: 'Material Icons';
-    font-style: normal;
-    font-weight: 400;
-    src: local('Material Icons'),
-        local('MaterialIcons-Regular'),
-        url(material-icons-outlined.woff2) format('woff2');
-}
-@font-face {
     font-family: 'Material Icons Filled';
     font-style: normal;
     font-weight: 400;
@@ -155,10 +147,6 @@ body {
     line-height: 0;
     transform: scale(1.5);
     /* font-size: 1.5em; */
-}
-
-.mi-fill {
-    font-family: 'Material Icons Filled';
 }
 
 /* Chart */
