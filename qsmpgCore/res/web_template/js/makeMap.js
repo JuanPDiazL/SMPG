@@ -1,8 +1,8 @@
 "use strict";
 
-function drawMap(layer) {
-    const layerArea = d3.geoArea(layer);
-    const layerBounds = d3.geoBounds(layer);
+function drawMap(geoJson) {
+    const layerArea = d3.geoArea(geoJson);
+    const layerBounds = d3.geoBounds(geoJson);
 
     const FONT_SIZE = 13;
     let divElement = $("#mapRoot");
@@ -10,7 +10,7 @@ function drawMap(layer) {
     let height = 800;
 
     const projection = d3.geoMercator()
-    .fitSize([width, height], layer); // Fit the map to the SVG viewport size
+    .fitSize([width, height], geoJson); // Fit the map to the SVG viewport size
     // Select an SVG container
     const svg = d3.select("#mapSvg")
         .attr("width", width)
@@ -44,7 +44,7 @@ function drawMap(layer) {
 
     // Draw the map
     svg.select("#mapPolygons").selectAll(".country")
-        .data(layer.features)
+        .data(geoJson.features)
         .enter().append("path")
         .attr("class", d => `country country-${d.properties[fieldId]} w3-ripple`)
         .attr("d", d3.geoPath().projection(projection))
@@ -73,7 +73,7 @@ function drawMap(layer) {
 
     // draw labels
     const labels = svg.select("#mapLabels").selectAll(".map-text-label")
-        .data(layer.features)
+        .data(geoJson.features)
         .enter().append("text")
         .text(d => d.properties[fieldId])
         .attr("class", "map-text-label")

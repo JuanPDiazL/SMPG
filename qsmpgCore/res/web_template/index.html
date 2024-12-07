@@ -15,6 +15,7 @@
     <script type="text/javascript" src="./js/billboard.min.js"></script>
     <script type="text/javascript" src="./js/jquery-3.7.1.min.js"></script>
     <script type="text/javascript" src="./js/html2canvas.min.js"></script>
+    <script type="text/javascript" src="./js/topojson.v3.min.js"></script>
 </head>
 
 <body class="w3-white sidebar-closed">
@@ -129,7 +130,7 @@
     </div>
 
     <script>// Globals
-        layer = null;
+        topojson_map = null;
         parameters = null;
         property_ids = null;
         fieldId = null;
@@ -155,7 +156,7 @@
     <script src="./data/seasonalStats.js"></script>
     <script src="./data/selectedYearsPlaceStats.js"></script>
     <script src="./data/selectedYearsSeasonalStats.js"></script>
-    <script src="./data/layer.js"></script>
+    <script src="./data/topojson_map.js"></script>
 
     <script src="./js/makeBillboard.js"></script>
     <script src="./js/makeTable.js"></script>
@@ -191,14 +192,15 @@
             
             sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
             handleNavigation(); // initial update
-            if(layer !== null) {
-                property_ids = Object.keys(Object.values(layer["features"])[0]["properties"]);
+            if(topojson_map !== null) {
+                let mapjson = topojson.feature(topojson_map, topojson_map.objects.map);
+                property_ids = Object.keys(Object.values(mapjson["features"])[0]["properties"]);
                 fieldId = parameters["target_id_field"];
 
                 selectNode = d3.select("#featureSelect").node();
                 updateSelect(selectNode, property_ids);
                 selectNode.value = fieldId;
-                drawMap(layer);
+                drawMap(mapjson);
             }
             window.onhashchange = handleNavigation; // update everything when when the url changes
         });
