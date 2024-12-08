@@ -142,6 +142,46 @@ function placeUnder(element, anchor) {
     element.style.top = yPos;
 }
 
+function objectMap(obj, fn) {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value], index) => [key, fn(value, key, index)])
+    );
+}
+
+function csvParse(csvString, excludeIndex=true) {
+    let obj = {};
+    d3.csvParse(csvString, (data, i, columns) => {
+        const typedData = d3.autoType(data, i, columns);
+        const index = typedData[""];
+        if(excludeIndex) {
+            delete typedData[""];
+        }
+        obj[index] = typedData;
+    })
+    return obj;
+}
+
+function csvParseRows(csvString, excludeIndex=true) {
+    let obj = {};
+    d3.csvParseRows(csvString, (data, i) => {
+        let typedData = d3.autoType(data, i);
+        const index = typedData[0];
+        if(excludeIndex) {
+            typedData = typedData.slice(1)
+        } 
+        obj[index] = typedData;
+    })
+    return obj;
+}
+
+function parseObjectCsv(obj) {
+    return objectMap(obj, csvParse);
+}
+
+function parseRowsObjectCsv(obj) {
+    return objectMap(obj, csvParseRows);
+}
+
 function searchFunction(){
     // Declare variables
     var input, filter, ul, li, a, i;
