@@ -101,7 +101,7 @@ def export_to_web_files(destination_path, structured_dataset: Dataset, vector_la
     general_stats = {
         'place_general_stats_csv': pd.DataFrame(
         [p.place_general_stats for p in places.values()]),
-        'place_long_term_stats_csv': {k:v.place_long_term_stats for k, v in places.items()},
+        'place_long_term_stats_csv_obj': {k:v.place_long_term_stats for k, v in places.items()},
         'seasonal_current_totals_csv': pd.DataFrame(
         [p.seasonal_current_totals for p in places.values()]),
         'seasonal_general_stats_csv': pd.DataFrame(
@@ -112,15 +112,15 @@ def export_to_web_files(destination_path, structured_dataset: Dataset, vector_la
     data_py_to_js(general_stats, data_destination_path, 'general_stats')
 
     seasonal_stats = {
-        'seasonal_cumsum': {k:v.seasonal_cumsum for k, v in places.items()},
-        'seasonal_ensemble': {k:v.seasonal_ensemble for k, v in places.items()},
-        'seasonal_long_term_stats': {k:v.seasonal_long_term_stats for k, v in places.items()},
+        'seasonal_cumsum_csv_obj': {k:v.seasonal_cumsum for k, v in places.items()},
+        'seasonal_ensemble_csv_obj': {k:v.seasonal_ensemble for k, v in places.items()},
+        'seasonal_long_term_stats_csv_obj': {k:v.seasonal_long_term_stats for k, v in places.items()},
     }
     data_py_to_js(seasonal_stats, data_destination_path, 'seasonal_stats')
 
     selected_seasons_stats = {
-        'selected_seasons_cumsum': {k:v.selected_seasons_cumsum for k, v in places.items()},
-        'selected_seasons_ensemble': {k:v.selected_seasons_ensemble for k, v in places.items()},
-        'selected_seasons_long_term_stats': {k:v.selected_seasons_long_term_stats for k, v in places.items()},
+        'selected_seasons_cumsum_csv_obj': {k:v.selected_seasons_cumsum for k, v in places.items()},
+        'selected_seasons_ensemble_csv_obj': {k:v.selected_seasons_ensemble for k, v in places.items()},
+        'selected_seasons_long_term_stats_csv_obj': {k:v.selected_seasons_long_term_stats for k, v in places.items()},
     }
     data_py_to_js(selected_seasons_stats, data_destination_path, 'selected_seasons_stats')
