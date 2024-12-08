@@ -180,7 +180,7 @@ class Place:
             np.count_nonzero(ensemble_totals >= self.clim_seasons_pctls[1]) / len(ensemble_totals),
         ]
         standard_dev = seasonal_cumsum.std()
-        seasonal_long_term_stats = pd.DataFrame({
+        seasonal_long_term_stats = pd.DataFrame.from_dict({
             'LTA': seasonal_lta,
             'LTA+20%': seasonal_lta*1.2,
             'LTA-20%': seasonal_lta*.8,
@@ -188,7 +188,7 @@ class Place:
             'Ensemble Med.': ensemble_median,
             'E. LTA': ensemble_lta,
             'St. Dev.': standard_dev,
-        })
+        }, orient='index')
         seasonal_general_stats = pd.Series({
             'LTA': seasonal_lta[-1],
             'LTA+St. Dev.': seasonal_lta[-1]+standard_dev[-1],
