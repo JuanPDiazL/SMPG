@@ -164,6 +164,7 @@ function csvParse(csvString, excludeIndex=true) {
 function csvParseRows(csvString, excludeIndex=true) {
     let obj = {};
     d3.csvParseRows(csvString, (data, i) => {
+        if (i === 0) {return;} // skip header
         let typedData = d3.autoType(data, i);
         const index = typedData[0];
         if(excludeIndex) {
