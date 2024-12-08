@@ -1,4 +1,4 @@
-from pytopojson import feature, stitch
+from . import feature, stitch
 
 
 def planar_ring_area(ring):

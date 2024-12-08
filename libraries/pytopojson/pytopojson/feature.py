@@ -1,4 +1,4 @@
-from pytopojson import transform
+from . import transform
 
 
 class Reverse(object):

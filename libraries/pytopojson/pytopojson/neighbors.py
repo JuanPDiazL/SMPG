@@ -1,4 +1,4 @@
-from pytopojson import bisect
+from . import bisect
 
 
 class Neighbors(object):

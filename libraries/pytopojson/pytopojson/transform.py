@@ -1,4 +1,4 @@
-from pytopojson import identity
+from . import identity
 
 
 class Transform(object):

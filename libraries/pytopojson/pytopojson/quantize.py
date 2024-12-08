@@ -1,7 +1,7 @@
 import math
 from collections.abc import Iterable
 
-from pytopojson import (
+from . import (
     bbox,
     commons,
     untransform,
