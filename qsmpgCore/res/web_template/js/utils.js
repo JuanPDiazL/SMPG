@@ -22,7 +22,7 @@ function handleNavigation() {
     let plotsRoot = $('#plotsRoot');
     switch (mode) {
         case "map":
-            if (layer !== null) {
+            if (topojson_map !== null) {
                 mapRoot.removeClass(HIDE_CLASS);
                 plotsRoot.addClass(HIDE_CLASS);
                 break;
@@ -36,7 +36,7 @@ function handleNavigation() {
             plotsRoot.removeClass(HIDE_CLASS);
             break;
         default:
-            if (layer !== null) {
+            if (topojson_map !== null) {
                 mapRoot.removeClass(HIDE_CLASS);
                 plotsRoot.addClass(HIDE_CLASS);
                 break;
