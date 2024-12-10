@@ -1,60 +1,47 @@
-function getDataAssessmentCD(placeStats, selectedYearsStats, place) {
-    let data = placeStats[place];
-    let selectedData = selectedYearsStats[place];
-    const currentIndex = data['Current Season Accumulation'].length-1;
+function getDataAssessmentCD(index) {
     let tableData = [
-        ['Total C. Dk.', getLast(data['Current Season Accumulation']), getLast(data['Current Season Accumulation'])],
-        ['LTA C. Dk.', selectedData['LTA'][currentIndex], data['LTA'][currentIndex]],
-        ['C. Dk./LTA Pct.', getLast(selectedData['C. Dk./LTA']) * 100, getLast(data['C. Dk./LTA']) * 100],
+        ['Total C. Dk.', place_general_stats[index]['Current Season Total'], place_general_stats[index]['Current Season Total']],
+        ['LTA C. Dk.', selected_seasons_general_stats[index]['LTA up to Current Season'], seasonal_general_stats[index]['LTA up to Current Season']],
+        ['C. Dk./LTA Pct.', selected_seasons_general_stats[index]['C. Dk./LTA Pct.'], seasonal_general_stats[index]['C. Dk./LTA Pct.']],
     ];
     return tableData;
 }
 
-function getDataSeasonalAnalysis(placeStats, selectedYearsStats, place) {
-    let data = placeStats[place];
-    let selectedData = selectedYearsStats[place];
+function getDataSeasonalAnalysis(index) {
     let tableData = [
-        ['LTA', getLast(selectedData['LTA']), getLast(data['LTA'])],
-        ['St. Dev.', getLast(selectedData['St. Dev.']), getLast(data['St. Dev.'])],
+        ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
+        ['St. Dev.', selected_seasons_general_stats[index]['St. Dev.'], seasonal_general_stats[index]['St. Dev.']],
     ];
     return tableData;
 }
-function getDataProjectionEoS(placeStats, selectedYearsStats, place) {
-    let data = placeStats[place];
-    let selectedData = selectedYearsStats[place];
+function getDataProjectionEoS(index) {
     let tableData = [
-        ['Ensemble Med.', getLast(selectedData['Ensemble Med.']), getLast(data['Ensemble Med.'])],
-        ['LTA', getLast(selectedData['LTA']), getLast(data['LTA'])],
-        ['Ensemble Med./LTA Pct.', getLast(selectedData['Ensemble Med./LTA']) * 100, getLast(data['Ensemble Med./LTA']) * 100],
+        ['Ensemble Med.', selected_seasons_general_stats[index]['Ensemble Med.'], seasonal_general_stats[index]['Ensemble Med.']],
+        ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
+        ['Ensemble Med./LTA Pct.', selected_seasons_general_stats[index]['Ensemble Med./LTA Pct.'], seasonal_general_stats[index]['Ensemble Med./LTA Pct.']],
     ];
     return tableData;
 }
-function getDataProbabilityEoS(placeStats, selectedYearsStats, place) {
-    let data = placeStats[place];
-    let selectedData = selectedYearsStats[place];
+function getDataProbabilityEoS(index) {
     let tableData = [
-        ['Ab. Normal', selectedData['E. Probabilities'][2] * 100, data['E. Probabilities'][2] * 100],
-        ['Normal', selectedData['E. Probabilities'][1] * 100, data['E. Probabilities'][1] * 100],
-        ['Be. Normal', selectedData['E. Probabilities'][0] * 100, data['E. Probabilities'][0] * 100],
+        ['Above Normal', selected_seasons_general_stats[index]['E. Prob. Above Normal Pct.'], seasonal_general_stats[index]['E. Prob. Above Normal Pct.']],
+        ['Between Normal', selected_seasons_general_stats[index]['E. Prob. Between Normal Pct.'], seasonal_general_stats[index]['E. Prob. Between Normal Pct.']],
+        ['Below Normal', selected_seasons_general_stats[index]['E. Prob. Below Normal Pct.'], seasonal_general_stats[index]['E. Prob. Below Normal Pct.']],
     ];
     return tableData;
 }
 
-function getPercentileTable(placeStats, selectedYearsStats, place) {
-    let data = placeStats[place];
-    let selectedData = selectedYearsStats[place];
+function getPercentileTable(index) {
     let tableData = [
-        ['67 Percentile', selectedData['Drought Severity Pctls.'][5], data['Drought Severity Pctls.'][5]],
-        ['33 Percentile', selectedData['Drought Severity Pctls.'][4], data['Drought Severity Pctls.'][4]],
-        ['11 Percentile', selectedData['Drought Severity Pctls.'][2], data['Drought Severity Pctls.'][2]],
+        ['67 Percentile', place_general_stats[index]['Seasonal 67 Pctl.'], place_general_stats[index]['Seasonal 67 Pctl.']],
+        ['33 Percentile', place_general_stats[index]['Seasonal 33 Pctl.'], place_general_stats[index]['Seasonal 33 Pctl.']],
+        ['11 Percentile', place_general_stats[index]['Seasonal 11 Pctl.'], place_general_stats[index]['Seasonal 11 Pctl.']],
     ];
     return tableData;
 }
-function getCurrentSeasonTable(placeStats, selectedYearsStats, place) {
-    let data = placeStats[place];
-    let selectedData = selectedYearsStats[place];
+function getCurrentSeasonTable(index) {
     let tableData = [
-        ['Current Season Pctl.', selectedData['Current Season Pctl.'][0], data['Current Season Pctl.'][0]],
+        ['Current Season Pctl.', place_general_stats[index]['Current Season Pctl.'], place_general_stats[index]['Current Season Pctl.']],
     ];
     return tableData;
 }

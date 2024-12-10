@@ -22,7 +22,7 @@ function handleNavigation() {
     let plotsRoot = $('#plotsRoot');
     switch (mode) {
         case "map":
-            if (topojson_map !== null) {
+            if (isDeclared('topojson_map')) {
                 mapRoot.removeClass(HIDE_CLASS);
                 plotsRoot.addClass(HIDE_CLASS);
                 break;
@@ -36,7 +36,7 @@ function handleNavigation() {
             plotsRoot.removeClass(HIDE_CLASS);
             break;
         default:
-            if (topojson_map !== null) {
+            if (isDeclared('topojson_map')) {
                 mapRoot.removeClass(HIDE_CLASS);
                 plotsRoot.addClass(HIDE_CLASS);
                 break;
@@ -95,6 +95,10 @@ function setCookie(name, value) {
     date.setDate(date.getDate() + 1); // expire in 1 day
 
     document.cookie = `${name}=${value}; expires=${date.toUTCString()}; SameSite=Strict`;
+}
+
+function isDeclared(variableName) {
+    return typeof window[variableName] !== "undefined";   
 }
 
 function goToMap() {
@@ -219,16 +223,16 @@ function updateDocument(place) {
     bb2.update(place);
     bb3.update(place);
     bb4.update(place);
-    table1.update(getDataAssessmentCD(placeStats, selectedYearsPlaceStats, place));
-    table2.update(getDataSeasonalAnalysis(placeStats, selectedYearsPlaceStats, place));
-    table3.update(getDataProjectionEoS(placeStats, selectedYearsPlaceStats, place));
-    table4.update(getDataProbabilityEoS(placeStats, selectedYearsPlaceStats, place));
-    table5.update(getPercentileTable(placeStats, selectedYearsPlaceStats, place));
-    table6.update(getCurrentSeasonTable(placeStats, selectedYearsPlaceStats, place));
+    table1.update(getDataAssessmentCD(place));
+    table2.update(getDataSeasonalAnalysis(place));
+    table3.update(getDataProjectionEoS(place));
+    table4.update(getDataProbabilityEoS(place));
+    table5.update(getPercentileTable(place));
+    table6.update(getCurrentSeasonTable(place));
     document.getElementById('plot2Title').textContent = plot2Title;
     document.getElementById('plot4Title').textContent = plot4Title;
 
-    if(typeof previousSelectionElement !== "undefined" && previousSelectionElement != null) {
+    if(isDeclared('previousSelectionElement') && previousSelectionElement != null) {
         previousSelectionElement.classList.remove('selected');
     }
     sidebarElements[place].classList.add('selected');

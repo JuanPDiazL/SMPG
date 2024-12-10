@@ -172,14 +172,11 @@ const chartColors = {
 }
 
 class AccumulationsBillboardChart {
-    constructor(seasonalData, placeData, datasetProperties, containerElement) {
-        this.seasonalData = seasonalData;
-        this.placeData = placeData;
+    constructor(containerElement) {
         this.columnNames = datasetProperties['sub_season_monitoring_ids'];
         this.containerElement = containerElement;
         this.lastCoordinates = new Array(2).fill(datasetProperties['sub_season_monitoring_ids'].length - 1);
-        const firstPlaceKey = Object.keys(this.placeData)[0];
-        this.currentLength = this.placeData[firstPlaceKey]['Current Season Accumulation'].length;
+        this.currentLength = currentMonitoringLength;
         this.chartTypes = {
             'LTA±20%': 'area-line-range',
             'LTA±St. Dev.': 'scatter',
@@ -216,21 +213,26 @@ class AccumulationsBillboardChart {
     update(index) {
         const jsonData = {
             ...this.xs,
-            ...this.seasonalData[index]['Sum'],
-            'Median': this.placeData[index]['Median'],
-            'LTA±20%': arrayMoreLess20(this.placeData[index]['LTA']),
-            'LTA': this.placeData[index]['LTA'],
-            'Current Season Accumulation': this.placeData[index]['Current Season Accumulation'],
-            'LTA±St. Dev.': [getLast(this.placeData[index]['LTA']) + getLast(this.placeData[index]['St. Dev.']),
-            getLast(this.placeData[index]['LTA']) - getLast(this.placeData[index]['St. Dev.']),
+            ...selected_seasons_cumsum[index],
+            'Median': seasonal_long_term_stats[index]['Median'],
+            'LTA±20%': arrayMoreLess20(seasonal_long_term_stats[index]['LTA']),
+            'LTA': seasonal_long_term_stats[index]['LTA'],
+            'Current Season Accumulation':place_long_term_stats[index]['Current Season Accumulation']
+            .slice(monitoringOffset),
+            'LTA±St. Dev.': [
+                seasonal_general_stats[index]['LTA'] + seasonal_general_stats[index]['St. Dev.'],
+                seasonal_general_stats[index]['LTA'] - seasonal_general_stats[index]['St. Dev.'],
             ],
-            '(33, 67) Pctl.': [this.placeData[index]['Pctls.'][0],
-            this.placeData[index]['Pctls.'][1]
+            '(33, 67) Pctl.': [
+                place_general_stats[index]['Climatology 33 Pctl.'],
+                place_general_stats[index]['Climatology 67 Pctl.'],
             ],
         };
-        if (this.placeData[index]['forecast'][0] != null) {
-            jsonData['Forecast Accumulation'] = [getLast(this.placeData[index]['Current Season Accumulation']), 
-                getLast(this.placeData[index]['Current Season Accumulation'])+getLast(this.placeData[index]['forecast'])];
+        if (place_general_stats[index]['Forecast'] !== null) {
+            jsonData['Forecast Accumulation'] = [
+                place_general_stats[index]['Current Season Total'], 
+                place_general_stats[index]['Current Season+Forecast'],
+            ];
             jsonData['forecast_xs'] = [this.currentLength-1, this.currentLength];
         }
         this.plot.load({
@@ -245,12 +247,10 @@ class AccumulationsBillboardChart {
 }
 
 class CurrentBillboardChart {
-    constructor(placeData, datasetProperties, containerElement) {
-        this.placeData = placeData;
+    constructor(containerElement) {
         this.columnNames = datasetProperties['sub_season_ids'];
         this.containerElement = containerElement;
-        const firstPlaceKey = Object.keys(this.placeData)[0];
-        this.currentLength = this.placeData[firstPlaceKey]['Current Season'].length;
+        this.currentLength = currentLength;
         this.chartTypes = {
             'Current Season': 'bar',
             'Forecast': 'bar',
@@ -283,11 +283,11 @@ class CurrentBillboardChart {
     update(index) {
         const jsonData = {
             ...this.xs,
-            'Current Season': this.placeData[index]['Current Season'],
-            'Climatology Average': this.placeData[index]['Avg.'],
+            'Current Season': place_long_term_stats[index]['Current Season'],
+            'Climatology Average': place_long_term_stats[index]['Climatology Average'],
         };
-        if (this.placeData[index]['forecast'][0] != null) {
-            jsonData['Forecast'] = this.placeData[index]['forecast'];
+        if (place_general_stats[index]['Forecast'] !== null) {
+            jsonData['Forecast'] = [place_general_stats[index]['Forecast']];
             jsonData['bar_xs'] = [this.currentLength];
         }
         this.plot.load({
@@ -301,15 +301,11 @@ class CurrentBillboardChart {
 }
 
 class EnsembleBillboardChart {
-    constructor(seasonalData, placeData, selectedPlaceData, datasetProperties, containerElement) {
-        this.seasonalData = seasonalData;
-        this.placeData = placeData;
-        this.selectedPlaceData = selectedPlaceData;
+    constructor(containerElement) {
         this.columnNames = datasetProperties['sub_season_monitoring_ids'];
         this.containerElement = containerElement;
         this.lastCoordinates = new Array(2).fill(datasetProperties['sub_season_monitoring_ids'].length - 1);
-        const firstPlaceKey = Object.keys(this.placeData)[0];
-        this.currentLength = this.placeData[firstPlaceKey]['Current Season Accumulation'].length;
+        this.currentLength = currentMonitoringLength;
         this.chartTypes = {
             'LTA±20%': 'area-line-range',
             'LTA±St. Dev.': 'scatter',
@@ -349,22 +345,27 @@ class EnsembleBillboardChart {
     update(index) {
         const jsonData = {
             ...this.xs,
-            ...this.seasonalData[index]['Ensemble Sum'],
-            'LTA±20%': arrayMoreLess20(this.placeData[index]['LTA']),
-            'LTA': this.placeData[index]['LTA'],
-            'Ensemble Med.': this.selectedPlaceData[index]['Ensemble Med.'],
-            'Current Season Accumulation': this.placeData[index]['Current Season Accumulation'],
-            'LTA±St. Dev.': [getLast(this.placeData[index]['LTA']) + getLast(this.placeData[index]['St. Dev.']),
-            getLast(this.placeData[index]['LTA']) - getLast(this.placeData[index]['St. Dev.']),
+            ...selected_seasons_ensemble[index],
+            'LTA±20%': arrayMoreLess20(seasonal_long_term_stats[index]['LTA']),
+            'LTA': seasonal_long_term_stats[index]['LTA'],
+            'Ensemble Med.': selected_seasons_long_term_stats[index]['Ensemble Med.'],
+            'Current Season Accumulation': place_long_term_stats[index]['Current Season Accumulation']
+            .slice(monitoringOffset),
+            'LTA±St. Dev.': [
+                seasonal_general_stats[index]['LTA'] + seasonal_general_stats[index]['St. Dev.'],
+                seasonal_general_stats[index]['LTA'] - seasonal_general_stats[index]['St. Dev.'],
             ],
-            'E. LTA±St. Dev.': [getLast(this.selectedPlaceData[index]['E. LTA']) + getLast(this.selectedPlaceData[index]['St. Dev.']),
-            getLast(this.selectedPlaceData[index]['E. LTA']) - getLast(this.selectedPlaceData[index]['St. Dev.']),
+            'E. LTA±St. Dev.': [
+                selected_seasons_general_stats[index]['E. LTA'] + selected_seasons_general_stats[index]['St. Dev.'],
+                selected_seasons_general_stats[index]['E. LTA'] - selected_seasons_general_stats[index]['St. Dev.'],
             ],
-            '(33, 67) Pctl.': [this.placeData[index]['Pctls.'][0],
-            this.placeData[index]['Pctls.'][1]
+            '(33, 67) Pctl.': [
+                place_general_stats[index]['Climatology 33 Pctl.'],
+                place_general_stats[index]['Climatology 67 Pctl.'],
             ],
-            'E. (33, 67) Pctl.': [this.selectedPlaceData[index]['E. Pctls.'][0],
-            this.selectedPlaceData[index]['E. Pctls.'][1]
+            'E. (33, 67) Pctl.': [
+                selected_seasons_general_stats[index]['Ensemble 33 Pctl.'],
+                selected_seasons_general_stats[index]['Ensemble 67 Pctl.'],
             ],
         }
         this.plot.load({
@@ -378,15 +379,11 @@ class EnsembleBillboardChart {
 }
 
 class AccumulationsBillboardCurrentChart {
-    constructor(seasonalData, placeData, datasetProperties, containerElement) {
+    constructor(containerElement) {
         this.columnNames = datasetProperties['year_ids'];
         this.columnNames.push(datasetProperties['current_season_id']);
-        this.seasonalData = seasonalData;
-        this.placeData = placeData;
         this.containerElement = containerElement;
         this.lastCoordinates = this.columnNames.length - 1;
-        const firstPlaceKey = Object.keys(this.placeData)[0];
-        this.currentLength = this.placeData[firstPlaceKey]['Current Season Accumulation'].length;
         this.chartTypes = {
             'Seasonal Accumulation': 'bar',
             'Current Season Total': 'bar',
@@ -436,15 +433,15 @@ class AccumulationsBillboardCurrentChart {
     update(index) {
         const jsonData = {
             ...this.xs,
-            'Seasonal Accumulation': getUpTo(this.seasonalData[index]['Sum'], this.currentLength - 1),
-            'Current Season Total': [getLast(this.placeData[index]['Current Season Accumulation'])],
-            'Climatology Average': extendScalar(this.placeData[index]['LTA'][this.currentLength-1], this.columnNames.length),
-            '67 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][5], this.columnNames.length),
-            '33 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][4], this.columnNames.length),
-            'D1: 21 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][3], this.columnNames.length),
-            'D2: 11 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][2], this.columnNames.length),
-            'D3: 6 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][1], this.columnNames.length),
-            'D4: 3 Pctl.': extendScalar(this.placeData[index]['Drought Severity Pctls.'][0], this.columnNames.length),
+            'Seasonal Accumulation': seasonal_current_totals[index],
+            'Current Season Total': [place_general_stats[index]['Current Season Total']],
+            'Climatology Average': extendScalar(place_general_stats[index]['Climatology Average at Current Dekad'], this.columnNames.length),
+            '67 Pctl.': extendScalar(place_general_stats[index]['Seasonal 67 Pctl.'], this.columnNames.length),
+            '33 Pctl.': extendScalar(place_general_stats[index]['Seasonal 33 Pctl.'], this.columnNames.length),
+            'D1: 21 Pctl.': extendScalar(place_general_stats[index]['Seasonal 21 Pctl.'], this.columnNames.length),
+            'D2: 11 Pctl.': extendScalar(place_general_stats[index]['Seasonal 11 Pctl.'], this.columnNames.length),
+            'D3: 6 Pctl.': extendScalar(place_general_stats[index]['Seasonal 6 Pctl.'], this.columnNames.length),
+            'D4: 3 Pctl.': extendScalar(place_general_stats[index]['Seasonal 3 Pctl.'], this.columnNames.length),
         };
         this.plot.load({
             json: jsonData,

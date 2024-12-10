@@ -129,41 +129,68 @@
         </div>
     </div>
 
-    <script>// Globals
-        topojson_map = null;
-        parameters = null;
-        property_ids = null;
-        fieldId = null;
-        
-        previousSelectionElement = null;
-        selectNode = null;
-        bb1 = null;
-        bb2 = null;
-        bb3 = null;
-        bb4 = null;
-        table1 = null;
-        table2 = null;
-        table3 = null;
-        table4 = null;
-        table5 = null;
-        table6 = null;
-        sidebarElements = [];
-    </script>
-
-    <script src="./data/datasetProperties.js"></script>
-    <script src="./data/parameters.js"></script>
-    <script src="./data/placeStats.js"></script>
-    <script src="./data/seasonalStats.js"></script>
-    <script src="./data/selectedYearsPlaceStats.js"></script>
-    <script src="./data/selectedYearsSeasonalStats.js"></script>
+    <script src="./data/general_stats.js"></script>
+    <script src="./data/properties.js"></script>
+    <script src="./data/seasonal_stats.js"></script>
+    <script src="./data/selected_seasons_stats.js"></script>
     <script src="./data/topojson_map.js"></script>
 
     <script src="./js/makeBillboard.js"></script>
     <script src="./js/makeTable.js"></script>
     <script src="./js/makeMap.js"></script>
     <script src="./js/htmlToCanvasExporter.js"></script>
+
     <script>"use strict";
-        let firstPlaceKey = datasetProperties['place_ids'][0];
+        // Globals
+        let previousSelectionElement = null;
+        let property_ids = null;
+        let fieldId = null;
+        
+        // Nodes
+        let selectNode = null;
+        let bb1 = null;
+        let bb2 = null;
+        let bb3 = null;
+        let bb4 = null;
+        let table1 = null;
+        let table2 = null;
+        let table3 = null;
+        let table4 = null;
+        let table5 = null;
+        let table6 = null;
+        let sidebarElements = [];
+
+        let place_general_stats = csvParse(place_general_stats_csv);
+        let place_long_term_stats = parseRowsObjectCsv(place_long_term_stats_csv_obj);
+        let seasonal_current_totals = csvParseRows(seasonal_current_totals_csv);
+        let seasonal_general_stats = csvParse(seasonal_general_stats_csv);
+        let selected_seasons_general_stats = csvParse(selected_seasons_general_stats_csv);
+        let seasonal_cumsum = parseRowsObjectCsv(seasonal_cumsum_csv_obj);
+        let seasonal_ensemble = parseRowsObjectCsv(seasonal_ensemble_csv_obj);
+        let seasonal_long_term_stats  = parseRowsObjectCsv(seasonal_long_term_stats_csv_obj);
+        let selected_seasons_cumsum = parseRowsObjectCsv(selected_seasons_cumsum_csv_obj);
+        let selected_seasons_ensemble = parseRowsObjectCsv(selected_seasons_ensemble_csv_obj);
+        let selected_seasons_long_term_stats   = parseRowsObjectCsv(selected_seasons_long_term_stats_csv_obj);
+
+        const monitoringOffset = datasetProperties['sub_season_offset'];
+        const firstPlaceKey = datasetProperties['place_ids'][0];
+        const monitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
+        const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
+        const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null) 
+
+        // console.log('properties', datasetProperties);
+        // console.log('place_general_stats', place_general_stats);
+        // console.log('place_long_term_stats', place_long_term_stats);
+        // console.log('seasonal_current_totals', seasonal_current_totals);
+        // console.log('seasonal_general_stats', seasonal_general_stats);
+        // console.log('selected_seasons_general_stats', selected_seasons_general_stats);
+        // console.log('seasonal_cumsum', seasonal_cumsum);
+        // console.log('seasonal_ensemble', seasonal_ensemble);
+        // console.log('seasonal_long_term_stats', seasonal_long_term_stats);
+        // console.log('selected_seasons_cumsum', selected_seasons_cumsum);
+        // console.log('selected_seasons_ensemble', selected_seasons_ensemble);
+        // console.log('selected_seasons_long_term_stats', selected_seasons_long_term_stats);
+
         $(document).ready(() => {
             $('#noscriptMessage').hide();
             
@@ -171,16 +198,10 @@
             setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
             setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
-            bb1 = new AccumulationsBillboardChart(
-                selectedYearsSeasonalStats, placeStats, 
-                datasetProperties, '#chart1');
-            bb2 = new CurrentBillboardChart(
-                placeStats, datasetProperties, '#chart2');
-            bb3 = new EnsembleBillboardChart(
-                selectedYearsSeasonalStats, placeStats, selectedYearsPlaceStats, 
-                datasetProperties, '#chart3');
-            bb4 = new AccumulationsBillboardCurrentChart(
-                seasonalStats, placeStats, datasetProperties, '#chart4');
+            bb1 = new AccumulationsBillboardChart('#chart1');
+            bb2 = new CurrentBillboardChart('#chart2');
+            bb3 = new EnsembleBillboardChart('#chart3');
+            bb4 = new AccumulationsBillboardCurrentChart('#chart4');
 
             table1 = new statsTable('#container1 .table-container', 'Assessment at Current Dekad');
             table2 = new statsTable('#container2 .table-container', 'Seasonal Analysis');
@@ -192,7 +213,7 @@
             
             sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
             handleNavigation(); // initial update
-            if(topojson_map !== null) {
+            if(isDeclared('topojson_map')) {
                 let mapjson = topojson.feature(topojson_map, topojson_map.objects.map);
                 property_ids = Object.keys(Object.values(mapjson["features"])[0]["properties"]);
                 fieldId = parameters["target_id_field"];
