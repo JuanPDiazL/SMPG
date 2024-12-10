@@ -140,6 +140,7 @@ class Place:
             'Seasonal 21 Pctl.': self.seasonal_pctls[3],
             'Seasonal 33 Pctl.': self.seasonal_pctls[4],
             'Seasonal 67 Pctl.': self.seasonal_pctls[5],
+            'Climatology Average at Current Dekad': self.clim_seasons_cumsum.mean()[self.current_index],
             'Climatology 33 Pctl.': self.clim_seasons_pctls[0],
             'Climatology 67 Pctl.': self.clim_seasons_pctls[1],
             'Forecast': forecast_value,
@@ -182,19 +183,13 @@ class Place:
         standard_dev = seasonal_cumsum.std()
         seasonal_long_term_stats = pd.DataFrame.from_dict({
             'LTA': seasonal_lta,
-            'LTA+20%': seasonal_lta*1.2,
-            'LTA-20%': seasonal_lta*.8,
             'Median': seasonal_ltm,
             'Ensemble Med.': ensemble_median,
             'E. LTA': ensemble_lta,
-            'St. Dev.': standard_dev,
         }, orient='index')
         seasonal_general_stats = pd.Series({
             'LTA': seasonal_lta[-1],
-            'LTA+St. Dev.': seasonal_lta[-1]+standard_dev[-1],
-            'LTA-St. Dev.': seasonal_lta[-1]-standard_dev[-1],
-            'E. LTA+St. Dev.': ensemble_lta[-1]+standard_dev[-1],
-            'E. LTA-St. Dev.': ensemble_lta[-1]-standard_dev[-1],
+            'E. LTA': ensemble_lta[-1],
             'Median': seasonal_ltm[-1],
             'Ensemble Med.': ensemble_median[-1],
             'LTA up to Current Season': lta_upto_current_season,
