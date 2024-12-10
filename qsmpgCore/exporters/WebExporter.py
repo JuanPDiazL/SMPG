@@ -24,9 +24,9 @@ def serialize_dict(input_dict: dict):
     serialized_dict = {}
     for key, value in input_dict.items():
         if isinstance(value, np.ndarray):
-            serialized_dict[key] = value.round(0).tolist()
-        elif isinstance(value, pd.DataFrame):
-            serialized_dict[key] = f'{value.round(0).to_csv()}'
+            serialized_dict[key] = value.round(1).tolist()
+        elif isinstance(value, (pd.DataFrame, pd.Series)):
+            serialized_dict[key] = f'{value.round(1).to_csv()}'
         elif isinstance(value, dict):
             serialized_dict[key] = serialize_dict(value)
         else:
@@ -47,8 +47,8 @@ def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
     '''
     vars = []
     for name, data in data_bundle.items():
-        if isinstance(data, pd.DataFrame):
-            vars.append(f'var {name} = `{data.round(0).to_csv()}`;')
+        if isinstance(data, (pd.DataFrame, pd.Series)):
+            vars.append(f'var {name} = `{data.round(1).to_csv()}`;')
         if isinstance(data, dict):
             vars.append(f'var {name} = {json.dumps(serialize_dict(data))};')
 
