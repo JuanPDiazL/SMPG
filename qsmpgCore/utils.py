@@ -17,6 +17,7 @@ class Properties:
     """This class represents the properties of a time series dataset.
 
     Attributes:
+        dataset_name: name of the dataset file
         period_unit_id: The ID of the period unit (e.g., "Dekad", "Month")
         period_length: The number of periods in a year.
         season_quantity: The number of years in the dataset.
@@ -32,6 +33,7 @@ class Properties:
             properties_dict (dict, optional): A dictionary of properties. 
                 Defaults to None.
         """
+        self.dataset_name: str
         self.period_unit_id: str
         self.period_length: int
         self.season_quantity: int

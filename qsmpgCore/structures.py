@@ -30,6 +30,7 @@ class Dataset:
         self.properties = Properties(properties_dict=parse_timestamps(self.timestamps))
         self.parameters = parameters
         
+        self.properties.dataset_name = name
         default_sub_seasons = define_seasonal_dict(self.parameters.cross_years)
         if self.parameters.cross_years:
             self.season_shift = (yearly_periods[self.properties.period_unit_id] // 2)
