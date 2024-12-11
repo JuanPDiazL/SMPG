@@ -253,3 +253,29 @@ path {
 #mapTooltip {
     min-height: 1em;
 }
+
+.selection-path {
+    fill: none;
+    stroke: red;
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.country {
+    fill: lightgray;
+    stroke: black;
+    stroke-width: .5px;
+    stroke-linecap: round;
+    /* stroke-dasharray: 8, 4; */
+}
+
+.map-text-label {
+    pointer-events: none;
+    paint-order: stroke;
+    fill: #000;
+    stroke: #fff8;
+    stroke-width: 3px;
+    text-anchor: middle;
+    font-family: Arial, Helvetica, sans-serif;
+}

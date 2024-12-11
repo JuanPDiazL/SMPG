@@ -47,11 +47,6 @@ function drawMap(geoJson) {
         .append("path")
         .attr("class","selection-path")
         // .attr("filter", "url(#shadow)")
-        .style("fill", "none")
-        .style("stroke", "red")
-        .style("stroke-width", 4)
-        .style("stroke-linejoin", "round")
-        .style("pointer-events", "none");
 
     // Draw the map
     const polygons = svg.select("#mapPolygons").selectAll(".country")
@@ -59,11 +54,6 @@ function drawMap(geoJson) {
         .enter().append("path")
         .attr("class", d => `country country-${d.properties[fieldId]} w3-ripple`)
         .attr("d", d3.geoPath().projection(projection))
-        .style("fill", d => `lightgray`) // Color for the polygons
-        .style("stroke", "black")
-        .style("stroke-width", .5)
-        // .style("stroke-dasharray", "8,4")
-        .style("stroke-linecap", "round")
         .on("mouseover", (event, d) => {
             mapSelectorPath
             .attr("d", d3.geoPath().projection(projection)(d))
@@ -89,20 +79,13 @@ function drawMap(geoJson) {
         .text(d => d.properties[fieldId])
         .attr("class", "map-text-label")
         .attr("transform", d => `translate(${projection(d3.geoCentroid(d))})`)
-        .attr("font-family", "Arial, sans-serif")
         .attr("font-size", FONT_SIZE)
-        .style("pointer-events", "none")
+        .style("dominant-baseline", "middle")
         .style("display", d => {
             const areaRatio = d3.geoArea(d) / layerArea;
             const xRatio = (d.bbox[2] - d.bbox[0]) / (layerBounds[1][0] - layerBounds[0][0]);
             return areaRatio > 0.004 && xRatio > 0.08 ? null : "none"
         })
-        .style("paint-order", "stroke")
-        .style("fill", "black")
-        .style("stroke", "#fff8")
-        .style("stroke-width", 3)
-        .style("text-anchor", "middle")
-        .style("dominant-baseline", "middle")
 
     svg
     .attr("width", null)
