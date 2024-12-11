@@ -313,7 +313,7 @@ function updateDocument(place) {
     document.getElementById('plot2Title').textContent = plot2Title;
     document.getElementById('plot4Title').textContent = plot4Title;
 
-    if(isDeclared('previousSelectionElement') && previousSelectionElement != null) {
+    if(previousSelectionElement != null) {
         previousSelectionElement.classList.remove('selected');
     }
     sidebarElements[place].classList.add('selected');
