@@ -12,7 +12,7 @@ def parse_csv(filename:str):
         has_duplicates (bool): Whether the resulting DataFrame contains duplicate rows.
     """
     df = pd.read_csv(filename, header=0, index_col=0)
-
     has_duplicates = not df.index.is_unique
+    df = df.groupby(level=0).first() # Remove duplicate rows
     timestamps = df.columns.to_list()
     return df, timestamps, has_duplicates
