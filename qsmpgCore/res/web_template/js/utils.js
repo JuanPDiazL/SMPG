@@ -7,6 +7,87 @@ const BODY_ELEMENT = document.body;
 
 const HIDE_CLASS = 'w3-hide';
 
+const categories = {
+    '': {'lightgray': () => true},
+    'C. Dk./LTA Pct.': {
+        '#be6b05': (x) => x <= 20,
+        '#f38124': (x) => x > 20 && x <= 40,
+        '#fec280': (x) => x > 40 && x <= 60,
+        '#ffe69e': (x) => x > 60 && x <= 80,
+        '#fff9a3': (x) => x > 80 && x <= 90,
+        '#f2f2f2': (x) => x > 90 && x <= 110,
+        '#c6eab3': (x) => x > 110 && x <= 120,
+        '#56cd94': (x) => x > 120 && x <= 140,
+        '#5cc9ea': (x) => x > 140 && x <= 160,
+        '#2a83ba': (x) => x > 160,
+        'lightgray': () => true
+    }, 
+    'Ensemble Med./LTA Pct.': {
+        '#be6b05': (x) => x <= 20,
+        '#f38124': (x) => x > 20 && x <= 40,
+        '#fec280': (x) => x > 40 && x <= 60,
+        '#ffe69e': (x) => x > 60 && x <= 80,
+        '#fff9a3': (x) => x > 80 && x <= 90,
+        '#f2f2f2': (x) => x > 90 && x <= 110,
+        '#c6eab3': (x) => x > 110 && x <= 120,
+        '#56cd94': (x) => x > 120 && x <= 140,
+        '#5cc9ea': (x) => x > 140 && x <= 160,
+        '#2a83ba': (x) => x > 160,
+        'lightgray': () => true
+    }, 
+    'Probability Below Normal': {
+        '#2b83ba': (x) => x >= 0 && x <= 15,
+        '#74b7ae': (x) => x >= 15 && x <= 30,
+        '#e7f6b8': (x) => x >= 30 && x <= 45,
+        '#ffe8a4': (x) => x >= 45 && x <= 60,
+        '#feba6e': (x) => x >= 60 && x <= 75,
+        '#ed6e43': (x) => x >= 75 && x <= 90,
+        '#d7191c': (x) => x >= 90 && x <= 100,
+        'lightgray': () => true
+    },
+    'Probability Between Normal': {
+        '#e6e6e6': (x) => x >= 0 && x <= 20,
+        '#f0f9e8': (x) => x > 20 && x <= 40,
+        '#bae4bc': (x) => x > 40 && x <= 60,
+        '#7bccc4': (x) => x > 60 && x <= 80,
+        '#43a2ca': (x) => x > 80 && x <= 90,
+        '#0868ac': (x) => x > 90 && x <= 100,
+        'lightgray': () => true
+    }, 
+    'Probability Above Normal': {
+        '#e6e6e6': (x) => x >= 0 && x <= 20,
+        '#f0f9e8': (x) => x > 20 && x <= 40,
+        '#bae4bc': (x) => x > 40 && x <= 60,
+        '#7bccc4': (x) => x > 60 && x <= 80,
+        '#43a2ca': (x) => x > 80 && x <= 90,
+        '#0868ac': (x) => x > 90 && x <= 100,
+        'lightgray': () => true
+    }, 
+    'Ensemble Med. Pctl.': {
+        '#7e0006': (x) => x >= 0 && x <= 3,
+        '#e20b00': (x) => x > 3 && x <= 6,
+        '#e35a1a': (x) => x > 6 && x <= 11,
+        '#faaf00': (x) => x > 11 && x <= 21,
+        '#faff0f': (x) => x > 21 && x <= 33,
+        '#f2f2f2': (x) => x > 33 && x <= 67,
+        '#a6cee3': (x) => x > 67 && x <= 90,
+        '#1f78b4': (x) => x > 90,
+        'lightgray': () => true
+    },
+    'Current Season Pctl.': {
+        '#7e0006': (x) => x >= 0 && x <= 3,
+        '#e20b00': (x) => x > 3 && x <= 6,
+        '#e35a1a': (x) => x > 6 && x <= 11,
+        '#faaf00': (x) => x > 11 && x <= 21,
+        '#faff0f': (x) => x > 21 && x <= 33,
+        '#f2f2f2': (x) => x > 33 && x <= 67,
+        '#a6cee3': (x) => x > 67 && x <= 90,
+        '#1f78b4': (x) => x > 90,
+        'lightgray': () => true
+    },
+  };
+  
+
 function navigateTo(queryParams={}, keepOlpParams=true) {
     const oldParams = keepOlpParams? getHashParamsObject() : {};
     const newParams = {...oldParams, ...queryParams };
@@ -266,4 +347,14 @@ function updateSelect(node, items) {
         option.text = item;   // Set the text content of the option
         node.appendChild(option);
     });
+}
+
+function categorizeValue(value, bins) {
+    for (const [binName, binFunction] of Object.entries(bins)) {
+        if (binFunction(value)) {
+            return binName;
+        }
+    }
+    return 'Uncategorized';
+    
 }

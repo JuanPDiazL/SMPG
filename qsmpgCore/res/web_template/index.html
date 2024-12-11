@@ -60,6 +60,18 @@
                                 <div id="mapForm">
                                     <label>Label Feature </label>
                                     <select name="feature" id="featureSelect" class=" w3-border"></select>
+                                    <br>
+                                    <label>Property on Map </label>
+                                    <select name="color" id="colorSelect" class=" w3-border">
+                                        <option value="" selected>None</option>
+                                        <option>C. Dk./LTA Pct.</option>
+                                        <option>Ensemble Med./LTA Pct.</option>
+                                        <option>Probability Below Normal</option>
+                                        <option>Probability Between Normal</option>
+                                        <option>Probability Above Normal</option>
+                                        <option>Ensemble Med. Pctl.</option>
+                                        <option>Current Season Pctl.</option>                                      
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -148,6 +160,7 @@
         
         // Nodes
         let selectNode = null;
+        let colorNode = null;
         let bb1 = null;
         let bb2 = null;
         let bb3 = null;
@@ -219,6 +232,8 @@
                 fieldId = parameters["target_id_field"];
 
                 selectNode = d3.select("#featureSelect").node();
+                colorNode = d3.select("#colorSelect").node();
+                colorNode.value = '';
                 updateSelect(selectNode, property_ids);
                 selectNode.value = fieldId;
                 drawMap(mapjson);

@@ -9,6 +9,17 @@ function drawMap(geoJson) {
     let width = 800;
     let height = 800;
 
+    let mapStats = {
+        '': () => undefined,
+        'C. Dk./LTA Pct.': (col) => selected_seasons_general_stats[col]['C. Dk./LTA Pct.'],
+        'Ensemble Med./LTA Pct.': (col) => selected_seasons_general_stats[col]['Ensemble Med./LTA Pct.'],
+        'Probability Below Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Below Normal Pct.'],
+        'Probability Between Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Between Normal Pct.'],
+        'Probability Above Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Above Normal Pct.'],
+        'Ensemble Med. Pctl.': (col) => selected_seasons_general_stats[col]['Ensemble Med. Pctl.'],
+        'Current Season Pctl.': (col) => place_general_stats[col]['Current Season Pctl.'],
+    }
+
     const projection = d3.geoMercator()
     .fitSize([width, height], geoJson); // Fit the map to the SVG viewport size
     // Select an SVG container
@@ -43,7 +54,7 @@ function drawMap(geoJson) {
         .style("pointer-events", "none");
 
     // Draw the map
-    svg.select("#mapPolygons").selectAll(".country")
+    const polygons = svg.select("#mapPolygons").selectAll(".country")
         .data(geoJson.features)
         .enter().append("path")
         .attr("class", d => `country country-${d.properties[fieldId]} w3-ripple`)
@@ -102,5 +113,15 @@ function drawMap(geoJson) {
         const displayId = this.value;
         // Update label text based on the selected property
         labels.text(d => d.properties[displayId]);
+    });
+    colorNode.addEventListener("change", function() {
+        const selectedStatId = this.value;
+        const selectedStats = mapStats[selectedStatId];
+        const selectedBins = categories[selectedStatId];
+        // Update polygon color based on the selected property
+        polygons.style("fill", d => {
+            const value = selectedStats(d.properties[fieldId]);
+            return categorizeValue(value, selectedBins);
+        });
     });
 }
