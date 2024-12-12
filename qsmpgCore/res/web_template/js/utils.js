@@ -233,6 +233,14 @@ function objectMap(obj, fn) {
     );
 }
 
+function decompress(data) {
+    const compressed = atob(data);
+    const charData = compressed.split('').map(function(x){return x.charCodeAt(0);});
+    const binData = new Uint8Array(charData);
+    const decompressed = pako.inflate(binData);
+    return String.fromCharCode.apply(null, new Uint16Array(decompressed));
+}
+
 function csvParse(csvString, excludeIndex=true) {
     let obj = {};
     d3.csvParse(csvString, (data, i, columns) => {
@@ -265,7 +273,7 @@ function parseObjectCsv(obj) {
 }
 
 function parseRowsObjectCsv(obj) {
-    return objectMap(obj, csvParseRows);
+    return objectMap(JSON.parse(obj), csvParseRows);
 }
 
 function searchFunction(){

@@ -4,6 +4,8 @@ import json
 import os
 import shutil as sh
 from ...libraries.pytopojson.pytopojson.topology import Topology
+import zlib
+import base64
 
 from qgis.core import (
     QgsVectorLayer,
@@ -33,6 +35,20 @@ def serialize_dict(input_dict: dict):
             serialized_dict[key] = value
     return serialized_dict
 
+def compress(data: str) -> str:
+    """
+    Compresses string data using zlib and encodes it as base64.
+
+    Args:
+        data (str): The string data to be compressed.
+
+    Returns:
+        str: A base64-encoded string representing the compressed data.
+    """
+    compressed_data = zlib.compress(data.encode())
+    compressed_data = base64.b64encode(compressed_data).decode("ascii")
+    return compressed_data
+
 def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
     '''Convert a dictionary of Python objects to JavaScript code.
 
@@ -48,9 +64,9 @@ def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
     vars = []
     for name, data in data_bundle.items():
         if isinstance(data, (pd.DataFrame, pd.Series)):
-            vars.append(f'var {name} = `{data.round(1).to_csv()}`;')
+            vars.append(f'var {name} = `{compress(data.round(1).to_csv())}`;')
         if isinstance(data, dict):
-            vars.append(f'var {name} = {json.dumps(serialize_dict(data))};')
+            vars.append(f'var {name} = `{compress(json.dumps(serialize_dict(data)))}`;')
 
     os.makedirs(destination_path, exist_ok=True)
     with open(f'{destination_path}/{filename}.js', 'w') as js_data_wrapper:
