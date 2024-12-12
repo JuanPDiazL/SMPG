@@ -268,6 +268,7 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         self.year_selection_dialog.updateYearsList(year_ids)
         self.year_selection_dialog.selected_years = parameters.selected_years
         self.year_selection_dialog.update_selection()
+        self.year_selection_dialog.accept()
         # for similar years
         self.similarYearsComboBox.clear()
         self.similarYearsComboBox.addItems([str(y) for y in range(1, self.dataset_properties.season_quantity+1)])
@@ -332,10 +333,17 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         # set form fields content from data
         self.datasetInputLineEdit.setText(self.selected_source)
         self.importParametersLineEdit.setText('')
+        default_years = get_properties_validated_year_list(
+            self.dataset_properties, self.crossYearsCheckBox.isChecked()
+        )
         default_parameters = Parameters()
         default_parameters.set_parameters(
-            get_default_parameters_from_properties(self.dataset_properties, ['selected_years'])
-            )
+            {
+                **get_default_parameters_from_properties(self.dataset_properties),
+                'selected_years': default_years,
+                'cross_years': self.crossYearsCheckBox.isChecked(),
+            }
+        )
         self.update_fields(default_parameters)
         self.year_selection_dialog.selected_years = self.dataset_properties.year_ids
         self.update_dialog_info(self.dataset_properties)
@@ -477,9 +485,7 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         It updates the list of years available in the "Selected Years" combobox 
         based on whether or not the user has selected to cross years.
         """
-        default_years = get_properties_validated_year_list(
-            self.dataset_properties, self.crossYearsCheckBox.isChecked()
-        )
+        
         parameters = Parameters(
             {
                 **self.get_parameters_from_widgets(),
@@ -487,7 +493,6 @@ class QSMPGDialog(QDialog, FORM_CLASS):
                 'climatology_end': None,
                 'season_start': None,
                 'season_end': None,
-                'selected_years': default_years,
                 'cross_years': self.crossYearsCheckBox.isChecked(),
             }
         )

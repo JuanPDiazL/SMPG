@@ -448,3 +448,18 @@ def get_default_parameters_from_properties(properties: Properties, keys: str = N
         'selected_years': properties.year_ids,
     }
     return dict(map(lambda k: (k, defaults[k]), keys))
+
+def startswith_substring(string_list: list[str], target_string: str):
+    """
+    Check if any string in the given list starts with the specified target 
+    substring.
+
+    Args:
+        string_list (list): A list of strings to search through.
+        target_string (str): The substring to search for.
+
+    Returns:
+        bool: True if any string in the list contains the target substring, 
+            False otherwise.
+    """
+    return any(s.startswith(target_string) for s in string_list)

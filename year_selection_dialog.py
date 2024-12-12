@@ -9,6 +9,7 @@ from qgis.PyQt.QtWidgets import (
     QGridLayout
 )
 
+from .qsmpgCore.utils import startswith_substring
 
 YEAR_SELECTION_DIALOG_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'year_selection_dialog.ui'))
@@ -74,7 +75,7 @@ class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
         """
         are_all_checked = True
         for cb in self.year_combo_boxes:
-            if self.selected_years is None or cb.text() in self.selected_years:
+            if self.selected_years is None or startswith_substring(self.selected_years, str(cb.text())[:4]):
                 cb.setChecked(True)
             else:
                 cb.setChecked(False)
