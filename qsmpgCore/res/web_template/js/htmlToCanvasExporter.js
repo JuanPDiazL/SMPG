@@ -18,18 +18,19 @@ function save_reports() {
     let node = document.getElementById('contentRoot')
 
     let params = getHashParamsObject();
-    let name;
+    const datasetName = `${datasetProperties['dataset_name']}_map`;
+    let filename;
     switch (params['mode']) {
         case 'map':
-            name = 'map';
+            filename = datasetName;
             break;
 
         case 'plots':
-            name = params['place'];
+            filename = params['place'];
             break;
 
         default:
-            name = 'map';
+            filename = datasetName;
             break;
     }
     
@@ -53,7 +54,7 @@ function save_reports() {
 
             const link = document.createElement('a');
             link.href = dataUrl;
-            link.download = `${name}.png`;
+            link.download = `${filename}.png`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
