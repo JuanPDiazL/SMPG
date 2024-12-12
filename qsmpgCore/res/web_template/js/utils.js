@@ -234,11 +234,15 @@ function objectMap(obj, fn) {
 }
 
 function decompress(data) {
-    const compressed = atob(data);
-    const charData = compressed.split('').map(function(x){return x.charCodeAt(0);});
+    const compressedData = atob(data);
+    const charData = compressedData.split('').map(function(x){return x.charCodeAt(0);});
     const binData = new Uint8Array(charData);
-    const decompressed = pako.inflate(binData);
-    return String.fromCharCode.apply(null, new Uint16Array(decompressed));
+    const decompressedBin = pako.inflate(binData);
+    let decompressedString = '';
+    for (let i of decompressedBin) {
+        decompressedString += String.fromCharCode(i);
+    }
+    return decompressedString;
 }
 
 function csvParse(csvString, excludeIndex=true) {
