@@ -394,17 +394,18 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         
         # computation with parameters given from GUI
         parameters = Parameters(self.get_parameters_from_widgets())
-        self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, parameters)
         
         # add selected output tasks to a list of tasks
         long_tasks: list[TaskHandler] = []
+        after_dataset_tasks: list[TaskHandler] = []
         if self.exportStatsCheckBox.isChecked():
             csv_task = TaskHandler(
                 'CSV Export Task', 
                 export_to_csv_files, 
                 self.destination_path, 
-                self.structured_dataset, 
+                #self.structured_dataset passed when dataset_task finishes
                 )
+            after_dataset_tasks.append(csv_task)
             long_tasks.append(csv_task)
             if not (self.selected_layer is None or 
                 len(self.map_settings_dialog.settings['selected_fields']) == 0):
@@ -417,26 +418,38 @@ class QSMPGDialog(QDialog, FORM_CLASS):
                     # the last argument `summary_csv_path` will be passed by the LongTaskHandler after csv_task finishes
                 )
                 map_task.setDependentLayers([self.selected_layer])
-                csv_task.addNextTask(map_task)
+                csv_task.addNextTasks(map_task)
                 long_tasks.append(map_task)
 
         if self.exportWebCheckBox.isChecked():
-            long_tasks.append(TaskHandler(
+            web_task = TaskHandler(
                 'Web Report Export Task', 
                 export_to_web_files, 
                 self.destination_path, 
-                self.structured_dataset,
                 self.selected_layer,
-                f'{self.dataset_filename}_Web_Report'
-            ))
+                f'{self.dataset_filename}_Web_Report',
+                #self.structured_dataset passed when dataset_task finishes
+            )
+            after_dataset_tasks.append(web_task)
+            long_tasks.append(web_task)
 
         if self.exportParametersCheckBox.isChecked():
-            long_tasks.append(TaskHandler(
+            parameters_task = TaskHandler(
                 'Parameters Export Task', 
                 export_parameters, 
                 self.destination_path, 
-                self.structured_dataset
-                ))
+                #self.structured_dataset passed when dataset_task finishes
+                )
+            after_dataset_tasks.append(parameters_task)
+            long_tasks.append(parameters_task)
+        
+        dataset_task = TaskHandler(
+            'Dataset Calculations Task',
+            self.set_dataset,
+            parameters
+        )
+        dataset_task.addNextTasks(after_dataset_tasks)
+        long_tasks.append(dataset_task)
             
         self.progress_dialog.show()
         self.renderTime = time.perf_counter()
@@ -446,6 +459,11 @@ class QSMPGDialog(QDialog, FORM_CLASS):
 
         # triggers event on progress dialog when finished
         self.task_manager.allTasksFinished.connect(lambda: self.progress_dialog.finish_wait(self.task_manager, long_tasks))
+
+    def set_dataset(self, parameters):
+        """Calculates derived data from the dataset, and returns it."""
+        self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, parameters)
+        return self.structured_dataset
 
     def import_parameters_btn_event(self) -> None:
         """
@@ -666,9 +684,9 @@ class TaskHandler(QgsTask):
         self.time = 0
 
         self.setDependentLayers(dependentLayers)
-        self.nextTask = None
+        self.nextTasks: QgsTask|list[QgsTask] = None
         if nextTask is not None:
-            self.addNextTask(nextTask)
+            self.addNextTasks(nextTask)
 
     def run(self):
         """Executes the function given to the task handler.
@@ -703,18 +721,19 @@ class TaskHandler(QgsTask):
         """
         # when task completed successfully
         if result:
-            ...
-            if self.nextTask is not None:
-                self.nextTask.args =  (*self.nextTask.args, self.result)
             self.time = self.elapsedTime()
             if self.debug: print(f'{self.description()} completed')
+            if self.nextTasks is not None:
+                for t in self.nextTasks:
+                    t.args =  (*t.args, self.result)
             return
         # when task did not complete successfully
         if self.exception is not None:
             if self.debug: print(f'{self.description()} raised an exeception')
-            if self.nextTask is not None:
-                self.nextTask.cancel()
-                self.nextTask.unhold()
+            if self.nextTasks is not None:
+                for t in self.nextTasks: 
+                    t.cancel()
+                    t.unhold()
             return
         if self.debug: print(f'{self.description()} terminated')
 
@@ -725,13 +744,14 @@ class TaskHandler(QgsTask):
         method.
         """
         if self.debug: print(f'{self.description()} got cancelled')
-        if self.nextTask is not None:
-            self.nextTask.cancel()
-            self.nextTask.unhold()
+        if self.nextTasks is not None:
+            for t in self.nextTasks: 
+                t.cancel()
+                t.unhold()
 
         super().cancel()
 
-    def addNextTask(self, task: QgsTask):
+    def addNextTasks(self, tasks: QgsTask|list[QgsTask]):
         """
         Adds a new task to be executed after this one completes successfully. 
         The new task is held until it is started by the `finished` method.
@@ -740,6 +760,11 @@ class TaskHandler(QgsTask):
             task (QgsTask): the task to be executed after this one is 
                 completed.
         """
-        self.nextTask = task
-        task.hold()
-        super().taskCompleted.connect(task.unhold)
+        if isinstance(tasks, QgsTask): tasks = [tasks]
+        self.nextTasks = tasks
+        for t in self.nextTasks: t.hold()
+        super().taskCompleted.connect(self.unhold_tasks)
+
+    def unhold_tasks(self):
+        for t in self.nextTasks:
+            t.unhold()
