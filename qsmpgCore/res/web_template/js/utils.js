@@ -7,85 +7,86 @@ const BODY_ELEMENT = document.body;
 
 const HIDE_CLASS = 'w3-hide';
 
+const UNCAT_COLOR = '#aaaf';
 const categories = {
-    '': {'lightgray': () => true},
+    '': { 'Uncategorized': {color:UNCAT_COLOR, 'function': () => true} },
     'C. Dk./LTA Pct.': {
-        '#be6b05': (x) => x <= 20,
-        '#f38124': (x) => x > 20 && x <= 40,
-        '#fec280': (x) => x > 40 && x <= 60,
-        '#ffe69e': (x) => x > 60 && x <= 80,
-        '#fff9a3': (x) => x > 80 && x <= 90,
-        '#f2f2f2': (x) => x > 90 && x <= 110,
-        '#c6eab3': (x) => x > 110 && x <= 120,
-        '#56cd94': (x) => x > 120 && x <= 140,
-        '#5cc9ea': (x) => x > 140 && x <= 160,
-        '#2a83ba': (x) => x > 160,
-        'lightgray': () => true
-    }, 
+        '0-20': { 'color': '#be6b05', 'function': (x) => x <= 20 },
+        '21-40': { 'color': '#f38124', 'function': (x) => x > 20 && x <= 40 },
+        '41-60': { 'color': '#fec280', 'function': (x) => x > 40 && x <= 60 },
+        '61-80': { 'color': '#ffe69e', 'function': (x) => x > 60 && x <= 80 },
+        '81-90': { 'color': '#fff9a3', 'function': (x) => x > 80 && x <= 90 },
+        '91-110': { 'color': '#f2f2f2', 'function': (x) => x > 90 && x <= 110 },
+        '111-120': { 'color': '#c6eab3', 'function': (x) => x > 110 && x <= 120 },
+        '121-140': { 'color': '#56cd94', 'function': (x) => x > 120 && x <= 140 },
+        '141-160': { 'color': '#5cc9ea', 'function': (x) => x > 140 && x <= 160 },
+        '161+': { 'color': '#2a83ba', 'function': (x) => x > 160 },
+        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+    },
     'Ensemble Med./LTA Pct.': {
-        '#be6b05': (x) => x <= 20,
-        '#f38124': (x) => x > 20 && x <= 40,
-        '#fec280': (x) => x > 40 && x <= 60,
-        '#ffe69e': (x) => x > 60 && x <= 80,
-        '#fff9a3': (x) => x > 80 && x <= 90,
-        '#f2f2f2': (x) => x > 90 && x <= 110,
-        '#c6eab3': (x) => x > 110 && x <= 120,
-        '#56cd94': (x) => x > 120 && x <= 140,
-        '#5cc9ea': (x) => x > 140 && x <= 160,
-        '#2a83ba': (x) => x > 160,
-        'lightgray': () => true
-    }, 
+        '0-20': { 'color': '#be6b05', 'function': (x) => x <= 20 },
+        '21-40': { 'color': '#f38124', 'function': (x) => x > 20 && x <= 40 },
+        '41-60': { 'color': '#fec280', 'function': (x) => x > 40 && x <= 60 },
+        '61-80': { 'color': '#ffe69e', 'function': (x) => x > 60 && x <= 80 },
+        '81-90': { 'color': '#fff9a3', 'function': (x) => x > 80 && x <= 90 },
+        '91-110': { 'color': '#f2f2f2', 'function': (x) => x > 90 && x <= 110 },
+        '111-120': { 'color': '#c6eab3', 'function': (x) => x > 110 && x <= 120 },
+        '121-140': { 'color': '#56cd94', 'function': (x) => x > 120 && x <= 140 },
+        '141-160': { 'color': '#5cc9ea', 'function': (x) => x > 140 && x <= 160 },
+        '161+': { 'color': '#2a83ba', 'function': (x) => x > 160 },
+        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+    },
     'Probability Below Normal': {
-        '#2b83ba': (x) => x >= 0 && x <= 15,
-        '#74b7ae': (x) => x >= 15 && x <= 30,
-        '#e7f6b8': (x) => x >= 30 && x <= 45,
-        '#ffe8a4': (x) => x >= 45 && x <= 60,
-        '#feba6e': (x) => x >= 60 && x <= 75,
-        '#ed6e43': (x) => x >= 75 && x <= 90,
-        '#d7191c': (x) => x >= 90 && x <= 100,
-        'lightgray': () => true
+        '0-15': { 'color': '#2b83ba', 'function': (x) => x >= 0 && x <= 15 },
+        '16-30': { 'color': '#74b7ae', 'function': (x) => x >= 15 && x <= 30 },
+        '31-45': { 'color': '#e7f6b8', 'function': (x) => x >= 30 && x <= 45 },
+        '46-60': { 'color': '#ffe8a4', 'function': (x) => x >= 45 && x <= 60 },
+        '61-75': { 'color': '#feba6e', 'function': (x) => x >= 60 && x <= 75 },
+        '76-90': { 'color': '#ed6e43', 'function': (x) => x >= 75 && x <= 90 },
+        '91-100': { 'color': '#d7191c', 'function': (x) => x >= 90 && x <= 100 },
+        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
     },
     'Probability Between Normal': {
-        '#e6e6e6': (x) => x >= 0 && x <= 20,
-        '#f0f9e8': (x) => x > 20 && x <= 40,
-        '#bae4bc': (x) => x > 40 && x <= 60,
-        '#7bccc4': (x) => x > 60 && x <= 80,
-        '#43a2ca': (x) => x > 80 && x <= 90,
-        '#0868ac': (x) => x > 90 && x <= 100,
-        'lightgray': () => true
-    }, 
+        '0-20': { 'color': '#e6e6e6', 'function': (x) => x >= 0 && x <= 20 },
+        '21-40': { 'color': '#f0f9e8', 'function': (x) => x > 20 && x <= 40 },
+        '41-60': { 'color': '#bae4bc', 'function': (x) => x > 40 && x <= 60 },
+        '61-80': { 'color': '#7bccc4', 'function': (x) => x > 60 && x <= 80 },
+        '81-90': { 'color': '#43a2ca', 'function': (x) => x > 80 && x <= 90 },
+        '91-100': { 'color': '#0868ac', 'function': (x) => x > 90 && x <= 100 },
+        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+    },
     'Probability Above Normal': {
-        '#e6e6e6': (x) => x >= 0 && x <= 20,
-        '#f0f9e8': (x) => x > 20 && x <= 40,
-        '#bae4bc': (x) => x > 40 && x <= 60,
-        '#7bccc4': (x) => x > 60 && x <= 80,
-        '#43a2ca': (x) => x > 80 && x <= 90,
-        '#0868ac': (x) => x > 90 && x <= 100,
-        'lightgray': () => true
-    }, 
+        '0-20': { 'color': '#e6e6e6', 'function': (x) => x >= 0 && x <= 20 },
+        '21-40': { 'color': '#f0f9e8', 'function': (x) => x > 20 && x <= 40 },
+        '41-60': { 'color': '#bae4bc', 'function': (x) => x > 40 && x <= 60 },
+        '61-80': { 'color': '#7bccc4', 'function': (x) => x > 60 && x <= 80 },
+        '81-90': { 'color': '#43a2ca', 'function': (x) => x > 80 && x <= 90 },
+        '91-100': { 'color': '#0868ac', 'function': (x) => x > 90 && x <= 100 },
+        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+    },
     'Ensemble Med. Pctl.': {
-        '#7e0006': (x) => x >= 0 && x <= 3,
-        '#e20b00': (x) => x > 3 && x <= 6,
-        '#e35a1a': (x) => x > 6 && x <= 11,
-        '#faaf00': (x) => x > 11 && x <= 21,
-        '#faff0f': (x) => x > 21 && x <= 33,
-        '#f2f2f2': (x) => x > 33 && x <= 67,
-        '#a6cee3': (x) => x > 67 && x <= 90,
-        '#1f78b4': (x) => x > 90,
-        'lightgray': () => true
+        '0-3': { 'color': '#7e0006', 'function': (x) => x >= 0 && x <= 3 },
+        '4-6': { 'color': '#e20b00', 'function': (x) => x > 3 && x <= 6 },
+        '7-11': { 'color': '#e35a1a', 'function': (x) => x > 6 && x <= 11 },
+        '12-21': { 'color': '#faaf00', 'function': (x) => x > 11 && x <= 21 },
+        '22-33': { 'color': '#faff0f', 'function': (x) => x > 21 && x <= 33 },
+        '34-67': { 'color': '#f2f2f2', 'function': (x) => x > 33 && x <= 67 },
+        '68-90': { 'color': '#a6cee3', 'function': (x) => x > 67 && x <= 90 },
+        '91+': { 'color': '#1f78b4', 'function': (x) => x > 90 },
+        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
     },
     'Current Season Pctl.': {
-        '#7e0006': (x) => x >= 0 && x <= 3,
-        '#e20b00': (x) => x > 3 && x <= 6,
-        '#e35a1a': (x) => x > 6 && x <= 11,
-        '#faaf00': (x) => x > 11 && x <= 21,
-        '#faff0f': (x) => x > 21 && x <= 33,
-        '#f2f2f2': (x) => x > 33 && x <= 67,
-        '#a6cee3': (x) => x > 67 && x <= 90,
-        '#1f78b4': (x) => x > 90,
-        'lightgray': () => true
+        '0-3': { 'color': '#7e0006', 'function': (x) => x >= 0 && x <= 3 },
+        '4-6': { 'color': '#e20b00', 'function': (x) => x > 3 && x <= 6 },
+        '7-11': { 'color': '#e35a1a', 'function': (x) => x > 6 && x <= 11 },
+        '12-21': { 'color': '#faaf00', 'function': (x) => x > 11 && x <= 21 },
+        '22-33': { 'color': '#faff0f', 'function': (x) => x > 21 && x <= 33 },
+        '34-67': { 'color': '#f2f2f2', 'function': (x) => x > 33 && x <= 67 },
+        '68-90': { 'color': '#a6cee3', 'function': (x) => x > 67 && x <= 90 },
+        '91+': { 'color': '#1f78b4', 'function': (x) => x > 90 },
+        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
     },
-  };
+};
   
 
 function navigateTo(queryParams={}, keepOlpParams=true) {
@@ -362,11 +363,166 @@ function updateSelect(node, items) {
 }
 
 function categorizeValue(value, bins) {
-    for (const [binName, binFunction] of Object.entries(bins)) {
+    for (const [binName, binData] of Object.entries(bins)) {
+        const binFunction = binData['function'];
         if (binFunction(value)) {
             return binName;
         }
     }
     return 'Uncategorized';
     
+}
+
+function getColors(bins) {
+    return Object.values(bins).map(bin => bin.color);
+}
+
+// Copyright 2021, Observable Inc.
+// Released under the ISC license.
+// https://observablehq.com/@d3/color-legend
+function Legend(color, {
+    title,
+    tickSize = 6,
+    width = 320,
+    height = 44 + tickSize,
+    marginTop = 18,
+    marginRight = 0,
+    marginBottom = 16 + tickSize,
+    marginLeft = 0,
+    ticks = width / 64,
+    tickFormat,
+    tickValues
+} = {}) {
+
+    function ramp(color, n = 256) {
+        const canvas = document.createElement("canvas");
+        canvas.width = n;
+        canvas.height = 1;
+        const context = canvas.getContext("2d");
+        for (let i = 0; i < n; ++i) {
+            context.fillStyle = color(i / (n - 1));
+            context.fillRect(i, 0, 1, 1);
+        }
+        return canvas;
+    }
+
+    const svg = d3.create("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("viewBox", [0, 0, width, height])
+        .style("overflow", "visible")
+        .style("display", "block");
+
+    let tickAdjust = g => g.selectAll(".tick line").attr("y1", marginTop + marginBottom - height);
+    let x;
+
+    // Continuous
+    if (color.interpolate) {
+        const n = Math.min(color.domain().length, color.range().length);
+
+        x = color.copy().rangeRound(d3.quantize(d3.interpolate(marginLeft, width - marginRight), n));
+
+        svg.append("image")
+            .attr("x", marginLeft)
+            .attr("y", marginTop)
+            .attr("width", width - marginLeft - marginRight)
+            .attr("height", height - marginTop - marginBottom)
+            .attr("preserveAspectRatio", "none")
+            .attr("xlink:href", ramp(color.copy().domain(d3.quantize(d3.interpolate(0, 1), n))).toDataURL());
+    }
+
+    // Sequential
+    else if (color.interpolator) {
+        x = Object.assign(color.copy()
+            .interpolator(d3.interpolateRound(marginLeft, width - marginRight)),
+            { range() { return [marginLeft, width - marginRight]; } });
+
+        svg.append("image")
+            .attr("x", marginLeft)
+            .attr("y", marginTop)
+            .attr("width", width - marginLeft - marginRight)
+            .attr("height", height - marginTop - marginBottom)
+            .attr("preserveAspectRatio", "none")
+            .attr("xlink:href", ramp(color.interpolator()).toDataURL());
+
+        // scaleSequentialQuantile doesn’t implement ticks or tickFormat.
+        if (!x.ticks) {
+            if (tickValues === undefined) {
+                const n = Math.round(ticks + 1);
+                tickValues = d3.range(n).map(i => d3.quantile(color.domain(), i / (n - 1)));
+            }
+            if (typeof tickFormat !== "function") {
+                tickFormat = d3.format(tickFormat === undefined ? ",f" : tickFormat);
+            }
+        }
+    }
+
+    // Threshold
+    else if (color.invertExtent) {
+        const thresholds
+            = color.thresholds ? color.thresholds() // scaleQuantize
+                : color.quantiles ? color.quantiles() // scaleQuantile
+                    : color.domain(); // scaleThreshold
+
+        const thresholdFormat
+            = tickFormat === undefined ? d => d
+                : typeof tickFormat === "string" ? d3.format(tickFormat)
+                    : tickFormat;
+
+        x = d3.scaleLinear()
+            .domain([-1, color.range().length - 1])
+            .rangeRound([marginLeft, width - marginRight]);
+
+        svg.append("g")
+            .selectAll("rect")
+            .data(color.range())
+            .join("rect")
+            .attr("x", (d, i) => x(i - 1))
+            .attr("y", marginTop)
+            .attr("width", (d, i) => x(i) - x(i - 1))
+            .attr("height", height - marginTop - marginBottom)
+            .attr("fill", d => d);
+
+        tickValues = d3.range(thresholds.length);
+        tickFormat = i => thresholdFormat(thresholds[i], i);
+    }
+
+    // Ordinal
+    else {
+        x = d3.scaleBand()
+            .domain(color.domain())
+            .rangeRound([marginLeft, width - marginRight]);
+
+        svg.append("g")
+            .selectAll("rect")
+            .data(color.domain())
+            .join("rect")
+            .attr("x", x)
+            .attr("y", marginTop)
+            .attr("width", Math.max(0, x.bandwidth() - 1))
+            .attr("height", height - marginTop - marginBottom)
+            .attr("fill", color);
+
+        tickAdjust = () => { };
+    }
+
+    svg.append("g")
+        .attr("transform", `translate(0,${height - marginBottom})`)
+        .call(d3.axisBottom(x)
+            .ticks(ticks, typeof tickFormat === "string" ? tickFormat : undefined)
+            .tickFormat(typeof tickFormat === "function" ? tickFormat : undefined)
+            .tickSize(tickSize)
+            .tickValues(tickValues))
+        .call(tickAdjust)
+        .call(g => g.select(".domain").remove())
+        .call(g => g.append("text")
+            .attr("x", marginLeft)
+            .attr("y", marginTop + marginBottom - height - 6)
+            .attr("fill", "currentColor")
+            .attr("text-anchor", "start")
+            .attr("font-weight", "bold")
+            .attr("class", "title")
+            .text(title));
+
+    return svg.node();
 }

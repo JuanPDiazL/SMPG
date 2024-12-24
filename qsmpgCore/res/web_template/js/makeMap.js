@@ -54,6 +54,7 @@ function drawMap(geoJson) {
         .enter().append("path")
         .attr("class", d => `country country-${d.properties[fieldId]} w3-ripple`)
         .attr("d", d3.geoPath().projection(projection))
+        .style("fill", UNCAT_COLOR)
         .on("mouseover", (event, d) => {
             mapSelectorPath
             .attr("d", d3.geoPath().projection(projection)(d))
@@ -87,6 +88,8 @@ function drawMap(geoJson) {
             return areaRatio > 0.004 && xRatio > 0.08 ? null : "none"
         })
 
+    const legendContainer = d3.select("#mapLegend");
+
     svg
     .attr("width", null)
     .attr("height", null)
@@ -101,10 +104,22 @@ function drawMap(geoJson) {
         const selectedStatId = this.value;
         const selectedStats = mapStats[selectedStatId];
         const selectedBins = categories[selectedStatId];
+        // Update legend based on the selected property
+        const legend = Legend(d3.scaleOrdinal(Object.keys(selectedBins), Object.values(selectedBins).map(bin => bin.color)), {
+            title: "Legend",
+            tickSize: 0,
+            width: 600,
+        });
+        if (selectedStatId !== "") {
+            legendContainer.html(legend.outerHTML);
+        } else {
+            legendContainer.html('');
+        }
         // Update polygon color based on the selected property
         polygons.style("fill", d => {
             const value = selectedStats(d.properties[fieldId]);
-            return categorizeValue(value, selectedBins);
+            const category = categorizeValue(value, selectedBins);
+            return selectedBins[category]["color"];
         });
     });
 }
