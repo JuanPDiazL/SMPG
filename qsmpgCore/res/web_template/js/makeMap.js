@@ -100,6 +100,10 @@ function drawMap(geoJson) {
         // Update label text based on the selected property
         labels.text(d => d.properties[displayId]);
     });
+    legendCbNode.addEventListener("change", function() {
+        const showLegend = this.checked;
+        legendContainer.style("display", showLegend? null : "none");
+    });
     colorNode.addEventListener("change", function() {
         const selectedStatId = this.value;
         const selectedStats = mapStats[selectedStatId];
@@ -110,11 +114,7 @@ function drawMap(geoJson) {
             tickSize: 0,
             width: 600,
         });
-        if (selectedStatId !== "") {
-            legendContainer.html(legend.outerHTML);
-        } else {
-            legendContainer.html('');
-        }
+        legendContainer.html(selectedStatId !== ""? legend.outerHTML : "");
         // Update polygon color based on the selected property
         polygons.style("fill", d => {
             const value = selectedStats(d.properties[fieldId]);
