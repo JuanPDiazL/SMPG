@@ -21,7 +21,7 @@ const categories = {
         '121-140': { 'color': '#56cd94', 'function': (x) => x > 120 && x <= 140 },
         '141-160': { 'color': '#5cc9ea', 'function': (x) => x > 140 && x <= 160 },
         '161+': { 'color': '#2a83ba', 'function': (x) => x > 160 },
-        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+        // 'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
     },
     'Ensemble Med./LTA Pct.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x <= 20 },
@@ -34,7 +34,7 @@ const categories = {
         '121-140': { 'color': '#56cd94', 'function': (x) => x > 120 && x <= 140 },
         '141-160': { 'color': '#5cc9ea', 'function': (x) => x > 140 && x <= 160 },
         '161+': { 'color': '#2a83ba', 'function': (x) => x > 160 },
-        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+        // 'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
     },
     'Probability Below Normal': {
         '0-15': { 'color': '#2b83ba', 'function': (x) => x >= 0 && x <= 15 },
@@ -44,7 +44,7 @@ const categories = {
         '61-75': { 'color': '#feba6e', 'function': (x) => x >= 60 && x <= 75 },
         '76-90': { 'color': '#ed6e43', 'function': (x) => x >= 75 && x <= 90 },
         '91-100': { 'color': '#d7191c', 'function': (x) => x >= 90 && x <= 100 },
-        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+        // 'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
     },
     'Probability Between Normal': {
         '0-20': { 'color': '#e6e6e6', 'function': (x) => x >= 0 && x <= 20 },
@@ -53,7 +53,7 @@ const categories = {
         '61-80': { 'color': '#7bccc4', 'function': (x) => x > 60 && x <= 80 },
         '81-90': { 'color': '#43a2ca', 'function': (x) => x > 80 && x <= 90 },
         '91-100': { 'color': '#0868ac', 'function': (x) => x > 90 && x <= 100 },
-        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+        // 'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
     },
     'Probability Above Normal': {
         '0-20': { 'color': '#e6e6e6', 'function': (x) => x >= 0 && x <= 20 },
@@ -62,7 +62,7 @@ const categories = {
         '61-80': { 'color': '#7bccc4', 'function': (x) => x > 60 && x <= 80 },
         '81-90': { 'color': '#43a2ca', 'function': (x) => x > 80 && x <= 90 },
         '91-100': { 'color': '#0868ac', 'function': (x) => x > 90 && x <= 100 },
-        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+        // 'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
     },
     'Ensemble Med. Pctl.': {
         '0-3': { 'color': '#7e0006', 'function': (x) => x >= 0 && x <= 3 },
@@ -73,7 +73,7 @@ const categories = {
         '34-67': { 'color': '#f2f2f2', 'function': (x) => x > 33 && x <= 67 },
         '68-90': { 'color': '#a6cee3', 'function': (x) => x > 67 && x <= 90 },
         '91+': { 'color': '#1f78b4', 'function': (x) => x > 90 },
-        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+        // 'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
     },
     'Current Season Pctl.': {
         '0-3': { 'color': '#7e0006', 'function': (x) => x >= 0 && x <= 3 },
@@ -84,7 +84,7 @@ const categories = {
         '34-67': { 'color': '#f2f2f2', 'function': (x) => x > 33 && x <= 67 },
         '68-90': { 'color': '#a6cee3', 'function': (x) => x > 67 && x <= 90 },
         '91+': { 'color': '#1f78b4', 'function': (x) => x > 90 },
-        'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
+        // 'Uncategorized': { 'color': UNCAT_COLOR, 'function': () => true },
     },
 };
   
