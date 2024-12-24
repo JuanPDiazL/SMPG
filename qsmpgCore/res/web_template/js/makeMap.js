@@ -73,6 +73,10 @@ function drawMap(geoJson) {
             navigateTo({"place": d.properties[fieldId], "mode": "plots"});
         })
 
+    const polygonTooltips = polygons.append("title")
+        .attr("class", "country-polygon-tooltip")
+        .text(d => d.properties[fieldId])
+        
     // draw labels
     const labels = svg.select("#mapLabels").selectAll(".map-text-label")
         .data(geoJson.features)
@@ -95,10 +99,12 @@ function drawMap(geoJson) {
     .attr("height", null)
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0, 0, ${width}, ${height}`)
+
     selectNode.addEventListener("change", function() {
         const displayId = this.value;
         // Update label text based on the selected property
         labels.text(d => d.properties[displayId]);
+        polygonTooltips.text(d => d.properties[displayId]);
     });
     legendCbNode.addEventListener("change", function() {
         const showLegend = this.checked;
