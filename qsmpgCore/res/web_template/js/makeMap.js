@@ -118,7 +118,7 @@ function drawMap(geoJson) {
         const legend = Legend(d3.scaleOrdinal(Object.keys(selectedBins), Object.values(selectedBins).map(bin => bin.color)), {
             title: "Legend",
             tickSize: 0,
-            width: 600,
+            width: 500,
         });
         legendContainer.html(selectedStatId !== ""? legend.outerHTML : "");
         // Update polygon color based on the selected property
