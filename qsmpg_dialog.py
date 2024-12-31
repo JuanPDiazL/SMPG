@@ -41,6 +41,7 @@ from qgis.PyQt.QtWidgets import (
     QRadioButton,
     QLabel,
 )
+from typing import Union
 
 from qgis.core import (
     QgsTask, 
@@ -684,7 +685,7 @@ class TaskHandler(QgsTask):
         self.time = 0
 
         self.setDependentLayers(dependentLayers)
-        self.nextTasks: QgsTask|list[QgsTask] = None
+        self.nextTasks: Union[QgsTask, list[QgsTask]] = None
         if nextTask is not None:
             self.addNextTasks(nextTask)
 
@@ -751,7 +752,7 @@ class TaskHandler(QgsTask):
 
         super().cancel()
 
-    def addNextTasks(self, tasks: QgsTask|list[QgsTask]):
+    def addNextTasks(self, tasks: Union[QgsTask, list[QgsTask]]):
         """
         Adds a new task to be executed after this one completes successfully. 
         The new task is held until it is started by the `finished` method.

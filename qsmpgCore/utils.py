@@ -104,14 +104,14 @@ class Parameters:
         # input defaults
         self.target_id_field: str = ''
         # climatology defaults
-        self.climatology_start: str | None = '1991'
-        self.climatology_end: str | None = '2020'
+        self.climatology_start: Optional[str] = '1991'
+        self.climatology_end: Optional[str] = '2020'
         # monitoring season defaults
-        self.season_start: str | None = None
-        self.season_end: str | None = None
+        self.season_start: Optional[str] = None
+        self.season_end: Optional[str] = None
         self.cross_years = False
         # year selection defaults
-        self.selected_years: list[str] | int | None = None
+        self.selected_years: Optional[Union[list[str], int]] = None
         self.use_pearson = False
         # forecasting defaults
         self.is_forecast = False
