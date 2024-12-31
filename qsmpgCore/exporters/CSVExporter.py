@@ -74,8 +74,8 @@ def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Stati
     for place in dataset.places.values():
         climatology_stats.append(wrap_stats(place.place_general_stats, place.seasonal_general_stats))
         climatology_summary.append(wrap_summary(place.place_general_stats, place.seasonal_general_stats))
-        selected_years_stats.append(wrap_stats(place.place_general_stats, place.seasonal_general_stats))
-        selected_years_summary.append(wrap_summary(place.place_general_stats, place.seasonal_general_stats))
+        selected_years_stats.append(wrap_stats(place.place_general_stats, place.selected_seasons_general_stats))
+        selected_years_summary.append(wrap_summary(place.place_general_stats, place.selected_seasons_general_stats))
         similar_seasons.append(place.similar_seasons)
 
     data_path_relation = {
