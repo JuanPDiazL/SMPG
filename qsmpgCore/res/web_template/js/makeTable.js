@@ -66,8 +66,8 @@ class statsTable {
         this.tableBody.innerHTML = '';
         for (let row of tableData) {
             let tr = this.tableBody.appendChild(document.createElement('tr'));
-            let col1 = row[1].toFixed(0);
-            let col2 = row[2].toFixed(0);
+            let col1 = row[1] !== null ? row[1].toFixed(0) : '';
+            let col2 = row[2] !== null ? row[2].toFixed(0) : '';
             if (col1 != col2) {
                 tr.innerHTML = `<td>${row[0]}</td><td>${col1}</td><td>${col2}</td>`;
             }
