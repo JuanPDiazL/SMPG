@@ -12,7 +12,7 @@ from qgis.PyQt.QtWidgets import (
 from .qsmpgCore.utils import startswith_substring
 
 YEAR_SELECTION_DIALOG_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'year_selection_dialog.ui'))
+    os.path.dirname(__file__), 'ui/year_selection_dialog.ui'))
 
 class YearSelectionDialog(QDialog, YEAR_SELECTION_DIALOG_CLASS):
     """A dialog box for selecting years.

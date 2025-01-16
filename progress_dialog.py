@@ -14,7 +14,7 @@ from qgis.core import (
 )
 
 PROGRESS_DIALOG_CLASS,_ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'progress_dialog.ui'))
+    os.path.dirname(__file__), 'ui/progress_dialog.ui'))
 
 class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
     """

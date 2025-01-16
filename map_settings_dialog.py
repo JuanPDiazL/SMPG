@@ -20,7 +20,7 @@ from qgis.core import (
 )
 
 MAP_SETTINGS_DIALOG_CLASS,_ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'map_settings_dialog.ui'))
+    os.path.dirname(__file__), 'ui/map_settings_dialog.ui'))
 
 class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
     """A dialog window for selecting map settings.
