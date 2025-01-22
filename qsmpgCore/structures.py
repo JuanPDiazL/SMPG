@@ -32,6 +32,8 @@ class Dataset:
         
         self.properties.dataset_name = name
         default_sub_seasons = define_seasonal_dict(self.parameters.cross_years)
+
+        # calculation for year ids and season shift
         if self.parameters.cross_years:
             self.season_shift = (yearly_periods[self.properties.period_unit_id] // 2)
             self.properties.year_ids = get_cross_years(self.properties.year_ids)
@@ -40,6 +42,7 @@ class Dataset:
             self.season_shift = 0
             self.properties.year_ids = self.properties.year_ids
 
+        # determines current season for cross years
         if self.parameters.cross_years and (self.properties.current_season_length <= self.season_shift):
             self.properties.current_season_id = self.properties.year_ids.pop()
             self.split_quantity = self.properties.season_quantity - 1
@@ -49,6 +52,8 @@ class Dataset:
             self.split_quantity = self.properties.season_quantity
             self.climatology_end_index = self.season_shift + self.properties.current_season_index
             self.properties.current_season_length -= self.season_shift
+
+        # more properties of the dataset are calculated
         self.properties.climatology_year_ids = slice_by_element(self.properties.year_ids, self.parameters.climatology_start, self.parameters.climatology_end)
         self.properties.sub_season_ids = default_sub_seasons
         self.properties.selected_years = self.parameters.selected_years
@@ -59,6 +64,7 @@ class Dataset:
         self.season_end_index = default_sub_seasons.index(self.parameters.season_end)+1
         self.current_season_trim_index = min(self.properties.current_season_length, self.season_end_index) - parameters.is_forecast
 
+        # create a dictionary with the places
         self.places: dict[str, Place] = {}
         for place, timeseries in dataset.iterrows():
             self.places[place] = Place(place, timeseries, self)
@@ -77,18 +83,21 @@ class Place:
         self.id = place_id
         indexes = parent.properties.year_ids
         columns = parent.properties.sub_season_ids
+        # split timeseries into years
         self.current_season = timeseries[parent.climatology_end_index : ]
         self.current_season.index = columns[:len(self.current_season)]
         past_seasons = timeseries[parent.season_shift : parent.climatology_end_index]
         timeseries_reshaped = past_seasons.values.reshape(len(indexes), len(columns))
         self.seasons_df = pd.DataFrame(timeseries_reshaped, index=indexes, 
                                   columns=columns)
+
+        # forecast case
         forecast_value = NaN
         if parent.parameters.is_forecast: 
             forecast_value = self.current_season[-1]
             self.current_season = self.current_season[:-1]
-        current_season_monitoring = self.current_season[parent.season_start_index:parent.current_season_trim_index]
         
+        # get selected seasons
         self.similar_seasons = get_similar_years(self.current_season.to_numpy(), 
                                             self.seasons_df, 
                                             parent.parameters.use_pearson)
@@ -104,6 +113,7 @@ class Place:
         self.seasonal_mon_clim = self.seasonal_monitoring.loc[parent.properties.climatology_year_ids]
         
         # calculate derived dataframes
+        current_season_monitoring = self.current_season[parent.season_start_index:parent.current_season_trim_index]
         self.current_cumsum = self.current_season.cumsum()
         self.current_cumsum_mon = current_season_monitoring.cumsum()
         self.current_index = len(current_season_monitoring) - 1
@@ -166,6 +176,7 @@ class Place:
         Returns:
             Tuple[pd.Series, pd.DataFrame]: A tuple containing the place general stats and long term stats
         """
+        # calculate auxiliary variables
         seasonal_totals = seasonal_cumsum.iloc[:, -1].to_numpy()
         ensemble_totals = seasonal_ensemble.iloc[:, -1].to_numpy()
 
@@ -182,6 +193,8 @@ class Place:
             np.count_nonzero(ensemble_totals >= self.clim_seasons_pctls[1]) / len(ensemble_totals),
         ]
         standard_dev = seasonal_cumsum.std()
+
+        # calculate the stats
         seasonal_long_term_stats = pd.DataFrame.from_dict({
             'LTA': seasonal_lta,
             'Median': seasonal_ltm,
