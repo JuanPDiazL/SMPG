@@ -106,7 +106,7 @@ class Place:
         if isinstance(parent.properties.selected_years, list):
             selected_years = parent.properties.selected_years
         
-        # build seasonsal rainfall dataframes
+        # build sub-dataframes
         self.seasonal_climatology = self.seasons_df.loc[parent.properties.climatology_year_ids]
         self.seasonal_monitoring = self.seasons_df.iloc[:, parent.season_start_index:parent.season_end_index]
         self.seasonal_mon_sel = self.seasonal_monitoring.loc[selected_years]

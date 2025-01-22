@@ -304,9 +304,8 @@ class QSMPGDialog(QDialog, FORM_CLASS):
         
         This is an event handler for when the user clicks the "Load Rainfall 
         Dataset (.csv)" button. It reads the selected dataset from a file and 
-        parses it to create a structured data object. It also updates the 
-        dialog's fields with default values based on the selected dataset 
-        properties.
+        parses its properties. It also updates the dialog's fields with default 
+        values based on the selected dataset properties.
         """
         # path reading
         temp_dataset_source = QFileDialog.getOpenFileName(self, 'Open dataset file', None, "CSV files (*.csv)")[0]
