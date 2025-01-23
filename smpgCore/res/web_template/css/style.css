@@ -27,19 +27,19 @@ body {
     stroke: var(--dark-stroke-color);
 }
 
-.qsmpg-left {
+.smpg-left {
     left: calc(var(--sidebarWidth) + 1em);
     text-align: left;
 
-}.sidebar-closed .qsmpg-left {
+}.sidebar-closed .smpg-left {
     left: 1em;
     text-align: left;
 }
-.qsmpg-right {
+.smpg-right {
     right: 1em;
     text-align: right;
 }
-.qsmpg-bottom {
+.smpg-bottom {
     bottom: 1em;
 }
 

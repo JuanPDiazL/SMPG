@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QSMPGDialogBase</class>
- <widget class="QDialog" name="QSMPGDialogBase">
+ <class>SMPGDialogBase</class>
+ <widget class="QDialog" name="SMPGDialogBase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -59,7 +59,7 @@
       <enum>Qt::AutoText</enum>
      </property>
      <property name="pixmap">
-      <pixmap>banner.png</pixmap>
+      <pixmap>../banner.png</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>

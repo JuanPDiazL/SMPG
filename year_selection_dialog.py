@@ -9,7 +9,7 @@ from qgis.PyQt.QtWidgets import (
     QGridLayout
 )
 
-from .qsmpgCore.utils import startswith_substring
+from .smpgCore.utils import startswith_substring
 
 YEAR_SELECTION_DIALOG_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui/year_selection_dialog.ui'))

@@ -3,4 +3,4 @@
 **/*.code-workspace
 **/*.prof
 **/.*
-qsmpgCore/res/web_template/data
+smpgCore/res/web_template/data

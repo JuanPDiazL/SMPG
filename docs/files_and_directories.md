@@ -1,6 +1,6 @@
 # [Explanation of the Files and Directories](#explanation-of-the-files-and-directories)
     
-Here is a brief explanation of the files and directories in the QSMPG plugin:
+Here is a brief explanation of the files and directories in the SMPG plugin:
 
 - ### Root Directory:
 
@@ -8,8 +8,8 @@ Here is a brief explanation of the files and directories in the QSMPG plugin:
     
     Relevant files:
     - `metadata.txt`: Contains metadata about the plugin, such as its name, version, author, and description.
-    - `__init__.py` and `qsmpg.py`: They are responsible for the initialization of the plugin.
-    - `qsmpg_dialog.py`: Contains code for the main dialog of the plugin.
+    - `__init__.py` and `smpg.py`: They are responsible for the initialization of the plugin.
+    - `smpg_dialog.py`: Contains code for the main dialog of the plugin.
     - `*_dialog.py`: They are used to initialize the dialogs and their functions and behaviors.
     
     Subdirectories:
@@ -21,7 +21,7 @@ Here is a brief explanation of the files and directories in the QSMPG plugin:
 
         Contains external Python packages that are not built-in Python or the QGIS environment, and are required for the plugin's functionality.
 
-    - #### qsmpgCore:
+    - #### smpgCore:
 
         Contains core functions of the plugin.
 

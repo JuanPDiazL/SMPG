@@ -5,17 +5,17 @@
 # Mandatory items:
 
 [general]
-name=QSMPG
+name=SMPG
 qgisMinimumVersion=3.34
 description=An implementation of the SMPG tool for QGIS 3
 version=1.3.1
 author=Diaz Lombana Juan Pablo
 email=juan.lombana@correounivalle.edu.co
 
-about=QSMPG is a QGIS plugin programmed in Python 3, designed to generate statistics and other data derived from rainfall time series produced by GeoCLIM. Inspired by the original SMPG (Seasonal Monitoring and Probability Generator) tool
+about=SMPG is a QGIS plugin programmed in Python 3, designed to generate statistics and other data derived from rainfall time series produced by GeoCLIM. Inspired by the original SMPG (Seasonal Monitoring and Probability Generator) tool
 
-tracker=https://github.com/JuanPDiazL/QSMPG/issues
-repository=https://github.com/JuanPDiazL/QSMPG
+tracker=https://github.com/JuanPDiazL/SMPG/issues
+repository=https://github.com/JuanPDiazL/SMPG
 # End of mandatory metadata
 
 # Recommended items:
@@ -27,7 +27,7 @@ hasProcessingProvider=no
 # Tags are comma separated with spaces allowed
 tags=python
 
-homepage=https://github.com/JuanPDiazL/QSMPG
+homepage=https://github.com/JuanPDiazL/SMPG
 category=Plugins
 icon=icon.png
 # experimental flag

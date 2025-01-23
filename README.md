@@ -1,5 +1,5 @@
-# QSMPG
-QSMPG is a QGIS plugin programmed in Python 3, designed to generate statistics and other data derived from rainfall time series produced by GeoCLIM. Inspired by the original SMPG ([Seasonal Monitoring and Probability Generator](https://github.com/JeaustinSirias/Seasonal_Monitoring_Probability_Generator)) tool.
+# SMPG for QGIS
+SMPG is a QGIS plugin programmed in Python 3, designed to generate statistics and other data derived from rainfall time series produced by GeoCLIM. Inspired by the original SMPG ([Seasonal Monitoring and Probability Generator](https://github.com/JeaustinSirias/Seasonal_Monitoring_Probability_Generator)) tool.
 
 ## Installation
 1. Download this repository as a zip file

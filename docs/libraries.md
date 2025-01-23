@@ -4,13 +4,13 @@
 
 It is a Python interface to the QGIS API, which allows you to access QGIS 
 functionality from Python.
-It is used in QSMPG mainly to read/write vector layers from/to a project.
+It is used in SMPG mainly to read/write vector layers from/to a project.
 
 ## PyQt5
 
 Qt is a framework that provides a comprehensive set of tools and libraries for 
 building applications.
-Its main use in QSMPG is to provide a user interface with widgets, layouts, and 
+Its main use in SMPG is to provide a user interface with widgets, layouts, and 
 other essential components such as threads and timers.
 
 ## NumPy
@@ -18,27 +18,27 @@ other essential components such as threads and timers.
 Numpy is a library that provides a multidimensional array object, various 
 derived objects (such as masked arrays and matrices), and an assortment of 
 routines for fast operations.
-It is a dependency for most relevant libraries used in QSMPG and for the 
-core functionality of QSMPG itself.
+It is a dependency for most relevant libraries used in SMPG and for the 
+core functionality of SMPG itself.
 
 ## SciPy
 
 SciPy is a collection of mathematical algorithms and convenience functions 
 built on NumPy. 
-It is used in QSMPG to provide functions to calculate some statistics and 
+It is used in SMPG to provide functions to calculate some statistics and 
 probabilities derived from the input data.
 
 ## Pandas
 
 Pandas is a library that provides high-performance, easy-to-use data structures 
 and data analysis tools for the Python programming language.
-It is used in QSMPG for storing and manipulating input data as well as derived 
+It is used in SMPG for storing and manipulating input data as well as derived 
 statistics from it.
 
 ## pyTopoJSON
 
 pyTopoJSON provides tools for converting GeoJSON to TopoJSON.
-It is used in QSMPG to convert GeoJSON data into TopoJSON format, which is a 
+It is used in SMPG to convert GeoJSON data into TopoJSON format, which is a 
 more compact and efficient representation of geographic data and can be read 
 through a web browser with the proper Javascript libraries.
 
