@@ -390,9 +390,10 @@ def slice_by_element(_list: list, start, end=None) -> list:
 def get_similar_years(reference_year: np.ndarray, year_df: pd.DataFrame, 
                       use_pearson=False) -> list[str]:
     """
-    Get the year ids that are similar to the reference year based on certain 
-    criteria, such as difference of curves, total accumulation, and Pearson 
-    correlation.
+    Get the ranked year ids based on similarity to the reference year, using 
+    criteria such as difference of raw and accumulation curves, total 
+    accumulation comparison, and Pearson correlation if selected. The final 
+    ranking is the sum of all previous rankings.
 
     Args:
         reference_year (ndarray): A 1D numpy array representing the values for 
