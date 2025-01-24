@@ -281,6 +281,8 @@ class SMPGDialog(QDialog, FORM_CLASS):
         self.exportParametersCheckBox.setChecked(parameters.output_parameters)
         self.mappingButton.setEnabled(parameters.output_stats)
         self.map_settings_dialog.settings['selected_fields'] = parameters.mapping_attributes
+        self.openWebReportCheckBox.setEnabled(True)
+        self.openWebReportCheckBox.setChecked(parameters.open_web_report)
         if parameters.target_id_field in get_fields(self.selected_layer):
             self.targetFieldComboBox.setCurrentText(parameters.target_id_field)
 
