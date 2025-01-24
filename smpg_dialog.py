@@ -350,6 +350,11 @@ class SMPGDialog(QDialog, FORM_CLASS):
                                  'The start of the season must be before the end of the season.', 
                                  QMessageBox.Ok)
             return
+        if self.selected_layer is not None and self.targetFieldComboBox.currentIndex() == -1:
+            QMessageBox.critical(self, "Error", 
+                                 'A target field must be selected.', 
+                                 QMessageBox.Ok)
+            return
 
         for output in self.output_checkboxes:
             if output.isChecked():
