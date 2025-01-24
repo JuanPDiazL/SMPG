@@ -116,7 +116,6 @@ class Parameters:
         # forecasting defaults
         self.is_forecast = False
         # output defaults
-        self.output_web = True
         self.output_stats = True
         self.output_parameters = False
         self.mapping_attributes: list[str] = []

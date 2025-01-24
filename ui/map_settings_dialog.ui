@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Map Settings</string>
+   <string>Map Selection</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="16" column="0" colspan="2">
@@ -24,7 +24,7 @@
    <item row="4" column="0" colspan="2">
     <widget class="QGroupBox" name="attributeSelectionGroup">
      <property name="title">
-      <string>Attribute Selection</string>
+      <string/>
      </property>
      <property name="flat">
       <bool>true</bool>
@@ -83,7 +83,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Exclude from mapping</string>
+         <string>Exclude</string>
         </property>
        </widget>
       </item>
@@ -96,7 +96,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Include for mapping</string>
+         <string>Include</string>
         </property>
        </widget>
       </item>

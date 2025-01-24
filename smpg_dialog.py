@@ -86,8 +86,6 @@ class SMPGDialog(QDialog, FORM_CLASS):
     importParametersButton: QPushButton
     importParametersLineEdit: QLineEdit
     
-    useProjectLayerRadioButton: QRadioButton
-    useShapefileRadioButton: QRadioButton
     mapSelectionComboBox: QComboBox
     refreshLayersPushButton: QPushButton
     loadShapefileButton: QPushButton
@@ -116,7 +114,6 @@ class SMPGDialog(QDialog, FORM_CLASS):
     forecastRadioButton: QRadioButton
 
     # outputs group
-    exportWebCheckBox: QCheckBox
     exportStatsCheckBox: QCheckBox
     exportParametersCheckBox: QCheckBox
     mappingButton: QPushButton
@@ -149,9 +146,10 @@ class SMPGDialog(QDialog, FORM_CLASS):
         # output groupbox
         self.output_checkboxes = [
             self.exportStatsCheckBox,
-            self.exportWebCheckBox,
             self.exportParametersCheckBox,
         ]
+
+        self.usePearsonCheckBox.setHidden(True)
 
         # signal connections
         self.mappingButton.clicked.connect(self.mapping_button_event)
@@ -166,20 +164,8 @@ class SMPGDialog(QDialog, FORM_CLASS):
         self.importParametersButton.clicked.connect(self.import_parameters_btn_event)
         self.processButton.clicked.connect(self.process_btn_event)
 
-        self.import_shp_widgets = [self.loadShapefileButton, self.shapefilePathLineEdit]
-        self.use_project_layer_widgets = [self.mapSelectionComboBox, self.refreshLayersPushButton]
-
-        self.useProjectLayerRadioButton.toggled.connect(self.source_selection_rb_event)
-        self.useShapefileRadioButton.toggled.connect(self.source_selection_rb_event)
-        self.mapSelectionComboBox.currentTextChanged.connect(self.map_selection_combobox_event)
-        self.refreshLayersPushButton.pressed.connect(self.update_map_combobox_content)
         self.loadShapefileButton.clicked.connect(self.load_shapefile_button_event)
         self.helpButton.clicked.connect(lambda: webbrowser.open('https://help.fews.net/en/tools/v3/smpg-tool'))
-        get_root().addedChildren.connect(self.update_map_combobox_content)
-        get_root().removedChildren.connect(self.update_map_combobox_content)
-        
-        self.source_selection_rb_event()
-        self.update_map_combobox_content()
 
     def get_parameters_from_widgets(self):
         """Get parameters from widgets and return them as a dictionary."""
@@ -198,7 +184,6 @@ class SMPGDialog(QDialog, FORM_CLASS):
             "selected_years": selected_years,
             "is_forecast": self.forecastRadioButton.isChecked(),
             "use_pearson": self.usePearsonCheckBox.isChecked(),
-            "output_web": self.exportWebCheckBox.isChecked(),
             "output_stats": self.exportStatsCheckBox.isChecked(),
             "output_parameters": self.exportParametersCheckBox.isChecked(),
             "mapping_attributes": self.map_settings_dialog.settings['selected_fields'],
@@ -288,8 +273,6 @@ class SMPGDialog(QDialog, FORM_CLASS):
         else: self.observedDataRadioButton.setChecked(True)
 
         # update outputs
-        self.exportWebCheckBox.setEnabled(True)
-        self.exportWebCheckBox.setChecked(parameters.output_web)
         self.exportStatsCheckBox.setEnabled(True)
         self.exportStatsCheckBox.setChecked(parameters.output_stats)
         self.exportParametersCheckBox.setEnabled(True)
@@ -421,7 +404,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
                 csv_task.addNextTasks(map_task)
                 long_tasks.append(map_task)
 
-        if self.exportWebCheckBox.isChecked():
+        if True:
             web_task = TaskHandler(
                 'Web Report Export Task', 
                 export_to_web_files, 
@@ -576,25 +559,6 @@ Years in Dataset: {dataset_properties.season_quantity}
 Dekads in Current Year: {dataset_properties.current_season_length}'''
         self.datasetInfoLabel.setText(dg_text)
 
-    def map_selection_combobox_event(self, text: str):
-        """Update the selected map layer and display its fields.
-
-        Args:
-            text (str): The current text of the combo box.
-        """
-        if text != '' and text in get_vector_layers().keys():
-            self.shapefilePathLineEdit.setText("")
-            self.selected_layer = get_vector_layers()[text]
-        else: self.selected_layer = None
-        self.update_target_field_combobox_content()
-
-    def update_map_combobox_content(self):
-        """Update the content of the map selection combo box."""
-        maps = get_vector_layers()
-        map_names = maps.keys()
-        self.mapSelectionComboBox.clear()
-        self.mapSelectionComboBox.addItems(map_names)
-
     def update_target_field_combobox_content(self):
         """Update the content of the target field combo box."""
         fields = get_fields(self.selected_layer)
@@ -620,24 +584,8 @@ Dekads in Current Year: {dataset_properties.current_season_length}'''
         self.update_target_field_combobox_content()
         self.shapefilePathLineEdit.setText(shp_source)
 
-
-    def source_selection_rb_event(self):
-        """
-        Update the widgets based on whether a shapefile or project layer is 
-        selected and remove the previously selected layer.
-        """
-        self.selected_layer = None
-        use_layer = self.useProjectLayerRadioButton.isChecked()
-        use_shp = self.useShapefileRadioButton.isChecked()
-        for w in self.use_project_layer_widgets: w.setHidden(not use_layer and use_shp)
-        for w in self.import_shp_widgets: w.setHidden(not use_shp and use_layer)
-        if use_shp: self.mapSelectionComboBox.setCurrentIndex(-1)
-        if use_layer: self.shapefilePathLineEdit.setText('')
-        self.update_target_field_combobox_content()
-
     def showEvent(self, a0):
         """Function to run when the dialog is oppened."""
-        self.update_map_combobox_content()
         return super().showEvent(a0)
 
 class TaskHandler(QgsTask):
