@@ -119,6 +119,7 @@ class Parameters:
         self.output_stats = True
         self.output_parameters = False
         self.mapping_attributes: list[str] = []
+        self.open_web_report = False
 
         self.set_parameters(parameters, **kwargs)
 

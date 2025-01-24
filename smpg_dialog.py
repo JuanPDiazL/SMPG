@@ -117,6 +117,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
     exportStatsCheckBox: QCheckBox
     exportParametersCheckBox: QCheckBox
     mappingButton: QPushButton
+    openWebReportCheckBox: QCheckBox
 
     # information group
     datasetInfoLabel: QLabel
@@ -187,6 +188,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
             "output_stats": self.exportStatsCheckBox.isChecked(),
             "output_parameters": self.exportParametersCheckBox.isChecked(),
             "mapping_attributes": self.map_settings_dialog.settings['selected_fields'],
+            "open_web_report": self.openWebReportCheckBox.isChecked(),
             "target_id_field": self.targetFieldComboBox.currentText(),
         }
 
@@ -446,7 +448,8 @@ class SMPGDialog(QDialog, FORM_CLASS):
             self.task_manager.addTask(task)
 
         # triggers event on progress dialog when finished
-        self.task_manager.allTasksFinished.connect(lambda: self.progress_dialog.finish_wait(self.task_manager, long_tasks))
+        callback = lambda: webbrowser.open(os.path.join(self.destination_path, f'{self.dataset_filename}_Web_Report', 'index.html')) if self.openWebReportCheckBox.isChecked() else None
+        self.task_manager.allTasksFinished.connect(lambda: self.progress_dialog.finish_wait(self.task_manager, long_tasks, callback))
 
     def set_dataset(self, parameters):
         """Calculates derived data from the dataset, and returns it."""

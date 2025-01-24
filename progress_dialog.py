@@ -27,7 +27,7 @@ class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
         
         self.setModal(True)
 
-    def finish_wait(self, task_manager: QgsTaskManager, tasks: list[QgsTask]):
+    def finish_wait(self, task_manager: QgsTaskManager, tasks: list[QgsTask], callback=None):
         """
         Finishes the wait state and displays a message box with the total time 
         elapsed.
@@ -48,5 +48,9 @@ class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
                 try: raise exception
                 except Exception as e:
                     QMessageBox.critical(self, "Error", f'{task.title} raised an exception\n{str(e)}\n\n{traceback.format_exc()}', QMessageBox.Ok)
+
+        if callback is not None:
+            callback()
+
         QMessageBox.information(self, 'Task Completed', f'Task completed.\nTime elapsed: {total_time}\nThe outputs were saved at {self.parentWidget().destination_path}', QMessageBox.Ok)
         return
