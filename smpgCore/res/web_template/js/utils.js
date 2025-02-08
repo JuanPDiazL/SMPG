@@ -303,9 +303,11 @@ function confirmSearch(event) {
 }
 
 function updateDocument(place) {
-    document.getElementById('contentHeaderText').textContent = place;
-    const plot2Title = `Current Rainfall Status (${datasetProperties.current_season_id}). Climatology: [${datasetProperties.climatology_year_ids[0]}, ${getLast(datasetProperties.climatology_year_ids)}]`;
-    const plot4Title = `Seasonal Rainfall Accumulation Up to Current Dekad for ${place}`;
+    document.getElementById('contentHeaderText').textContent = `Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}]`;
+    const plot1Title = `Seasonal Accumulations`;
+    const plot2Title = `Current Year Status: ${datasetProperties.current_season_id}. Climatology: [${datasetProperties.climatology_year_ids[0]}, ${getLast(datasetProperties.climatology_year_ids)}]`;
+    const plot3Title = `Ensemble`;
+    const plot4Title = `Seasonal Accumulation Percentiles`;
     bb1.update(place);
     bb2.update(place);
     bb3.update(place);
@@ -316,7 +318,9 @@ function updateDocument(place) {
     table4.update(getDataProbabilityEoS(place));
     table5.update(getPercentileTable(place));
     table6.update(getCurrentSeasonTable(place));
+    document.getElementById('plot1Title').textContent = plot1Title;
     document.getElementById('plot2Title').textContent = plot2Title;
+    document.getElementById('plot3Title').textContent = plot3Title;
     document.getElementById('plot4Title').textContent = plot4Title;
 
     if(previousSelectionElement != null) {
