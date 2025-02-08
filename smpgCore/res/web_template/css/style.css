@@ -2,7 +2,7 @@
 
 body {
     --sidebarWidth: 15em;
-    --mainWidth: 85%;
+    --mainWidth: calc(100% - var(--sidebarWidth));
     --dark-bg-color: #1d2a35;
     --dark-stroke-color: #2d3a45;
     line-height: .9;
@@ -98,12 +98,9 @@ body {
     
 #contentRoot {
     background-color: inherit;
-    width: calc(var(--mainWidth) + var(--sidebarWidth));
     margin: auto auto;
     height: calc(100% - 2.5em);
     box-sizing: border-box;
-}.sidebar-closed #contentRoot {
-    width: var(--mainWidth);
 }
 
 #contentBody {
