@@ -313,7 +313,7 @@ function updateDocument(place) {
     bb3.update(place);
     bb4.update(place);
     table1.update(getDataAssessmentCD(place));
-    table2.update(getDataSeasonalAnalysis(place));
+    // table2.update(getDataSeasonalAnalysis(place));
     table3.update(getDataProjectionEoS(place));
     table4.update(getDataProbabilityEoS(place));
     table5.update(getPercentileTable(place));
