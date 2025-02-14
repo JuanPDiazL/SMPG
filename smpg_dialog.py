@@ -204,7 +204,8 @@ class SMPGDialog(QDialog, FORM_CLASS):
         """
         self.crossYearsCheckBox.setChecked(parameters.cross_years)
         year_ids = get_properties_validated_year_list(self.dataset_properties, self.crossYearsCheckBox.isChecked())
-        sub_season_ids = define_seasonal_dict(self.crossYearsCheckBox.isChecked())
+        period_unit = self.dataset_properties.period_unit_id
+        sub_season_ids = define_seasonal_dict(self.crossYearsCheckBox.isChecked(), period_unit_id=period_unit)
 
         # update climatology
         self.climatologyStartComboBox.setEnabled(True)

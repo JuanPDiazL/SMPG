@@ -31,7 +31,8 @@ class Dataset:
         self.parameters = parameters
         
         self.properties.dataset_name = name
-        default_sub_seasons = define_seasonal_dict(self.parameters.cross_years)
+        default_sub_seasons = define_seasonal_dict(self.parameters.cross_years, self.properties.period_unit_id)
+
 
         # calculation for year ids and season shift
         if self.parameters.cross_years:

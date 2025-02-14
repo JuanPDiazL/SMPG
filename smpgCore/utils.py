@@ -153,14 +153,14 @@ class Parameters:
         """
         return {k: getattr(self, k) for k in dir(self) if not k.startswith('_') and k != 'to_dict'}
 
-def define_seasonal_dict(july_june=False, period_unit='Dekad') -> list:
+def define_seasonal_dict(july_june=False, period_unit_id='Dekad') -> list:
     """Creates a list of seasonal periods.
 
     Args:
         july_june: A boolean indicating whether the seasons should be defined 
             from July to June. 
             Defaults to False.
-        period_unit (str, optional): Defines the length of each seasonal 
+        period_unit_id (str, optional): Defines the length of each seasonal 
             period. 
             Defaults to 'Dekad'.
 
@@ -170,7 +170,7 @@ def define_seasonal_dict(july_june=False, period_unit='Dekad') -> list:
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     start = 6 if july_june else 0
     months = months[start:]+months[:start]
-    period_unit = yearly_periods[period_unit] // 12
+    period_unit = yearly_periods[period_unit_id] // 12
     if period_unit == 1: return months
     dekad_strings = [f'{month}-{i+1}' for month in months for i in range(period_unit)]
     return dekad_strings
