@@ -194,6 +194,7 @@
         let selected_seasons_ensemble = parseRowsObjectCsv(decompress(selected_seasons_ensemble_csv_obj));
         let selected_seasons_long_term_stats   = parseRowsObjectCsv(decompress(selected_seasons_long_term_stats_csv_obj));
 
+        const period_unit = datasetProperties['period_unit_id'];
         const monitoringOffset = datasetProperties['sub_season_offset'];
         const firstPlaceKey = datasetProperties['place_ids'][0];
         const monitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
@@ -225,7 +226,7 @@
             bb3 = new EnsembleBillboardChart('#chart3');
             bb4 = new AccumulationsBillboardCurrentChart('#chart4');
 
-            table1 = new statsTable('#container1 .table-container', 'Assessment at Current Dekad');
+            table1 = new statsTable('#container1 .table-container', `Assessment at Current ${period_unit}`);
             // table2 = new statsTable('#container2 .table-container', 'Seasonal Analysis');
             table3 = new statsTable('#container3 .table-container', 'Projection at EoS');
             table4 = new statsTable('#container3 .table-container', 'Probability at EoS');

@@ -3,6 +3,12 @@ const SMPG_COOKIE_PREFIX = 'SMPG_';
 const DARKMODE_COOKIE_NAME = `${SMPG_COOKIE_PREFIX}DARKMODE`;
 const MENU_HIDE_STATE_COOKIE_NAME = `${SMPG_COOKIE_PREFIX}MENU_HIDE_STATE`;
 
+const SHORT_NAMES = {
+    "Pentad": "Ptd.",
+    "Dekad": "Dek.",
+    "Month": "Mth.",
+};
+
 const BODY_ELEMENT = document.body;
 
 const HIDE_CLASS = 'w3-hide';

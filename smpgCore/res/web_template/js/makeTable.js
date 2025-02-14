@@ -1,8 +1,8 @@
 function getDataAssessmentCD(index) {
     let tableData = [
-        ['Total C. Dk.', place_general_stats[index]['Current Season Total'], place_general_stats[index]['Current Season Total']],
-        ['LTA C. Dk.', selected_seasons_general_stats[index]['LTA up to Current Season'], seasonal_general_stats[index]['LTA up to Current Season']],
-        ['C. Dk./LTA Pct.', selected_seasons_general_stats[index]['C. Dk./LTA Pct.'], seasonal_general_stats[index]['C. Dk./LTA Pct.']],
+        [`Total C. ${SHORT_NAMES[period_unit]}`, place_general_stats[index]['Current Season Total'], place_general_stats[index]['Current Season Total']],
+        [`LTA C. ${SHORT_NAMES[period_unit]}`, selected_seasons_general_stats[index]['LTA up to Current Season'], seasonal_general_stats[index]['LTA up to Current Season']],
+        [`C. ${SHORT_NAMES[period_unit]}/LTA Pct.`, selected_seasons_general_stats[index]['C. Dk./LTA Pct.'], seasonal_general_stats[index]['C. Dk./LTA Pct.']],
     ];
     return tableData;
 }

@@ -28,8 +28,8 @@ import json
 import traceback
 import webbrowser
 
-from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import (
+from PyQt5 import uic
+from PyQt5.QtWidgets import (
     QDialog,
     QMessageBox,
     QFileDialog,
@@ -567,7 +567,7 @@ f'''First Year: {dataset_properties.year_ids[0]}
 Last Year: {dataset_properties.year_ids[-1]}
 Current Year: {dataset_properties.current_season_id}
 Years in Dataset: {dataset_properties.season_quantity}
-Dekads in Current Year: {dataset_properties.current_season_length}'''
+{dataset_properties.period_unit_id}s in Current Year: {dataset_properties.current_season_length}'''
         self.datasetInfoLabel.setText(dg_text)
 
     def update_target_field_combobox_content(self):
