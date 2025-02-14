@@ -351,7 +351,7 @@ def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFram
     elements.
 
     Parameters:
-        current_data (ndarray): The array to be used in the 
+        fixed_data (ndarray): The array to be used in the 
             calculation of the ensemble.
         post_data (DataFrame): A DataFrame to be used in the calculation 
             of the ensemble.
@@ -361,8 +361,13 @@ def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFram
             `fixed_data` and `post_data`.
     """
     fixed_series_indexes = post_data.columns[:len(fixed_data)]
-    fixed_series = pd.Series(fixed_data, index=fixed_series_indexes)
-    return post_data.iloc[:, len(fixed_data):].apply(lambda row: pd.concat([fixed_series, row]).cumsum(), axis=1)
+    fixed_series = pd.Series(fixed_data, index=fixed_series_indexes, name='Current Season')
+    post_data_slice = post_data.iloc[:, len(fixed_data):]
+
+    if post_data_slice.empty:
+        return post_data.apply(lambda _: fixed_series.cumsum(), axis=1)
+    return post_data_slice.apply(lambda row: pd.concat([fixed_series, row]).cumsum(), axis=1)
+
 
 def slice_by_element(_list: list, start, end=None) -> list:
     """Slice a list by the position of a given element.
