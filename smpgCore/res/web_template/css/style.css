@@ -236,15 +236,25 @@ path {
     height: 100%;
 }
 
+#mapContainer {
+    position: relative;
+    height: 100%;
+    aspect-ratio: 1;
+    background-color: #fff;
+    border: 1px solid #ccc;
+}.darkmode #mapContainer {
+    background-color: var(--dark-bg-color) !important;
+}
+
 #mapSvg {
     max-width: 100%;
     max-height: 100%;
-    /* border: 1px solid #ccc; */
 }
 
 #mapOverlay {
     position: absolute;
     background-color: #fffc;
+    z-index: 1;
 }.darkmode #mapOverlay {
     position: absolute;
     background-color: #1d2a35cc;
@@ -282,4 +292,8 @@ path {
 
 #mapLegend {
     position: absolute;
+    right: 5pt;
+    bottom: 1pt;
+    display: inline-block;
+    pointer-events: none;
 }
