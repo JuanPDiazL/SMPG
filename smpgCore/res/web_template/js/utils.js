@@ -9,8 +9,6 @@ const SHORT_NAMES = {
     "Month": "Mth.",
 };
 
-const BODY_ELEMENT = document.body;
-
 const HIDE_CLASS = 'w3-hide';
 
 const UNCAT_COLOR = '#aaaf';
@@ -101,11 +99,13 @@ function handleNavigation() {
     const place = params['place'];
     let mapRoot = $('#mapRoot');
     let plotsRoot = $('#plotsRoot');
+    let isViewMap = false;
     switch (mode) {
         case "map":
             if (isDeclared('topojson_map')) {
                 mapRoot.removeClass(HIDE_CLASS);
                 plotsRoot.addClass(HIDE_CLASS);
+                isViewMap = true;
                 break;
             }
         case "plots":
@@ -115,11 +115,13 @@ function handleNavigation() {
         case "test":
             mapRoot.removeClass(HIDE_CLASS);
             plotsRoot.removeClass(HIDE_CLASS);
+            isViewMap = true;
             break;
         default:
             if (isDeclared('topojson_map')) {
                 mapRoot.removeClass(HIDE_CLASS);
                 plotsRoot.addClass(HIDE_CLASS);
+                isViewMap = true;
                 break;
             } else {
                 mapRoot.addClass(HIDE_CLASS);
@@ -128,18 +130,22 @@ function handleNavigation() {
             break;
     }
     
-
-    let selectedPlace = "";
-    if (Object.values(datasetProperties["place_ids"]).includes(place)){
-        selectedPlace = place;
+    if(isViewMap) {
+        HEADER.textContent = `Dataset: ${datasetProperties.dataset_name}, Stat: ${colorNode.value ? colorNode.value : "None"}`;
+    } else {
+        let selectedPlace = "";
+        if (Object.values(datasetProperties["place_ids"]).includes(place)){
+            selectedPlace = place;
+        }
+        else{
+            selectedPlace = firstPlaceKey
+        }
+        HEADER.textContent = `Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}]`;
+        updateDocument(selectedPlace);
+        previousSelectionElement = sidebarElements[selectedPlace];
+        placeUnder(table4.table, table3.table);
+        placeUnder(table6.table, table5.table);
     }
-    else{
-        selectedPlace = firstPlaceKey
-    }
-    updateDocument(selectedPlace);
-    previousSelectionElement = sidebarElements[selectedPlace];
-    placeUnder(table4.table, table3.table);
-    placeUnder(table6.table, table5.table);
 }
 
 function getHashParams(param=null) {
@@ -207,14 +213,14 @@ function getLast(arr) {
 function setMenuState(value) {
     setCookie(MENU_HIDE_STATE_COOKIE_NAME, value);
     if (value === "true") {
-        BODY_ELEMENT.classList.add('sidebar-closed');
+        BODY.classList.add('sidebar-closed');
     } else {
-        BODY_ELEMENT.classList.remove('sidebar-closed');
+        BODY.classList.remove('sidebar-closed');
     }
 }
 
 function menuToggle() {
-    setCookie(MENU_HIDE_STATE_COOKIE_NAME, BODY_ELEMENT.classList.toggle('sidebar-closed'));
+    setCookie(MENU_HIDE_STATE_COOKIE_NAME, BODY.classList.toggle('sidebar-closed'));
     window.dispatchEvent(new Event('resize'));
   }
 
@@ -309,7 +315,6 @@ function confirmSearch(event) {
 }
 
 function updateDocument(place) {
-    document.getElementById('contentHeaderText').textContent = `Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}]`;
     const plot1Title = `Seasonal Accumulations`;
     const plot2Title = `Current Year Status: ${datasetProperties.current_season_id}. Climatology: [${datasetProperties.climatology_year_ids[0]}, ${getLast(datasetProperties.climatology_year_ids)}]`;
     const plot3Title = `Ensemble`;

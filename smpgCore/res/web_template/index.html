@@ -165,10 +165,6 @@
         let property_ids = null;
         let fieldId = null;
         
-        // Nodes
-        let selectNode = null;
-        let legendCbNode = null;
-        let colorNode = null;
         let bb1 = null;
         let bb2 = null;
         let bb3 = null;
@@ -181,7 +177,7 @@
         let table6 = null;
         let sidebarElements = [];
 
-        
+        // Data
         datasetProperties = JSON.parse(decompress(datasetProperties));
         parameters = JSON.parse(decompress(parameters));
         let place_general_stats = csvParse(decompress(place_general_stats_csv));
@@ -201,8 +197,9 @@
         const firstPlaceKey = datasetProperties['place_ids'][0];
         const monitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
-        const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null) 
+        const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null);
 
+        // Debug data logs
         // console.log('properties', datasetProperties);
         // console.log('place_general_stats', place_general_stats);
         // console.log('place_long_term_stats', place_long_term_stats);
@@ -216,6 +213,14 @@
         // console.log('selected_seasons_ensemble', selected_seasons_ensemble);
         // console.log('selected_seasons_long_term_stats', selected_seasons_long_term_stats);
 
+        // HTML Elements
+        const BODY = document.body;
+        const HEADER = document.getElementById('contentHeaderText');
+        let selectNode = d3.select("#featureSelect").node();
+        let legendCbNode = d3.select("#showLegend").node();
+        let colorNode = d3.select("#colorSelect").node();
+        colorNode.value = '';
+        
         $(document).ready(() => {
             $('#noscriptMessage').hide();
             
@@ -243,11 +248,6 @@
                 let mapjson = topojson.feature(topojson_map, topojson_map.objects.map);
                 property_ids = Object.keys(Object.values(mapjson["features"])[0]["properties"]);
                 fieldId = parameters["target_id_field"];
-
-                selectNode = d3.select("#featureSelect").node();
-                legendCbNode = d3.select("#showLegend").node();
-                colorNode = d3.select("#colorSelect").node();
-                colorNode.value = '';
                 updateSelect(selectNode, property_ids);
                 selectNode.value = fieldId;
                 drawMap(mapjson);

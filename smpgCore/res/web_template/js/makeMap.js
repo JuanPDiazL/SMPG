@@ -116,7 +116,7 @@ function drawMap(geoJson) {
         const selectedBins = categories[selectedStatId];
         // Update legend based on the selected property
         const legend = Legend(d3.scaleOrdinal(Object.keys(selectedBins), Object.values(selectedBins).map(bin => bin.color)), {
-            title: "Legend",
+            title: selectedStatId,
             tickSize: 0,
             width: 500,
         });
@@ -127,5 +127,6 @@ function drawMap(geoJson) {
             const category = categorizeValue(value, selectedBins);
             return selectedBins[category]["color"];
         });
+        HEADER.textContent = `Dataset: ${datasetProperties.dataset_name}, Stat: ${this.value ? this.value : "None"}`;
     });
 }

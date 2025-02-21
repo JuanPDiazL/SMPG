@@ -15,22 +15,25 @@ function cropCanvas(canvas, x1, y1, x2, y2) {
 
 function save_reports() {
     const start = Date.now();
-    let node = document.getElementById('contentRoot')
+    let node = null;
 
     let params = getHashParamsObject();
-    const datasetName = `${datasetProperties['dataset_name']}_map`;
+    const mapName = `${datasetProperties['dataset_name']}${colorNode.value ? "_" : ""}${colorNode.value}`;
     let filename;
     switch (params['mode']) {
         case 'map':
-            filename = datasetName;
+            node = document.getElementById('mapContainer')
+            filename = mapName;
             break;
 
         case 'plots':
+            node = document.getElementById('contentRoot');
             filename = params['place'];
             break;
 
         default:
-            filename = datasetName;
+            node = document.getElementById('mapContainer')
+            filename = mapName;
             break;
     }
     
