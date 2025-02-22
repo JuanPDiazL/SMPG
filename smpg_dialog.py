@@ -59,7 +59,7 @@ from .smpgCore.utils import (
     get_properties_validated_year_list, get_default_parameters_from_properties,
     )
 from .smpgCore.pyqgis_utils import (
-    get_fields, get_vector_layers, load_layer_file, get_root,
+    get_fields, load_layer_file, validate_layer
 )
     
 from .smpgCore.exporters.WebExporter import export_to_web_files
@@ -189,6 +189,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
             "output_parameters": self.exportParametersCheckBox.isChecked(),
             "mapping_attributes": self.map_settings_dialog.settings['selected_fields'],
             "open_web_report": self.openWebReportCheckBox.isChecked(),
+            "shapefile_path": self.shapefilePathLineEdit.text(),
             "target_id_field": self.targetFieldComboBox.currentText(),
         }
 
@@ -483,7 +484,13 @@ class SMPGDialog(QDialog, FORM_CLASS):
             QMessageBox.critical(self, 'Error', f'Could not load parameters from {self.parameters_source}.\n\n{str(e)}\n\n{traceback.format_exc()}')
             return
         
-        # field updates
+        shp_source = parameters.shapefile_path
+        layer_preload = validate_layer(load_layer_file(shp_source))
+        if layer_preload is not None:
+            self.selected_layer = layer_preload
+            self.update_target_field_combobox_content()
+            self.shapefilePathLineEdit.setText(shp_source)
+
         self.importParametersLineEdit.setText(self.parameters_source)
         self.update_fields(parameters)
 
@@ -583,8 +590,8 @@ Years in Dataset: {dataset_properties.season_quantity}
                                 QMessageBox.Ok)
             return
         shp_source = temp_shp_source
-        layer_preload = load_layer_file(shp_source)
-        if not layer_preload.isValid(): 
+        layer_preload = validate_layer(load_layer_file(shp_source))
+        if layer_preload is None: 
             QMessageBox.critical(self, "Error", 
                                 'The selected shapefile is not valid.', 
                                 QMessageBox.Ok)

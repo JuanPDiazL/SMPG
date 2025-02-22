@@ -25,6 +25,21 @@ def load_layer_file(source: str) -> QgsVectorLayer:
         return QgsVectorLayer(source, filename, "ogr")
     elif extension == '.csv':
         return QgsVectorLayer(f'file:///{source}?type=csv&detectTypes=yes&geomType=none', filename, "delimitedtext")
+    
+def validate_layer(layer: QgsVectorLayer) -> QgsVectorLayer:
+    """Validate a vector layer.
+    It will return the layer if it is valid, otherwise it will return None.
+    
+    Args:
+        layer (QgsVectorLayer): The layer to validate.
+
+    Returns:
+        QgsVectorLayer: The validated layer or None if it is not valid.
+    """
+    if layer is None or not layer.isValid():
+        return None
+    return layer
+
 
 def get_fields(layer :QgsVectorLayer) -> list[str]:
     """Get the fields of a vector layer.

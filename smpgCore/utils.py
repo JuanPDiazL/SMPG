@@ -102,6 +102,7 @@ class Parameters:
                 Defaults to {}.
         """
         # input defaults
+        self.shapefile_path: str = ''
         self.target_id_field: str = ''
         # climatology defaults
         self.climatology_start: Optional[str] = '1991'
@@ -119,7 +120,7 @@ class Parameters:
         self.output_stats = True
         self.output_parameters = False
         self.mapping_attributes: list[str] = []
-        self.open_web_report = False
+        self.open_web_report = True
 
         self.set_parameters(parameters, **kwargs)
 
