@@ -360,15 +360,6 @@ class SMPGDialog(QDialog, FORM_CLASS):
                                  'A target field must be selected.', 
                                  QMessageBox.Ok)
             return
-
-        for output in self.output_checkboxes:
-            if output.isChecked():
-                break
-        else:
-            QMessageBox.warning(self, "Warning", 
-                                'Please select at least one option from Output Preferences.', 
-                                QMessageBox.Ok)
-            return
         
         # warn user if no shapefile is selected
         if self.selected_layer is None:
