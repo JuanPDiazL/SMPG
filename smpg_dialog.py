@@ -370,6 +370,13 @@ class SMPGDialog(QDialog, FORM_CLASS):
                                 QMessageBox.Ok)
             return
         
+        # warn user if no shapefile is selected
+        if self.selected_layer is None:
+            no_shp_dialog_response = QMessageBox.warning(self, "No shapefile loaded.", 
+                                f'No shapefile was specified. No maps will be produced.\nDo you want to continue?', 
+                                QMessageBox.Yes, QMessageBox.No)
+            if no_shp_dialog_response == QMessageBox.No: return
+
         # path reading
         self.destination_path = os.path.normpath(QFileDialog.getExistingDirectory(self, 'Save results', self.dataset_source_path))
         if self.destination_path == ".":
@@ -379,10 +386,10 @@ class SMPGDialog(QDialog, FORM_CLASS):
             return
         
         # ask for creating subfolder
-        dlg = QMessageBox.information(self, "Create new folder?", 
+        new_directory_dialog_response = QMessageBox.information(self, "Create new folder?", 
                             f'Do you want to create a folder for the report files?\nThe folder {self.dataset_filename} at the path {self.destination_path} will be created.', 
                             QMessageBox.Yes, QMessageBox.No)
-        if dlg == QMessageBox.Yes:
+        if new_directory_dialog_response == QMessageBox.Yes:
             self.destination_path = os.path.join(self.destination_path, self.dataset_filename)
         
         # computation with parameters given from GUI
