@@ -47,7 +47,7 @@ const categories = {
         '75-89': { 'color': '#ed6e43', 'function': (x) => x >= 75 && x < 90 },
         '90-100': { 'color': '#d7191c', 'function': (x) => x >= 90 && x <= 100 },
     },
-    'Probability Between Normal': {
+    'Probability of Normal': {
         '0-19': { 'color': '#e6e6e6', 'function': (x) => x >= 0 && x < 20 },
         '20-39': { 'color': '#f0f9e8', 'function': (x) => x >= 20 && x < 40 },
         '40-59': { 'color': '#bae4bc', 'function': (x) => x >= 40 && x < 60 },

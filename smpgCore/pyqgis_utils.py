@@ -137,7 +137,7 @@ def apply_default_attr_style(map_layer: QgsVectorLayer, class_attribute: str) ->
         'C. Dk./LTA Pct.':          'rainfall_anomaly_percent_polygon',
         'Ensemble Med./LTA Pct.':   'rainfall_anomaly_percent_polygon',
         'Probability Below Normal': 'prob_below_normal_polygons',
-        'Probability in Normal':    'prob_above_normal_polygons',
+        'Probability of Normal':    'prob_above_normal_polygons',
         'Probability Above Normal': 'prob_above_normal_polygons',
         'Ensemble Med. Pctl.':      'SMPG_precipitation_percentile',
         'Current Season Pctl.':     'SMPG_precipitation_percentile',

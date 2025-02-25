@@ -215,7 +215,7 @@ class Place:
             'Ensemble 33 Pctl.': ensemble_pctls[0],
             'Ensemble 67 Pctl.': ensemble_pctls[1],
             'E. Prob. Below Normal Pct.': ensemble_pctl_probabilities[0]*100,
-            'E. Prob. Between Normal Pct.': ensemble_pctl_probabilities[1]*100,
+            'E. Prob. of Normal Pct.': ensemble_pctl_probabilities[1]*100,
             'E. Prob. Above Normal Pct.': ensemble_pctl_probabilities[2]*100,
         }, 
         name=self.id)

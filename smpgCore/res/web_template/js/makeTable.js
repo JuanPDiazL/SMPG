@@ -25,7 +25,7 @@ function getDataProjectionEoS(index) {
 function getDataProbabilityEoS(index) {
     let tableData = [
         ['Above Normal', selected_seasons_general_stats[index]['E. Prob. Above Normal Pct.'], seasonal_general_stats[index]['E. Prob. Above Normal Pct.']],
-        ['Between Normal', selected_seasons_general_stats[index]['E. Prob. Between Normal Pct.'], seasonal_general_stats[index]['E. Prob. Between Normal Pct.']],
+        ['Normal', selected_seasons_general_stats[index]['E. Prob. of Normal Pct.'], seasonal_general_stats[index]['E. Prob. of Normal Pct.']],
         ['Below Normal', selected_seasons_general_stats[index]['E. Prob. Below Normal Pct.'], seasonal_general_stats[index]['E. Prob. Below Normal Pct.']],
     ];
     return tableData;
