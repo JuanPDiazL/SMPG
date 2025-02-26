@@ -148,6 +148,34 @@
         </div>
     </div>
 
+    <div id="modal" class="w3-modal">
+        <div class="w3-modal-content w3-card-4">
+
+            <header class="w3-container w3-red">
+              <span onclick="closeModal()"
+              class="w3-button w3-display-topright w3-ripple w3-hover-pale-red">&times;</span>
+              <h2 id="modalHeaderText"></h2>
+            </header>
+        
+            <div class="w3-container">
+              <p id="modalText"></p>
+            </div>
+        
+            <!-- <footer class="w3-container w3-red">
+              <p>Modal Footer</p>
+            </footer> -->
+        </div>
+
+        <script>
+            var modal = document.getElementById('modal');
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        </script>
+    </div>
+
     <script src="./data/general_stats.js"></script>
     <script src="./data/properties.js"></script>
     <script src="./data/seasonal_stats.js"></script>
@@ -216,6 +244,10 @@
         // HTML Elements
         const BODY = document.body;
         const HEADER = document.getElementById('contentHeaderText');
+        const MODAL = document.getElementById('modal');
+        const MODAL_HEADER = document.getElementById('modalHeaderText');
+        const MODAL_TEXT = document.getElementById('modalText');
+
         let selectNode = d3.select("#featureSelect").node();
         let legendCbNode = d3.select("#showLegend").node();
         let colorNode = d3.select("#colorSelect").node();
