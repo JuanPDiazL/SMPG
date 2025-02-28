@@ -226,6 +226,7 @@
         const monitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null);
+        const hasMap = isDeclared('topojson_map');
 
         // Debug data logs
         // console.log('properties', datasetProperties);
@@ -274,8 +275,8 @@
 
             
             sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
-            handleNavigation(); // initial update
-            if(isDeclared('topojson_map')) {
+
+            if(hasMap) {
                 topojson_map = JSON.parse(decompress(topojson_map));
                 let mapjson = topojson.feature(topojson_map, topojson_map.objects.map);
                 property_ids = Object.keys(Object.values(mapjson["features"])[0]["properties"]);
