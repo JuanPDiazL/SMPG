@@ -93,7 +93,8 @@ function navigateTo(queryParams={}, keepOlpParams=true) {
     window.location.hash = paramsString;
 }
 
-function handleNavigation() {
+function handleNavigation(event) {
+    const oldUrl = event.oldUrl;
     const params = getHashParamsObject();
     const mode = params['mode'];
     const place = params['place'];
@@ -102,36 +103,27 @@ function handleNavigation() {
     let isViewMap = false;
     switch (mode) {
         case "map":
-            if (isDeclared('topojson_map')) {
-                mapRoot.removeClass(HIDE_CLASS);
-                plotsRoot.addClass(HIDE_CLASS);
+            if (hasMap) {
                 isViewMap = true;
                 break;
             }
         case "plots":
-            plotsRoot.removeClass(HIDE_CLASS);
-            mapRoot.addClass(HIDE_CLASS);
-            break;
-        case "test":
-            mapRoot.removeClass(HIDE_CLASS);
-            plotsRoot.removeClass(HIDE_CLASS);
-            isViewMap = true;
+            // isViewMap = false;
             break;
         default:
-            if (isDeclared('topojson_map')) {
-                mapRoot.removeClass(HIDE_CLASS);
-                plotsRoot.addClass(HIDE_CLASS);
+            if (hasMap) {
                 isViewMap = true;
                 break;
             } else {
-                mapRoot.addClass(HIDE_CLASS);
-                plotsRoot.removeClass(HIDE_CLASS);
+                // isViewMap = false;
             }
             break;
     }
     
     if(isViewMap) {
         HEADER.textContent = `Dataset: ${datasetProperties.dataset_name}, Stat: ${colorNode.value ? colorNode.value : "None"}`;
+        mapRoot.removeClass(HIDE_CLASS);
+        plotsRoot.addClass(HIDE_CLASS);
     } else {
         let selectedPlace = "";
         if (Object.values(datasetProperties["place_ids"]).includes(place)){
@@ -141,6 +133,9 @@ function handleNavigation() {
             selectedPlace = firstPlaceKey
         }
         HEADER.textContent = `Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}]`;
+        mapRoot.addClass(HIDE_CLASS);
+        plotsRoot.removeClass(HIDE_CLASS);
+
         updateDocument(selectedPlace);
         previousSelectionElement = sidebarElements[selectedPlace];
         placeUnder(table4.table, table3.table);

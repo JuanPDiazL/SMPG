@@ -285,6 +285,12 @@
                 drawMap(mapjson);
             }
             window.onhashchange = handleNavigation; // update everything when when the url changes
+            window.dispatchEvent(new HashChangeEvent('hashchange',
+                {
+                    oldURL: location.href,
+                    newURL: location.href
+                }
+            )); // initial update
         });
     </script>
 </body>
