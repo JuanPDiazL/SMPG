@@ -130,7 +130,8 @@ function handleNavigation(event) {
             selectedPlace = place;
         }
         else{
-            selectedPlace = firstPlaceKey
+            showModal(`There is no data for ${place}.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Selected Region ID: ${place}<br>Target Field: ${parameters.target_id_field}`);
+            return;
         }
         HEADER.textContent = `Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}]`;
         mapRoot.addClass(HIDE_CLASS);
@@ -528,4 +529,16 @@ function Legend(color, {
             .text(title));
 
     return svg.node();
+}
+
+function showModal(message) {
+    MODAL.style.display = "block";
+    MODAL_HEADER.textContent = "Warning";
+    MODAL_TEXT.innerHTML = message;
+}
+
+function closeModal() {
+    MODAL.style.display = "none";
+    MODAL_HEADER.textContent = "";
+    MODAL_TEXT.innerHTML = "";
 }
