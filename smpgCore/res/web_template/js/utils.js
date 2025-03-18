@@ -26,6 +26,18 @@ const categories = {
         '140-159': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '160+': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
+    'C. Dk.+Forecast/LTA Pct.': {
+        '0-19': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
+        '20-39': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
+        '40-59': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
+        '60-79': { 'color': '#ffe69e', 'function': (x) => x >= 60 && x < 80 },
+        '80-89': { 'color': '#fff9a3', 'function': (x) => x >= 80 && x < 90 },
+        '90-109': { 'color': '#f2f2f2', 'function': (x) => x >= 90 && x < 110 },
+        '110-119': { 'color': '#c6eab3', 'function': (x) => x >= 110 && x < 120 },
+        '120-139': { 'color': '#56cd94', 'function': (x) => x >= 120 && x < 140 },
+        '140-159': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
+        '160+': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
+    },
     'Ensemble Med./LTA Pct.': {
         '0-19': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-39': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },

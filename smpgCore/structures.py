@@ -93,9 +93,9 @@ class Place:
                                   columns=columns)
 
         # forecast case
-        forecast_value = NaN
+        self.forecast_value = NaN
         if parent.parameters.is_forecast: 
-            forecast_value = self.current_season[-1]
+            self.forecast_value = self.current_season[-1]
             self.current_season = self.current_season[:-1]
         
         # get selected seasons
@@ -155,8 +155,8 @@ class Place:
             'Climatology Average at Current Dekad': self.clim_seasons_cumsum.mean()[self.current_index],
             'Climatology 33 Pctl.': self.clim_seasons_pctls[0],
             'Climatology 67 Pctl.': self.clim_seasons_pctls[1],
-            'Forecast': forecast_value,
-            'Current Season+Forecast': self.current_cumsum_mon[-1] + forecast_value,
+            'Forecast': self.forecast_value,
+            'Current Season+Forecast': self.current_cumsum_mon[-1] + self.forecast_value,
         }
         , name=self.id)
         self.seasonal_general_stats, self.seasonal_long_term_stats = \
@@ -183,6 +183,7 @@ class Place:
 
         seasonal_lta = seasonal_cumsum.mean()
         lta_upto_current_season = seasonal_lta[self.current_index]
+        lta_upto_forecast = seasonal_lta[self.current_index + 1]
         seasonal_ltm = seasonal_cumsum.median()
         ensemble_median = seasonal_ensemble.median()
         ensemble_lta = seasonal_ensemble.mean()
@@ -209,6 +210,7 @@ class Place:
             'Ensemble Med.': ensemble_median[-1],
             'LTA up to Current Season': lta_upto_current_season,
             'C. Dk./LTA Pct.': (self.current_cumsum_mon[-1]/lta_upto_current_season)*100,
+            'C. Dk.+Forecast/LTA Pct.': ((self.current_cumsum_mon[-1]+self.forecast_value)/lta_upto_forecast)*100,
             'Ensemble Med./LTA Pct.': (ensemble_median[-1]/seasonal_lta[-1])*100,
             'Ensemble Med. Pctl.': percentiles_from_values(seasonal_totals, [ensemble_median[-1]])[0],
             'St. Dev.': standard_dev[-1],

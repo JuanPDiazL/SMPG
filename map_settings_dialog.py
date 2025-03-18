@@ -41,7 +41,7 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
 
         self.setModal(True)
 
-        self.fields = ['C. Dk./LTA Pct.', 'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
+        self.fields = ['C. Dk./LTA Pct.', 'C. Dk.+Forecast/LTA Pct.', 'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
                   'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
                   'Current Season Pctl.']
         self.settings = {

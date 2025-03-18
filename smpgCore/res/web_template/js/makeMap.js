@@ -12,6 +12,7 @@ function drawMap(geoJson) {
     let mapStats = {
         '': () => undefined,
         'C. Dk./LTA Pct.': (col) => selected_seasons_general_stats[col]['C. Dk./LTA Pct.'],
+        'C. Dk.+Forecast/LTA Pct.': (col) => selected_seasons_general_stats[col]['C. Dk.+Forecast/LTA Pct.'],
         'Ensemble Med./LTA Pct.': (col) => selected_seasons_general_stats[col]['Ensemble Med./LTA Pct.'],
         'Probability Below Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Below Normal Pct.'],
         'Probability of Normal': (col) => selected_seasons_general_stats[col]['E. Prob. of Normal Pct.'],
@@ -132,7 +133,6 @@ function drawMap(geoJson) {
             }
             // check if there is any uncategorized polygon
             hasUncategorizedPolygons |= (category === "Uncategorized");
-            console.log(hasUncategorizedPolygons);
             
             if (selectedStatId === "") {
                 return UNCAT_COLOR;
