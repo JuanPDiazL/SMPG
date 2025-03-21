@@ -68,14 +68,6 @@
                                     <label>Select Stats </label>
                                     <select name="color" id="colorSelect" class=" w3-border">
                                         <option value="" selected>None</option>
-                                        <option>C. Dk./LTA Pct.</option>
-                                        <option>C. Dk.+Forecast/LTA Pct.</option>
-                                        <option>Ensemble Med./LTA Pct.</option>
-                                        <option>Probability Below Normal</option>
-                                        <option>Probability of Normal</option>
-                                        <option>Probability Above Normal</option>
-                                        <option>Ensemble Med. Pctl.</option>
-                                        <option>Current Season Pctl.</option>                                      
                                     </select>
                                 </div>
                             </div>
@@ -227,7 +219,14 @@
         const monitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null);
+        const hasForecast = parameters['is_forecast'];
+
         const hasMap = isDeclared('topojson_map');
+        const mapFields = ['C. Dk./LTA Pct.', 
+            'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
+            'Probability of Normal', 'Probability Above Normal', 
+            'Ensemble Med. Pctl.', 'Current Season Pctl.'];
+        if(hasForecast) {mapFields.push('C. Dk.+Forecast/LTA Pct.');}
 
         // Debug data logs
         // console.log('properties', datasetProperties);
@@ -283,6 +282,7 @@
                 property_ids = Object.keys(Object.values(mapjson["features"])[0]["properties"]);
                 fieldId = parameters["target_id_field"];
                 updateSelect(selectNode, property_ids);
+                updateSelect(colorNode, mapFields);
                 selectNode.value = fieldId;
                 drawMap(mapjson);
             }
