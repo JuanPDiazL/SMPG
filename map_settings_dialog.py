@@ -41,9 +41,7 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
 
         self.setModal(True)
 
-        self.fields = ['C. Dk./LTA Pct.', 'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
-                  'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
-                  'Current Season Pctl.']
+        self.fields = []
         self.settings = {
             'selected_fields': [],
         }
@@ -78,6 +76,12 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
                 Expected keys are 'shp_source', 'selected_map', and 
                 'join_field'.
         """
+        self.fields = ['C. Dk./LTA Pct.', 'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
+                  'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
+                  'Current Season Pctl.']
+        if self.parentWidget().forecastRadioButton.isChecked():
+            self.fields.append('C. Dk.+Forecast/LTA Pct.')
+
         self.blackList.clear()
         self.whiteList.clear()
         for item in self.fields:
@@ -107,7 +111,6 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         """Close the dialog and save settings."""
         self.settings['selected_fields'] = self.get_list_items(self.whiteList)
         if len(self.settings['selected_fields']) == 0:
-            self.map_layer = None
             QMessageBox.information(self, "Information", 
                                 'No features were selected for mapping. \nNo maps will be generated.', 
                                 QMessageBox.Ok)
@@ -116,5 +119,5 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
 
     def reject(self) -> None:
         """Closes the dialog without saving changes."""
-        self.temp_map_layer = None
+        ...
         super(MapSettingsDialog, self).reject()

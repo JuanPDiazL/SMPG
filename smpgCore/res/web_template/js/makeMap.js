@@ -12,6 +12,7 @@ function drawMap(geoJson) {
     let mapStats = {
         '': () => undefined,
         'C. Dk./LTA Pct.': (col) => selected_seasons_general_stats[col]['C. Dk./LTA Pct.'],
+        'C. Dk.+Forecast/LTA Pct.': (col) => selected_seasons_general_stats[col]['C. Dk.+Forecast/LTA Pct.'],
         'Ensemble Med./LTA Pct.': (col) => selected_seasons_general_stats[col]['Ensemble Med./LTA Pct.'],
         'Probability Below Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Below Normal Pct.'],
         'Probability of Normal': (col) => selected_seasons_general_stats[col]['E. Prob. of Normal Pct.'],
@@ -122,11 +123,30 @@ function drawMap(geoJson) {
         });
         legendContainer.html(selectedStatId !== ""? legend.outerHTML : "");
         // Update polygon color based on the selected property
+        let hasUncategorizedPolygons = false;
         polygons.style("fill", d => {
-            const value = selectedStats(d.properties[fieldId]);
-            const category = categorizeValue(value, selectedBins);
+            let category = "Uncategorized";
+
+            if (datasetProperties['place_ids'].includes(String(d.properties[fieldId]))) {
+                const value = selectedStats(d.properties[fieldId]);
+                category = categorizeValue(value, selectedBins);
+            }
+            // check if there is any uncategorized polygon
+            hasUncategorizedPolygons |= (category === "Uncategorized");
+            
+            if (selectedStatId === "") {
+                return UNCAT_COLOR;
+            }
+            if (category === "Uncategorized") {
+                return categories[""]["color"];
+            }
             return selectedBins[category]["color"];
         });
+        if (hasUncategorizedPolygons && selectedStatId !== "") {
+            // add a legend for uncategorized polygons
+            showModal(`There was missing data when drawing map.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Target Field: ${parameters.target_id_field}`)
+        }
+        // Update the header text
         HEADER.textContent = `Dataset: ${datasetProperties.dataset_name}, Stat: ${this.value ? this.value : "None"}`;
     });
 }

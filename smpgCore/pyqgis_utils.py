@@ -135,6 +135,7 @@ def apply_default_attr_style(map_layer: QgsVectorLayer, class_attribute: str) ->
     layer_styles_folder = os.path.join(os.path.dirname(__file__), 'res', 'layer_styles')
     attribute_style_relation = {
         'C. Dk./LTA Pct.':          'rainfall_anomaly_percent_polygon',
+        'C. Dk.+Forecast/LTA Pct.': 'rainfall_anomaly_percent_polygon',
         'Ensemble Med./LTA Pct.':   'rainfall_anomaly_percent_polygon',
         'Probability Below Normal': 'prob_below_normal_polygons',
         'Probability of Normal':    'prob_above_normal_polygons',

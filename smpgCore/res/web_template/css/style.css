@@ -274,10 +274,12 @@ path {
 
 .country {
     /* fill: lightgray; */
-    stroke: black;
+    stroke: white;
     stroke-width: .5px;
     stroke-linecap: round;
     /* stroke-dasharray: 8, 4; */
+}.darkmode .country {
+    stroke: var(--dark-bg-color);
 }
 
 .map-text-label {

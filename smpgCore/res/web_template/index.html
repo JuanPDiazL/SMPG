@@ -68,13 +68,6 @@
                                     <label>Select Stats </label>
                                     <select name="color" id="colorSelect" class=" w3-border">
                                         <option value="" selected>None</option>
-                                        <option>C. Dk./LTA Pct.</option>
-                                        <option>Ensemble Med./LTA Pct.</option>
-                                        <option>Probability Below Normal</option>
-                                        <option>Probability of Normal</option>
-                                        <option>Probability Above Normal</option>
-                                        <option>Ensemble Med. Pctl.</option>
-                                        <option>Current Season Pctl.</option>                                      
                                     </select>
                                 </div>
                             </div>
@@ -148,6 +141,34 @@
         </div>
     </div>
 
+    <div id="modal" class="w3-modal">
+        <div class="w3-modal-content w3-card-4">
+
+            <header class="w3-container w3-red">
+              <span onclick="closeModal()"
+              class="w3-button w3-display-topright w3-ripple w3-hover-pale-red">&times;</span>
+              <h2 id="modalHeaderText"></h2>
+            </header>
+        
+            <div class="w3-container">
+              <p id="modalText"></p>
+            </div>
+        
+            <!-- <footer class="w3-container w3-red">
+              <p>Modal Footer</p>
+            </footer> -->
+        </div>
+
+        <script>
+            var modal = document.getElementById('modal');
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        </script>
+    </div>
+
     <script src="./data/general_stats.js"></script>
     <script src="./data/properties.js"></script>
     <script src="./data/seasonal_stats.js"></script>
@@ -198,6 +219,14 @@
         const monitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null);
+        const hasForecast = parameters['is_forecast'];
+
+        const hasMap = isDeclared('topojson_map');
+        const mapFields = ['C. Dk./LTA Pct.', 
+            'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
+            'Probability of Normal', 'Probability Above Normal', 
+            'Ensemble Med. Pctl.', 'Current Season Pctl.'];
+        if(hasForecast) {mapFields.push('C. Dk.+Forecast/LTA Pct.');}
 
         // Debug data logs
         // console.log('properties', datasetProperties);
@@ -216,6 +245,10 @@
         // HTML Elements
         const BODY = document.body;
         const HEADER = document.getElementById('contentHeaderText');
+        const MODAL = document.getElementById('modal');
+        const MODAL_HEADER = document.getElementById('modalHeaderText');
+        const MODAL_TEXT = document.getElementById('modalText');
+
         let selectNode = d3.select("#featureSelect").node();
         let legendCbNode = d3.select("#showLegend").node();
         let colorNode = d3.select("#colorSelect").node();
@@ -242,17 +275,24 @@
 
             
             sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
-            handleNavigation(); // initial update
-            if(isDeclared('topojson_map')) {
+
+            if(hasMap) {
                 topojson_map = JSON.parse(decompress(topojson_map));
                 let mapjson = topojson.feature(topojson_map, topojson_map.objects.map);
                 property_ids = Object.keys(Object.values(mapjson["features"])[0]["properties"]);
                 fieldId = parameters["target_id_field"];
                 updateSelect(selectNode, property_ids);
+                updateSelect(colorNode, mapFields);
                 selectNode.value = fieldId;
                 drawMap(mapjson);
             }
             window.onhashchange = handleNavigation; // update everything when when the url changes
+            window.dispatchEvent(new HashChangeEvent('hashchange',
+                {
+                    oldURL: location.href,
+                    newURL: location.href
+                }
+            )); // initial update
         });
     </script>
 </body>

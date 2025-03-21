@@ -39,6 +39,7 @@ def wrap_summary(place_general_stats: dict, seasonal_general_stats: pd.Series):
     """
     return pd.Series({
         'C. Dk./LTA Pct.': seasonal_general_stats['C. Dk./LTA Pct.'],
+        'C. Dk.+Forecast/LTA Pct.': seasonal_general_stats['C. Dk.+Forecast/LTA Pct.'],
         'Ensemble Med./LTA Pct.': seasonal_general_stats['Ensemble Med./LTA Pct.'],
         'Probability Below Normal': seasonal_general_stats['E. Prob. Below Normal Pct.'],
         'Probability of Normal': seasonal_general_stats['E. Prob. of Normal Pct.'],

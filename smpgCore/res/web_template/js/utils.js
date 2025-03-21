@@ -26,6 +26,18 @@ const categories = {
         '140-159': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '160+': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
+    'C. Dk.+Forecast/LTA Pct.': {
+        '0-19': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
+        '20-39': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
+        '40-59': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
+        '60-79': { 'color': '#ffe69e', 'function': (x) => x >= 60 && x < 80 },
+        '80-89': { 'color': '#fff9a3', 'function': (x) => x >= 80 && x < 90 },
+        '90-109': { 'color': '#f2f2f2', 'function': (x) => x >= 90 && x < 110 },
+        '110-119': { 'color': '#c6eab3', 'function': (x) => x >= 110 && x < 120 },
+        '120-139': { 'color': '#56cd94', 'function': (x) => x >= 120 && x < 140 },
+        '140-159': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
+        '160+': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
+    },
     'Ensemble Med./LTA Pct.': {
         '0-19': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-39': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
@@ -93,7 +105,8 @@ function navigateTo(queryParams={}, keepOlpParams=true) {
     window.location.hash = paramsString;
 }
 
-function handleNavigation() {
+function handleNavigation(event) {
+    const oldUrl = event.oldUrl;
     const params = getHashParamsObject();
     const mode = params['mode'];
     const place = params['place'];
@@ -102,45 +115,40 @@ function handleNavigation() {
     let isViewMap = false;
     switch (mode) {
         case "map":
-            if (isDeclared('topojson_map')) {
-                mapRoot.removeClass(HIDE_CLASS);
-                plotsRoot.addClass(HIDE_CLASS);
+            if (hasMap) {
                 isViewMap = true;
                 break;
             }
         case "plots":
-            plotsRoot.removeClass(HIDE_CLASS);
-            mapRoot.addClass(HIDE_CLASS);
-            break;
-        case "test":
-            mapRoot.removeClass(HIDE_CLASS);
-            plotsRoot.removeClass(HIDE_CLASS);
-            isViewMap = true;
+            // isViewMap = false;
             break;
         default:
-            if (isDeclared('topojson_map')) {
-                mapRoot.removeClass(HIDE_CLASS);
-                plotsRoot.addClass(HIDE_CLASS);
+            if (hasMap) {
                 isViewMap = true;
                 break;
             } else {
-                mapRoot.addClass(HIDE_CLASS);
-                plotsRoot.removeClass(HIDE_CLASS);
+                // isViewMap = false;
             }
             break;
     }
     
     if(isViewMap) {
         HEADER.textContent = `Dataset: ${datasetProperties.dataset_name}, Stat: ${colorNode.value ? colorNode.value : "None"}`;
+        mapRoot.removeClass(HIDE_CLASS);
+        plotsRoot.addClass(HIDE_CLASS);
     } else {
         let selectedPlace = "";
         if (Object.values(datasetProperties["place_ids"]).includes(place)){
             selectedPlace = place;
         }
         else{
-            selectedPlace = firstPlaceKey
+            showModal(`There is no data for ${place}.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Selected Region ID: ${place}<br>Target Field: ${parameters.target_id_field}`);
+            return;
         }
         HEADER.textContent = `Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}]`;
+        mapRoot.addClass(HIDE_CLASS);
+        plotsRoot.removeClass(HIDE_CLASS);
+
         updateDocument(selectedPlace);
         previousSelectionElement = sidebarElements[selectedPlace];
         placeUnder(table4.table, table3.table);
@@ -533,4 +541,16 @@ function Legend(color, {
             .text(title));
 
     return svg.node();
+}
+
+function showModal(message) {
+    MODAL.style.display = "block";
+    MODAL_HEADER.textContent = "Warning";
+    MODAL_TEXT.innerHTML = message;
+}
+
+function closeModal() {
+    MODAL.style.display = "none";
+    MODAL_HEADER.textContent = "";
+    MODAL_TEXT.innerHTML = "";
 }
