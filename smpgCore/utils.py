@@ -195,22 +195,36 @@ def get_properties_validated_year_list(dataset_properties: Properties, cross_yea
     else: year_list = dataset_properties.year_ids
     return year_list
 
-def get_year_slice(year: str, start_index:int) -> str:
+def decompose_timestamp(timestamp: str) -> tuple:
     """
-    Extracts the year from a given string by slicing it using the provided 
-    start index.
+    Extracts the date elements from a given string by slicing it using a 
+    regular expression.
 
     Args:
-        year (str): A string representing a column header that contains the 
-            year.
-        start_index (int): An integer representing the starting index of where 
-            to slice from.
-
+        timestamp (str): A string representing a column header that contains 
+        the timestamp in a specific format.
     Returns:
-        str: the four characters that represent the year in the column header 
-            string.
+        tuple: A tuple containing the extracted parts of a timestamp.
+
     """
-    return year[start_index:start_index+4]
+    year = n1 = n2 = None
+    regular_expression_pattern = r'(\d{4}\.\d{2}\.\d{1,2})|(\d{6})'
+
+    # Search for the first match in the text
+    match = re.search(regular_expression_pattern, timestamp)
+    if match:
+        if match.group(1):  # If the first pattern (YYYY.MM.N, N is the sub-period) matched
+
+            date_str = match.group(1)
+            year, n1, n2 = date_str.split('.')
+        else:  # If the second pattern (YYYYNN, NN is the sub-period) matched
+            date_str = match.group(2)
+            year = date_str[:4]
+            n1 = date_str[4:]
+        return year, n1, n2
+    else:
+        raise ValueError("No valid date pattern found")
+
 
 def get_cross_years(years: list[str]) -> list[str]:
     """
@@ -248,18 +262,19 @@ def parse_timestamps(timestamps: list[str]) -> dict:
             'current_season_key': Year ID for the current season.
             'current_season_length': Number of periods in the current season.
     """
-    # get timestamp offset from headers
-    match = re.search(r"\d{6}", timestamps[0])
-    if match is None:
-        raise(RuntimeError('Each column must contain a six digit number indicating the year and sub-period number.'))
-    timestamp_str_offset = match.start()
+    try: # get matching values of first year
+        first_year, _, _ = decompose_timestamp(timestamps[0])
+    except ValueError as e:
+        if 'No valid date pattern found' in str(e):
+            raise(RuntimeError('Each column must contain a datestamp in the form of "YYYY.MM.N" or "YYYYNN".\n'
+                           + 'For example, "2019.01.3" or "201903".'))
 
-    # get period lenght from timestamps
-    first_year = get_year_slice(timestamps[0], timestamp_str_offset)
+    # get period length from timestamps by detecting the change in the year by
+    # adding the number of sub-periods in a year (12 months, 36 dekads, 72 pentads)
     period_unit_id = None
     period_length = 0
     for p_unit, p_lenght in yearly_periods.items():
-        offset_year = get_year_slice(timestamps[p_lenght], timestamp_str_offset)
+        offset_year, _, _ = decompose_timestamp(timestamps[p_lenght])
         if first_year != offset_year:
             period_unit_id = p_unit
             period_length = p_lenght
@@ -269,7 +284,7 @@ def parse_timestamps(timestamps: list[str]) -> dict:
     season_quantity = (len(timestamps) - 1) // period_length
     year_ids = [str(y) for y in range(int(first_year), int(first_year)+season_quantity)]
     current_season_index = season_quantity*period_length
-    current_season_id = get_year_slice(timestamps[current_season_index], timestamp_str_offset)
+    current_season_id, _, _ = decompose_timestamp(timestamps[current_season_index])
     current_season_length = len(timestamps) - current_season_index
     return {
         'period_unit_id': period_unit_id,
