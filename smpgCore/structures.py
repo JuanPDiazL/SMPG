@@ -1,3 +1,4 @@
+from math import isnan
 from numpy import ndarray, NaN
 import numpy as np
 import pandas as pd
@@ -183,8 +184,6 @@ class Place:
         ensemble_totals = seasonal_ensemble.iloc[:, -1].to_numpy()
 
         seasonal_lta = seasonal_cumsum.mean()
-        lta_upto_current_season = seasonal_lta[self.current_index]
-        lta_upto_forecast = seasonal_lta[self.current_index + 1]
         seasonal_ltm = seasonal_cumsum.median()
         ensemble_median = seasonal_ensemble.median()
         ensemble_lta = seasonal_ensemble.mean()
@@ -196,6 +195,13 @@ class Place:
             np.count_nonzero(ensemble_totals >= self.clim_seasons_pctls[1]) / len(ensemble_totals),
         ]
         standard_dev = seasonal_cumsum.std()
+
+        if not np.isnan(self.forecast_value):
+            lta_upto_current_season = seasonal_lta[self.current_index]
+            lta_upto_forecast = seasonal_lta[self.current_index + 1]
+        else:
+            lta_upto_current_season = np.nan
+            lta_upto_forecast = np.nan
 
         # calculate the stats
         seasonal_long_term_stats = pd.DataFrame.from_dict({
