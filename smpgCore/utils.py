@@ -274,7 +274,11 @@ def parse_timestamps(timestamps: list[str]) -> dict:
     period_unit_id = None
     period_length = 0
     for p_unit, p_lenght in yearly_periods.items():
-        offset_year, _, _ = decompose_timestamp(timestamps[p_lenght])
+        try:
+            offset_year, _, _ = decompose_timestamp(timestamps[p_lenght])
+        except IndexError as e:
+            if 'list index out of range' in str(e):
+                raise(RuntimeError('The current table is too short. \nThe table must have more than one year.'))
         if first_year != offset_year:
             period_unit_id = p_unit
             period_length = p_lenght
