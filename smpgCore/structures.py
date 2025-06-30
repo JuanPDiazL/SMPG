@@ -1,5 +1,3 @@
-from math import isnan
-from numpy import ndarray, NaN
 import numpy as np
 import pandas as pd
 from .utils import *
@@ -94,7 +92,7 @@ class Place:
                                   columns=columns)
 
         # forecast case
-        self.forecast_value = NaN
+        self.forecast_value = np.NaN
         if parent.parameters.is_forecast: 
             self.forecast_value = self.current_season[-1]
             self.current_season = self.current_season[:-1]
@@ -196,12 +194,11 @@ class Place:
         ]
         standard_dev = seasonal_cumsum.std()
 
+        lta_upto_current_season = seasonal_lta[self.current_index]
         if not np.isnan(self.forecast_value):
-            lta_upto_current_season = seasonal_lta[self.current_index]
             lta_upto_forecast = seasonal_lta[self.current_index + 1]
         else:
-            lta_upto_current_season = np.nan
-            lta_upto_forecast = np.nan
+            lta_upto_forecast = np.NaN
 
         # calculate the stats
         seasonal_long_term_stats = pd.DataFrame.from_dict({
