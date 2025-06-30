@@ -286,6 +286,18 @@ class CurrentBillboardChart {
             'Current Season': place_long_term_stats[index]['Current Season'],
             'Climatology Average': place_long_term_stats[index]['Climatology Average'],
         };
+        const gridLines = [
+            {
+            value: place_general_stats[index]['Start of Season Index'],
+            text: 'SOS of Climatology Avg.',
+            position: "middle",
+            },
+            {
+            value: place_general_stats[index]['Start of Season of Current Season Index'],
+            text: 'SOS of Current Season',
+            position: "end",
+            },
+        ];
         if (place_general_stats[index]['Forecast'] !== null) {
             jsonData['Forecast'] = [place_general_stats[index]['Forecast']];
             jsonData['bar_xs'] = [this.currentLength];
@@ -297,6 +309,7 @@ class CurrentBillboardChart {
             colors: chartColors,
             unload: true,
         });
+        this.plot.xgrids(gridLines);
     }
 }
 

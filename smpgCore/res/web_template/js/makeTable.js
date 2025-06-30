@@ -11,6 +11,7 @@ function getDataSeasonalAnalysis(index) {
     let tableData = [
         ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
         ['St. Dev.', selected_seasons_general_stats[index]['St. Dev.'], seasonal_general_stats[index]['St. Dev.']],
+        ['SOS Anomaly', place_general_stats[index]['Start of Season Anomaly'], place_general_stats[index]['Start of Season Anomaly']]
     ];
     return tableData;
 }

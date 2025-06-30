@@ -2,6 +2,7 @@ import re
 import numpy as np
 import scipy.stats as sp
 import pandas as pd
+from collections import deque
 from typing import Optional, Union
 
 # Dictionary that correlates the period name
@@ -489,3 +490,42 @@ def startswith_substring(string_list: list[str], target_string: str):
             False otherwise.
     """
     return any(s.startswith(target_string) for s in string_list)
+
+def get_season_started_constant(year_data: pd.Series, first_value=25, second_value=20) -> int:
+    """
+    Determines the index at which a season might have started based on the 
+    given data of a year and threshold values.
+    
+    Args:
+        year_data (pd.Series): A pandas Series containing numerical data of the year.
+        first_value (int, optional): The first threshold value for determining 
+            the possible start of a season. Defaults to 25.
+        second_value (int, optional): The second threshold value for confirming 
+            the start of a season. Defaults to 20.
+    
+    Returns:
+        tuple: A tuple containing two elements:
+            - int: The index at which the season might have started, or None if 
+                no such index is found.
+            - bool: True if the season has definitely started based on the 
+                given conditions, False otherwise.
+            - str: A string indicating the class of the start.
+                Possible values are 'Started', 'Yet to Start', and 'No Start'.
+    """
+    dq = deque(maxlen=3)
+    
+    for i, value in enumerate(year_data):
+        dq.append(value) # if `dq` is full, drops the oldest element
+        if (dq[0] >= first_value
+            and (len(dq) == 3 and dq[1] + dq[2] >= second_value)
+            ): 
+            return i - 2, True, 'Started'
+
+    # if reached the end of `data`, but SOS might be yet to start,
+    # then evaluate `dq` elements
+    for i, value in enumerate(dq): 
+        if value >= first_value:
+            # return len(year_data) - len(dq) + i, False, 'Yet to Start'
+            return np.NaN, False, 'Possible Start'
+
+    return np.NaN, False, 'No Start'

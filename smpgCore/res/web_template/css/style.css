@@ -25,6 +25,8 @@ body {
     fill: #aaa;
 }.darkmode .bb-grid line {
     stroke: var(--dark-stroke-color);
+}.darkmode .bb-xgrid-line text {
+    text-shadow: 1px 1px 0px #222, -1px -1px 0px #222;
 }
 
 .smpg-left {
@@ -197,6 +199,13 @@ body {
 
 .bb-legend-item {
     display: inline-block;
+}
+
+.bb-xgrid-line line {
+    stroke: #cecece;
+}
+.bb-xgrid-line text {
+    text-shadow: 1px 1px 0px #ddd, -1px -1px 0px #ddd;
 }
 
 /* Custom line styles */

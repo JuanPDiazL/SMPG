@@ -136,12 +136,28 @@ class Place:
         self.clim_seasons_pctls = percentiles_to_values(self.clim_seasons_totals, [33, 67])
         self.seasonal_pctls = percentiles_to_values(self.seasonal_current_totals.to_numpy(), 
                                                              (3, 6, 11, 21, 33, 67))
+        climatology_avg = self.seasonal_climatology.mean()
+        avg_monitoring = climatology_avg[parent.season_start_index:parent.season_end_index]
         place_lt_stats = {
-            'Climatology Average': self.seasonal_climatology.mean(),
+            'Climatology Average': climatology_avg,
             'Current Season': self.current_season,
             'Current Season Accumulation': self.current_cumsum_mon,
         }
         self.place_long_term_stats = pd.DataFrame([pd.Series(v, name=k) for k, v in place_lt_stats.items()])
+
+        # SOS
+        ss_ids = parent.properties.sub_season_ids
+        sos_index_avg, started_avg, sos_class_avg = get_season_started_constant(avg_monitoring)
+        sos_index_current, started_current, sos_class_current = get_season_started_constant(current_season_monitoring)
+        sos_index_avg += parent.season_start_index
+        sos_index_current += parent.season_start_index
+        if started_avg:
+            sos_class_avg = ss_ids[sos_index_avg]
+        if started_current:
+            sos_class_current = ss_ids[sos_index_current]
+        sos_anomaly = sos_index_current - sos_index_avg
+        sos_anomaly_class = str(sos_anomaly) if not np.isnan(sos_anomaly) else 'Yet to Start'
+
         self.place_general_stats = pd.Series({
             'Current Season Pctl.': percentiles_from_values(self.seasonal_current_totals.to_numpy(), 
                 [self.current_cumsum_mon[-1]])[0],
@@ -157,8 +173,16 @@ class Place:
             'Climatology 67 Pctl.': self.clim_seasons_pctls[1],
             'Forecast': self.forecast_value,
             'Current Season+Forecast': self.current_cumsum_mon[-1] + self.forecast_value,
-        }
-        , name=self.id)
+            'Start of Season': sos_class_avg,
+            'Start of Season Index': sos_index_avg,
+            'Start of Season of Current Season': sos_class_current,
+            'Start of Season of Current Season Index': sos_index_current,
+            'Start of Season Anomaly': sos_anomaly,
+            'Start of Season Anomaly Class': sos_anomaly_class,
+        }, 
+        name=self.id
+        )
+
         self.seasonal_general_stats, self.seasonal_long_term_stats = \
             self.get_place_stats(self.clim_seasons_cumsum, self.clim_seasons_ensemble)
         self.selected_seasons_general_stats, self.selected_seasons_long_term_stats = \
