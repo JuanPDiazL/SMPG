@@ -286,15 +286,17 @@ class CurrentBillboardChart {
             'Current Season': place_long_term_stats[index]['Current Season'],
             'Climatology Average': place_long_term_stats[index]['Climatology Average'],
         };
+        let sosAvgClass = place_general_stats[index]['Start of Season of Avg. Class'];
+        let sosCurrentClass = place_general_stats[index]['Start of Season Class'];
         const gridLines = [
             {
-            value: place_general_stats[index]['Start of Season Index'],
-            text: 'SOS of Climatology Avg.',
+            value: place_general_stats[index]['Start of Season of Avg.'],
+            text: sosAvgClass.startsWith('Possible Start') ? 'Possible SOS of Clim. Avg.' : 'SOS of Clim. Avg.',
             position: "middle",
             },
             {
-            value: place_general_stats[index]['Start of Season of Current Season Index'],
-            text: 'SOS of Current Season',
+            value: place_general_stats[index]['Start of Season'],
+            text: sosCurrentClass.startsWith('Possible Start') ? 'Possible SOS' : 'SOS',
             position: "end",
             },
         ];
