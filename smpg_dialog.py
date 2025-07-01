@@ -51,6 +51,7 @@ from qgis.core import (
 from .map_settings_dialog import MapSettingsDialog
 from .year_selection_dialog import YearSelectionDialog
 from .progress_dialog import ProgressDialog
+from .rainy_season_detection_dialog import RainySeasonDetectionDialog
 
 from .smpgCore.parsers.CSVParser import parse_csv
 from .smpgCore.structures import Dataset
@@ -112,6 +113,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
     # analysis group
     observedDataRadioButton: QRadioButton
     forecastRadioButton: QRadioButton
+    rainySeasonDetectionButton: QPushButton
 
     # outputs group
     exportStatsCheckBox: QCheckBox
@@ -143,6 +145,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
         self.year_selection_dialog = YearSelectionDialog(self)
         self.progress_dialog = ProgressDialog(self)
         self.map_settings_dialog = MapSettingsDialog(self)
+        self.rainy_season_detection_dialog = RainySeasonDetectionDialog(self)
 
         # output groupbox
         self.output_checkboxes = [
@@ -154,6 +157,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
 
         # signal connections
         self.mappingButton.clicked.connect(self.mapping_button_event)
+        self.rainySeasonDetectionButton.clicked.connect(self.rainy_season_detection_button_event)
         self.exportStatsCheckBox.stateChanged.connect(self.export_stats_cb_changed_event)
 
         self.crossYearsCheckBox.stateChanged.connect(self.cross_years_cb_changed_event)
@@ -557,6 +561,15 @@ class SMPGDialog(QDialog, FORM_CLASS):
         configure the generation of the maps.
         """
         self.map_settings_dialog.show()
+
+    def rainy_season_detection_button_event(self):
+        """Event handler for `rainySeasonDetectionButton`.
+        
+        This method is called whenever the user selects the 
+        "Rainy Season Detection" button. It opens a new dialog that allows to 
+        configure the SOS Detection.
+        """
+        self.rainy_season_detection_dialog.show()
 
     def update_dialog_info(self, dataset_properties: Properties):
         """Updates the label that contains information about the datset.

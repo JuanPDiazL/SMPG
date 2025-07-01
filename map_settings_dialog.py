@@ -78,7 +78,8 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         """
         self.fields = ['C. Dk./LTA Pct.', 'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
                   'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
-                  'Current Season Pctl.']
+                  'Current Season Pctl.', 'Start of Season (Placeholder)',
+                  'Start of Season Anomaly (Placeholder)']
         if self.parentWidget().forecastRadioButton.isChecked():
             self.fields.append('C. Dk.+Forecast/LTA Pct.')
 
