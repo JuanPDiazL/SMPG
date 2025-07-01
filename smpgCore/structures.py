@@ -1,3 +1,4 @@
+from math import isnan
 import numpy as np
 import pandas as pd
 from .utils import *
@@ -156,7 +157,13 @@ class Place:
         if started_current:
             sos_class_current = ss_ids[sos_index_current]
         sos_anomaly = sos_index_current - sos_index_avg
-        sos_anomaly_class = str(sos_anomaly) if not np.isnan(sos_anomaly) else 'Yet to Start'
+        if np.isnan(sos_index_current):
+            sos_anomaly_class = 'Yet to Start'
+        elif np.isnan(sos_index_avg):
+            sos_anomaly_class = 'No Reference'
+        else:
+            sos_anomaly_class = str(sos_anomaly)
+            sos_anomaly_class = f'{abs(sos_anomaly)} {parent.properties.period_unit_id}s {"Late" if sos_anomaly > 0 else "Early"}'
 
         self.place_general_stats = pd.Series({
             'Current Season Pctl.': percentiles_from_values(self.seasonal_current_totals.to_numpy(), 

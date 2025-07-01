@@ -510,7 +510,7 @@ def get_season_started_constant(year_data: pd.Series, first_value=25, second_val
             - bool: True if the season has definitely started based on the 
                 given conditions, False otherwise.
             - str: A string indicating the class of the start.
-                Possible values are 'Started', 'Yet to Start', and 'No Start'.
+                Possible values are 'Started', 'Possible Start', and 'No Start'.
     """
     dq = deque(maxlen=3)
     
@@ -525,7 +525,7 @@ def get_season_started_constant(year_data: pd.Series, first_value=25, second_val
     # then evaluate `dq` elements
     for i, value in enumerate(dq): 
         if value >= first_value:
-            # return len(year_data) - len(dq) + i, False, 'Yet to Start'
+            # return len(year_data) - len(dq) + i, False, 'Possible Start'
             return np.NaN, False, 'Possible Start'
 
     return np.NaN, False, 'No Start'
