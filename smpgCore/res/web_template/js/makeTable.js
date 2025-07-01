@@ -11,7 +11,8 @@ function getDataSeasonalAnalysis(index) {
     let tableData = [
         ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
         ['St. Dev.', selected_seasons_general_stats[index]['St. Dev.'], seasonal_general_stats[index]['St. Dev.']],
-        ['SOS Anomaly', place_general_stats[index]['Start of Season Anomaly'], place_general_stats[index]['Start of Season Anomaly']]
+        ['SOS', place_general_stats[index]['Start of Season of Current Season'], place_general_stats[index]['Start of Season of Current Season']],
+        ['SOS Anomaly', place_general_stats[index]['Start of Season Anomaly Class'], place_general_stats[index]['Start of Season Anomaly Class']],
     ];
     return tableData;
 }
@@ -68,13 +69,23 @@ class statsTable {
         this.tableBody.innerHTML = '';
         for (let row of tableData) {
             let tr = this.tableBody.appendChild(document.createElement('tr'));
-            let col1 = row[1] !== null ? row[1].toFixed(0) : '';
-            let col2 = row[2] !== null ? row[2].toFixed(0) : '';
-            if (col1 != col2) {
-                tr.innerHTML = `<td>${row[0]}</td><td>${col1}</td><td>${col2}</td>`;
+
+            if (typeof row[1] === 'number' && !isNaN(row[1])) {
+                row[1] = row[1].toFixed(0);
+            } else if (row[1] === null) {
+                row[1] = '';
+            }
+            if (typeof row[2] === 'number' && !isNaN(row[2])) {
+                row[2] = row[2].toFixed(0);
+            } else if (row[1] === null) {
+                row[2] = '';
+            }
+
+            if (row[1] != row[2]) {
+                tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td>`;
             }
             else {
-                tr.innerHTML = `<td>${row[0]}</td><td class="w3-center" colspan=2>${col1}</td>`;
+                tr.innerHTML = `<td>${row[0]}</td><td class="w3-center" colspan=2>${row[1]}</td>`;
             }
         }
     }
