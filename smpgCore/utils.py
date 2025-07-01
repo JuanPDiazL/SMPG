@@ -525,7 +525,6 @@ def get_season_started_constant(year_data: pd.Series, first_value=25, second_val
     # then evaluate `dq` elements
     for i, value in enumerate(dq): 
         if value >= first_value:
-            # return len(year_data) - len(dq) + i, False, 'Possible Start'
-            return np.NaN, False, 'Possible Start'
+            return len(year_data) - len(dq) + i, False, 'Possible Start'
 
     return np.NaN, False, 'No Start'

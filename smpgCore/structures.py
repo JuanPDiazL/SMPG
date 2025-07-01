@@ -152,14 +152,19 @@ class Place:
         sos_index_current, started_current, sos_class_current = get_season_started_constant(current_season_monitoring)
         sos_index_avg += parent.season_start_index
         sos_index_current += parent.season_start_index
-        if started_avg:
+        if sos_class_avg == 'Started':
             sos_class_avg = ss_ids[sos_index_avg]
-        if started_current:
+        elif sos_class_avg == 'Possible Start':
+            sos_class_avg = f'Possible Start at {ss_ids[sos_index_avg]}'
+        if sos_class_current == 'Started':
             sos_class_current = ss_ids[sos_index_current]
+        elif sos_class_current == 'Possible Start':
+            sos_class_current = f'Possible Start at {ss_ids[sos_index_current]}'
+
         sos_anomaly = sos_index_current - sos_index_avg
-        if np.isnan(sos_index_current):
+        if not started_current:
             sos_anomaly_class = 'Yet to Start'
-        elif np.isnan(sos_index_avg):
+        elif not started_avg:
             sos_anomaly_class = 'No Reference'
         else:
             sos_anomaly_class = str(sos_anomaly)
