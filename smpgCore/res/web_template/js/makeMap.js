@@ -19,8 +19,11 @@ function drawMap(geoJson) {
         'Probability Above Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Above Normal Pct.'],
         'Ensemble Med. Pctl.': (col) => selected_seasons_general_stats[col]['Ensemble Med. Pctl.'],
         'Current Season Pctl.': (col) => place_general_stats[col]['Current Season Pctl.'],
-        'Start of Season of Current Season': (col) => place_general_stats[col]['Start of Season of Current Season Index'],
-        'Start of Season Anomaly': (col) => place_general_stats[col]['Start of Season Anomaly'],
+        'Start of Season': (col) => [place_general_stats[col]['Start of Season'],
+                                                       place_general_stats[col]['Start of Season Class']],
+        'Start of Season Anomaly': (col) => [place_general_stats[col]['Start of Season Anomaly'],
+                                             place_general_stats[col]['Start of Season Anomaly Class'],
+                                             place_general_stats[col]['Start of Season Class']],
     }
 
     const projection = d3.geoMercator()
@@ -121,7 +124,7 @@ function drawMap(geoJson) {
         const legend = Legend(d3.scaleOrdinal(Object.keys(selectedBins), Object.values(selectedBins).map(bin => bin.color)), {
             title: selectedStatId,
             tickSize: 0,
-            width: 600,
+            width: 940,
         });
         legendContainer.html(selectedStatId !== ""? legend.outerHTML : "");
         // Update polygon color based on the selected property
