@@ -147,28 +147,33 @@ class Place:
         self.place_long_term_stats = pd.DataFrame([pd.Series(v, name=k) for k, v in place_lt_stats.items()])
 
         # SOS
-        ss_ids = parent.properties.sub_season_ids
-        sos_index_avg, started_avg, sos_class_avg = get_season_started_constant(avg_monitoring)
-        sos_index_current, started_current, sos_class_current = get_season_started_constant(current_season_monitoring)
-        sos_index_avg += parent.season_start_index
-        sos_index_current += parent.season_start_index
-        if sos_class_avg == 'Started':
-            sos_class_avg = ss_ids[sos_index_avg]
-        elif sos_class_avg == 'Possible Start':
-            sos_class_avg = f'Possible Start at {ss_ids[sos_index_avg]}'
-        if sos_class_current == 'Started':
-            sos_class_current = ss_ids[sos_index_current]
-        elif sos_class_current == 'Possible Start':
-            sos_class_current = f'Possible Start at {ss_ids[sos_index_current]}'
+        if parent.parameters.rainy_season_detection["sos"]["enabled"]:
+            first_threshold = parent.parameters.rainy_season_detection["sos"]["first_threshold"]
+            second_threshold = parent.parameters.rainy_season_detection["sos"]["second_threshold"]
+            sos_index_avg, started_avg, sos_class_avg = get_season_started_constant(avg_monitoring, first_threshold, second_threshold)
+            sos_index_current, started_current, sos_class_current = get_season_started_constant(current_season_monitoring, first_threshold, second_threshold)
+            sos_index_avg += parent.season_start_index
+            sos_index_current += parent.season_start_index
+            if sos_class_avg == 'Started':
+                sos_class_avg = columns[sos_index_avg]
+            elif sos_class_avg == 'Possible Start':
+                sos_class_avg = f'Possible Start at {columns[sos_index_avg]}'
+            if sos_class_current == 'Started':
+                sos_class_current = columns[sos_index_current]
+            elif sos_class_current == 'Possible Start':
+                sos_class_current = f'Possible Start at {columns[sos_index_current]}'
 
-        sos_anomaly = sos_index_current - sos_index_avg
-        if not started_current:
-            sos_anomaly_class = 'Yet to Start'
-        elif not started_avg:
-            sos_anomaly_class = 'No Reference'
+            sos_anomaly = sos_index_current - sos_index_avg
+            if not started_current:
+                sos_anomaly_class = 'Yet to Start'
+            elif not started_avg:
+                sos_anomaly_class = 'No Reference'
+            else:
+                sos_anomaly_class = str(sos_anomaly)
+                sos_anomaly_class = f'{abs(sos_anomaly)} {parent.properties.period_unit_id}s {"Late" if sos_anomaly > 0 else "Early"}'
         else:
-            sos_anomaly_class = str(sos_anomaly)
-            sos_anomaly_class = f'{abs(sos_anomaly)} {parent.properties.period_unit_id}s {"Late" if sos_anomaly > 0 else "Early"}'
+            # nullify sos values
+            sos_index_current, sos_class_current, sos_index_avg, sos_class_avg, sos_anomaly, sos_anomaly_class = [None] * 6
 
         self.place_general_stats = pd.Series({
             'Current Season Pctl.': percentiles_from_values(self.seasonal_current_totals.to_numpy(), 

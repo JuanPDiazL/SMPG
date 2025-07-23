@@ -115,8 +115,18 @@ class Parameters:
         # year selection defaults
         self.selected_years: Optional[Union[list[str], int]] = None
         self.use_pearson = False
-        # forecasting defaults
+        # analysis defaults
         self.is_forecast = False
+        self.rainy_season_detection = {
+            "sos": {
+                "enabled": False,
+                "first_threshold": 25,
+                "second_threshold": 20,
+            },
+            "eos": {
+                "enabled": False,
+            },
+        }
         # output defaults
         self.output_stats = True
         self.output_parameters = False
@@ -491,7 +501,7 @@ def startswith_substring(string_list: list[str], target_string: str):
     """
     return any(s.startswith(target_string) for s in string_list)
 
-def get_season_started_constant(year_data: pd.Series, first_value=25, second_value=20) -> int:
+def get_season_started_constant(year_data: pd.Series, first_value, second_value) -> int:
     """
     Determines the index at which a season might have started based on the 
     given data of a year and threshold values.

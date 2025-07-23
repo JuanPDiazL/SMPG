@@ -220,14 +220,20 @@
         const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null);
         const hasForecast = parameters['is_forecast'];
+        const hasSos = parameters['rainy_season_detection']['sos']['enabled'];
+
 
         const hasMap = isDeclared('topojson_map');
         const mapFields = ['C. Dk./LTA Pct.', 
             'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
             'Probability of Normal', 'Probability Above Normal', 
             'Ensemble Med. Pctl.', 'Current Season Pctl.',
-            'Start of Season', 'Start of Season Anomaly'];
+            ];
         if(hasForecast) {mapFields.push('C. Dk.+Forecast/LTA Pct.');}
+        if(hasSos) {
+            mapFields.push('Start of Season');
+            mapFields.push('Start of Season Anomaly');
+        }
 
         // Debug data logs
         // console.log('properties', datasetProperties);

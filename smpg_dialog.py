@@ -180,6 +180,13 @@ class SMPGDialog(QDialog, FORM_CLASS):
         else:
             selected_years = self.similarYearsComboBox.currentText()
 
+        rainy_season_detection = {
+            "sos": {
+                "enabled": self.rainy_season_detection_dialog.sosEnabled,
+                "first_threshold": self.rainy_season_detection_dialog.sosFirstThreshold,
+                "second_threshold": self.rainy_season_detection_dialog.sosSecondThreshold,
+            }
+        }
         return {
             "climatology_start": self.climatologyStartComboBox.currentText(),
             "climatology_end": self.climatologyEndComboBox.currentText(),
@@ -189,6 +196,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
             "selected_years": selected_years,
             "is_forecast": self.forecastRadioButton.isChecked(),
             "use_pearson": self.usePearsonCheckBox.isChecked(),
+            "rainy_season_detection": rainy_season_detection,
             "output_stats": self.exportStatsCheckBox.isChecked(),
             "output_parameters": self.exportParametersCheckBox.isChecked(),
             "mapping_attributes": self.map_settings_dialog.settings['selected_fields'],
@@ -274,11 +282,15 @@ class SMPGDialog(QDialog, FORM_CLASS):
             self.selectYearsButton.setEnabled(False)
         self.usePearsonCheckBox.setChecked(parameters.use_pearson)
 
-        # update analysis type
+        # update analysis parameters
         self.observedDataRadioButton.setEnabled(True)
         self.forecastRadioButton.setEnabled(True)
         if parameters.is_forecast: self.forecastRadioButton.setChecked(True)
         else: self.observedDataRadioButton.setChecked(True)
+        self.rainySeasonDetectionButton.setEnabled(True)
+        self.rainy_season_detection_dialog.sosEnabled = parameters.rainy_season_detection["sos"]["enabled"]
+        self.rainy_season_detection_dialog.sosFirstThreshold = parameters.rainy_season_detection["sos"]["first_threshold"]
+        self.rainy_season_detection_dialog.sosSecondThreshold = parameters.rainy_season_detection["sos"]["second_threshold"]
 
         # update outputs
         self.exportStatsCheckBox.setEnabled(True)

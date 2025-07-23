@@ -348,6 +348,9 @@
          </item>
          <item row="3" column="0">
           <widget class="QPushButton" name="rainySeasonDetectionButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="font">
             <font>
              <pointsize>8</pointsize>
@@ -356,7 +359,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Rainy Season Detection (Placeholder)</string>
+            <string>Rainy Season Detection</string>
            </property>
           </widget>
          </item>
