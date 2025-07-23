@@ -69,7 +69,6 @@ class Dataset:
         self.places: dict[str, Place] = {}
         for place, timeseries in dataset.iterrows():
             self.places[place] = Place(place, timeseries, self)
-            break
     
 class Place:
     """Represents a place with associated time series data.
