@@ -297,7 +297,7 @@ class CurrentBillboardChart {
             {
             value: place_general_stats[index]['Start of Season'],
             text: sosCurrentClass.startsWith('Possible Start') ? 'Possible SOS' : 'SOS',
-            position: "end",
+            position: "start",
             },
         ];
         if (place_general_stats[index]['Forecast'] !== null) {

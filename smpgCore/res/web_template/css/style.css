@@ -25,8 +25,11 @@ body {
     fill: #aaa;
 }.darkmode .bb-grid line {
     stroke: var(--dark-stroke-color);
+}.darkmode .bb-xgrid-line line{
+    stroke: #aaa;
 }.darkmode .bb-xgrid-line text {
-    text-shadow: 1px 1px 0px #222, -1px -1px 0px #222;
+    fill: #000;
+    stroke: #fffc;
 }
 
 .smpg-left {
@@ -205,7 +208,10 @@ body {
     stroke: #cecece;
 }
 .bb-xgrid-line text {
-    text-shadow: 1px 1px 0px #ddd, -1px -1px 0px #ddd;
+    paint-order: stroke;
+    fill: #000;
+    stroke: #fffe;
+    stroke-width: 3px;
 }
 
 /* Custom line styles */
