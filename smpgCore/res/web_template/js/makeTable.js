@@ -11,9 +11,11 @@ function getDataSeasonalAnalysis(index) {
     let tableData = [
         ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
         ['St. Dev.', selected_seasons_general_stats[index]['St. Dev.'], seasonal_general_stats[index]['St. Dev.']],
-        ['SOS', place_general_stats[index]['Start of Season Class'], null],
-        ['SOS Anomaly', place_general_stats[index]['Start of Season Anomaly Class'], null],
     ];
+    if (hasSos) {
+        tableData.push(['SOS', place_general_stats[index]['Start of Season Class'], null]);
+        tableData.push(['SOS Anomaly', place_general_stats[index]['Start of Season Anomaly Class'], null]);
+    }
     return tableData;
 }
 function getDataProjectionEoS(index) {

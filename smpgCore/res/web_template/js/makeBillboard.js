@@ -288,18 +288,21 @@ class CurrentBillboardChart {
         };
         let sosAvgClass = place_general_stats[index]['Start of Season of Avg. Class'];
         let sosCurrentClass = place_general_stats[index]['Start of Season Class'];
-        const gridLines = [
-            {
+        let gridLines = [];
+        if (hasSos) {
+            gridLines.push({
             value: place_general_stats[index]['Start of Season of Avg.'],
             text: sosAvgClass.startsWith('Possible Start') ? 'Possible SOS of Clim. Avg.' : 'SOS of Clim. Avg.',
             position: "middle",
-            },
-            {
+            });
+            gridLines.push({
             value: place_general_stats[index]['Start of Season'],
             text: sosCurrentClass.startsWith('Possible Start') ? 'Possible SOS' : 'SOS of Current Season',
             position: "start",
-            },
-        ];
+            });
+
+
+        }
         if (place_general_stats[index]['Forecast'] !== null) {
             jsonData['Forecast'] = [place_general_stats[index]['Forecast']];
             jsonData['bar_xs'] = [this.currentLength];
