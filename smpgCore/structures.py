@@ -35,21 +35,21 @@ class Dataset:
 
 
         # calculation for year ids and season shift
+        self.season_shift = 0
         if self.parameters.cross_years:
             self.season_shift = (yearly_periods[self.properties.period_unit_id] // 2)
             self.properties.year_ids = get_cross_years(self.properties.year_ids)
             self.properties.current_season_id = get_cross_years([self.properties.current_season_id])[0]
-        else:
-            self.season_shift = 0
-            self.properties.year_ids = self.properties.year_ids
 
         # determines current season for cross years
         if self.parameters.cross_years and (self.properties.current_season_length <= self.season_shift):
+            # pop last past year as current year
             self.properties.current_season_id = self.properties.year_ids.pop()
             self.split_quantity = self.properties.season_quantity - 1
             self.climatology_end_index = self.season_shift + self.properties.current_season_index - yearly_periods[self.properties.period_unit_id]
             self.properties.current_season_length += self.season_shift
         else:
+            # keep current year
             self.split_quantity = self.properties.season_quantity
             self.climatology_end_index = self.season_shift + self.properties.current_season_index
             self.properties.current_season_length -= self.season_shift
@@ -69,6 +69,7 @@ class Dataset:
         self.places: dict[str, Place] = {}
         for place, timeseries in dataset.iterrows():
             self.places[place] = Place(place, timeseries, self)
+            break
     
 class Place:
     """Represents a place with associated time series data.
