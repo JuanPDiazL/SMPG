@@ -315,6 +315,19 @@ class CurrentBillboardChart {
             unload: true,
         });
         this.plot.xgrids(gridLines);
+        // grid lines coloring
+        document.querySelectorAll(`${this.containerElement} .bb-xgrid-lines .bb-xgrid-line`)
+            .forEach((lineElementContainer) => {
+                const textElement = lineElementContainer.querySelector('text');
+                const lineElement = lineElementContainer.querySelector('line');
+                const text = textElement.textContent;
+                
+                if(text.includes('SOS of Current Season')){
+                    lineElement.style.stroke = chartColors['Current Season'];
+                } else if(text.includes('SOS of Clim. Avg.')){
+                    lineElement.style.stroke = chartColors['LTA'];
+                }
+           });
     }
 }
 
