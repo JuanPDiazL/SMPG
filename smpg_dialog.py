@@ -183,6 +183,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
         rainy_season_detection = {
             "sos": {
                 "enabled": self.rainy_season_detection_dialog.sosEnabled,
+                "method": self.rainy_season_detection_dialog.sosDetectionMethod,
                 "first_threshold": self.rainy_season_detection_dialog.sosFirstThreshold,
                 "second_threshold": self.rainy_season_detection_dialog.sosSecondThreshold,
             }
@@ -289,6 +290,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
         else: self.observedDataRadioButton.setChecked(True)
         self.rainySeasonDetectionButton.setEnabled(True)
         self.rainy_season_detection_dialog.sosEnabled = parameters.rainy_season_detection["sos"]["enabled"]
+        self.rainy_season_detection_dialog.sosDetectionMethod = parameters.rainy_season_detection["sos"]["method"]
         self.rainy_season_detection_dialog.sosFirstThreshold = parameters.rainy_season_detection["sos"]["first_threshold"]
         self.rainy_season_detection_dialog.sosSecondThreshold = parameters.rainy_season_detection["sos"]["second_threshold"]
 

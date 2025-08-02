@@ -150,8 +150,12 @@ class Place:
         if parent.parameters.rainy_season_detection["sos"]["enabled"]:
             first_threshold = parent.parameters.rainy_season_detection["sos"]["first_threshold"]
             second_threshold = parent.parameters.rainy_season_detection["sos"]["second_threshold"]
-            sos_index_avg, started_avg, sos_class_avg = get_season_started_constant(avg_monitoring, first_threshold, second_threshold)
-            sos_index_current, started_current, sos_class_current = get_season_started_constant(current_season_monitoring, first_threshold, second_threshold)
+            if parent.parameters.rainy_season_detection["sos"]["method"] == "fixed":
+                sos_index_avg, started_avg, sos_class_avg = get_sos_fixed(avg_monitoring, first_threshold, second_threshold)
+            else:
+                sos_index_avg, started_avg, sos_class_avg = get_sos_fixed(avg_monitoring, 25, 20)
+            sos_index_current, started_current, sos_class_current = get_start_of_season(current_season_monitoring, avg_monitoring, 
+                                                                                  parent.parameters.rainy_season_detection["sos"])
             sos_index_avg += parent.season_start_index
             sos_index_current += parent.season_start_index
             if sos_class_avg == 'Started':

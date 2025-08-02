@@ -120,6 +120,7 @@ class Parameters:
         self.rainy_season_detection = {
             "sos": {
                 "enabled": False,
+                "method": "fixed",
                 "first_threshold": 25,
                 "second_threshold": 20,
             },
@@ -423,6 +424,19 @@ def slice_by_element(_list: list, start, end=None) -> list:
 
     return sliced_list
 
+def get_key_by_value(dictionary: dict, value) -> str:
+    """Get the key corresponding to a given value in a dictionary.
+
+    Parameters:
+        dictionary (dict): The dictionary to search in.
+        value: The value to search for.
+
+    Returns:
+        str: The key corresponding to `value` in `dictionary`, or None if no 
+        key corresponds to `value` in `dictionary`.
+    """
+    return next((k for k, v in dictionary.items() if v == value), None)
+
 def get_similar_years(reference_year: np.ndarray, year_df: pd.DataFrame, 
                       use_pearson=False) -> list[str]:
     """
@@ -501,10 +515,10 @@ def startswith_substring(string_list: list[str], target_string: str):
     """
     return any(s.startswith(target_string) for s in string_list)
 
-def get_season_started_constant(year_data: pd.Series, first_value, second_value) -> int:
+def get_sos_fixed(year_data: pd.Series, first_value, second_value):
     """
     Determines the index at which a season might have started based on the 
-    given data of a year and threshold values.
+    given data of a year and fixed threshold values.
     
     Args:
         year_data (pd.Series): A pandas Series containing numerical data of the year.
@@ -536,5 +550,35 @@ def get_season_started_constant(year_data: pd.Series, first_value, second_value)
     for i, value in enumerate(dq): 
         if value >= first_value:
             return len(year_data) - len(dq) + i, False, 'Possible Start'
-
     return np.NaN, False, 'No Start'
+
+def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value, second_value):
+    dq = deque(maxlen=3)
+    dq_c = deque(maxlen=3)
+    
+    for i in range(len(year_data)):
+        year_value = year_data[i]
+        clim_avg_value = clim_avg[i]
+        dq.append(year_value)
+        dq_c.append(clim_avg_value)
+        if (((dq[0]/dq_c[0])*100 >= first_value and (len(dq) == 3 and ((dq[1] + dq[2])/dq_c[2])*100 >= second_value))
+            or (dq[0] >= 25 and (len(dq) == 3 and dq[1] + dq[2] >= 20))
+            ): 
+            return i - 2, True, 'Started'
+
+    for i in range(len(dq)): 
+        year_value = dq[i]
+        clim_avg_value = dq_c[i]
+        if (year_value/clim_avg_value)*100 >= first_value:
+            return len(year_data) - len(dq) + i, False, 'Possible Start'
+    return np.NaN, False, 'No Start'
+
+def get_start_of_season(data: pd.Series, clim_avg: pd.Series, sos_parameters: dict):
+    if sos_parameters["method"] is None:
+        raise ValueError("SOS method not specified")
+    elif sos_parameters["method"] == "fixed":
+        return get_sos_fixed(data, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
+    elif sos_parameters["method"] == "pct_clim_avg":
+        return get_sos_pct_clim_avg(data, clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
+    else:
+        raise ValueError(f"Unknown SOS method: {sos_parameters['method']}")
