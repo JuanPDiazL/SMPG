@@ -562,7 +562,9 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
         clim_avg_value = clim_avg[i]
         dq.append(year_value)
         dq_c.append(clim_avg_value)
-        if (((dq[0]/dq_c[0])*100 >= first_value and (len(dq) == 3 and ((dq[1] + dq[2])/dq_c[2])*100 >= second_value))
+        if (
+            ((dq[0]/dq_c[0])*100 >= first_value 
+             and (len(dq) == 3 and ((dq[1] + dq[2])/dq_c[2])*100 >= second_value))
             or (dq[0] >= 25 and (len(dq) == 3 and dq[1] + dq[2] >= 20))
             ): 
             return i - 2, True, 'Started'
@@ -574,12 +576,34 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
             return len(year_data) - len(dq) + i, False, 'Possible Start'
     return np.NaN, False, 'No Start'
 
+def get_sos_differential(year_data: pd.Series, first_value, second_value):
+    print('diff')
+    dq = deque(maxlen=4)
+    for i in range(len(year_data)):
+        dq.append(year_data[i])
+        if len(dq) < 4: continue # avoid out of bounds
+        # print(f'{(dq[1] - dq[0]) / dq[0]} >= {1 + (first_value / 100)}')
+        # print(f'{(dq[3] + dq[2]) / dq[1]} >= {1 + (second_value / 100)}')
+        if (    ((dq[1] - dq[0]) / dq[0] >= 1 + (first_value / 100))
+            and ((dq[3] + dq[2]) / dq[1] >= 1 + (second_value / 100))
+            ): 
+            return i - 2, True, 'Started'
+    if len(dq) >= 2:
+        for i in range(len(dq) - 1): 
+            previous_value = dq[i]
+            current_value = dq[i+1]
+            if (current_value - previous_value) / previous_value >= 1 + (first_value / 100):
+                return len(year_data) - len(dq) + i + 1, False, 'Possible Start'
+    return np.NaN, False, 'No Start'
+
 def get_start_of_season(data: pd.Series, clim_avg: pd.Series, sos_parameters: dict):
     if sos_parameters["method"] is None:
         raise ValueError("SOS method not specified")
     elif sos_parameters["method"] == "fixed":
-        return get_sos_fixed(data, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
+        return (get_sos_fixed(data, sos_parameters['first_threshold'], sos_parameters['second_threshold']), 
+                get_sos_fixed(clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold']))
     elif sos_parameters["method"] == "pct_clim_avg":
-        return get_sos_pct_clim_avg(data, clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
+        return (get_sos_pct_clim_avg(data, clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold']), 
+                get_sos_differential(clim_avg, 20, 50))
     else:
         raise ValueError(f"Unknown SOS method: {sos_parameters['method']}")

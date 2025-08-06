@@ -68,6 +68,7 @@ class Dataset:
         # create a dictionary with the places
         self.places: dict[str, Place] = {}
         for place, timeseries in dataset.iterrows():
+            # print(place)
             self.places[place] = Place(place, timeseries, self)
     
 class Place:
@@ -138,24 +139,15 @@ class Place:
         self.seasonal_pctls = percentiles_to_values(self.seasonal_current_totals.to_numpy(), 
                                                              (3, 6, 11, 21, 33, 67))
         climatology_avg = self.seasonal_climatology.mean()
-        avg_monitoring = climatology_avg[parent.season_start_index:parent.season_end_index]
-        place_lt_stats = {
-            'Climatology Average': climatology_avg,
-            'Current Season': self.current_season,
-            'Current Season Accumulation': self.current_cumsum_mon,
-        }
-        self.place_long_term_stats = pd.DataFrame([pd.Series(v, name=k) for k, v in place_lt_stats.items()])
 
-        # SOS
+        # SOS detection
         if parent.parameters.rainy_season_detection["sos"]["enabled"]:
-            first_threshold = parent.parameters.rainy_season_detection["sos"]["first_threshold"]
-            second_threshold = parent.parameters.rainy_season_detection["sos"]["second_threshold"]
-            if parent.parameters.rainy_season_detection["sos"]["method"] == "fixed":
-                sos_index_avg, started_avg, sos_class_avg = get_sos_fixed(avg_monitoring, first_threshold, second_threshold)
-            else:
-                sos_index_avg, started_avg, sos_class_avg = get_sos_fixed(avg_monitoring, 25, 20)
-            sos_index_current, started_current, sos_class_current = get_start_of_season(current_season_monitoring, avg_monitoring, 
-                                                                                  parent.parameters.rainy_season_detection["sos"])
+            avg_monitoring = climatology_avg[parent.season_start_index:parent.season_end_index]
+            avg_monitoring_cumsum = avg_monitoring.cumsum() #! possible duplicated calculation
+            current_sos, clim_avg_sos = get_start_of_season(current_season_monitoring, avg_monitoring,
+                                                            parent.parameters.rainy_season_detection["sos"])
+            sos_index_current, started_current, sos_class_current = current_sos
+            sos_index_avg, started_avg, sos_class_avg = clim_avg_sos
             sos_index_avg += parent.season_start_index
             sos_index_current += parent.season_start_index
             if sos_class_avg == 'Started':
@@ -178,6 +170,19 @@ class Place:
         else:
             # nullify sos values
             sos_index_current, sos_class_current, sos_index_avg, sos_class_avg, sos_anomaly, sos_anomaly_class = [None] * 6
+
+        # Generate required Series and Dataframes, these are the final results
+        self.seasonal_general_stats, self.seasonal_long_term_stats = \
+            self.get_place_stats(self.clim_seasons_cumsum, self.clim_seasons_ensemble)
+        self.selected_seasons_general_stats, self.selected_seasons_long_term_stats = \
+            self.get_place_stats(self.selected_seasons_cumsum, self.selected_seasons_ensemble)
+        
+        place_lt_stats = {
+            'Climatology Average': climatology_avg,
+            'Current Season': self.current_season,
+            'Current Season Accumulation': self.current_cumsum_mon,
+        }
+        self.place_long_term_stats = pd.DataFrame([pd.Series(v, name=k) for k, v in place_lt_stats.items()])
 
         self.place_general_stats = pd.Series({
             'Current Season Pctl.': percentiles_from_values(self.seasonal_current_totals.to_numpy(), 
@@ -204,12 +209,7 @@ class Place:
         name=self.id
         )
 
-        self.seasonal_general_stats, self.seasonal_long_term_stats = \
-            self.get_place_stats(self.clim_seasons_cumsum, self.clim_seasons_ensemble)
-        self.selected_seasons_general_stats, self.selected_seasons_long_term_stats = \
-            self.get_place_stats(self.selected_seasons_cumsum, self.selected_seasons_ensemble)
-
-    def get_place_stats(self, seasonal_cumsum: pd.DataFrame, seasonal_ensemble: pd.DataFrame):
+    def get_place_stats(self, seasonal_cumsum: pd.DataFrame, seasonal_ensemble: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
         """Calculates and returns the place statistics for the seasons.
 
         It calculates various statistics, including long-term averages (LTA), 
