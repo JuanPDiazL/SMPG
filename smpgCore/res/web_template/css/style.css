@@ -285,6 +285,14 @@ path {
     stroke-linejoin: round;
     pointer-events: none;
 }
+.persistent-selection-path {
+    fill: none;
+    stroke: black;
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    pointer-events: none;
+    stroke-dasharray: 8, 4;
+}
 
 .country {
     /* fill: lightgray; */

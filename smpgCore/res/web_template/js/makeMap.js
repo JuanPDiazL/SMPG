@@ -52,6 +52,11 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         .enter()
         .append("path")
         .attr("class","selection-path")
+    const mapPersistentSelectorPath = svg.select("#mapPersistentSelector").selectAll(".persistent-selection-path")
+        .data([null])
+        .enter()
+        .append("path")
+        .attr("class","persistent-selection-path")
         // .attr("filter", "url(#shadow)")
 
     // Draw the map
@@ -84,6 +89,9 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
             tooltip.text("None");
         })
         .on("click", (event, d) => {
+            mapPersistentSelectorPath
+            .attr("d", d3.geoPath().projection(projection)(d))
+            .style("display", null)
             navigateTo({"place": d.properties[fieldId], "mode": "plots"});
         })
 
@@ -114,6 +122,22 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     .attr("height", null)
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0, 0, ${width}, ${height}`)
+
+const zoom = d3.zoom()
+  .on('zoom', (event) => {
+    const transform = event.transform;
+    // limit transform to fit within the map area
+    transform.k = Math.max(1, transform.k);
+    transform.x = Math.max(width-(width*transform.k), transform.x);
+    transform.x = Math.min(0, transform.x);
+    transform.y = Math.max(height-(height*transform.k), transform.y);
+    transform.y = Math.min(0, transform.y);
+    
+    svg.selectAll('g')
+      .attr('transform', transform);
+  });
+
+svg.call(zoom);
 
     selectNode.addEventListener("change", function() {
         const displayId = this.value;
