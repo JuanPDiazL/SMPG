@@ -307,6 +307,8 @@
                 updateSelect(colorNode, mapFields);
                 selectNode.value = fieldId;
                 drawMap(mapJson, referenceMapJson);
+            } else {
+                navigateTo({"place": firstPlaceKey})
             }
             window.dispatchEvent(new HashChangeEvent('hashchange',
                 {
