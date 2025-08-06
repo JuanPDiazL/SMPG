@@ -105,6 +105,7 @@ class Parameters:
         # input defaults
         self.shapefile_path: str = ''
         self.target_id_field: str = ''
+        self.reference_shapefile_path: str = ''
         # climatology defaults
         self.climatology_start: Optional[str] = '1991'
         self.climatology_end: Optional[str] = '2020'

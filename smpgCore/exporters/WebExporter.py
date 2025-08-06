@@ -78,7 +78,7 @@ def layer_to_topojson(layer: QgsVectorLayer) -> dict:
     geojson: dict = json.loads(exporter.exportFeatures(layer.getFeatures()))
     return Topology()({'map': geojson}, 1e4)
 
-def export_to_web_files(destination_path, vector_layer: QgsVectorLayer, subFolderName, structured_dataset: Dataset, ):
+def export_to_web_files(destination_path, vector_layer: QgsVectorLayer, reference_layer: QgsVectorLayer, subFolderName, structured_dataset: Dataset, ):
     """Outputs all the required data for a dynamic web report.
 
     Args:
@@ -101,11 +101,14 @@ def export_to_web_files(destination_path, vector_layer: QgsVectorLayer, subFolde
     os.makedirs(data_destination_path, exist_ok=True)
 
     # layer as geojson
+    topojson_dict = {'topojson_map': None, 'reference_topojson_map': None}
     if vector_layer is not None:
-        layer_topojson = layer_to_topojson(vector_layer)
-        data_py_to_js({'topojson_map': layer_topojson}, data_destination_path, 'topojson_map')
+        topojson_dict['topojson_map'] = layer_to_topojson(vector_layer)
+    if reference_layer is not None:
+        topojson_dict['reference_topojson_map'] = layer_to_topojson(reference_layer)
+    data_py_to_js(topojson_dict, data_destination_path, 'topojson_map')
+    
     # outputs all the required data for the web report
-
     places = structured_dataset.places
     
     properties = {

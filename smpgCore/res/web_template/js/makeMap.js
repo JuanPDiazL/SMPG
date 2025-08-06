@@ -1,8 +1,8 @@
 "use strict";
 
-function drawMap(geoJson) {
-    const layerArea = d3.geoArea(geoJson);
-    const layerBounds = d3.geoBounds(geoJson);
+function drawMap(mapGeoJson, referenceMapGeoJson) {
+    const layerArea = d3.geoArea(mapGeoJson);
+    const layerBounds = d3.geoBounds(mapGeoJson);
 
     const FONT_SIZE = 13;
     let divElement = $("#mapRoot");
@@ -27,7 +27,7 @@ function drawMap(geoJson) {
     }
 
     const projection = d3.geoMercator()
-    .fitSize([width, height], geoJson); // Fit the map to the SVG viewport size
+    .fitSize([width, height], referenceMapGeoJson); // Fit the map to the SVG viewport size
     // Select an SVG container
     const svg = d3.select("#mapSvg")
         .attr("width", width)
@@ -55,8 +55,16 @@ function drawMap(geoJson) {
         // .attr("filter", "url(#shadow)")
 
     // Draw the map
+
+    const referencePolygons = svg.select("#referenceMapPolygons").selectAll(".country")
+        .data(referenceMapGeoJson.features)
+        .enter().append("path")
+        .attr("class", d => `country country-${d.properties[fieldId]}`)
+        .attr("d", d3.geoPath().projection(projection))
+        .style("fill", "#aaa7")
+
     const polygons = svg.select("#mapPolygons").selectAll(".country")
-        .data(geoJson.features)
+        .data(mapGeoJson.features)
         .enter().append("path")
         .attr("class", d => `country country-${d.properties[fieldId]} w3-ripple`)
         .attr("d", d3.geoPath().projection(projection))
@@ -85,13 +93,14 @@ function drawMap(geoJson) {
         
     // draw labels
     const labels = svg.select("#mapLabels").selectAll(".map-text-label")
-        .data(geoJson.features)
+        .data(mapGeoJson.features)
         .enter().append("text")
         .text(d => d.properties[fieldId])
         .attr("class", "map-text-label")
         .attr("transform", d => `translate(${projection(d3.geoCentroid(d))})`)
         .attr("font-size", FONT_SIZE)
         .style("dominant-baseline", "middle")
+        // .style("text-anchor", "middle")
         .style("display", d => {
             const areaRatio = d3.geoArea(d) / layerArea;
             const xRatio = (d.bbox[2] - d.bbox[0]) / (layerBounds[1][0] - layerBounds[0][0]);

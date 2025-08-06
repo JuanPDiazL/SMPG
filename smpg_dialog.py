@@ -93,6 +93,8 @@ class SMPGDialog(QDialog, FORM_CLASS):
     shapefilePathLineEdit: QLineEdit
     targetLabel: QLabel
     targetFieldComboBox: QComboBox
+    loadReferenceShapefileButton: QPushButton
+    referenceShapefilePathLineEdit: QLineEdit
     
     # climatology group
     climatologyStartComboBox: QComboBox
@@ -137,6 +139,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
         self.setupUi(self)
 
         self.selected_layer = None
+        self.reference_layer = None
 
         # task manager object that executes the processing tasks in threads.
         self.task_manager = QgsTaskManager(self) 
@@ -155,6 +158,8 @@ class SMPGDialog(QDialog, FORM_CLASS):
 
         self.usePearsonCheckBox.setHidden(True)
 
+        self.resize(0,0)
+
         # signal connections
         self.mappingButton.clicked.connect(self.mapping_button_event)
         self.rainySeasonDetectionButton.clicked.connect(self.rainy_season_detection_button_event)
@@ -170,6 +175,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
         self.processButton.clicked.connect(self.process_btn_event)
 
         self.loadShapefileButton.clicked.connect(self.load_shapefile_button_event)
+        self.loadReferenceShapefileButton.clicked.connect(self.load_reference_shapefile_button_event)
         self.helpButton.clicked.connect(lambda: webbrowser.open('https://help.fews.net/en/tools/v3/smpg-tool'))
 
     def get_parameters_from_widgets(self):
@@ -204,6 +210,8 @@ class SMPGDialog(QDialog, FORM_CLASS):
             "open_web_report": self.openWebReportCheckBox.isChecked(),
             "shapefile_path": self.shapefilePathLineEdit.text(),
             "target_id_field": self.targetFieldComboBox.currentText(),
+            "reference_shapefile_path": self.referenceShapefilePathLineEdit.text(),
+            
         }
 
     def update_fields(self, parameters: Parameters):
@@ -437,6 +445,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
                 export_to_web_files, 
                 self.destination_path, 
                 self.selected_layer,
+                self.reference_layer,
                 f'{self.dataset_filename}_Web_Report',
                 #self.structured_dataset passed when dataset_task finishes
             )
@@ -502,12 +511,19 @@ class SMPGDialog(QDialog, FORM_CLASS):
             QMessageBox.critical(self, 'Error', f'Could not load parameters from {self.parameters_source}.\n\n{str(e)}\n\n{traceback.format_exc()}')
             return
         
+        #! this could be made to use the same function as the equivalent button event
         shp_source = parameters.shapefile_path
         layer_preload = validate_layer(load_layer_file(shp_source))
         if layer_preload is not None:
             self.selected_layer = layer_preload
             self.update_target_field_combobox_content()
             self.shapefilePathLineEdit.setText(shp_source)
+
+        ref_shp_source = parameters.reference_shapefile_path
+        reference_layer_preload = validate_layer(load_layer_file(ref_shp_source))
+        if reference_layer_preload is not None:
+            self.reference_layer = reference_layer_preload
+            self.referenceShapefilePathLineEdit.setText(ref_shp_source)
 
         self.importParametersLineEdit.setText(self.parameters_source)
         self.update_fields(parameters)
@@ -628,6 +644,29 @@ Current {dataset_properties.period_unit_id}: {sub_season_ids[dataset_properties.
         self.selected_layer = layer_preload
         self.update_target_field_combobox_content()
         self.shapefilePathLineEdit.setText(shp_source)
+
+    def load_reference_shapefile_button_event(self):
+        """Load a new shapefile and update the widgets."""
+        if self.selected_layer is None: 
+            QMessageBox.warning(self, "Warning", 
+                                'There is no shapefile to refer to.', 
+                                QMessageBox.Ok)
+            return
+        temp_shp_source = QFileDialog.getOpenFileName(self, 'Open reference shapefile', None, "shapefiles (*.shp)")[0]
+        if temp_shp_source == "":
+            QMessageBox.warning(self, "Warning", 
+                                'No shapefile was selected.', 
+                                QMessageBox.Ok)
+            return
+        shp_source = temp_shp_source
+        layer_preload = validate_layer(load_layer_file(shp_source))
+        if layer_preload is None: 
+            QMessageBox.critical(self, "Error", 
+                                'The selected shapefile is not valid.', 
+                                QMessageBox.Ok)
+            return
+        self.reference_layer = layer_preload
+        self.referenceShapefilePathLineEdit.setText(shp_source)
 
     def showEvent(self, a0):
         """Function to run when the dialog is oppened."""

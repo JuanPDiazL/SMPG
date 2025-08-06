@@ -75,8 +75,10 @@
                         <div id="mapContainer">
                             <svg id="mapSvg">
                                 <defs id="mapDefs"></defs>
+                                <g id="referenceMapPolygons"></g>
                                 <g id="mapPolygons"></g>
                                 <g id="mapLabels"></g>
+                                <g id="mapPersistentSelector"></g>
                                 <g id="mapSelector"></g>
                             </svg>
                             <div id="mapLegend" class=""></div>
@@ -223,7 +225,9 @@
         const hasSos = parameters['rainy_season_detection']['sos']['enabled'];
 
 
-        const hasMap = isDeclared('topojson_map');
+        const hasMap = topojson_map !== null;
+        const hasReferenceMap = reference_topojson_map !== null;
+        
         const mapFields = ['C. Dk./LTA Pct.', 
             'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
             'Probability of Normal', 'Probability Above Normal', 
@@ -285,13 +289,17 @@
 
             if(hasMap) {
                 topojson_map = JSON.parse(decompress(topojson_map));
-                let mapjson = topojson.feature(topojson_map, topojson_map.objects.map);
-                property_ids = Object.keys(Object.values(mapjson["features"])[0]["properties"]);
+                reference_topojson_map = hasReferenceMap ? JSON.parse(decompress(reference_topojson_map)) : topojson_map;
+
+                let mapJson = topojson.feature(topojson_map, topojson_map.objects.map);
+                let referenceMapJson = topojson.feature(reference_topojson_map, reference_topojson_map.objects.map);
+
+                property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
                 fieldId = parameters["target_id_field"];
                 updateSelect(selectNode, property_ids);
                 updateSelect(colorNode, mapFields);
                 selectNode.value = fieldId;
-                drawMap(mapjson);
+                drawMap(mapJson, referenceMapJson);
             }
             window.onhashchange = handleNavigation; // update everything when when the url changes
             window.dispatchEvent(new HashChangeEvent('hashchange',

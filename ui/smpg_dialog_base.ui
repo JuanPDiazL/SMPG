@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>618</width>
-    <height>693</height>
+    <height>801</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -484,8 +484,25 @@
          <string>Input</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
-         <item row="0" column="1" colspan="2">
-          <widget class="QLineEdit" name="datasetInputLineEdit">
+         <item row="2" column="0">
+          <widget class="QPushButton" name="loadShapefileButton">
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Load Shapefile</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1" colspan="2">
+          <widget class="QLineEdit" name="importParametersLineEdit">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="font">
             <font>
              <pointsize>8</pointsize>
@@ -497,12 +514,12 @@
             <bool>true</bool>
            </property>
            <property name="placeholderText">
-            <string>Select a dataset file.</string>
+            <string>Select a parameters file. (Optional)</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1" colspan="2">
-          <widget class="QComboBox" name="targetFieldComboBox">
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_2">
            <property name="font">
             <font>
              <pointsize>8</pointsize>
@@ -510,25 +527,8 @@
              <bold>true</bold>
             </font>
            </property>
-           <property name="placeholderText">
-            <string>Select the target field.</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <widget class="QPushButton" name="importParametersButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
            <property name="text">
-            <string>Load Parameters</string>
+            <string>Target Field</string>
            </property>
           </widget>
          </item>
@@ -563,39 +563,39 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Target Field</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QPushButton" name="loadShapefileButton">
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Load Shapefile</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1" colspan="2">
-          <widget class="QLineEdit" name="importParametersLineEdit">
+         <item row="6" column="0">
+          <widget class="QPushButton" name="importParametersButton">
            <property name="enabled">
             <bool>false</bool>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Load Parameters</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" colspan="2">
+          <widget class="QComboBox" name="targetFieldComboBox">
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="placeholderText">
+            <string>Select the target field.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" colspan="2">
+          <widget class="QLineEdit" name="datasetInputLineEdit">
            <property name="font">
             <font>
              <pointsize>8</pointsize>
@@ -607,7 +607,21 @@
             <bool>true</bool>
            </property>
            <property name="placeholderText">
-            <string>Select a parameters file. (Optional)</string>
+            <string>Select a dataset file.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QPushButton" name="loadReferenceShapefileButton">
+           <property name="text">
+            <string>Add Reference Shapefile</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLineEdit" name="referenceShapefilePathLineEdit">
+           <property name="placeholderText">
+            <string>Select a reference shapefile. (Optional)</string>
            </property>
           </widget>
          </item>
@@ -771,7 +785,12 @@
             </font>
            </property>
            <property name="text">
-            <string>Load  a dataset first.</string>
+            <string>Load  a dataset first.
+
+
+
+
+</string>
            </property>
           </widget>
          </item>
