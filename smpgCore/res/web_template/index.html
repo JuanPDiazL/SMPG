@@ -225,8 +225,8 @@
         const hasSos = parameters['rainy_season_detection']['sos']['enabled'];
 
 
-        const hasMap = topojson_map !== null;
-        const hasReferenceMap = reference_topojson_map !== null;
+        const hasMap = isDeclared("topojson_map");
+        const hasReferenceMap = isDeclared("reference_topojson_map");
         
         const mapFields = ['C. Dk./LTA Pct.', 
             'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
@@ -287,9 +287,16 @@
             
             sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
+            window.onhashchange = handleNavigation; // update everything when when the url changes
             if(hasMap) {
                 topojson_map = JSON.parse(decompress(topojson_map));
-                reference_topojson_map = hasReferenceMap ? JSON.parse(decompress(reference_topojson_map)) : topojson_map;
+                if (hasReferenceMap) {
+                    reference_topojson_map = JSON.parse(decompress(reference_topojson_map));
+
+                } else {
+                    let reference_topojson_map = topojson_map;
+
+                }
 
                 let mapJson = topojson.feature(topojson_map, topojson_map.objects.map);
                 let referenceMapJson = topojson.feature(reference_topojson_map, reference_topojson_map.objects.map);
@@ -301,7 +308,6 @@
                 selectNode.value = fieldId;
                 drawMap(mapJson, referenceMapJson);
             }
-            window.onhashchange = handleNavigation; // update everything when when the url changes
             window.dispatchEvent(new HashChangeEvent('hashchange',
                 {
                     oldURL: location.href,
