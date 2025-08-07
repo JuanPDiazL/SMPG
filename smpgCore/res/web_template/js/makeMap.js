@@ -66,7 +66,7 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         .enter().append("path")
         .attr("class", d => `country country-${d.properties[fieldId]}`)
         .attr("d", d3.geoPath().projection(projection))
-        .style("fill", "#aaa7")
+        .style("fill", "#ffff")
 
     const polygons = svg.select("#mapPolygons").selectAll(".country")
         .data(mapGeoJson.features)

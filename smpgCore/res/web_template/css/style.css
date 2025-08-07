@@ -278,6 +278,10 @@ path {
     min-height: 1em;
 }
 
+#mapForm select {
+    width: 10em;
+}
+
 .selection-path {
     fill: none;
     stroke: red;
@@ -295,8 +299,8 @@ path {
 }
 
 .country {
-    /* fill: lightgray; */
-    stroke: white;
+    /* fill: white; */
+    stroke: black;
     stroke-width: .5px;
     stroke-linecap: round;
     /* stroke-dasharray: 8, 4; */
