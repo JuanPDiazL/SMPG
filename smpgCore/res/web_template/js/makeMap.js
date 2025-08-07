@@ -1,8 +1,8 @@
 "use strict";
 
 function drawMap(mapGeoJson, referenceMapGeoJson) {
-    const layerArea = d3.geoArea(mapGeoJson);
-    const layerBounds = d3.geoBounds(mapGeoJson);
+    const layerArea = d3.geoArea(referenceMapGeoJson);
+    const layerBounds = d3.geoBounds(referenceMapGeoJson);
 
     const FONT_SIZE = 13;
     let divElement = $("#mapRoot");
@@ -64,7 +64,7 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     const referencePolygons = svg.select("#referenceMapPolygons").selectAll(".country")
         .data(referenceMapGeoJson.features)
         .enter().append("path")
-        .attr("class", d => `country country-${d.properties[fieldId]}`)
+        .attr("class", d => `reference-polygon`)
         .attr("d", d3.geoPath().projection(projection))
         .style("fill", "#ffff")
 
