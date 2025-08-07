@@ -301,12 +301,21 @@ path {
 .country {
     /* fill: white; */
     stroke: black;
-    stroke-width: .5px;
+    stroke-width: .75px;
     stroke-linecap: round;
     /* stroke-dasharray: 8, 4; */
 }.darkmode .country {
     stroke: var(--dark-bg-color);
 }
+
+.reference-polygon {
+    fill: none;
+    stroke: black;
+    stroke-width: .5px;
+    stroke-linecap: round;
+    stroke-dasharray: 8, 4;
+}
+
 
 .map-text-label {
     pointer-events: none;
