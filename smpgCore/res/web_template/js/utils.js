@@ -288,13 +288,9 @@ function objectMap(obj, fn) {
 
 function decompress(data) {
     const compressedData = atob(data);
-    const charData = compressedData.split('').map(function(x){return x.charCodeAt(0);});
-    const binData = new Uint8Array(charData);
-    const decompressedBin = pako.inflate(binData);
-    let decompressedString = '';
-    for (let i of decompressedBin) {
-        decompressedString += String.fromCharCode(i);
-    }
+    const compressedDataString = compressedData.split('').map(function(x){return x.charCodeAt(0);});
+    const compressedDataBin = new Uint8Array(compressedDataString);
+    const decompressedString = pako.inflate(compressedDataBin, { to: 'string'});
     return decompressedString;
 }
 
