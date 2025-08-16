@@ -61,9 +61,9 @@ class Dataset:
         self.properties.sub_season_monitoring_ids = slice_by_element(default_sub_seasons, self.parameters.season_start, self.parameters.season_end)
         self.properties.sub_season_offset = default_sub_seasons.index(self.parameters.season_start)
         self.properties.place_ids = dataset.index.astype(str).tolist()
-        self.season_start_index = default_sub_seasons.index(self.parameters.season_start)
-        self.season_end_index = default_sub_seasons.index(self.parameters.season_end)+1
-        self.current_season_trim_index = min(self.properties.current_season_length, self.season_end_index) - parameters.is_forecast
+        self.properties.season_start_index = default_sub_seasons.index(self.parameters.season_start)
+        self.properties.season_end_index = default_sub_seasons.index(self.parameters.season_end)+1
+        self.properties.current_season_trim_index = min(self.properties.current_season_length, self.properties.season_end_index) - parameters.is_forecast
 
         # create a dictionary with the places
         self.places: dict[str, Place] = {}
@@ -110,12 +110,12 @@ class Place:
         
         # build sub-dataframes
         self.seasonal_climatology = self.seasons_df.loc[parent.properties.climatology_year_ids]
-        self.seasonal_monitoring = self.seasons_df.iloc[:, parent.season_start_index:parent.season_end_index]
+        self.seasonal_monitoring = self.seasons_df.iloc[:, parent.properties.season_start_index:parent.properties.season_end_index]
         self.seasonal_mon_sel = self.seasonal_monitoring.loc[selected_years]
         self.seasonal_mon_clim = self.seasonal_monitoring.loc[parent.properties.climatology_year_ids]
         
         # calculate derived dataframes
-        current_season_monitoring = self.current_season[parent.season_start_index:parent.current_season_trim_index]
+        current_season_monitoring = self.current_season[parent.properties.season_start_index:parent.properties.current_season_trim_index]
         self.current_cumsum = self.current_season.cumsum()
         self.current_cumsum_mon = current_season_monitoring.cumsum()
         self.current_index = len(current_season_monitoring) - 1
@@ -142,34 +142,10 @@ class Place:
 
         # SOS detection
         if parent.parameters.rainy_season_detection["sos"]["enabled"]:
-            avg_monitoring = climatology_avg[parent.season_start_index:parent.season_end_index]
-            avg_monitoring_cumsum = avg_monitoring.cumsum() #! possible duplicated calculation
-            current_sos, clim_avg_sos = get_start_of_season(current_season_monitoring, avg_monitoring,
-                                                            parent.parameters.rainy_season_detection["sos"])
-            sos_index_current, started_current, sos_class_current = current_sos
-            sos_index_avg, started_avg, sos_class_avg = clim_avg_sos
-            sos_index_avg += parent.season_start_index
-            sos_index_current += parent.season_start_index
-            if sos_class_avg == 'Started':
-                sos_class_avg = columns[sos_index_avg]
-            elif sos_class_avg == 'Possible Start':
-                sos_class_avg = f'Possible Start at {columns[sos_index_avg]}'
-            if sos_class_current == 'Started':
-                sos_class_current = columns[sos_index_current]
-            elif sos_class_current == 'Possible Start':
-                sos_class_current = f'Possible Start at {columns[sos_index_current]}'
-
-            sos_anomaly = sos_index_current - sos_index_avg
-            if not started_current:
-                sos_anomaly_class = 'Yet to Start'
-            elif not started_avg:
-                sos_anomaly_class = 'No Reference'
-            else:
-                sos_anomaly_class = str(sos_anomaly)
-                sos_anomaly_class = f'{abs(sos_anomaly)} {parent.properties.period_unit_id}s {"Late" if sos_anomaly > 0 else "Early"}'
-        else:
-            # nullify sos values
-            sos_index_current, sos_class_current, sos_index_avg, sos_class_avg, sos_anomaly, sos_anomaly_class = [None] * 6
+            avg_monitoring = climatology_avg[parent.properties.season_start_index:parent.properties.season_end_index]
+            sos_data = get_start_of_season(current_season_monitoring, avg_monitoring,
+                                                            parent.parameters.rainy_season_detection["sos"],
+                                                            parent.properties)
 
         # Generate required Series and Dataframes, these are the final results
         self.seasonal_general_stats, self.seasonal_long_term_stats = \
@@ -199,12 +175,7 @@ class Place:
             'Climatology 67 Pctl.': self.clim_seasons_pctls[1],
             'Forecast': self.forecast_value,
             'Current Season+Forecast': self.current_cumsum_mon[-1] + self.forecast_value,
-            'Start of Season': sos_index_current,
-            'Start of Season Class': sos_class_current,
-            'Start of Season of Avg.': sos_index_avg,
-            'Start of Season of Avg. Class': sos_class_avg,
-            'Start of Season Anomaly': sos_anomaly,
-            'Start of Season Anomaly Class': sos_anomaly_class,
+            **sos_data,
         }, 
         name=self.id
         )

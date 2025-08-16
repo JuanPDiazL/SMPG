@@ -13,6 +13,13 @@ yearly_periods = {
     'Pentad': 72,
 }
 
+STARTED_STR = 'Started'
+POSSIBLE_START_STR = 'Possible Start'
+NO_START_STR = 'No Start'
+LATE_STR = 'Late'
+NO_REFERENCE_STR = 'No Reference'
+YET_TO_START_STR = 'Yet to Start'
+
 # TODO: separate computation properties from dataset properties
 class Properties:
     """This class represents the properties of a time series dataset.
@@ -51,6 +58,10 @@ class Properties:
         self.current_season_index: int
         self.current_season_id: str
         self.current_season_length: int
+
+        self.season_start_index: int
+        self.season_end_index: int
+        self.current_season_trim_index: int
 
         if properties_dict is not None:
             self.update(properties_dict)
@@ -522,7 +533,8 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
     given data of a year and fixed threshold values.
     
     Args:
-        year_data (pd.Series): A pandas Series containing numerical data of the year.
+        year_data (pd.Series): A pandas Series containing numerical data of the 
+            year.
         first_value (int, optional): The first threshold value for determining 
             the possible start of a season. Defaults to 25.
         second_value (int, optional): The second threshold value for confirming 
@@ -532,10 +544,11 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
         tuple: A tuple containing two elements:
             - int: The index at which the season might have started, or None if 
                 no such index is found.
-            - bool: True if the season has definitely started based on the 
-                given conditions, False otherwise.
+            - bool: True if the season meets both conditions to start, 
+                False otherwise.
             - str: A string indicating the class of the start.
-                Possible values are 'Started', 'Possible Start', and 'No Start'.
+                Possible values are STARTED_STR, POSSIBLE_START_STR, 
+                and NO_START_STR.
     """
     dq = deque(maxlen=3)
     
@@ -544,14 +557,14 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
         if (dq[0] >= first_value
             and (len(dq) == 3 and dq[1] + dq[2] >= second_value)
             ): 
-            return i - 2, True, 'Started'
+            return i - 2, True, STARTED_STR
 
     # if reached the end of `data`, but SOS might be yet to start,
     # then evaluate `dq` elements
     for i, value in enumerate(dq): 
         if value >= first_value:
-            return len(year_data) - len(dq) + i, False, 'Possible Start'
-    return np.NaN, False, 'No Start'
+            return len(year_data) - len(dq) + i, False, POSSIBLE_START_STR
+    return np.NaN, False, NO_START_STR
 
 def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value, second_value):
     dq = deque(maxlen=3)
@@ -567,43 +580,92 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
              and (len(dq) == 3 and ((dq[1] + dq[2])/dq_c[2])*100 >= second_value))
             or (dq[0] >= 25 and (len(dq) == 3 and dq[1] + dq[2] >= 20))
             ): 
-            return i - 2, True, 'Started'
+            return i - 2, True, STARTED_STR
 
     for i in range(len(dq)): 
         year_value = dq[i]
         clim_avg_value = dq_c[i]
         if (year_value/clim_avg_value)*100 >= first_value:
-            return len(year_data) - len(dq) + i, False, 'Possible Start'
-    return np.NaN, False, 'No Start'
+            return len(year_data) - len(dq) + i, False, POSSIBLE_START_STR
+    return np.NaN, False, NO_START_STR
 
-def get_sos_differential(year_data: pd.Series, first_value, second_value):
-    print('diff')
+def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
     dq = deque(maxlen=4)
     for i in range(len(year_data)):
         dq.append(year_data[i])
         if len(dq) < 4: continue # avoid out of bounds
-        # print(f'{(dq[1] - dq[0]) / dq[0]} >= {1 + (first_value / 100)}')
-        # print(f'{(dq[3] + dq[2]) / dq[1]} >= {1 + (second_value / 100)}')
         if (    ((dq[1] - dq[0]) / dq[0] >= 1 + (first_value / 100))
             and ((dq[3] + dq[2]) / dq[1] >= 1 + (second_value / 100))
             ): 
-            return i - 2, True, 'Started'
+            return i - 2, True, STARTED_STR
     if len(dq) >= 2:
         for i in range(len(dq) - 1): 
             previous_value = dq[i]
             current_value = dq[i+1]
             if (current_value - previous_value) / previous_value >= 1 + (first_value / 100):
-                return len(year_data) - len(dq) + i + 1, False, 'Possible Start'
-    return np.NaN, False, 'No Start'
+                return len(year_data) - len(dq) + i + 1, False, POSSIBLE_START_STR
+    return np.NaN, False, NO_START_STR
 
-def get_start_of_season(data: pd.Series, clim_avg: pd.Series, sos_parameters: dict):
+def get_start_of_season(data: pd.Series, clim_avg: pd.Series, sos_parameters: dict, properties: Properties):
+    # current_sos = clim_avg_sos = None
     if sos_parameters["method"] is None:
         raise ValueError("SOS method not specified")
     elif sos_parameters["method"] == "fixed":
-        return (get_sos_fixed(data, sos_parameters['first_threshold'], sos_parameters['second_threshold']), 
-                get_sos_fixed(clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold']))
+        current_sos = get_sos_fixed(data, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
+        clim_avg_sos = get_sos_fixed(clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
     elif sos_parameters["method"] == "pct_clim_avg":
-        return (get_sos_pct_clim_avg(data, clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold']), 
-                get_sos_differential(clim_avg, 20, 50))
+        current_sos = get_sos_pct_clim_avg(data, clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
+        clim_avg_sos = get_sos_pct_difference(clim_avg, 20, 50)
     else:
         raise ValueError(f"Unknown SOS method: {sos_parameters['method']}")
+
+    sos_index_current, started_current, sos_class_current = current_sos
+    sos_index_avg, started_avg, sos_class_avg = clim_avg_sos
+    
+    sos_index_avg += properties.season_start_index
+    sos_index_current += properties.season_start_index
+    columns = properties.sub_season_ids
+    if sos_class_avg == STARTED_STR:
+        if sos_index_avg <= 3:
+            sos_class_avg = u'≤Feb-1'
+        elif sos_index_avg >= 21:
+            sos_class_avg = u'≥Aug-1'
+        else:
+            sos_class_avg = columns[sos_index_avg]
+
+    if sos_class_current == STARTED_STR:
+        if sos_index_current <= 3:
+            sos_class_current = u'≤Feb-1'
+        elif sos_index_current >= 21:
+            sos_class_current = u'≥Aug-1'
+        else:
+            sos_class_current = columns[sos_index_current]
+
+    sos_anomaly = sos_index_current - sos_index_avg
+    if sos_index_current > 0 and not started_current:
+        sos_anomaly_class = LATE_STR
+    elif not started_avg or not started_current:
+        sos_anomaly_class = YET_TO_START_STR
+    # elif started_avg and not started_current:
+    #     sos_anomaly_class = YET_TO_START_STR
+    # elif sos_index_avg == np.NAN:
+    #     # sos_anomaly_class = NO_REFERENCE_STR
+    else:
+        if sos_anomaly <= -4:
+            sos_anomaly_class = f'≥4 {properties.period_unit_id}s Early'
+        elif sos_anomaly >= 4:
+            sos_anomaly_class = f'≥4 {properties.period_unit_id}s Late'
+        elif sos_anomaly == 0:
+            sos_anomaly_class = 'Average'
+        else:
+            sos_anomaly_class = f'{abs(sos_anomaly)} {properties.period_unit_id}s {"Late" if sos_anomaly > 0 else "Early"}'
+
+    result = {
+            'Start of Season': sos_index_current,
+            'Start of Season Class': sos_class_current,
+            'Start of Season of Avg.': sos_index_avg,
+            'Start of Season of Avg. Class': sos_class_avg,
+            'Start of Season Anomaly': sos_anomaly,
+            'Start of Season Anomaly Class': sos_anomaly_class,
+    }
+    return result
