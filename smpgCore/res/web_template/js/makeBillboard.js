@@ -289,12 +289,14 @@ class CurrentBillboardChart {
         let sosAvgClass = place_general_stats[index]['Start of Season of Avg. Class'];
         let sosCurrentClass = place_general_stats[index]['Start of Season Class'];
         let gridLines = [];
-        if (hasSos) {
+        if (place_general_stats[index]['Start of Season of Avg.'] !== null) {
             gridLines.push({
             value: place_general_stats[index]['Start of Season of Avg.'],
             text: sosAvgClass.startsWith('Possible Start') ? 'Possible SOS of Clim. Avg.' : 'SOS of Clim. Avg.',
             position: "middle",
             });
+        } 
+        if (place_general_stats[index]['Start of Season'] !== null) {
             gridLines.push({
             value: place_general_stats[index]['Start of Season'],
             text: sosCurrentClass.startsWith('Possible Start') ? 'Possible SOS' : 'SOS of Current Season',
@@ -314,20 +316,22 @@ class CurrentBillboardChart {
             colors: chartColors,
             unload: true,
         });
-        this.plot.xgrids(gridLines);
-        // grid lines coloring
-        document.querySelectorAll(`${this.containerElement} .bb-xgrid-lines .bb-xgrid-line`)
-            .forEach((lineElementContainer) => {
-                const textElement = lineElementContainer.querySelector('text');
-                const lineElement = lineElementContainer.querySelector('line');
-                const text = textElement.textContent;
-                
-                if(text.includes('SOS of Current Season')){
-                    lineElement.style.stroke = chartColors['Current Season'];
-                } else if(text.includes('SOS of Clim. Avg.')){
-                    lineElement.style.stroke = chartColors['LTA'];
-                }
-           });
+        if (hasSos) {
+            this.plot.xgrids(gridLines);
+            // grid lines coloring
+            document.querySelectorAll(`${this.containerElement} .bb-xgrid-lines .bb-xgrid-line`)
+                .forEach((lineElementContainer) => {
+                    const textElement = lineElementContainer.querySelector('text');
+                    const lineElement = lineElementContainer.querySelector('line');
+                    const text = textElement.textContent;
+                    
+                    if(text.includes('SOS of Current Season')){
+                        lineElement.style.stroke = chartColors['Current Season'];
+                    } else if(text.includes('SOS of Clim. Avg.')){
+                        lineElement.style.stroke = chartColors['LTA'];
+                    }
+            });
+        }
     }
 }
 
