@@ -562,9 +562,9 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
         dq.append(value)
         if len(dq) < 3: continue # avoid out of bounds
         if candidate_condition(dq):
-            last_candidate = i - 2 
+            if last_candidate is None: last_candidate = i - 2 
             if confirming_condition(dq):
-                return last_candidate, True, STARTED_STR
+                return i - 2, True, STARTED_STR
 
     if last_candidate is not None: 
         return last_candidate, False, POSSIBLE_START_STR
@@ -615,13 +615,13 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
         dq_c.append(clim_avg[i])
         if len(dq) < 3: continue # avoid out of bounds
         if candidate_condition(dq, dq_c):
-            last_candidate = i - 2 
+            if last_candidate is None: last_candidate = i - 2 
             if confirming_condition(dq, dq_c):
-                return last_candidate, True, STARTED_STR
+                return i - 2, True, STARTED_STR
         elif fallback_candidate_condition(dq):
-            last_candidate = i - 2 
+            if last_candidate is None: last_candidate = i - 2 
             if fallback_confirming_condition(dq_c):
-                return last_candidate, True, STARTED_STR
+                return i - 2, True, STARTED_STR
 
     if last_candidate is not None: 
         return last_candidate, False, POSSIBLE_START_STR
@@ -668,9 +668,9 @@ def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
         dq.append(year_data[i])
         if len(dq) < 4: continue # avoid out of bounds
         if candidate_condition(dq): 
-            last_candidate = i - 2
+            if last_candidate is None: last_candidate = i - 2
             if confirming_condition(dq):
-                return last_candidate, True, STARTED_STR
+                return i - 2, True, STARTED_STR
             
     if last_candidate is not None: 
         return last_candidate, False, POSSIBLE_START_STR
