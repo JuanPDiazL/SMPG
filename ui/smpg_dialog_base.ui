@@ -354,8 +354,8 @@
            <property name="font">
             <font>
              <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="text">
@@ -613,6 +613,13 @@
          </item>
          <item row="5" column="0">
           <widget class="QPushButton" name="loadReferenceShapefileButton">
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="text">
             <string>Add Reference Shapefile</string>
            </property>
@@ -620,6 +627,13 @@
          </item>
          <item row="5" column="1">
           <widget class="QLineEdit" name="referenceShapefilePathLineEdit">
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="placeholderText">
             <string>Select a reference shapefile. (Optional)</string>
            </property>
