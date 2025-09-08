@@ -435,7 +435,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
                     self.map_settings_dialog.settings['selected_fields'],
                     # the last argument `summary_csv_path` will be passed by the LongTaskHandler after csv_task finishes
                 )
-                map_task.setDependentLayers([self.selected_layer])
+                map_task.setDependentLayers([self.selected_layer, self.reference_layer])
                 csv_task.addNextTasks(map_task)
                 long_tasks.append(map_task)
 
@@ -449,6 +449,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
                 f'{self.dataset_filename}_Web_Report',
                 #self.structured_dataset passed when dataset_task finishes
             )
+            web_task.setDependentLayers([self.selected_layer, self.reference_layer])
             after_dataset_tasks.append(web_task)
             long_tasks.append(web_task)
 
