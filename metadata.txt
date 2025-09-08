@@ -8,7 +8,7 @@
 name=SMPG
 qgisMinimumVersion=3.34
 description=An implementation of the SMPG tool for QGIS 3
-version=1.7.2.1
+version=1.7.2.2
 author=Diaz Lombana Juan Pablo
 email=juan.lombana@correounivalle.edu.co
 
