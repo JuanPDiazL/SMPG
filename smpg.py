@@ -181,6 +181,7 @@ class SMPG:
             self.iface.removeToolBarIcon(action)
         if self.master_dlg is not None:
             self.master_dlg.reject()
+            self.master_dlg.deleteLater()
 
     def run(self):
         """Run method that performs all the real work"""
