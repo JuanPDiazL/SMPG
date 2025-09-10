@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>618</width>
+    <width>616</width>
     <height>801</height>
    </rect>
   </property>
@@ -527,8 +527,11 @@
              <bold>true</bold>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Unique Identifier Field</string>
+           </property>
            <property name="text">
-            <string>Target Field</string>
+            <string>Unique Identifier Field</string>
            </property>
           </widget>
          </item>
@@ -575,6 +578,9 @@
              <bold>false</bold>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Will replace your current parameters.</string>
+           </property>
            <property name="text">
             <string>Load Parameters</string>
            </property>
@@ -589,8 +595,14 @@
              <bold>true</bold>
             </font>
            </property>
+           <property name="toolTip">
+            <string/>
+           </property>
            <property name="placeholderText">
-            <string>Select the target field.</string>
+            <string>Select a Unique Identifier Field.</string>
+           </property>
+           <property name="duplicatesEnabled">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -733,6 +745,9 @@
              <weight>50</weight>
              <bold>false</bold>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>Export Statistics required</string>
            </property>
            <property name="text">
             <string>Mapping Preferences</string>
