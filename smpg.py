@@ -190,7 +190,7 @@ class SMPG:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
-            self.master_dlg = SMPGDialog()
+            self.master_dlg = SMPGDialog(self, self.iface)
 
         # show the dialog
         self.master_dlg.show()

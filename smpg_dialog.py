@@ -22,6 +22,7 @@
  ***************************************************************************/
 """
 
+import configparser
 import os
 import time
 import json
@@ -129,14 +130,22 @@ class SMPGDialog(QDialog, FORM_CLASS):
 
     processButton: QPushButton
 
-    def __init__(self, parent=None):
+    def __init__(self, plugin, iface):
         """This is the constructor for the class.
 
         It initializes the GUI elements and sets up the connections between 
         them.
         """
-        super(SMPGDialog, self).__init__(parent)
+        super(SMPGDialog, self).__init__(None)
         self.setupUi(self)
+
+        self.plugin = plugin
+        self.iface = iface
+
+        try:
+            self.metadata = self.read_metadata()
+        except Exception as e:
+            self.metadata = None
 
         self.selected_layer = None
         self.reference_layer = None
@@ -158,8 +167,6 @@ class SMPGDialog(QDialog, FORM_CLASS):
 
         self.usePearsonCheckBox.setHidden(True)
 
-        self.resize(0,0)
-
         # signal connections
         self.mappingButton.clicked.connect(self.mapping_button_event)
         self.rainySeasonDetectionButton.clicked.connect(self.rainy_season_detection_button_event)
@@ -177,6 +184,20 @@ class SMPGDialog(QDialog, FORM_CLASS):
         self.loadShapefileButton.clicked.connect(self.load_shapefile_button_event)
         self.loadReferenceShapefileButton.clicked.connect(self.load_reference_shapefile_button_event)
         self.helpButton.clicked.connect(lambda: webbrowser.open('https://help.fews.net/en/tools/v3/smpg-tool'))
+
+        # Window properties
+        self.resize(0,0)
+
+    def read_metadata(self):
+        metadata_path = os.path.normpath(f'{self.plugin.plugin_dir}/metadata.txt')
+        config = configparser.ConfigParser()
+        config.read(metadata_path)
+        
+        metadata_dict = {}
+        for section in config.sections():
+            metadata_dict[section] = dict(config[section])
+            
+        return metadata_dict["general"]
 
     def get_parameters_from_widgets(self):
         """Get parameters from widgets and return them as a dictionary."""
