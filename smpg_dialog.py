@@ -187,6 +187,8 @@ class SMPGDialog(QDialog, FORM_CLASS):
 
         # Window properties
         self.resize(0,0)
+        if self.metadata is not None:
+            self.setWindowTitle(f'{self.windowTitle()} {self.metadata["version"]}')
 
     def read_metadata(self):
         metadata_path = os.path.normpath(f'{self.plugin.plugin_dir}/metadata.txt')
