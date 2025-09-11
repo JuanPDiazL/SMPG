@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>616</width>
-    <height>801</height>
+    <height>841</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -489,8 +489,8 @@
            <property name="font">
             <font>
              <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="text">
@@ -523,8 +523,8 @@
            <property name="font">
             <font>
              <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="toolTip">
@@ -554,8 +554,8 @@
            <property name="font">
             <font>
              <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="readOnly">
@@ -591,8 +591,8 @@
            <property name="font">
             <font>
              <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="toolTip">
@@ -628,8 +628,8 @@
            <property name="font">
             <font>
              <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="text">
@@ -642,8 +642,8 @@
            <property name="font">
             <font>
              <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="placeholderText">
@@ -790,20 +790,6 @@
          <string>Information</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_11">
-         <item row="4" column="0">
-          <widget class="QPushButton" name="helpButton">
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Help</string>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="0">
           <widget class="QLabel" name="datasetInfoLabel">
            <property name="font">
@@ -823,18 +809,19 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <spacer name="verticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
+         <item row="5" column="0">
+          <widget class="QPushButton" name="helpButton">
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
+           <property name="text">
+            <string>Help</string>
            </property>
-          </spacer>
+          </widget>
          </item>
          <item row="0" column="0">
           <widget class="QLabel" name="label_3">
@@ -850,6 +837,19 @@
            </property>
           </widget>
          </item>
+         <item row="2" column="0">
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
          <item row="3" column="0">
           <widget class="QLabel" name="label_4">
            <property name="font">
@@ -861,6 +861,20 @@
            </property>
            <property name="text">
             <string>Other Information:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QPushButton" name="aboutButton">
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>About</string>
            </property>
           </widget>
          </item>

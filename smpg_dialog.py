@@ -127,6 +127,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
     # information group
     datasetInfoLabel: QLabel
     helpButton: QPushButton
+    aboutButton: QPushButton
 
     processButton: QPushButton
 
@@ -144,8 +145,19 @@ class SMPGDialog(QDialog, FORM_CLASS):
 
         try:
             self.metadata = self.read_metadata()
+            self.about_text = f'''\
+{self.metadata["name"]} {self.metadata["version"]}
+
+{self.metadata["description"]}
+
+{self.metadata["about"]}
+
+Github Project Page: {self.metadata["homepage"]}
+'''
         except Exception as e:
             self.metadata = None
+            self.about_text = ''
+        
 
         self.selected_layer = None
         self.reference_layer = None
@@ -183,6 +195,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
 
         self.loadShapefileButton.clicked.connect(self.load_shapefile_button_event)
         self.loadReferenceShapefileButton.clicked.connect(self.load_reference_shapefile_button_event)
+        self.aboutButton.clicked.connect(lambda: QMessageBox.about(self, "About", f'{self.about_text}'))
         self.helpButton.clicked.connect(lambda: webbrowser.open('https://help.fews.net/en/tools/v3/smpg-tool'))
 
         # Window properties
