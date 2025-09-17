@@ -93,7 +93,7 @@ def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Stati
     }
 
     for series_list, path in data_path_relation.values():
-        pd.DataFrame(series_list).round().to_csv(path)
+        pd.DataFrame(series_list).round().to_csv(path, encoding='utf-8')
     pd.DataFrame(similar_seasons, index=list(dataset.places.keys())).to_csv(f'{stats_subfolder_path}/similar_seasons{filename_suffix}.csv')
 
     # return path to selected years summary table
