@@ -146,7 +146,7 @@ def apply_default_attr_style(map_layer: QgsVectorLayer, class_attribute: str) ->
         'Start of Season Anomaly':  'start_of_season_anomaly',
     }
     for attribute_key in attribute_style_relation:
-        if class_attribute.rfind(attribute_key) != -1:
+        if class_attribute.endswith(attribute_key):
             style_file = attribute_style_relation[attribute_key]
             style_file_path = os.path.join(layer_styles_folder, f'{style_file}.qml')
             apply_style_file(style_file_path, map_layer, class_attribute)
