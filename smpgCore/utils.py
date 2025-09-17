@@ -734,11 +734,11 @@ def get_start_of_season(data: pd.Series, clim_avg: pd.Series, sos_parameters: di
             sos_anomaly_class = f'{abs(sos_anomaly)} {properties.period_unit_id}s {"Late" if sos_anomaly > 0 else "Early"}'
 
     result = {
-            'Start of Season': sos_index_current,
-            'Start of Season Class': sos_class_current,
-            'Start of Season of Avg.': sos_index_avg,
-            'Start of Season of Avg. Class': sos_class_avg,
-            'Start of Season Anomaly': sos_anomaly,
-            'Start of Season Anomaly Class': sos_anomaly_class,
+            'Start of Season Raw': sos_index_current,
+            'Start of Season': sos_class_current,
+            'Start of Season of Avg. Raw': sos_index_avg,
+            'Start of Season of Avg.': sos_class_avg,
+            'Start of Season Anomaly Raw': sos_anomaly,
+            'Start of Season Anomaly': sos_anomaly_class,
     }
     return result

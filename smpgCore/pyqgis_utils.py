@@ -142,8 +142,8 @@ def apply_default_attr_style(map_layer: QgsVectorLayer, class_attribute: str) ->
         'Probability Above Normal': 'prob_above_normal_polygons',
         'Ensemble Med. Pctl.':      'SMPG_precipitation_percentile',
         'Current Season Pctl.':     'SMPG_precipitation_percentile',
-        'Start of Season Class':    'start_of_season',
-        'Start of Season Anomaly Class': 'start_of_season_anomaly',
+        'Start of Season':          'start_of_season',
+        'Start of Season Anomaly':  'start_of_season_anomaly',
     }
     for attribute_key in attribute_style_relation:
         if class_attribute.rfind(attribute_key) != -1:

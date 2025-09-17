@@ -19,8 +19,8 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         'Probability Above Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Above Normal Pct.'],
         'Ensemble Med. Pctl.': (col) => selected_seasons_general_stats[col]['Ensemble Med. Pctl.'],
         'Current Season Pctl.': (col) => place_general_stats[col]['Current Season Pctl.'],
-        'Start of Season': (col) => place_general_stats[col]['Start of Season Class'],
-        'Start of Season Anomaly': (col) => place_general_stats[col]['Start of Season Anomaly Class'],
+        'Start of Season': (col) => place_general_stats[col]['Start of Season'],
+        'Start of Season Anomaly': (col) => place_general_stats[col]['Start of Season Anomaly'],
     }
 
     const projection = d3.geoMercator()

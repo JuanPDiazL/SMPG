@@ -148,12 +148,12 @@ class Place:
                                                             parent.properties)
         else:
             sos_data = {
+            'Start of Season Raw': None,
             'Start of Season': None,
-            'Start of Season Class': None,
+            'Start of Season of Avg. Raw': None,
             'Start of Season of Avg.': None,
-            'Start of Season of Avg. Class': None,
+            'Start of Season Anomaly Raw': None,
             'Start of Season Anomaly': None,
-            'Start of Season Anomaly Class': None,
     }
         # Generate required Series and Dataframes, these are the final results
         self.seasonal_general_stats, self.seasonal_long_term_stats = \

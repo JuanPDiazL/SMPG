@@ -46,12 +46,12 @@ def wrap_summary(place_general_stats: dict, seasonal_general_stats: pd.Series):
         'Probability Above Normal': seasonal_general_stats['E. Prob. Above Normal Pct.'],
         'Ensemble Med. Pctl.': seasonal_general_stats['Ensemble Med. Pctl.'],
         'Current Season Pctl.': place_general_stats['Current Season Pctl.'],
+        'Start of Season Raw': place_general_stats['Start of Season Raw'],
         'Start of Season': place_general_stats['Start of Season'],
-        'Start of Season Class': place_general_stats['Start of Season Class'],
+        'Start of Season of Avg. Raw': place_general_stats['Start of Season of Avg. Raw'],
         'Start of Season of Avg.': place_general_stats['Start of Season of Avg.'],
-        'Start of Season of Avg. Class': place_general_stats['Start of Season of Avg. Class'],
+        'Start of Season Anomaly Raw': place_general_stats['Start of Season Anomaly Raw'],
         'Start of Season Anomaly': place_general_stats['Start of Season Anomaly'],
-        'Start of Season Anomaly Class': place_general_stats['Start of Season Anomaly Class'],
     }
     , name=seasonal_general_stats.name)
 

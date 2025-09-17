@@ -13,8 +13,8 @@ function getDataSeasonalAnalysis(index) {
         ['St. Dev.', selected_seasons_general_stats[index]['St. Dev.'], seasonal_general_stats[index]['St. Dev.']],
     ];
     if (hasSos) {
-        tableData.push(['SOS', place_general_stats[index]['Start of Season Class'], null]);
-        tableData.push(['SOS Anomaly', place_general_stats[index]['Start of Season Anomaly Class'], null]);
+        tableData.push(['SOS', place_general_stats[index]['Start of Season'], null]);
+        tableData.push(['SOS Anomaly', place_general_stats[index]['Start of Season Anomaly'], null]);
     }
     return tableData;
 }

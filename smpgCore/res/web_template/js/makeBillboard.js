@@ -286,19 +286,19 @@ class CurrentBillboardChart {
             'Current Season': place_long_term_stats[index]['Current Season'],
             'Climatology Average': place_long_term_stats[index]['Climatology Average'],
         };
-        let sosAvgClass = place_general_stats[index]['Start of Season of Avg. Class'];
-        let sosCurrentClass = place_general_stats[index]['Start of Season Class'];
+        let sosAvgClass = place_general_stats[index]['Start of Season of Avg.'];
+        let sosCurrentClass = place_general_stats[index]['Start of Season'];
         let gridLines = [];
-        if (place_general_stats[index]['Start of Season of Avg.'] !== null) {
+        if (place_general_stats[index]['Start of Season of Avg. Raw'] !== null) {
             gridLines.push({
-            value: place_general_stats[index]['Start of Season of Avg.'],
+            value: place_general_stats[index]['Start of Season of Avg. Raw'],
             text: sosAvgClass.startsWith('Possible Start') ? 'Possible SOS of Clim. Avg.' : 'SOS of Clim. Avg.',
             position: "middle",
             });
         } 
-        if (place_general_stats[index]['Start of Season'] !== null) {
+        if (place_general_stats[index]['Start of Season Raw'] !== null) {
             gridLines.push({
-            value: place_general_stats[index]['Start of Season'],
+            value: place_general_stats[index]['Start of Season Raw'],
             text: sosCurrentClass.startsWith('Possible Start') ? 'Possible SOS' : 'SOS of Current Season',
             position: "start",
             });
