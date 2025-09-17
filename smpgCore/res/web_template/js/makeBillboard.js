@@ -326,9 +326,9 @@ class CurrentBillboardChart {
                     const text = textElement.textContent;
                     
                     if(text.includes('SOS of Current Season')){
-                        lineElement.style.stroke = chartColors['Current Season'];
+                        lineElement.classList.add("sos-marker", "current-sos-marker");
                     } else if(text.includes('SOS of Clim. Avg.')){
-                        lineElement.style.stroke = chartColors['LTA'];
+                        lineElement.classList.add("sos-marker", "avg-sos-marker");
                     }
             });
         }

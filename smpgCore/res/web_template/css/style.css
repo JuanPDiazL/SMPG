@@ -213,6 +213,18 @@ body {
     stroke-width: 3px;
 }
 
+.bb-xgrid-lines .bb-xgrid-line .sos-marker{
+    stroke-opacity: 50%;
+    stroke-dasharray: 10 10;
+}
+.current-sos-marker {
+    stroke: blue !important;
+}
+.avg-sos-marker {
+    stroke: red !important;
+    stroke-dashoffset: 10;
+}
+
 /* Custom line styles */
 
 .bb-line-LTA, .bb-line-Climatology-Average, .bb-line-Ensemble-Med-,
