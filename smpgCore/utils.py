@@ -406,11 +406,12 @@ def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFram
     """
     fixed_series_indexes = post_data.columns[:len(fixed_data)]
     fixed_series = pd.Series(fixed_data, index=fixed_series_indexes, name='Current Season')
+    fixed_series_cumsum = fixed_series.cumsum()
     post_data_slice = post_data.iloc[:, len(fixed_data):]
 
     if post_data_slice.empty:
-        return post_data.apply(lambda _: fixed_series.cumsum(), axis=1)
-    return post_data_slice.apply(lambda row: pd.concat([fixed_series, row]).cumsum(), axis=1)
+        return post_data.apply(lambda _: fixed_series_cumsum, axis=1)
+    return post_data_slice.apply(lambda row: pd.concat([fixed_series_cumsum, row.cumsum()]), axis=1)
 
 
 def slice_by_element(_list: list, start, end=None) -> list:
