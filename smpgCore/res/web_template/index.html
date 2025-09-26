@@ -290,15 +290,15 @@
 
             window.onhashchange = handleNavigation; // update everything when when the url changes
             if(hasMap) {
-                topojson_map = JSON.parse(decompress(topojson_map));
+                var object_map = JSON.parse(decompress(topojson_map));
                 if (hasReferenceMap) {
-                    reference_topojson_map = JSON.parse(decompress(reference_topojson_map));
+                    var reference_object_map = JSON.parse(decompress(reference_topojson_map));
                 } else {
-                    var reference_topojson_map = topojson_map;
+                    var reference_object_map = object_map;
                 }
 
-                let mapJson = topojson.feature(topojson_map, topojson_map.objects.map);
-                let referenceMapJson = topojson.feature(reference_topojson_map, reference_topojson_map.objects.map);
+                let mapJson = topojson.feature(object_map, object_map.objects.map);
+                let referenceMapJson = topojson.feature(reference_object_map, reference_object_map.objects.map);
 
                 property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
                 fieldId = parameters["target_id_field"];
