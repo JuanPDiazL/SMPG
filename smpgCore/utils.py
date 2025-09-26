@@ -614,8 +614,7 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
         return (dq[1] + dq[2] >= 20)
     
     for i in range(len(year_data)):
-        dq.append(year_data[i])
-        dq_c.append(clim_avg[i])
+        dq.append(year_data[i]); dq_c.append(clim_avg[i])
         if len(dq) < 3: continue # avoid out of bounds
         if candidate_condition(dq, dq_c):
             if last_candidate is None: last_candidate = i - 2 
@@ -631,8 +630,7 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
     while (len(dq) >= 1 and len(dq_c) >= 1): # check remaining values in deques for possible start
         if candidate_condition(dq, dq_c) or fallback_candidate_condition(dq):
             return len(year_data) - len(dq), False, POSSIBLE_START_STR
-        dq.popleft()
-        dq_c.popleft()
+        dq.popleft(); dq_c.popleft()
     return np.NaN, False, NO_START_STR
 
 def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
