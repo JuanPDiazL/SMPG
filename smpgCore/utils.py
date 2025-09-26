@@ -411,7 +411,9 @@ def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFram
 
     if post_data_slice.empty:
         return post_data.apply(lambda _: fixed_series_cumsum, axis=1)
-    return post_data_slice.apply(lambda row: pd.concat([fixed_series_cumsum, row.cumsum()]), axis=1)
+    return post_data_slice.apply(lambda row: pd.concat(
+        [fixed_series_cumsum, (row + fixed_series_cumsum[-1]).cumsum()]), 
+        axis=1)
 
 
 def slice_by_element(_list: list, start, end=None) -> list:
