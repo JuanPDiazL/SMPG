@@ -120,21 +120,21 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0, 0, ${width}, ${height}`)
 
-const zoom = d3.zoom()
-  .on('zoom', (event) => {
-    const transform = event.transform;
-    // limit transform to fit within the map area
-    transform.k = Math.max(1, transform.k);
-    transform.x = Math.max(width-(width*transform.k), transform.x);
-    transform.x = Math.min(0, transform.x);
-    transform.y = Math.max(height-(height*transform.k), transform.y);
-    transform.y = Math.min(0, transform.y);
-    
-    svg.selectAll('g')
-      .attr('transform', transform);
-  });
+    const zoom = d3.zoom()
+    .on('zoom', (event) => {
+        const transform = event.transform;
+        // limit transform to fit within the map area
+        transform.k = Math.max(1, transform.k);
+        transform.x = Math.max(width-(width*transform.k), transform.x);
+        transform.x = Math.min(0, transform.x);
+        transform.y = Math.max(height-(height*transform.k), transform.y);
+        transform.y = Math.min(0, transform.y);
+        
+        svg.selectAll('g')
+        .attr('transform', transform);
+    });
 
-svg.call(zoom);
+    svg.call(zoom);
 
     selectNode.addEventListener("change", function() {
         const displayId = this.value;
