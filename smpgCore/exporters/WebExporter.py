@@ -78,7 +78,7 @@ def layer_to_topojson(layer: QgsVectorLayer) -> dict:
     geojson: dict = json.loads(exporter.exportFeatures(layer.getFeatures()))
     return Topology()({'map': geojson}, 1e4)
 
-def export_to_web_files(destination_path, vector_layer: QgsVectorLayer, reference_layer: QgsVectorLayer, subFolderName, structured_dataset: Dataset, ):
+def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_layer: QgsVectorLayer, subFolderName, structured_dataset: Dataset, ):
     """Outputs all the required data for a dynamic web report.
 
     Args:
@@ -88,6 +88,9 @@ def export_to_web_files(destination_path, vector_layer: QgsVectorLayer, referenc
         subFolderName (str, optional): The name of the subfolder that will hold 
             the web report. Defaults to 'Dynamic_Web_Report'.
     """
+    # avoid memory access violation
+    map_layer = map_layer.clone(); reference_layer = reference_layer.clone()
+
     # Create the destination folder if it doesn't exist
     web_subfolder_path = os.path.join(destination_path, subFolderName)
     os.makedirs(web_subfolder_path, exist_ok=True)
@@ -102,8 +105,8 @@ def export_to_web_files(destination_path, vector_layer: QgsVectorLayer, referenc
 
     # layer as geojson
     topojson_dict = {'topojson_map': None, 'reference_topojson_map': None}
-    if vector_layer is not None:
-        topojson_dict['topojson_map'] = layer_to_topojson(vector_layer)
+    if map_layer is not None:
+        topojson_dict['topojson_map'] = layer_to_topojson(map_layer)
     if reference_layer is not None:
         topojson_dict['reference_topojson_map'] = layer_to_topojson(reference_layer)
     data_py_to_js(topojson_dict, data_destination_path, 'topojson_map')
