@@ -89,7 +89,8 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
             the web report. Defaults to 'Dynamic_Web_Report'.
     """
     # avoid memory access violation
-    map_layer = map_layer.clone(); reference_layer = reference_layer.clone()
+    if map_layer is not None: map_layer = map_layer.clone()
+    if reference_layer is not None: reference_layer = reference_layer.clone()
 
     # Create the destination folder if it doesn't exist
     web_subfolder_path = os.path.join(destination_path, subFolderName)
