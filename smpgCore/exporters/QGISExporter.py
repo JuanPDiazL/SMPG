@@ -17,9 +17,6 @@ def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selecte
         summary_csv_path (str): The path to the CSV file containing the data to 
             be used for generating the layers.
     """
-    # avoid memory access violation
-    if map_layer is not None: map_layer = map_layer.clone()
-
     if selected_stats != []:
         csv_stats_layer = load_layer_file(summary_csv_path)
         add_to_project(csv_stats_layer)
