@@ -448,13 +448,6 @@ Github Project Page: {self.metadata["homepage"]}
         
         # computation with parameters given from GUI
         parameters = Parameters(self.get_parameters_from_widgets())
-
-        # # avoid memory access violation
-        # if self.selected_layer is not None: 
-        #     self.selected_layer = self.selected_layer.clone()
-        # if self.reference_layer is not None: 
-        #     self.reference_layer = self.reference_layer.clone()
-
         
         # add selected output tasks to a list of tasks
         long_tasks: list[TaskHandler] = []
@@ -473,8 +466,7 @@ Github Project Page: {self.metadata["homepage"]}
                 map_task = TaskHandler(
                     'Summary Mapping Task',
                     generate_layers_from_csv, 
-                    self.selected_layer,
-                    # self.selected_layer.clone() if self.selected_layer is not None else None,
+                    self.selected_layer.clone() if self.selected_layer is not None else None,
                     self.targetFieldComboBox.currentText(),
                     self.map_settings_dialog.settings['selected_fields'],
                     # the last argument `summary_csv_path` will be passed by the LongTaskHandler after csv_task finishes
@@ -488,10 +480,8 @@ Github Project Page: {self.metadata["homepage"]}
                 'Web Report Export Task', 
                 export_to_web_files, 
                 self.destination_path, 
-                self.selected_layer,
-                self.reference_layer,
-                # self.selected_layer.clone() if self.selected_layer is not None else None,
-                # self.reference_layer.clone() if self.reference_layer is not None else None,
+                self.selected_layer.clone() if self.selected_layer is not None else None,
+                self.reference_layer.clone() if self.reference_layer is not None else None,
                 f'{self.dataset_filename}_Web_Report',
                 #self.structured_dataset passed when dataset_task finishes
             )
