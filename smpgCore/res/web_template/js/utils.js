@@ -119,7 +119,6 @@ const categories = {
         '≥Aug-1': { 'color': '#966300', 'function': (x) => x === '≥Aug-1' },
     },
     'Start of Season Anomaly': {
-        'Late': { 'color': '#DFD75D', 'function': (x) => x === 'Late'},
         'Yet to Start': { 'color': '#FFF77D', 'function': (x) => x === 'Yet to Start'},
         '≥4 Dk. Early': { 'color': '#004280', 'function': (x) => x === '≥4 Dekads Early' },
         '3 Dk. Early': { 'color': '#0073F0', 'function': (x) => x === '3 Dekads Early' },

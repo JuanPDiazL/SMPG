@@ -292,7 +292,7 @@ class CurrentBillboardChart {
         if (place_general_stats[index]['Start of Season of Avg. Raw'] !== null) {
             gridLines.push({
             value: place_general_stats[index]['Start of Season of Avg. Raw'],
-            text: sosAvgClass.startsWith('Possible Start') ? 'Possible SOS of Clim. Avg.' : 'SOS of Clim. Avg.',
+            text: 'SOS of Historical Avg.',
             position: "middle",
             });
         } 
@@ -327,7 +327,7 @@ class CurrentBillboardChart {
                     
                     if(text.includes('SOS of Current Season')){
                         lineElement.classList.add("sos-marker", "current-sos-marker");
-                    } else if(text.includes('SOS of Clim. Avg.')){
+                    } else if(text.includes('SOS of Historical Avg.')){
                         lineElement.classList.add("sos-marker", "avg-sos-marker");
                     }
             });
