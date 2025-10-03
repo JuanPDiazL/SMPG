@@ -639,11 +639,8 @@ Github Project Page: {self.metadata["homepage"]}
         self.rainy_season_detection_dialog.show()
 
     def update_dialog_info(self, dataset_properties: Properties):
-        """Updates the label that contains information about the datset.
+        """Returns information about the loaded dataset.
         
-        This method updates the dataset information label with relevant 
-        information about the selected dataset.
-
         Args:
             dataset_properties (Properties): Properties of the dataset
         """
@@ -655,7 +652,7 @@ Current Year: {dataset_properties.current_season_id}
 Years in Dataset: {dataset_properties.season_quantity}
 {dataset_properties.period_unit_id}s in Current Year: {dataset_properties.current_season_length}
 Current {dataset_properties.period_unit_id}: {sub_season_ids[dataset_properties.current_season_length-1]}'''
-        self.datasetInfoLabel.setText(dg_text)
+        return dg_text
 
     def update_target_field_combobox_content(self):
         """Update the content of the target field combo box."""
