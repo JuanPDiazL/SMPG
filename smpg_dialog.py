@@ -420,8 +420,7 @@ Github Project Page: {self.metadata["homepage"]}
         selected_monitoring_start = self.seasonStartComboBox.currentIndex()
         if selected_monitoring_start > valid_monitoring_start:
             QMessageBox.critical(self, "Error", 
-                                 f'There is no data available for the selected season monitoring start ({sub_season_ids[selected_monitoring_start]})\n\
-                                   The start of the season monitoring must be before or equal to {sub_season_ids[valid_monitoring_start]}.', 
+                                 f'There is no data available for the selected season monitoring start ({sub_season_ids[selected_monitoring_start]})\nThe start of the season monitoring must be before or equal to {sub_season_ids[valid_monitoring_start]}.', 
                                  QMessageBox.Ok)
             return
         if self.seasonStartComboBox.currentIndex() > self.seasonEndComboBox.currentIndex():
