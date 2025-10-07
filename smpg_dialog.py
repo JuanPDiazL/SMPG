@@ -413,6 +413,17 @@ Github Project Page: {self.metadata["homepage"]}
                                  'The start of the climatology must be before the end of the climatology', 
                                  QMessageBox.Ok)
             return
+        sub_season_ids = define_seasonal_dict(self.crossYearsCheckBox.isChecked(), 
+                                           period_unit_id=self.dataset_properties.period_unit_id)
+        data_availability_shift =  - self.forecastRadioButton.isChecked() - ((self.dataset_properties.period_length // 2) * self.crossYearsCheckBox.isChecked())
+        valid_monitoring_start = self.dataset_properties.current_season_length + data_availability_shift - 1
+        selected_monitoring_start = self.seasonStartComboBox.currentIndex()
+        if selected_monitoring_start > valid_monitoring_start:
+            QMessageBox.critical(self, "Error", 
+                                 f'There is no data available for the selected season monitoring start ({sub_season_ids[selected_monitoring_start]})\n\
+                                   The start of the season monitoring must be before or equal to {sub_season_ids[valid_monitoring_start]}.', 
+                                 QMessageBox.Ok)
+            return
         if self.seasonStartComboBox.currentIndex() > self.seasonEndComboBox.currentIndex():
             QMessageBox.critical(self, "Error", 
                                  'The start of the season must be before the end of the season.', 
