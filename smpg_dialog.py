@@ -466,78 +466,48 @@ Github Project Page: {self.metadata["homepage"]}
         # get parameters from GUI
         parameters = Parameters(self.get_parameters_from_widgets())
         
-        # add selected output tasks to a list of tasks
-        long_tasks: list[TaskHandler] = []
-        after_dataset_tasks: list[TaskHandler] = []
-        if self.exportStatsCheckBox.isChecked():
-            csv_task = TaskHandler(
-                'CSV Export Task', 
-                export_to_csv_files, 
-                self.destination_path, 
-                #self.structured_dataset passed when dataset_task finishes
-                )
-            after_dataset_tasks.append(csv_task)
-            long_tasks.append(csv_task)
-            if not (self.selected_layer is None or 
-                len(self.map_settings_dialog.settings['selected_fields']) == 0):
-                map_task = TaskHandler(
-                    'Summary Mapping Task',
-                    generate_layers_from_csv, 
-                    self.selected_layer.clone() if self.selected_layer is not None else None,
-                    self.targetFieldComboBox.currentText(),
-                    self.map_settings_dialog.settings['selected_fields'],
-                    # the last argument `summary_csv_path` will be passed by the LongTaskHandler after csv_task finishes
-                )
-                map_task.setDependentLayers([self.selected_layer, self.reference_layer])
-                csv_task.addNextTasks(map_task)
-                long_tasks.append(map_task)
-
-        if True:
-            web_task = TaskHandler(
-                'Web Report Export Task', 
-                export_to_web_files, 
-                self.destination_path, 
-                self.selected_layer.clone() if self.selected_layer is not None else None,
-                self.reference_layer.clone() if self.reference_layer is not None else None,
-                f'{self.dataset_filename}_Web_Report',
-                #self.structured_dataset passed when dataset_task finishes
-            )
-            web_task.setDependentLayers([self.selected_layer, self.reference_layer])
-            after_dataset_tasks.append(web_task)
-            long_tasks.append(web_task)
-
-        if self.exportParametersCheckBox.isChecked():
-            parameters_task = TaskHandler(
-                'Parameters Export Task', 
-                export_parameters, 
-                self.destination_path, 
-                #self.structured_dataset passed when dataset_task finishes
-                )
-            after_dataset_tasks.append(parameters_task)
-            long_tasks.append(parameters_task)
-        
-        dataset_task = TaskHandler(
-            'Dataset Calculations Task',
-            self.set_dataset,
-            parameters
+        compute_task = TaskHandler(
+            'Dataset Computation Task',
+            self.compute,
+            parameters,
         )
-        dataset_task.addNextTasks(after_dataset_tasks)
-        long_tasks.append(dataset_task)
+        compute_task.taskCompleted.connect(self.post_computation)
             
         self.progress_dialog.show()
         self.renderTime = time.perf_counter()
-        # add tasks to task manager and run them
-        for task in long_tasks:
-            self.task_manager.addTask(task)
 
-        # triggers event on progress dialog when finished
-        callback = lambda: webbrowser.open(os.path.join(self.destination_path, f'{self.dataset_filename}_Web_Report', 'index.html')) if self.openWebReportCheckBox.isChecked() else None
-        self.task_manager.allTasksFinished.connect(lambda: self.progress_dialog.finish_wait(self.task_manager, long_tasks, callback))
+        self.task_manager.addTask(compute_task)
 
-    def set_dataset(self, parameters):
+    def compute(self, parameters):
         """Calculates derived data from the dataset, and returns it."""
         self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, parameters)
         return self.structured_dataset
+    
+    def post_computation(self):
+        if self.exportParametersCheckBox.isChecked():
+            export_parameters(self.destination_path, self.structured_dataset)
+
+        if self.exportStatsCheckBox.isChecked(): 
+                summary_csv_path = export_to_csv_files(self.destination_path, 
+                                               self.structured_dataset)
+                if not (self.selected_layer is None or 
+                    len(self.map_settings_dialog.settings['selected_fields']) == 0):
+                        generate_layers_from_csv(
+                        self.selected_layer,
+                        self.targetFieldComboBox.currentText(),
+                        self.map_settings_dialog.settings['selected_fields'],
+                        summary_csv_path)
+ 
+        export_to_web_files(
+            self.destination_path, 
+            self.selected_layer,
+            self.reference_layer,
+            f'{self.dataset_filename}_Web_Report',
+            self.structured_dataset
+        )
+        # triggers event on progress dialog when finished
+        callback = lambda: webbrowser.open(os.path.join(self.destination_path, f'{self.dataset_filename}_Web_Report', 'index.html')) if self.openWebReportCheckBox.isChecked() else None
+        self.progress_dialog.finish_wait(callback)
 
     def import_parameters_btn_event(self) -> None:
         """
@@ -767,9 +737,9 @@ class TaskHandler(QgsTask):
         self.time = 0
 
         self.setDependentLayers(dependentLayers)
-        self.nextTasks: Union[QgsTask, list[QgsTask]] = None
+        self.nextTasks: list[QgsTask] = []
         if nextTask is not None:
-            self.addNextTasks(nextTask)
+            self.addNextTask(nextTask)
 
     def run(self):
         """Executes the function given to the task handler.
@@ -782,7 +752,7 @@ class TaskHandler(QgsTask):
         if self.isCanceled():
             return False
         try:
-            self.result = self.fn(*self.args)
+            self.result = self.fn(*self.args, **self.kwargs)
             return True
         except Exception as e:
             self.exception = e
@@ -806,9 +776,6 @@ class TaskHandler(QgsTask):
         if result:
             self.time = self.elapsedTime()
             if self.debug: print(f'{self.description()} completed')
-            if self.nextTasks is not None:
-                for t in self.nextTasks:
-                    t.args =  (*t.args, self.result)
             return
         # when task did not complete successfully
         if self.exception is not None:
@@ -834,7 +801,7 @@ class TaskHandler(QgsTask):
 
         super().cancel()
 
-    def addNextTasks(self, tasks: Union[QgsTask, list[QgsTask]]):
+    def addNextTask(self, tasks: Union[QgsTask, list[QgsTask]]):
         """
         Adds a new task to be executed after this one completes successfully. 
         The new task is held until it is started by the `finished` method.
@@ -843,8 +810,10 @@ class TaskHandler(QgsTask):
             task (QgsTask): the task to be executed after this one is 
                 completed.
         """
-        if isinstance(tasks, QgsTask): tasks = [tasks]
-        self.nextTasks = tasks
+        if not isinstance(tasks, list): tasks = [tasks]
+        for task in tasks:
+            if not task in self.nextTasks:
+                self.nextTasks.append(task)
         for t in self.nextTasks: t.hold()
         super().taskCompleted.connect(self.unhold_tasks)
 

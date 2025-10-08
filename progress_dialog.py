@@ -4,8 +4,10 @@ import traceback
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
+    QWidget,
     QDialog,
     QMessageBox,
+    QLabel,
 )
 
 from qgis.core import (
@@ -21,13 +23,33 @@ class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
     A dialog window to display progress information while tasks are being 
     executed.
     """
+    waitWidget: QWidget
+    finishWidget: QWidget
+    finishLabel: QLabel
+
     def __init__(self, parent=None):
         super(ProgressDialog, self).__init__(parent)
         self.setupUi(self)
         
         self.setModal(True)
 
-    def finish_wait(self, task_manager: QgsTaskManager, tasks: list[QgsTask], callback=None):
+        self.finishWidget.setHidden(True)
+
+    def showEvent(self, a0):
+        """Function to run when the dialog is oppened."""
+        self.waitWidget.setHidden(False)
+        self.finishWidget.setHidden(True)
+        self.finishLabel.setText('')
+        self.waitWidget.resize(0, 0)
+        self.finishWidget.resize(0, 0)
+        self.resize(0, 0)
+        return super().showEvent(a0)
+    
+    def accept(self) -> None:
+        """Function to run when the dialog is accepted."""
+        super().accept()
+
+    def finish_wait(self, callback=None):
         """
         Finishes the wait state and displays a message box with the total time 
         elapsed.
@@ -37,20 +59,10 @@ class ProgressDialog(QDialog, PROGRESS_DIALOG_CLASS):
             tasks (list[QgsTask]): A list of tasks executed by the task 
                 manager.
         """
-        task_manager.allTasksFinished.disconnect() # Disconnect the signal to prevent re-execution
-        total_time = round(time.perf_counter() - self.parentWidget().renderTime, 1)
-        self.close()
-        
-        # Check if any exception occurred during task execution
-        for task in tasks:
-            if task.exception is not None:
-                exception = task.exception
-                try: raise exception
-                except Exception as e:
-                    QMessageBox.critical(self, "Error", f'{task.title} raised an exception\n{str(e)}\n\n{traceback.format_exc()}', QMessageBox.Ok)
+        self.waitWidget.setHidden(True)
+        self.finishWidget.setHidden(False)
 
+        self.total_time = round(time.perf_counter() - self.parentWidget().renderTime, 1)
+        self.finishLabel.setText(f'Task completed.\nTime elapsed: {self.total_time}\nThe outputs were saved at {self.parentWidget().destination_path}')
         if callback is not None:
             callback()
-
-        QMessageBox.information(self, 'Task Completed', f'Task completed.\nTime elapsed: {total_time}\nThe outputs were saved at {self.parentWidget().destination_path}', QMessageBox.Ok)
-        return
