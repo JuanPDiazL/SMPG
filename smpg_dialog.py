@@ -407,7 +407,9 @@ Github Project Page: {self.metadata["homepage"]}
         the computation of required data using the options given by the user. 
         It also displays a progress dialog while the tasks are being executed.
         """
-        # invalid input handling
+        ##########################
+        # invalid input handling #
+        ##########################
         if self.climatologyStartComboBox.currentIndex() > self.climatologyEndComboBox.currentIndex():
             QMessageBox.critical(self, "Error", 
                                  'The start of the climatology must be before the end of the climatology', 
@@ -423,25 +425,25 @@ Github Project Page: {self.metadata["homepage"]}
                                  f'There is no data available for the selected season monitoring start ({sub_season_ids[selected_monitoring_start]})\nThe start of the season monitoring must be before or equal to {sub_season_ids[valid_monitoring_start]}.', 
                                  QMessageBox.Ok)
             return
+        
         if self.seasonStartComboBox.currentIndex() > self.seasonEndComboBox.currentIndex():
             QMessageBox.critical(self, "Error", 
                                  'The start of the season must be before the end of the season.', 
                                  QMessageBox.Ok)
             return
+        
         if self.selected_layer is not None and self.targetFieldComboBox.currentIndex() == -1:
             QMessageBox.critical(self, "Error", 
                                  'A target field must be selected.', 
                                  QMessageBox.Ok)
             return
         
-        # warn user if no shapefile is selected
         if self.selected_layer is None:
             no_shp_dialog_response = QMessageBox.warning(self, "No shapefile loaded.", 
                                 f'No shapefile was specified. No maps will be produced.\nDo you want to continue?', 
                                 QMessageBox.Yes, QMessageBox.No)
             if no_shp_dialog_response == QMessageBox.No: return
 
-        # path reading
         self.destination_path = os.path.normpath(QFileDialog.getExistingDirectory(self, 'Save results', self.dataset_source_path))
         if self.destination_path == ".":
             QMessageBox.warning(self, "Warning", 
@@ -449,14 +451,19 @@ Github Project Page: {self.metadata["homepage"]}
                                 QMessageBox.Ok)
             return
         
-        # ask for creating subfolder
         new_directory_dialog_response = QMessageBox.information(self, "Create new folder?", 
                             f'Do you want to create a folder for the report files?\nThe folder {self.dataset_filename} at the path {self.destination_path} will be created.', 
-                            QMessageBox.Yes, QMessageBox.No)
+                            QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
         if new_directory_dialog_response == QMessageBox.Yes:
             self.destination_path = os.path.join(self.destination_path, self.dataset_filename)
+        elif new_directory_dialog_response == QMessageBox.Cancel:
+            return
         
-        # computation with parameters given from GUI
+        ###############
+        # Computation #
+        ###############
+
+        # get parameters from GUI
         parameters = Parameters(self.get_parameters_from_widgets())
         
         # add selected output tasks to a list of tasks
