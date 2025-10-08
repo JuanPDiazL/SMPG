@@ -419,6 +419,7 @@ Github Project Page: {self.metadata["homepage"]}
                                            period_unit_id=self.dataset_properties.period_unit_id)
         data_availability_shift =  - self.forecastRadioButton.isChecked() - ((self.dataset_properties.period_length // 2) * self.crossYearsCheckBox.isChecked())
         valid_monitoring_start = self.dataset_properties.current_season_length + data_availability_shift - 1
+        if valid_monitoring_start < 0: valid_monitoring_start += self.dataset_properties.period_length
         selected_monitoring_start = self.seasonStartComboBox.currentIndex()
         if selected_monitoring_start > valid_monitoring_start:
             QMessageBox.critical(self, "Error", 
