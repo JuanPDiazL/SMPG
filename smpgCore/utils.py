@@ -681,7 +681,20 @@ def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
         dq.popleft()
     return np.NaN, False, NO_START_STR
 
-def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: pd.DataFrame, sos_parameters: dict, properties: Properties):
+def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: pd.DataFrame, parameters: Parameters, properties: Properties):
+    sos_parameters = parameters.rainy_season_detection["sos"]
+    indexof_feb_1 = properties.sub_season_ids.index('Feb-1')
+    indexof_aug_1 = properties.sub_season_ids.index('Aug-1')
+    def get_sos_class(sos_index):
+        if ((indexof_feb_1 < sos_index < indexof_aug_1)
+            or (indexof_aug_1 < indexof_feb_1 
+                and (sos_index < indexof_aug_1 or indexof_feb_1 < sos_index))):
+            return properties.sub_season_ids[sos_index]
+        elif sos_index <= indexof_feb_1:
+            return u'≤Feb-1'
+        elif sos_index >= indexof_aug_1:
+            return u'≥Aug-1'
+
     # compute by method
     if sos_parameters["method"] is None:
         raise ValueError("SOS method not specified")
@@ -708,46 +721,33 @@ def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: 
     # get sos individual variables
     sos_index_current, started_current, sos_class_current = current_sos
     
-    sos_index_avg = round(historical_sos_started.mean()) + properties.season_start_index
+    sos = round(historical_sos_started.mean()) + properties.season_start_index
     sos_index_current += properties.season_start_index
 
     # set SOS avg. class
-    if sos_index_avg <= 3:
-        sos_class_avg = u'≤Feb-1'
-    elif sos_index_avg >= 21:
-        sos_class_avg = u'≥Aug-1'
-    else:
-        sos_class_avg = properties.sub_season_ids[sos_index_avg]
+    sos_class_avg = get_sos_class(sos)
 
     # set SOS of current year class
     if sos_class_current == STARTED_STR:
-        if sos_index_current <= 3:
-            sos_class_current = u'≤Feb-1'
-        elif sos_index_current >= 21:
-            sos_class_current = u'≥Aug-1'
-        else:
-            sos_class_current = properties.sub_season_ids[sos_index_current]
+        sos_class_current = get_sos_class(sos_index_current)
 
     # set sos anomaly
-    sos_anomaly = sos_index_current - sos_index_avg
-    if sos_class_current == POSSIBLE_START_STR:
+    sos_anomaly = sos_index_current - sos
+    if np.isnan(sos_anomaly):
         sos_anomaly_class = YET_TO_START_STR
-    # elif sos_index_avg == np.NAN:
-    #     # sos_anomaly_class = NO_REFERENCE_STR
+    elif sos_anomaly <= -4:
+        sos_anomaly_class = f'≥4 {properties.period_unit_id}s Early'
+    elif sos_anomaly >= 4:
+        sos_anomaly_class = f'≥4 {properties.period_unit_id}s Late'
+    elif sos_anomaly == 0:
+        sos_anomaly_class = 'Average'
     else:
-        if sos_anomaly <= -4:
-            sos_anomaly_class = f'≥4 {properties.period_unit_id}s Early'
-        elif sos_anomaly >= 4:
-            sos_anomaly_class = f'≥4 {properties.period_unit_id}s Late'
-        elif sos_anomaly == 0:
-            sos_anomaly_class = 'Average'
-        else:
-            sos_anomaly_class = f'{abs(sos_anomaly)} {properties.period_unit_id}s {"Late" if sos_anomaly > 0 else "Early"}'
+        sos_anomaly_class = f'{abs(sos_anomaly)} {properties.period_unit_id}s {"Late" if sos_anomaly > 0 else "Early"}'
 
     result = {
             'Start of Season Raw': sos_index_current,
             'Start of Season': sos_class_current,
-            'Start of Season of Avg. Raw': sos_index_avg,
+            'Start of Season of Avg. Raw': sos,
             'Start of Season of Avg.': sos_class_avg,
             'Start of Season Anomaly Raw': sos_anomaly,
             'Start of Season Anomaly': sos_anomaly_class,
