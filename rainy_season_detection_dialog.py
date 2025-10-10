@@ -40,7 +40,7 @@ class RainySeasonDetectionDialog(QDialog, SOS_DIALOG_CLASS):
 
     sos_detection_methods = {
         'Fixed Threshold (mm)': 'fixed',
-        'Percent of Climatology Average with 25+20 Threshold Fallback (%)': 'pct_clim_avg',
+        'Percent of Climatology (%)': 'pct_clim_avg',
     }
 
     def __init__(self, parent=None):
