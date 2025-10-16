@@ -43,29 +43,21 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     // define tooltip
     const tooltip = d3.select("#mapTooltipText")
 
-    // draw selection bounding box rectangle
-    const mapSelectorPath = svg.select("#mapSelector").selectAll(".selection-path")
-        .data([null])
-        .enter()
-        .append("path")
-        .attr("class","selection-path")
-    const mapPersistentSelectorPath = svg.select("#mapPersistentSelector").selectAll(".persistent-selection-path")
-        .data([null])
-        .enter()
-        .append("path")
-        .attr("class","persistent-selection-path")
-        // .attr("filter", "url(#shadow)")
-
     // Draw the map
-
-    const referencePolygons = svg.select("#referenceMapPolygons").selectAll(".country")
+    const referencePolygons = svg.append("g")
+        .attr("id", "#referenceMapPolygons")
+        .attr("class", "zoomable")
+        .selectAll(".country")
         .data(referenceMapGeoJson.features)
         .enter().append("path")
         .attr("class", d => `reference-polygon`)
         .attr("d", d3.geoPath().projection(projection))
         .style("fill", "#ffff")
 
-    const polygons = svg.select("#mapPolygons").selectAll(".country")
+    const polygons = svg.append("g")
+        .attr("id", "#mapPolygons")
+        .attr("class", "zoomable")
+        .selectAll(".country")
         .data(mapGeoJson.features)
         .enter().append("path")
         .attr("class", d => `country country-${d.properties[fieldId]} w3-ripple`)
@@ -92,12 +84,27 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
             navigateTo({"place": d.properties[fieldId], "mode": "plots"});
         })
 
+    // draw selection bounding box rectangle
+    const mapPersistentSelectorPath = svg.append("g")
+        .attr("id", "#mapPersistentSelector")
+        .attr("class", "zoomable")
+        .append("path")
+        .attr("class","persistent-selection-path")
+    const mapSelectorPath = svg.append("g")
+        .attr("id", "#mapSelector")
+        .attr("class", "zoomable")
+        .append("path")
+        .attr("class","selection-path")
+
     const polygonTooltips = polygons.append("title")
         .attr("class", "country-polygon-tooltip")
         .text(d => d.properties[fieldId])
         
     // draw labels
-    const labels = svg.select("#mapLabels").selectAll(".map-text-label")
+    const labels = svg.append("g")
+        .attr("id", "#mapLabels")
+        .attr("class", "zoomable")
+        .selectAll(".map-text-label")
         .data(mapGeoJson.features)
         .enter().append("text")
         .text(d => d.properties[fieldId])
@@ -124,13 +131,18 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     .on('zoom', (event) => {
         const transform = event.transform;
         // limit transform to fit within the map area
-        transform.k = Math.max(1, transform.k);
-        transform.x = Math.max(width-(width*transform.k), transform.x);
-        transform.x = Math.min(0, transform.x);
-        transform.y = Math.max(height-(height*transform.k), transform.y);
-        transform.y = Math.min(0, transform.y);
+        const minZoom = 0.75
+        const boundsX = [(width*minZoom), width*(1-minZoom)];
+        const boundsY = [(height*minZoom), height*(1-minZoom)];
+        const viewX = (width*transform.k);
+        const viewY = (height*transform.k);
+        transform.k = Math.max(minZoom, transform.k);
+        transform.x = Math.max(boundsX[0]-viewX, transform.x);
+        transform.x = Math.min(boundsX[1], transform.x);
+        transform.y = Math.max(boundsY[0]-viewY, transform.y);
+        transform.y = Math.min(boundsY[1], transform.y);
         
-        svg.selectAll('g')
+        svg.selectAll(".zoomable")
         .attr('transform', transform);
     });
 
