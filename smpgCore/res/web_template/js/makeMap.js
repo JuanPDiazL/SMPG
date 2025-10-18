@@ -169,16 +169,13 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         legend.selectAll()
             .data(Object.entries(selectedBins))
             .join("g")
-            .classed("legend-element", true)
+            .attr("class", "legend-element")
             .attr("transform", (d, i, nodes) => {
-                // const legendHeight = nodes.length * elementHeight;
-                const legendElementWidth = 100;
                 const legendElementHeight = 16;
                 const legendElementGap = 1;
                 const startY = height - 30;
                 const startX = width - 30;
                 const offset = nodes.length - i - 1;
-                // const coordX = startX - (offset * (legendElementWidth + legendElementGap));
                 const coordX = startX;
                 const coordY = startY - (offset * (legendElementHeight + legendElementGap));
                 return `translate(${coordX},${coordY})`;
@@ -187,12 +184,6 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
                 .attr("width", 16)
                 .attr("height", 16)
                 .attr("fill", d => d[1].color))
-            // .call(g => g.append("text")
-            //     .attr("x", 24)
-            //     .attr("y", 9)
-            //     .attr("dy", "0.35em")
-            //     .attr("text-anchor", "start")
-            //     .text(d => d[0]));
             .call(g => g.append("text")
                 .attr("class", "legend-labels")
                 .attr("x", -4)
