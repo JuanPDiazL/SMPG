@@ -127,26 +127,25 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0, 0, ${width}, ${height}`)
 
-    const zoom = d3.zoom()
+    const svgZoomHandler = d3.zoom()
     .on('zoom', (event) => {
         const transform = event.transform;
-        // limit transform to fit within the map area
-        const minZoom = 0.90
-        const boundsX = [(width*minZoom), width*(1-minZoom)];
-        const boundsY = [(height*minZoom), height*(1-minZoom)];
-        const viewX = (width*transform.k);
-        const viewY = (height*transform.k);
-        transform.k = Math.max(minZoom, transform.k);
-        transform.x = Math.max(boundsX[0]-viewX, transform.x);
-        transform.x = Math.min(boundsX[1], transform.x);
-        transform.y = Math.max(boundsY[0]-viewY, transform.y);
-        transform.y = Math.min(boundsY[1], transform.y);
+        const viewWidth = (width*transform.k);
+        const viewHeight = (height*transform.k);
         
+        // Calculate bounds for zooming
+        const overlap = 0.9;
+        transform.k = Math.max(overlap, transform.k);
+        transform.x = Math.max((width * overlap) - viewWidth, transform.x);
+        transform.x = Math.min(width * (1 - overlap), transform.x);
+        transform.y = Math.max((height * overlap) - viewHeight, transform.y);
+        transform.y = Math.min(height * (1 - overlap), transform.y);
+
         svg.selectAll(".zoomable")
         .attr('transform', transform);
     });
 
-    svg.call(zoom);
+    svg.call(svgZoomHandler);
 
     selectNode.addEventListener("change", function() {
         const displayId = this.value;
@@ -159,7 +158,7 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         legend.style("display", showLegend? null : "none");
     });
     resetMapViewportButton.addEventListener("click", function() {
-        svg.call(zoom.transform, d3.zoomIdentity)
+        svg.call(svgZoomHandler.transform, d3.zoomIdentity)
     });
     colorNode.addEventListener("change", function() {
         const selectedStatId = this.value;
