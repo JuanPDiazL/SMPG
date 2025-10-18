@@ -131,7 +131,7 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     .on('zoom', (event) => {
         const transform = event.transform;
         // limit transform to fit within the map area
-        const minZoom = 0.75
+        const minZoom = 0.90
         const boundsX = [(width*minZoom), width*(1-minZoom)];
         const boundsY = [(height*minZoom), height*(1-minZoom)];
         const viewX = (width*transform.k);
@@ -157,6 +157,9 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     legendCbNode.addEventListener("change", function() {
         const showLegend = this.checked;
         legend.style("display", showLegend? null : "none");
+    });
+    resetMapViewportButton.addEventListener("click", function() {
+        svg.call(zoom.transform, d3.zoomIdentity)
     });
     colorNode.addEventListener("change", function() {
         const selectedStatId = this.value;
