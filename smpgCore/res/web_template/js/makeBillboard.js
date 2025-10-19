@@ -324,6 +324,7 @@ class CurrentBillboardChart {
                     const textElement = lineElementContainer.querySelector('text');
                     const lineElement = lineElementContainer.querySelector('line');
                     const text = textElement.textContent;
+                    textElement.classList.add("svg-outline-text")
                     
                     if(text.includes('SOS of Current Season')){
                         lineElement.classList.add("sos-marker", "current-sos-marker");

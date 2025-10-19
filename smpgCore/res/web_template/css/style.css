@@ -206,12 +206,6 @@ body {
     stroke: #888;
     stroke-width: 2px;
 }
-.bb-xgrid-line text {
-    paint-order: stroke;
-    fill: #000;
-    stroke: #fffe;
-    stroke-width: 3px;
-}
 
 .bb-xgrid-lines .bb-xgrid-line .sos-marker{
     stroke-opacity: 50%;
@@ -331,12 +325,15 @@ path {
 
 .map-text-label {
     pointer-events: none;
-    paint-order: stroke;
-    fill: #000;
-    stroke: #ffff;
-    stroke-width: 3px;
     text-anchor: middle;
     font-family: Arial, Helvetica, sans-serif;
+}
+
+.svg-outline-text {
+    paint-order: stroke;
+    fill: #000f !important;
+    stroke: #fffe !important;
+    stroke-width: 3px;
 }
 
 #mapLegend {
