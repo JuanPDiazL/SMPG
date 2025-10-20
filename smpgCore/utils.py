@@ -557,11 +557,12 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
     dq = deque(maxlen=3) # when `dq` is full, drops elements on a FIFO manner
     last_candidate = None
     def candidate_condition(dq): 
-        return dq[0] >= first_value
+        return ((len(dq) > 1 and dq[0] >= first_value and round(dq[1]) > 0) 
+                or (len(dq) == 1 and dq[0] >= first_value))
     def confirming_condition(dq): 
         return dq[1] + dq[2] >= second_value
     
-    for i, value in enumerate(year_data):
+    for i, value in enumerate(year_data): # check year data for SoS or candidates
         dq.append(value)
         if len(dq) < 3: continue # avoid out of bounds
         if candidate_condition(dq):
@@ -571,7 +572,7 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
 
     if last_candidate is not None: 
         return last_candidate, False, POSSIBLE_START_STR
-    while len(dq) >= 1: # check remaining values in `dq` for possible start
+    while len(dq) >= 1: # check remaining values in `dq` for candidates
         if candidate_condition(dq):
             return len(year_data) - len(dq), False, POSSIBLE_START_STR
         dq.popleft()
@@ -605,15 +606,17 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
     dq, dq_c = deque(maxlen=3), deque(maxlen=3) # when `dq` is full, drops elements on a FIFO manner
     last_candidate = None
     def candidate_condition(dq, dq_c): 
-        return ((dq[0]/dq_c[0])*100 >= first_value)
+        return ((len(dq) > 1 and ((dq[0]/dq_c[0])*100 >= first_value) and round(dq[1]) > 0) 
+                or (len(dq) == 1 and ((dq[0]/dq_c[0])*100 >= first_value)))
     def confirming_condition(dq, dq_c): 
         return (((dq[1] + dq[2])/dq_c[2])*100 >= second_value)
     def fallback_candidate_condition(dq):
-        return (dq[0] >= 25)
+        return ((len(dq) > 1 and dq[0] >= 25 and round(dq[1]) > 0) 
+                or (len(dq) == 1 and dq[0] >= 25))
     def fallback_confirming_condition(dq):
         return (dq[1] + dq[2] >= 20)
     
-    for i in range(len(year_data)):
+    for i in range(len(year_data)): # check year data for SoS or candidates
         dq.append(year_data[i]); dq_c.append(clim_avg[i])
         if len(dq) < 3: continue # avoid out of bounds
         if candidate_condition(dq, dq_c):
@@ -627,7 +630,7 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
 
     if last_candidate is not None: 
         return last_candidate, False, POSSIBLE_START_STR
-    while (len(dq) >= 1 and len(dq_c) >= 1): # check remaining values in deques for possible start
+    while (len(dq) >= 1 and len(dq_c) >= 1): # check remaining values in deques for candidate
         if candidate_condition(dq, dq_c) or fallback_candidate_condition(dq):
             return len(year_data) - len(dq), False, POSSIBLE_START_STR
         dq.popleft(); dq_c.popleft()
@@ -661,11 +664,11 @@ def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
     dq = deque(maxlen=4) # when `dq` is full, drops elements on a FIFO manner
     last_candidate = None
     def candidate_condition(dq): 
-        return ((dq[1] - dq[0]) / dq[0] >= 1 + (first_value / 100))
+        return ((dq[1] - dq[0]) / dq[0] >= 1 + (first_value / 100)) and round(dq[1]) > 0
     def confirming_condition(dq): 
         return ((dq[3] + dq[2]) / dq[1] >= 1 + (second_value / 100))
     
-    for i in range(len(year_data)):
+    for i in range(len(year_data)): # check year data for SoS or candidates
         dq.append(year_data[i])
         if len(dq) < 4: continue # avoid out of bounds
         if candidate_condition(dq): 
@@ -675,7 +678,7 @@ def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
             
     if last_candidate is not None: 
         return last_candidate, False, POSSIBLE_START_STR
-    while len(dq) >= 2: # check remaining values in `dq` for possible start
+    while len(dq) >= 2: # check remaining values in `dq` for candidate
         if candidate_condition(dq):
             return len(year_data) - len(dq) + 1, False, POSSIBLE_START_STR
         dq.popleft()
