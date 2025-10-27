@@ -14,7 +14,6 @@ function cropCanvas(canvas, x1, y1, x2, y2) {
 }
 
 function save_reports() {
-    const start = Date.now();
     let node = null;
 
     let params = getHashParamsObject();
@@ -38,6 +37,7 @@ function save_reports() {
     }
     
     // add offset to fix bad rendering
+    const zoom = window.devicePixelRatio;
     const options = {
         'width': node.scrollWidth + node.offsetLeft, 
         'height': node.scrollHeight + node.offsetTop,
@@ -47,12 +47,26 @@ function save_reports() {
         'ignoreElements': (element) => {
             return element.classList.contains('capture-ignore');
         },
+        'onclone': rootElement => { // Workaround for zoomed document
+            if (zoom === 1.0) {
+                return
+            }
+            const allElements = rootElement.querySelectorAll('*');
+            Array.from(allElements).forEach(element => {
+                if (!element) {
+                    return
+                }
+                element.style.boxShadow = 'none';
+                const style = element.style;
+                style.setProperty('box-shadow', 'none', 'important');
+            });
+            },
         'logging': false,
     }
 
     html2canvas(node, options)
         .then(function (canvas) {
-            const tempCanvas = cropCanvas(canvas, 0, 0, node.scrollWidth, node.scrollHeight)
+            const tempCanvas = cropCanvas(canvas, 0, 0, node.scrollWidth*zoom, node.scrollHeight*zoom)
             let dataUrl = tempCanvas.toDataURL();
 
             const link = document.createElement('a');
@@ -61,10 +75,6 @@ function save_reports() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            const end = Date.now();
-            const executionTime = end - start;
-            console.log(`Execution time: ${executionTime} ms`);
         })
         .catch(function (error) {
             console.error('oops, something went wrong!', error);
