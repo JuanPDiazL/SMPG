@@ -165,34 +165,57 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         const selectedStats = mapStats[selectedStatId];
         const selectedBins = categories[selectedStatId];
         // Update legend based on the selected property
+        const legendElementHeight = 16;
+        const legendElementGap = 1;
+        const startY = height - 30;
+        const startX = width - 30;
+        const coordX = startX;
+
         legend.selectChildren().remove()
-        legend.selectAll()
+        legend.selectAll().append("g")
             .data(Object.entries(selectedBins))
             .join("g")
             .attr("class", "legend-element")
             .attr("transform", (d, i, nodes) => {
-                const legendElementHeight = 16;
-                const legendElementGap = 1;
-                const startY = height - 30;
-                const startX = width - 30;
                 const offset = nodes.length - i - 1;
-                const coordX = startX;
                 const coordY = startY - (offset * (legendElementHeight + legendElementGap));
                 return `translate(${coordX},${coordY})`;
             })
-            .call(g => g.append("rect")
-                .attr("width", 16)
-                .attr("height", 16)
-                .attr("fill", d => d[1].color))
-            .call(g => g.append("text")
-                .attr("class", "legend-labels svg-outline-text")
-                .attr("x", -4)
-                .attr("y", 9)
-                .attr("dy", "0")
-                .attr("font-size", FONT_SIZE)
-                .attr("text-anchor", "end")
-                .style("dominant-baseline", "middle")
-                .text(d => d[0]));
+            .call(g => { //populate legend elements
+                g.append("rect")
+                    .attr("width", 16)
+                    .attr("height", 16)
+                    .attr("fill", d => d[1].color);
+                    // .attr("stroke", "#000f")
+                    // .attr("stroke-width", 1)
+                g.append("text")
+                    .attr("class", "legend-labels svg-outline-text")
+                    .attr("x", -4)
+                    .attr("y", 9)
+                    .attr("dy", "0")
+                    .attr("font-size", FONT_SIZE)
+                    .attr("text-anchor", "end")
+                    .style("dominant-baseline", "middle")
+                    .text(d => d[0]);
+                })
+            .call(g => { // add title
+                const offset = g.size() - 1;
+                const coordY = startY - (offset * (legendElementHeight + legendElementGap));
+                legend.append("text")
+                    .text(selectedStatId)
+                    .attr("class", "legend-title svg-outline-text")
+                    .attr("x", 20)
+                    .attr("y", -9)
+                    .attr("dy", "0")
+                    .attr("font-size", FONT_SIZE)
+                    .attr("text-anchor", "end")
+                    .style("dominant-baseline", "middle")
+                    .attr("transform", `translate(${coordX},${coordY})`)
+                })
+            .each((d, i, nodes) => {
+                console.log(nodes[i].getBoundingClientRect().width);
+            })
+            
         // Update polygon color based on the selected property
         let hasUncategorizedPolygons = false;
         polygons.style("fill", d => {
