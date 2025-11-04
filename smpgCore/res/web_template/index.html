@@ -13,7 +13,6 @@
     <script type="text/javascript" src="./js/lodash-4.17.21.min.js"></script>
     <script type="text/javascript" src="./js/d3.v7.min.js"></script>
     <script type="text/javascript" src="./js/billboard.min.js"></script>
-    <script type="text/javascript" src="./js/jquery-3.7.1.min.js"></script>
     <script type="text/javascript" src="./js/html2canvas.min.js"></script>
     <script type="text/javascript" src="./js/topojson.v3.min.js"></script>
     <script type="text/javascript" src="./js/pako.min.js"></script>
@@ -197,7 +196,7 @@
 
         // HTML Elements
         const BODY = document.body;
-        const HEADER = document.getElementById('contentHeaderText');
+        const HEADER = d3.select('#contentHeaderText');
         const MODAL = document.getElementById('modal');
         const MODAL_HEADER = document.getElementById('modalHeaderText');
         const MODAL_TEXT = document.getElementById('modalText');
@@ -208,47 +207,45 @@
         colorNode.value = '';
         let resetMapViewportButton = d3.select("#resetMapViewport").node();
         
-        $(document).ready(() => {
-            $('#noscriptMessage').hide();
-            
-            // set page state using cookies
-            setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
-            setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
+        d3.select('#noscriptMessage').attr('class', 'w3-hide');
+        
+        // set page state using cookies
+        setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
+        setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
-            card1 = new chartCard('#row1', "Seasonal Accumulations");
-            card2 = new chartCard('#row1', "Current Year Status");
-            card3 = new chartCard('#row2', "Ensemble");
-            card4 = new chartCard('#row2', "Seasonal Accumulation Percentiles");
-            sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
+        card1 = new chartCard('#row1', "Seasonal Accumulations");
+        card2 = new chartCard('#row1', "Current Year Status");
+        card3 = new chartCard('#row2', "Ensemble");
+        card4 = new chartCard('#row2', "Seasonal Accumulation Percentiles");
+        sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
-            window.onhashchange = handleNavigation; // update everything when when the url changes
-            if(hasMap) {
-                var object_map = JSON.parse(decompress(topojson_map));
-                if (hasReferenceMap) {
-                    var reference_object_map = JSON.parse(decompress(reference_topojson_map));
-                } else {
-                    var reference_object_map = object_map;
-                }
-
-                let mapJson = topojson.feature(object_map, object_map.objects.map);
-                let referenceMapJson = topojson.feature(reference_object_map, reference_object_map.objects.map);
-
-                property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
-                fieldId = parameters["target_id_field"];
-                updateSelect(selectNode, property_ids);
-                updateSelect(colorNode, mapFields);
-                selectNode.value = fieldId;
-                drawMap(mapJson, referenceMapJson);
+        window.onhashchange = handleNavigation; // update everything when when the url changes
+        if(hasMap) {
+            var object_map = JSON.parse(decompress(topojson_map));
+            if (hasReferenceMap) {
+                var reference_object_map = JSON.parse(decompress(reference_topojson_map));
             } else {
-                navigateTo({"place": firstPlaceKey})
+                var reference_object_map = object_map;
             }
-            window.dispatchEvent(new HashChangeEvent('hashchange',
-                {
-                    oldURL: location.href,
-                    newURL: location.href
-                }
-            )); // initial update
-        });
+
+            let mapJson = topojson.feature(object_map, object_map.objects.map);
+            let referenceMapJson = topojson.feature(reference_object_map, reference_object_map.objects.map);
+
+            property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
+            fieldId = parameters["target_id_field"];
+            updateSelect(selectNode, property_ids);
+            updateSelect(colorNode, mapFields);
+            selectNode.value = fieldId;
+            drawMap(mapJson, referenceMapJson);
+        } else {
+            navigateTo({"place": firstPlaceKey})
+        }
+        window.dispatchEvent(new HashChangeEvent('hashchange',
+            {
+                oldURL: location.href,
+                newURL: location.href
+            }
+        )); // initial update
     </script>
 </body>
 

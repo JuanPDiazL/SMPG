@@ -99,11 +99,11 @@ const defaultOptions = {
             while (svg && svg.tagName !== 'svg') {
                 svg = svg.parentElement;
             }
-            // use jquery to get properties of root svg
-            svg = $(svg);
+            // use d3 to get properties of root svg
+            svg = d3.select(svg);
             const viewBox = svg.attr('viewBox').split(' ').map(Number);
-            const svgWidth = svg.width();
-            const svgHeight  = svg.height();
+            const svgWidth = svg.node().getBoundingClientRect().width;
+            const svgHeight  = svg.node().getBoundingClientRect().height;
             // calculate final coordinates
             const scaleX = svgWidth / viewBox[2];
             const scaleY  = svgHeight / viewBox[3];

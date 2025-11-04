@@ -144,8 +144,8 @@ function handleNavigation(event) {
     const params = getHashParamsObject();
     const mode = params['mode'];
     const place = params['place'];
-    let mapRoot = $('#mapRoot');
-    let plotsRoot = $('#plotsRoot');
+    let mapRoot = d3.select('#mapRoot');
+    let plotsRoot = d3.select('#plotsRoot');
     let isViewMap = false;
     switch (mode) {
         case "map":
@@ -167,9 +167,9 @@ function handleNavigation(event) {
     }
     
     if(isViewMap) {
-        HEADER.textContent = `Dataset: ${datasetProperties.dataset_name}, Stat: ${colorNode.value ? colorNode.value : "None"}`;
-        mapRoot.removeClass(HIDE_CLASS);
-        plotsRoot.addClass(HIDE_CLASS);
+        HEADER.text(`Dataset: ${datasetProperties.dataset_name}, Stat: ${colorNode.value ? colorNode.value : "None"}`);
+        mapRoot.classed(HIDE_CLASS, false);
+        plotsRoot.classed(HIDE_CLASS, true);
     } else {
         let selectedPlace = "";
         if (Object.values(datasetProperties["place_ids"]).includes(place)){
@@ -180,8 +180,8 @@ function handleNavigation(event) {
             return;
         }
         HEADER.textContent = `Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}]`;
-        mapRoot.addClass(HIDE_CLASS);
-        plotsRoot.removeClass(HIDE_CLASS);
+        mapRoot.classed(HIDE_CLASS, true);
+        plotsRoot.classed(HIDE_CLASS, false);
 
         updateDocument(selectedPlace);
         previousSelectionElement = sidebarElements[selectedPlace];
@@ -360,7 +360,7 @@ function updateDocument(place) {
         previousSelectionElement.classList.remove('selected');
     }
     sidebarElements[place].classList.add('selected');
-    $('#contentHeaderText').textContent = place;
+    d3.select('#contentHeaderText').text(place);
 }
 
 function makeSelectionMenu(data) {

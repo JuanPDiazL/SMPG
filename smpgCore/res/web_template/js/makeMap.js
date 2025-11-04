@@ -5,7 +5,6 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     const layerBounds = d3.geoBounds(referenceMapGeoJson);
 
     const FONT_SIZE = 13;
-    let divElement = $("#mapRoot");
     let width = 800;
     let height = 800;
 
