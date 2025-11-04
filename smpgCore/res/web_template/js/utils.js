@@ -185,8 +185,6 @@ function handleNavigation(event) {
 
         updateDocument(selectedPlace);
         previousSelectionElement = sidebarElements[selectedPlace];
-        placeUnder(table4.table, table3.table);
-        placeUnder(table6.table, table5.table);
     }
 }
 
@@ -353,24 +351,10 @@ function confirmSearch(event) {
 }
 
 function updateDocument(place) {
-    const plot1Title = `Seasonal Accumulations`;
-    const plot2Title = `Current Year Status: ${datasetProperties.current_season_id}. Climatology: [${datasetProperties.climatology_year_ids[0]}, ${getLast(datasetProperties.climatology_year_ids)}]`;
-    const plot3Title = `Ensemble`;
-    const plot4Title = `Seasonal Accumulation Percentiles`;
-    bb1.update(place);
-    bb2.update(place);
-    bb3.update(place);
-    bb4.update(place);
-    table1.update(getDataAssessmentCD(place));
-    table2.update(getDataSeasonalAnalysis(place));
-    table3.update(getDataProjectionEoS(place));
-    table4.update(getDataProbabilityEoS(place));
-    table5.update(getPercentileTable(place));
-    table6.update(getCurrentSeasonTable(place));
-    document.getElementById('plot1Title').textContent = plot1Title;
-    document.getElementById('plot2Title').textContent = plot2Title;
-    document.getElementById('plot3Title').textContent = plot3Title;
-    document.getElementById('plot4Title').textContent = plot4Title;
+    card1.update(place);
+    card2.update(place);
+    card3.update(place);
+    card4.update(place);
 
     if(previousSelectionElement != null) {
         previousSelectionElement.classList.remove('selected');

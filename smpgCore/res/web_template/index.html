@@ -83,57 +83,9 @@
                         </div>
                     </div>
                     <div id="plotsRoot" class="w3-hide">
-                        <div class="plots-row content-row w3-row-padding">
-                            <div id="card1" class="plot-card w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
-                                <div class="w3-card">
-                                    <header class="w3-container w3-blue-grey">
-                                        <p id="plot1Title" class="card-title">Seasonal Accumulations</p>
-                                    </header>
-                                    <div id="container1" class="plot-container w3-container w3-padding-small">
-                                        <div id="chart1"></div>
-                                        <div class="table-container"></div>
-                                        <div id="legend1" class="legend-container w3-container w3-padding-small"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="card2" class="plot-card w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
-                                <div class="w3-card">
-                                    <header class="w3-container w3-blue-grey">
-                                        <p id="plot2Title" class="card-title">Current Rainfall Status</p>
-                                    </header>
-                                    <div id="container2" class="plot-container w3-container w3-padding-small">
-                                        <div id="chart2" class="chart"></div>
-                                        <div class="table-container"></div>
-                                        <div id="legend2" class="legend-container w3-container w3-padding-small"></div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div id="row1" class="plots-row content-row w3-row-padding">
                         </div>
-                        <div class="plots-row content-row w3-row-padding">
-                            <div id="card3" class="plot-card w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
-                                <div class="w3-card">
-                                    <header class="w3-container w3-blue-grey">
-                                        <p id="plot3Title" class="card-title">Ensemble</p>
-                                    </header>
-                                    <div id="container3" class="plot-container w3-container w3-padding-small">
-                                        <div id="chart3"></div>
-                                        <div class="table-container"></div>
-                                        <div id="legend3" class="legend-container w3-container w3-padding-small"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="card4" class="plot-card w3-container w3-half w3-cell w3-margin-bottom w3-padding-small">
-                                <div class="w3-card">
-                                    <header class="w3-container w3-blue-grey">
-                                        <p id="plot4Title" class="card-title">Seasonal Accumulation Percentiles</p>
-                                    </header>
-                                    <div id="container4" class="plot-container w3-container w3-padding-small">
-                                        <div id="chart4"></div>
-                                        <div class="table-container"></div>
-                                        <div id="legend4" class="legend-container w3-container w3-padding-small"></div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div id="row2" class="plots-row content-row w3-row-padding">
                         </div>
                     </div>
                 </div>
@@ -186,16 +138,10 @@
         let property_ids = null;
         let fieldId = null;
         
-        let bb1 = null;
-        let bb2 = null;
-        let bb3 = null;
-        let bb4 = null;
-        let table1 = null;
-        let table2 = null;
-        let table3 = null;
-        let table4 = null;
-        let table5 = null;
-        let table6 = null;
+        let card1 = null;
+        let card2 = null;
+        let card3 = null;
+        let card4 = null;
         let sidebarElements = [];
 
         // Data
@@ -270,19 +216,10 @@
             setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
             setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
-            bb1 = new AccumulationsBillboardChart('#chart1');
-            bb2 = new CurrentBillboardChart('#chart2');
-            bb3 = new EnsembleBillboardChart('#chart3');
-            bb4 = new AccumulationsBillboardCurrentChart('#chart4');
-
-            table1 = new statsTable('#container1 .table-container', `Assessment at Current ${period_unit}`);
-            table2 = new statsTable('#container2 .table-container', 'Seasonal Analysis');
-            table3 = new statsTable('#container3 .table-container', 'Projection at EoS');
-            table4 = new statsTable('#container3 .table-container', 'Probability at EoS');
-            table5 = new statsTable('#container4 .table-container', 'Historical Rainfall Statistics', ['Value', '']);
-            table6 = new statsTable('#container4 .table-container', 'Current Season Statistics', ['Value', '']);
-
-            
+            card1 = new chartCard('#row1', "Seasonal Accumulations");
+            card2 = new chartCard('#row1', "Current Year Status");
+            card3 = new chartCard('#row2', "Ensemble");
+            card4 = new chartCard('#row2', "Seasonal Accumulation Percentiles");
             sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
             window.onhashchange = handleNavigation; // update everything when when the url changes
