@@ -359,7 +359,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Rainy Season Detection</string>
+            <string>Start of Season Detection</string>
            </property>
           </widget>
          </item>
