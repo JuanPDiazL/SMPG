@@ -135,6 +135,8 @@ class Parameters:
                 "method": "fixed",
                 "first_threshold": 25,
                 "second_threshold": 20,
+                "fixed_first_threshold": 20,
+                "fixed_second_threshold": 50,
             },
             "eos": {
                 "enabled": False,
@@ -686,17 +688,15 @@ def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
 
 def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: pd.DataFrame, parameters: Parameters, properties: Properties):
     sos_parameters = parameters.rainy_season_detection["sos"]
-    indexof_feb_1 = properties.sub_season_ids.index('Feb-1')
-    indexof_aug_1 = properties.sub_season_ids.index('Aug-1')
+    indexof_sos_axis_start = 3
+    indexof_sos_axis_end = 21
     def get_sos_class(sos_index):
-        if ((indexof_feb_1 < sos_index < indexof_aug_1)
-            or (indexof_aug_1 < indexof_feb_1 
-                and (sos_index < indexof_aug_1 or indexof_feb_1 < sos_index))):
+        if ((indexof_sos_axis_start < sos_index < indexof_sos_axis_end)):
             return properties.sub_season_ids[sos_index]
-        elif sos_index <= indexof_feb_1:
-            return u'≤Feb-1'
-        elif sos_index >= indexof_aug_1:
-            return u'≥Aug-1'
+        elif sos_index <= indexof_sos_axis_start:
+            return f'≤{properties.sub_season_ids[indexof_sos_axis_start]}'
+        elif sos_index >= indexof_sos_axis_end:
+            return f'≥{properties.sub_season_ids[indexof_sos_axis_end]}'
 
     # compute by method
     if sos_parameters["method"] is None:

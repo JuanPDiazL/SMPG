@@ -1,6 +1,148 @@
 "use strict";
 
+const UNCAT_COLOR = '#aaaf';
+let categories = {
+    '': { 'Uncategorized': {color:UNCAT_COLOR, 'function': () => true} },
+    'C. Dk./LTA Pct.': {
+        '0-19': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
+        '20-39': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
+        '40-59': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
+        '60-79': { 'color': '#ffe69e', 'function': (x) => x >= 60 && x < 80 },
+        '80-89': { 'color': '#fff9a3', 'function': (x) => x >= 80 && x < 90 },
+        '90-109': { 'color': '#f2f2f2', 'function': (x) => x >= 90 && x < 110 },
+        '110-119': { 'color': '#c6eab3', 'function': (x) => x >= 110 && x < 120 },
+        '120-139': { 'color': '#56cd94', 'function': (x) => x >= 120 && x < 140 },
+        '140-159': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
+        '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
+    },
+    'C. Dk.+Forecast/LTA Pct.': {
+        '0-19': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
+        '20-39': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
+        '40-59': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
+        '60-79': { 'color': '#ffe69e', 'function': (x) => x >= 60 && x < 80 },
+        '80-89': { 'color': '#fff9a3', 'function': (x) => x >= 80 && x < 90 },
+        '90-109': { 'color': '#f2f2f2', 'function': (x) => x >= 90 && x < 110 },
+        '110-119': { 'color': '#c6eab3', 'function': (x) => x >= 110 && x < 120 },
+        '120-139': { 'color': '#56cd94', 'function': (x) => x >= 120 && x < 140 },
+        '140-159': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
+        '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
+    },
+    'Ensemble Med./LTA Pct.': {
+        '0-19': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
+        '20-39': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
+        '40-59': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
+        '60-79': { 'color': '#ffe69e', 'function': (x) => x >= 60 && x < 80 },
+        '80-89': { 'color': '#fff9a3', 'function': (x) => x >= 80 && x < 90 },
+        '90-109': { 'color': '#f2f2f2', 'function': (x) => x >= 90 && x < 110 },
+        '110-119': { 'color': '#c6eab3', 'function': (x) => x >= 110 && x < 120 },
+        '120-139': { 'color': '#56cd94', 'function': (x) => x >= 120 && x < 140 },
+        '140-159': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
+        '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
+    },
+    'Probability Below Normal': {
+        '0-14': { 'color': '#2b83ba', 'function': (x) => x >= 0 && x < 15 },
+        '15-29': { 'color': '#74b7ae', 'function': (x) => x >= 15 && x < 30 },
+        '30-44': { 'color': '#e7f6b8', 'function': (x) => x >= 30 && x < 45 },
+        '45-59': { 'color': '#ffe8a4', 'function': (x) => x >= 45 && x < 60 },
+        '60-74': { 'color': '#feba6e', 'function': (x) => x >= 60 && x < 75 },
+        '75-89': { 'color': '#ed6e43', 'function': (x) => x >= 75 && x < 90 },
+        '90-100': { 'color': '#d7191c', 'function': (x) => x >= 90 && x <= 100 },
+    },
+    'Probability of Normal': {
+        '0-19': { 'color': '#e6e6e6', 'function': (x) => x >= 0 && x < 20 },
+        '20-39': { 'color': '#f0f9e8', 'function': (x) => x >= 20 && x < 40 },
+        '40-59': { 'color': '#bae4bc', 'function': (x) => x >= 40 && x < 60 },
+        '60-79': { 'color': '#7bccc4', 'function': (x) => x >= 60 && x < 80 },
+        '80-89': { 'color': '#43a2ca', 'function': (x) => x >= 80 && x < 90 },
+        '90-100': { 'color': '#0868ac', 'function': (x) => x >= 90 && x <= 100 },
+    },
+    'Probability Above Normal': {
+        '0-19': { 'color': '#e6e6e6', 'function': (x) => x >= 0 && x < 20 },
+        '20-39': { 'color': '#f0f9e8', 'function': (x) => x >= 20 && x < 40 },
+        '40-59': { 'color': '#bae4bc', 'function': (x) => x >= 40 && x < 60 },
+        '60-79': { 'color': '#7bccc4', 'function': (x) => x >= 60 && x < 80 },
+        '80-89': { 'color': '#43a2ca', 'function': (x) => x >= 80 && x < 90 },
+        '90-100': { 'color': '#0868ac', 'function': (x) => x >= 90 && x <= 100 },
+    },
+    'Ensemble Med. Pctl.': {
+        '0-2': { 'color': '#7e0006', 'function': (x) => x >= 0 && x < 3 },
+        '3-5': { 'color': '#e20b00', 'function': (x) => x >= 3 && x < 6 },
+        '6-10': { 'color': '#e35a1a', 'function': (x) => x >= 6 && x < 11 },
+        '11-20': { 'color': '#faaf00', 'function': (x) => x >= 11 && x < 21 },
+        '21-32': { 'color': '#faff0f', 'function': (x) => x >= 21 && x < 33 },
+        '33-66': { 'color': '#f2f2f2', 'function': (x) => x >= 33 && x < 67 },
+        '67-89': { 'color': '#a6cee3', 'function': (x) => x >= 67 && x < 90 },
+        '≥90': { 'color': '#1f78b4', 'function': (x) => x >= 90 },
+    },
+    'Current Season Pctl.': {
+        '0-2': { 'color': '#7e0006', 'function': (x) => x >= 0 && x < 3 },
+        '3-5': { 'color': '#e20b00', 'function': (x) => x >= 3 && x < 6 },
+        '6-10': { 'color': '#e35a1a', 'function': (x) => x >= 6 && x < 11 },
+        '11-20': { 'color': '#faaf00', 'function': (x) => x >= 11 && x < 21 },
+        '21-32': { 'color': '#faff0f', 'function': (x) => x >= 21 && x < 33 },
+        '33-66': { 'color': '#f2f2f2', 'function': (x) => x >= 33 && x < 67 },
+        '67-89': { 'color': '#a6cee3', 'function': (x) => x >= 67 && x < 90 },
+        '≥90': { 'color': '#1f78b4', 'function': (x) => x >= 90 },
+    },
+    'Start of Season Anomaly': {
+        'Yet to Start': { 'color': '#FFF77D', 'function': (x) => x === 'Yet to Start'},
+        '≥4 Dk. Early': { 'color': '#004280', 'function': (x) => x === '≥4 Dekads Early' },
+        '3 Dk. Early': { 'color': '#0073F0', 'function': (x) => x === '3 Dekads Early' },
+        '2 Dk. Early': { 'color': '#008FF5', 'function': (x) => x === '2 Dekads Early' },
+        '1 Dk. Early': { 'color': '#00A6F5', 'function': (x) => x === '1 Dekads Early' },
+        'Average': { 'color': '#CCCCCC', 'function': (x) => x === 'Average' },
+        '1 Dk. Late': { 'color': '#FFD4E6', 'function': (x) => x === '1 Dekads Late' },
+        '2 Dk. Late': { 'color': '#FFC78F', 'function': (x) => x === '2 Dekads Late' },
+        '3 Dk. Late': { 'color': '#FF734A', 'function': (x) => x === '3 Dekads Late' },
+        '≥4 Dk. Late': { 'color': '#BA0070', 'function': (x) => x === '≥4 Dekads Late' },
+    },
+};
+const sosClassColors = [
+    '#FFF77D', 
+    '#DFD75D', 
+    '#6E00C9', 
+    '#BF4FE0', 
+    '#E3ADF5', 
+    '#0094AD', 
+    '#21D6FF', 
+    '#8CF2FF', 
+    '#00BD2E', 
+    '#A1FF96', 
+    '#A3FFCC', 
+    '#F07500', 
+    '#FF9126', 
+    '#FFB8AB', 
+    '#004DA8', 
+    '#005CE6', 
+    '#0070FF', 
+    '#F7E8CC', 
+    '#E6C996', 
+    '#CFA836', 
+    '#966300'
+];
+const getSosCategories = () => Object.fromEntries(sosClassColors.map((value, index, array) => {
+    let key, color = value, fun;
+    if (index === 0) {
+        key = "No Start";
+        fun = (x) => x === "No Start";
+    } else if (index === 1) {
+        key = "Possible St.";
+        fun = (x) => x === "Possible Start";
+    } else if (index === 2) {
+        key = `≤${datasetProperties["sub_season_ids"][3]}`;
+        fun = (x) => x === key;
+    } else if (index === 20) {
+        key = `≥${datasetProperties["sub_season_ids"][21]}`;
+        fun = (x) => x === key;
+    } else {
+        key = datasetProperties["sub_season_ids"][index+1];
+        fun = (x) => x === key;
+    }
+    return [key, {"color": color, "function": fun}]
+}));
+
 function drawMap(mapGeoJson, referenceMapGeoJson) {
+    categories["Start of Season"] = getSosCategories(); // prepare some needed data
     const layerArea = d3.geoArea(referenceMapGeoJson);
     const layerBounds = d3.geoBounds(referenceMapGeoJson);
 
