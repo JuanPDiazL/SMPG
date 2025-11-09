@@ -4,6 +4,7 @@ import traceback
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
+    QWidget,
     QDialog,
     QMessageBox,
     QComboBox,
@@ -33,10 +34,18 @@ class RainySeasonDetectionDialog(QDialog, SOS_DIALOG_CLASS):
     sos1stThresholdSpinBox: QSpinBox
     sos2ndThresholdSpinBox: QSpinBox
 
+    pctAvgWidgetGroup: QWidget
+    sosFixed1stThresholdSpinBox: QSpinBox
+    sosFixed2ndThresholdSpinBox: QSpinBox
+
+
     sosEnabled: bool
     sosDetectionMethod: str
     sosFirstThreshold: int
     sosSecondThreshold: int
+    sosFixedFirstThreshold: int
+    sosFixedSecondThreshold: int
+
 
     sos_detection_methods = {
         'Fixed Threshold (mm)': 'fixed',
@@ -49,6 +58,8 @@ class RainySeasonDetectionDialog(QDialog, SOS_DIALOG_CLASS):
 
         self.setModal(True)
 
+        self.pctAvgWidgetGroup.setHidden(True)
+
         self.sosDetectionMethodComboBox.addItems(list(self.sos_detection_methods.keys()))
         self.sosDetectionMethodComboBox.currentTextChanged.connect(self.set_sos_method)
 
@@ -59,9 +70,14 @@ class RainySeasonDetectionDialog(QDialog, SOS_DIALOG_CLASS):
         if method == 'fixed':
             self.sos1stThresholdSpinBox.setValue(25)
             self.sos2ndThresholdSpinBox.setValue(20)
+            self.pctAvgWidgetGroup.setHidden(True)
         elif method == 'pct_clim_avg':
             self.sos1stThresholdSpinBox.setValue(70)
             self.sos2ndThresholdSpinBox.setValue(50)
+            self.sosFixed1stThresholdSpinBox.setValue(20)
+            self.sosFixed2ndThresholdSpinBox.setValue(50)
+            self.pctAvgWidgetGroup.setHidden(False)
+
 
     def showEvent(self, a0):
         """Function to run when the dialog is oppened."""
@@ -79,6 +95,8 @@ class RainySeasonDetectionDialog(QDialog, SOS_DIALOG_CLASS):
         self.sosDetectionMethod = self.sos_detection_methods[self.sosDetectionMethodComboBox.currentText()]
         self.sosFirstThreshold = self.sos1stThresholdSpinBox.value()
         self.sosSecondThreshold = self.sos2ndThresholdSpinBox.value()
+        self.sosFixedFirstThreshold = self.sosFixed1stThresholdSpinBox.value()
+        self.sosFixedSecondThreshold = self.sosFixed2ndThresholdSpinBox.value()
         super(RainySeasonDetectionDialog, self).accept()
 
     def reject(self) -> None:

@@ -228,6 +228,8 @@ Github Project Page: {self.metadata["homepage"]}
                 "method": self.rainy_season_detection_dialog.sosDetectionMethod,
                 "first_threshold": self.rainy_season_detection_dialog.sosFirstThreshold,
                 "second_threshold": self.rainy_season_detection_dialog.sosSecondThreshold,
+                "fixed_first_threshold": self.rainy_season_detection_dialog.sosFixedFirstThreshold,
+                "fixed_second_threshold": self.rainy_season_detection_dialog.sosFixedSecondThreshold,
             }
         }
         return {
@@ -337,6 +339,8 @@ Github Project Page: {self.metadata["homepage"]}
         self.rainy_season_detection_dialog.sosDetectionMethod = parameters.rainy_season_detection["sos"]["method"]
         self.rainy_season_detection_dialog.sosFirstThreshold = parameters.rainy_season_detection["sos"]["first_threshold"]
         self.rainy_season_detection_dialog.sosSecondThreshold = parameters.rainy_season_detection["sos"]["second_threshold"]
+        self.rainy_season_detection_dialog.sosFixedFirstThreshold = parameters.rainy_season_detection["sos"]["fixed_first_threshold"]
+        self.rainy_season_detection_dialog.sosFixedSecondThreshold = parameters.rainy_season_detection["sos"]["fixed_second_threshold"]
 
         # update outputs
         self.exportStatsCheckBox.setEnabled(True)

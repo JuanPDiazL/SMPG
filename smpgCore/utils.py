@@ -712,7 +712,7 @@ def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: 
         current_sos = get_sos_pct_clim_avg(data, clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
         historical_sos = historical_years.apply(
             get_sos_pct_clim_avg,
-            args=(clim_avg, 20, 50),
+            args=(clim_avg, sos_parameters['fixed_first_threshold'], sos_parameters['fixed_second_threshold']),
             axis=1, result_type='expand',
             )
     else:
