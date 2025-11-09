@@ -176,7 +176,6 @@ function makeAccumulationsPlot(containerElement) {
     let xsDefinition = {
         'default_xs': ascendingArray(xNames.length),
         'scatter_xs': [xNames.length - 1, xNames.length - 1],
-        'forecast_xs': [currentMonitoringLength - 1, currentMonitoringLength],
     };
     if (hasForecast) {
         xsDefinition["forecast_xs"] = [currentMonitoringLength - 1, currentMonitoringLength];
