@@ -113,8 +113,8 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
     places = structured_dataset.places
     
     properties = {
-        'datasetProperties': structured_dataset.properties.__dict__,
-        'parameters': structured_dataset.parameters.__dict__,
+        'dataset_properties_json': structured_dataset.properties.__dict__,
+        'parameters_json': structured_dataset.parameters.__dict__,
     }
     data_py_to_js(properties, data_destination_path, 'properties')
 

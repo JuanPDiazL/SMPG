@@ -143,8 +143,8 @@
         let sidebarElements = [];
 
         // Data
-        datasetProperties = JSON.parse(decompress(datasetProperties));
-        parameters = JSON.parse(decompress(parameters));
+        let datasetProperties = JSON.parse(decompress(dataset_properties_json));
+        let parameters = JSON.parse(decompress(parameters_json));
         let place_general_stats = csvParse(decompress(place_general_stats_csv));
         let place_long_term_stats = parseRowsObjectCsv(decompress(place_long_term_stats_csv_obj));
         let seasonal_current_totals = csvParseRows(decompress(seasonal_current_totals_csv));
