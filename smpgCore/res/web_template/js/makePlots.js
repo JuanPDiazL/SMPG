@@ -274,15 +274,17 @@ function makeCurrentYearPlot(containerElement) {
         if (place_general_stats[index]['Start of Season of Avg. Raw'] !== null) {
             gridLines.push({
             value: place_general_stats[index]['Start of Season of Avg. Raw'],
-            text: 'SOS of Historical Avg.',
+            text: 'SoS of Historical Avg.',
             position: "middle",
             class: "sos-marker avg-sos-marker"
             });
         } 
-        if (place_general_stats[index]['Start of Season Raw'] !== null) {
+        if (place_general_stats[index]['Start of Season Raw'] !== null
+            && sosCurrentClass !== null
+        ) {
             gridLines.push({
             value: place_general_stats[index]['Start of Season Raw'],
-            text: sosCurrentClass.startsWith('Possible Start') ? 'Possible SOS' : 'SOS of Current Season',
+            text: sosCurrentClass.startsWith('Possible Start') ? 'Possible SoS' : 'SoS of Current Season',
             position: "start",
             class: "sos-marker current-sos-marker"
             });
@@ -310,8 +312,8 @@ function makeCurrentYearTable(containerElement) {
         }
         if (hasSos) {
             data["Rainy Season Status"] = [
-                ['SOS', place_general_stats[index]['Start of Season']],
-                ['SOS Anomaly', place_general_stats[index]['Start of Season Anomaly']],
+                ['SoS', place_general_stats[index]['Start of Season']],
+                ['SoS Anomaly', place_general_stats[index]['Start of Season Anomaly']],
             ]
         }
         return data;
