@@ -382,6 +382,6 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
             showModal(`There was missing data when drawing map.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Target Field: ${parameters.target_id_field}`)
         }
         // Update the header text
-        HEADER.textContent = `Dataset: ${datasetProperties.dataset_name}, Stat: ${this.value ? this.value : "None"}`;
+        HEADER.text(`Dataset: ${datasetProperties.dataset_name}, Stat: ${this.value ? this.value : "None"}`);
     });
 }
