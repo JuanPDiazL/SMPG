@@ -723,9 +723,13 @@ def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: 
 
     # get sos individual variables
     sos_index_current, started_current, sos_class_current = current_sos
-    
-    sos = round(historical_sos_started.mean()) + properties.season_start_index
     sos_index_current += properties.season_start_index
+
+    historical_sos_mean = historical_sos_started.mean()
+    if not np.isnan(historical_sos_mean):
+        sos = round(historical_sos_mean) + properties.season_start_index
+    else:
+        sos = np.NaN
 
     # set SOS avg. class
     sos_class_avg = get_sos_class(sos)
