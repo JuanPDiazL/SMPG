@@ -785,6 +785,10 @@ class TaskHandler(QgsTask):
         # when task did not complete successfully
         if self.exception is not None:
             if self.debug: print(f'{self.description()} raised an exeception')
+            try:
+                raise self.exception
+            except Exception as e:
+                QMessageBox.critical(None, 'Error', f'An error occurred during the computation.\n\n{str(e)}\n\n{traceback.format_exc()}')
             if self.nextTasks is not None:
                 for t in self.nextTasks: 
                     t.cancel()
