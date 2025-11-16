@@ -12,6 +12,12 @@ SMPG is a QGIS plugin programmed in Python 3, designed to generate statistics an
     - Microsoft Windows (tested on Windows 10 x64)
     - GNU/Linux (tested on Kubuntu 24.04 x64 and Python 3.9)
 
+## Screenshots
+![Screenshot of the SMPG plugin GUI](./docs/smpg%20gui.png)
+![Screenshot of the SMPG plugin web reports in map section](./docs/web%20report%20map.png)
+![Screenshot of the SMPG plugin web reports in plots section](./docs/web%20report%20plots.png)
+
+
 ## More Information
 - [User Manual](https://help.fews.net/en/tools/v3/smpg-tool)
 - [Technical Documentation](./docs/index.md)
