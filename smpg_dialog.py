@@ -493,7 +493,7 @@ Github Project Page: {self.metadata["homepage"]}
             export_parameters(self.destination_path, self.structured_dataset)
 
         if self.exportStatsCheckBox.isChecked(): 
-                summary_csv_path = export_to_csv_files(self.destination_path, 
+                data_path_relation = export_to_csv_files(self.destination_path, 
                                                self.structured_dataset)
                 if not (self.selected_layer is None or 
                     len(self.map_settings_dialog.settings['selected_fields']) == 0):
@@ -501,7 +501,7 @@ Github Project Page: {self.metadata["homepage"]}
                         self.selected_layer,
                         self.targetFieldComboBox.currentText(),
                         self.map_settings_dialog.settings['selected_fields'],
-                        summary_csv_path)
+                        data_path_relation)
  
         export_to_web_files(
             self.destination_path, 

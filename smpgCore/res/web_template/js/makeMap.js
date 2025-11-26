@@ -152,8 +152,8 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
 
     let mapStats = {
         '': () => undefined,
-        'C. Dk./LTA Pct.': (col) => selected_seasons_general_stats[col]['C. Dk./LTA Pct.'],
-        'C. Dk.+Forecast/LTA Pct.': (col) => selected_seasons_general_stats[col]['C. Dk.+Forecast/LTA Pct.'],
+        'C. Dk./LTA Pct.': (col) => seasonal_general_stats[col]['C. Dk./LTA Pct.'],
+        'C. Dk.+Forecast/LTA Pct.': (col) => seasonal_general_stats[col]['C. Dk.+Forecast/LTA Pct.'],
         'Ensemble Med./LTA Pct.': (col) => selected_seasons_general_stats[col]['Ensemble Med./LTA Pct.'],
         'Probability Below Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Below Normal Pct.'],
         'Probability of Normal': (col) => selected_seasons_general_stats[col]['E. Prob. of Normal Pct.'],
