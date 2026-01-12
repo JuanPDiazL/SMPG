@@ -575,6 +575,11 @@ class chartCard {
     constructor(containerSelector, defaultCardType = null) {
         this.dataIndex = -1;
         this.cardTypes = {
+            "Disabled": {
+                "full title": "Disabled",
+                "plot": () => {},
+                "table": () => {},
+            },
             "Seasonal Accumulations": {
                 "full title": "Seasonal Accumulations",
                 "plot": makeAccumulationsPlot,
@@ -647,6 +652,9 @@ class chartCard {
         this.cardType = plotType;
         this.graphTypeSelectOpenButton.text(this.cardTypes[plotType]["full title"]);
         this.cardBody.selectChildren().remove();
+        if (plotType == "Disabled") {
+            return;
+        }
 
         this.chart = this.cardTypes[plotType]["plot"](this.cardBody);
         this.table = this.cardTypes[plotType]["table"](this.cardBody);
