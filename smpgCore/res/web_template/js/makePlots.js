@@ -230,7 +230,8 @@ function makeAccumulationsTable(containerElement) {
             [`C. ${SHORT_NAMES[period_unit]}/LTA Pct.`, selected_seasons_general_stats[index]['C. Dk./LTA Pct.'], seasonal_general_stats[index]['C. Dk./LTA Pct.']],
         ]
         data["[hide header]"] = [
-            [`Total C. ${SHORT_NAMES[period_unit]}`, place_general_stats[index]['Current Season Total']]
+            [`Total C. ${SHORT_NAMES[period_unit]}`, place_general_stats[index]['Current Season Total']],
+            [`Total C. ${SHORT_NAMES[period_unit]}+Forecast`, place_general_stats[index]['Current Season+Forecast']]
         ];
 
         return data;
