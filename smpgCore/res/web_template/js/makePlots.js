@@ -615,18 +615,29 @@ class chartCard {
         this.cardHeader = this.cardElement
             .append("header")
             .attr("class", "card-header w3-blue-grey");
+        this.toggleTableButton = this.cardHeader
+            .append("span")
+            .append("button")
+                .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
+                .attr("title", "Toggle display table")
+                .text("table_chart")
+                .on("click", (event) => {
+                    if(this.table !== null) {
+                        this.table.tableContainer.classed("w3-hide", !this.table.tableContainer.classed("w3-hide"));
+                    }
+                });
         this.graphTypeSelectContainer = this.cardHeader
             .append("div")
-            .attr("class", "card-title-select w3-dropdown-click");
-        this.graphTypeSelectOpenButton = this.graphTypeSelectContainer
-            .append("button")
-            .attr("class", "card-title-select-button w3-button")
-            .text(this.cardTypes[this.cardType]["full title"])
+            .attr("class", "card-title-select w3-dropdown-click")
             .on("click", (event) => {
                 const graphTypeSelectContent = this.graphTypeSelectContent;
                 graphTypeSelectContent
                     .classed("w3-show", !graphTypeSelectContent.classed("w3-show"));
             });
+        this.graphTypeSelectOpenButton = this.graphTypeSelectContainer
+            .append("button")
+            .attr("class", "card-title-select-button w3-button")
+            .text(this.cardTypes[this.cardType]["full title"]);
         this.graphTypeSelectContent = this.cardHeader
             .append("div")
             .attr("class", "card-title-select- w3-dropdown-content w3-bar-block w3-border");
@@ -640,6 +651,7 @@ class chartCard {
                 graphTypeSelectContent.classed("w3-show", false);
                 this.changePlot(event);
             });
+
         this.cardBody = this.cardElement
             .append("div")
             .attr("class", "plot-container w3-container w3-padding-small");
