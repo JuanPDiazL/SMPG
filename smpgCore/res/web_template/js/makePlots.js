@@ -533,7 +533,7 @@ class Table {
 
         this.tableContainer = this.containerElement
             .append("div")
-            .attr("class", "chart-table-container");
+            .attr("class", "chart-table-container w3-hide");
         this.tableCollection = null;
     }
 
