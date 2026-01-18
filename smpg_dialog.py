@@ -115,6 +115,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
     selectYearsButton: QPushButton
 
     # analysis group
+    forecastLabel: QLabel
     forecastLengthSpinBox: QSpinBox
     rainySeasonDetectionButton: QPushButton
 
@@ -332,6 +333,7 @@ Github Project Page: {self.metadata["homepage"]}
         # update analysis parameters
         self.forecastLengthSpinBox.setEnabled(True)
         self.forecastLengthSpinBox.setValue(parameters.forecast_length)
+        self.forecastLengthSpinBox.setSuffix(f" {self.dataset_properties.period_unit_id}s")
         
         self.rainySeasonDetectionButton.setEnabled(True)
         self.rainy_season_detection_dialog.sosEnabled = parameters.rainy_season_detection["sos"]["enabled"]
