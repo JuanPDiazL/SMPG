@@ -1,4 +1,3 @@
-from math import isnan
 import numpy as np
 import pandas as pd
 from .utils import *
@@ -63,7 +62,7 @@ class Dataset:
         self.properties.place_ids = dataset.index.astype(str).tolist()
         self.properties.season_start_index = default_sub_seasons.index(self.parameters.season_start)
         self.properties.season_end_index = default_sub_seasons.index(self.parameters.season_end)+1
-        self.properties.current_season_trim_index = min(self.properties.current_season_length, self.properties.season_end_index) - parameters.is_forecast
+        self.properties.current_season_trim_index = min(self.properties.current_season_length, self.properties.season_end_index) - parameters.forecast_length
 
         # create a dictionary with the places
         self.places: dict[str, Place] = {}
@@ -94,10 +93,13 @@ class Place:
                                   columns=columns)
 
         # forecast case
-        self.forecast_value = np.NaN
-        if parent.parameters.is_forecast: 
-            self.forecast_value = self.current_season[-1]
-            self.current_season = self.current_season[:-1]
+        if parent.parameters.forecast_length > 0:
+            self.forecast_values = self.current_season[-parent.parameters.forecast_length:]
+            self.forecast_accumulation = self.forecast_values.cumsum()
+            self.current_season = self.current_season[:-parent.parameters.forecast_length]
+        else:
+            self.forecast_values = pd.Series([np.nan])
+            self.forecast_accumulation = pd.Series([np.nan])
         
         # get selected seasons
         self.similar_seasons = get_similar_years(self.current_season.to_numpy(), 
@@ -165,6 +167,8 @@ class Place:
             'Climatology Average': climatology_avg,
             'Current Season': self.current_season,
             'Current Season Accumulation': self.current_cumsum_mon,
+            'Forecast': self.forecast_values,
+            'Forecast Accumulation': self.current_cumsum_mon[-1] + self.forecast_accumulation,
         }
         self.place_long_term_stats = pd.DataFrame([pd.Series(v, name=k) for k, v in place_lt_stats.items()])
 
@@ -181,8 +185,7 @@ class Place:
             'Climatology Average at Current Dekad': self.clim_seasons_cumsum.mean()[self.current_index],
             'Climatology 33 Pctl.': self.clim_seasons_pctls[0],
             'Climatology 67 Pctl.': self.clim_seasons_pctls[1],
-            'Forecast': self.forecast_value,
-            'Current Season+Forecast': self.current_cumsum_mon[-1] + self.forecast_value,
+            'Current Season+Forecast': self.current_cumsum_mon[-1] + self.forecast_accumulation.iloc[-1],
             **sos_data,
         }, 
         name=self.id
@@ -219,10 +222,10 @@ class Place:
         standard_dev = seasonal_cumsum.std()
 
         lta_upto_current_season = seasonal_lta[self.current_index]
-        if not np.isnan(self.forecast_value):
-            lta_upto_forecast = seasonal_lta[self.current_index + 1]
+        if not np.isnan(self.forecast_values.iloc[-1]):
+            lta_upto_forecast = seasonal_lta[self.current_index + len(self.forecast_values)]
         else:
-            lta_upto_forecast = np.NaN
+            lta_upto_forecast = np.nan
 
         # calculate the stats
         seasonal_long_term_stats = pd.DataFrame.from_dict({
@@ -238,7 +241,7 @@ class Place:
             'Ensemble Med.': ensemble_median[-1],
             'LTA up to Current Season': lta_upto_current_season,
             'C. Dk./LTA Pct.': (self.current_cumsum_mon[-1]/lta_upto_current_season)*100,
-            'C. Dk.+Forecast/LTA Pct.': ((self.current_cumsum_mon[-1]+self.forecast_value)/lta_upto_forecast)*100,
+            'C. Dk.+Forecast/LTA Pct.': ((self.current_cumsum_mon[-1]+self.forecast_values)/lta_upto_forecast)*100,
             'Ensemble Med./LTA Pct.': (ensemble_median[-1]/seasonal_lta[-1])*100,
             'Ensemble Med. Pctl.': percentiles_from_values(self.seasonal_totals, [ensemble_median[-1]])[0],
             'St. Dev.': standard_dev[-1],

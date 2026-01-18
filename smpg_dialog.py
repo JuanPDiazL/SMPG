@@ -41,6 +41,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QRadioButton,
     QLabel,
+    QSpinBox,
 )
 from typing import Union
 
@@ -114,8 +115,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
     selectYearsButton: QPushButton
 
     # analysis group
-    observedDataRadioButton: QRadioButton
-    forecastRadioButton: QRadioButton
+    forecastLengthSpinBox: QSpinBox
     rainySeasonDetectionButton: QPushButton
 
     # outputs group
@@ -239,7 +239,7 @@ Github Project Page: {self.metadata["homepage"]}
             "season_end": self.seasonEndComboBox.currentText(),
             "cross_years": self.crossYearsCheckBox.isChecked(),
             "selected_years": selected_years,
-            "is_forecast": self.forecastRadioButton.isChecked(),
+            "forecast_length": self.forecastLengthSpinBox.value(),
             "use_pearson": self.usePearsonCheckBox.isChecked(),
             "rainy_season_detection": rainy_season_detection,
             "output_stats": self.exportStatsCheckBox.isChecked(),
@@ -330,10 +330,9 @@ Github Project Page: {self.metadata["homepage"]}
         self.usePearsonCheckBox.setChecked(parameters.use_pearson)
 
         # update analysis parameters
-        self.observedDataRadioButton.setEnabled(True)
-        self.forecastRadioButton.setEnabled(True)
-        if parameters.is_forecast: self.forecastRadioButton.setChecked(True)
-        else: self.observedDataRadioButton.setChecked(True)
+        self.forecastLengthSpinBox.setEnabled(True)
+        self.forecastLengthSpinBox.setValue(parameters.forecast_length)
+        
         self.rainySeasonDetectionButton.setEnabled(True)
         self.rainy_season_detection_dialog.sosEnabled = parameters.rainy_season_detection["sos"]["enabled"]
         self.rainy_season_detection_dialog.sosDetectionMethod = parameters.rainy_season_detection["sos"]["method"]
@@ -421,7 +420,7 @@ Github Project Page: {self.metadata["homepage"]}
             return
         sub_season_ids = define_seasonal_dict(self.crossYearsCheckBox.isChecked(), 
                                            period_unit_id=self.dataset_properties.period_unit_id)
-        data_availability_shift =  - self.forecastRadioButton.isChecked() - ((self.dataset_properties.period_length // 2) * self.crossYearsCheckBox.isChecked())
+        data_availability_shift =  - self.forecastLengthSpinBox.value() - ((self.dataset_properties.period_length // 2) * self.crossYearsCheckBox.isChecked())
         valid_monitoring_start = self.dataset_properties.current_season_length + data_availability_shift - 1
         if valid_monitoring_start < 0: valid_monitoring_start += self.dataset_properties.period_length
         selected_monitoring_start = self.seasonStartComboBox.currentIndex()

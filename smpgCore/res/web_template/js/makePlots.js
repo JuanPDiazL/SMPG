@@ -15,8 +15,8 @@ function extendScalar(value, length) {
 }
 function ascendingArray(n, offset=0) {
     const arr = [];
-    for (let i = offset; i < n; i++) {
-        arr.push(i);
+    for (let i = 0; i < n; i++) {
+        arr.push(i + offset);
     }
     return arr;
 }
@@ -176,10 +176,8 @@ function makeAccumulationsPlot(containerElement) {
     let xsDefinition = {
         'default_xs': ascendingArray(xNames.length),
         'scatter_xs': [xNames.length - 1, xNames.length - 1],
+        'forecast_xs': ascendingArray(Math.max(parameters.forecast_length + 1, 1), currentMonitoringLength - 1),
     };
-    if (hasForecast) {
-        xsDefinition["forecast_xs"] = [currentMonitoringLength - 1, currentMonitoringLength];
-    }
     const xsDataRelation = {
             'Forecast Accumulation': 'forecast_xs',
             'LTA±St. Dev.': 'scatter_xs',
@@ -206,13 +204,12 @@ function makeAccumulationsPlot(containerElement) {
                 place_general_stats[index]['Climatology 33 Pctl.'],
                 place_general_stats[index]['Climatology 67 Pctl.'],
             ],
-        };
-        if (hasForecast) {
-            data['Forecast Accumulation'] = [
+            'Forecast Accumulation': [
                 place_general_stats[index]['Current Season Total'], 
-                place_general_stats[index]['Current Season+Forecast'],
-            ];
-        }
+                ...place_long_term_stats[index]['Forecast Accumulation']
+                .slice(monitoringOffset+currentMonitoringLength),
+            ]
+        };
         return data;
     };
     const plot = new BBPlot(containerElement, getAccumulationsPlotData, xNames, 
@@ -231,8 +228,11 @@ function makeAccumulationsTable(containerElement) {
         ]
         data["[hide header]"] = [
             [`Total C. ${SHORT_NAMES[period_unit]}`, place_general_stats[index]['Current Season Total']],
-            [`Total C. ${SHORT_NAMES[period_unit]}+Forecast`, place_general_stats[index]['Current Season+Forecast']]
         ];
+        if(hasForecast) {
+            data["[hide header]"].push(
+            [`Total C. ${SHORT_NAMES[period_unit]}+Forecast`, place_general_stats[index]['Current Season+Forecast']]);
+        }
 
         return data;
     };
@@ -246,12 +246,11 @@ function makeCurrentYearPlot(containerElement) {
     
     let xsDefinition = {
         'default_xs': ascendingArray(xNames.length),
+        'forecast_xs': ascendingArray(Math.max(parameters.forecast_length, 1), currentLength),
     };
-    let xsDataRelation = {};
-    if (hasForecast) {
-        xsDefinition["forecast_xs"] = [currentLength];
-        xsDataRelation["Forecast"] = 'forecast_xs';
-    }
+    let xsDataRelation = {
+        'Forecast': 'forecast_xs',
+    };
     const plotTypes = {
         'Current Season': 'bar',
         'Forecast': 'bar',
@@ -262,9 +261,8 @@ function makeCurrentYearPlot(containerElement) {
         let data = {
             'Current Season': place_long_term_stats[index]['Current Season'],
             'Climatology Average': place_long_term_stats[index]['Climatology Average'],
-        }
-        if (hasForecast) {
-            data["Forecast"] = [place_general_stats[index]['Forecast']];
+            'Forecast': place_long_term_stats[index]['Forecast']
+            .slice(currentLength),
         }
         return data;
     };

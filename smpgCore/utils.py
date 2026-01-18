@@ -128,7 +128,7 @@ class Parameters:
         self.selected_years: Optional[Union[list[str], int]] = None
         self.use_pearson = False
         # analysis defaults
-        self.is_forecast = False
+        self.forecast_length = 0
         self.rainy_season_detection = {
             "sos": {
                 "enabled": False,
@@ -547,7 +547,7 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
     
     Returns:
         tuple: A tuple containing two elements:
-            - int: The index at which the season might have started, or None if 
+            - int: The index at which the season might have started, or NaN if 
                 no such index is found.
             - bool: True if the season meets both conditions to start, 
                 False otherwise.
@@ -578,7 +578,7 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
         if candidate_condition(dq):
             return len(year_data) - len(dq), False, POSSIBLE_START_STR
         dq.popleft()
-    return np.NaN, False, NO_START_STR
+    return np.nan, False, NO_START_STR
 
 def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value, second_value):
     """
@@ -636,7 +636,7 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
         if candidate_condition(dq, dq_c) or fallback_candidate_condition(dq):
             return len(year_data) - len(dq), False, POSSIBLE_START_STR
         dq.popleft(); dq_c.popleft()
-    return np.NaN, False, NO_START_STR
+    return np.nan, False, NO_START_STR
 
 def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
     """
@@ -684,7 +684,7 @@ def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
         if candidate_condition(dq):
             return len(year_data) - len(dq) + 1, False, POSSIBLE_START_STR
         dq.popleft()
-    return np.NaN, False, NO_START_STR
+    return np.nan, False, NO_START_STR
 
 def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: pd.DataFrame, parameters: Parameters, properties: Properties):
     sos_parameters = parameters.rainy_season_detection["sos"]
@@ -729,7 +729,7 @@ def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: 
     if not np.isnan(historical_sos_mean):
         sos = round(historical_sos_mean) + properties.season_start_index
     else:
-        sos = np.NaN
+        sos = np.nan
 
     # set SOS avg. class
     sos_class_avg = get_sos_class(sos)

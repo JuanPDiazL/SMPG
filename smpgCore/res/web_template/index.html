@@ -163,7 +163,7 @@
         const monitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null);
-        const hasForecast = parameters['is_forecast'];
+        const hasForecast = parameters['forecast_length'] > 0;
         const hasSos = parameters['rainy_season_detection']['sos']['enabled'];
 
         const hasMap = isDeclared("topojson_map") && topojson_map !== null;
@@ -181,18 +181,19 @@
         }
 
         // Debug data logs
-        // console.log('properties', datasetProperties);
-        // console.log('place_general_stats', place_general_stats);
-        // console.log('place_long_term_stats', place_long_term_stats);
-        // console.log('seasonal_current_totals', seasonal_current_totals);
-        // console.log('seasonal_general_stats', seasonal_general_stats);
-        // console.log('selected_seasons_general_stats', selected_seasons_general_stats);
-        // console.log('seasonal_cumsum', seasonal_cumsum);
-        // console.log('seasonal_ensemble', seasonal_ensemble);
-        // console.log('seasonal_long_term_stats', seasonal_long_term_stats);
-        // console.log('selected_seasons_cumsum', selected_seasons_cumsum);
-        // console.log('selected_seasons_ensemble', selected_seasons_ensemble);
-        // console.log('selected_seasons_long_term_stats', selected_seasons_long_term_stats);
+        console.log('dataset_properties', datasetProperties);
+        console.log('parameters', parameters);
+        console.log('place_general_stats', place_general_stats);
+        console.log('place_long_term_stats', place_long_term_stats);
+        console.log('seasonal_current_totals', seasonal_current_totals);
+        console.log('seasonal_general_stats', seasonal_general_stats);
+        console.log('selected_seasons_general_stats', selected_seasons_general_stats);
+        console.log('seasonal_cumsum', seasonal_cumsum);
+        console.log('seasonal_ensemble', seasonal_ensemble);
+        console.log('seasonal_long_term_stats', seasonal_long_term_stats);
+        console.log('selected_seasons_cumsum', selected_seasons_cumsum);
+        console.log('selected_seasons_ensemble', selected_seasons_ensemble);
+        console.log('selected_seasons_long_term_stats', selected_seasons_long_term_stats);
 
         // HTML Elements
         const BODY = document.body;
