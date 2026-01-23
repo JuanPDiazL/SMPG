@@ -79,7 +79,7 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         self.fields = ['C. Dk./LTA Pct.', 'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
                   'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
                   'Current Season Pctl.']
-        if self.parentWidget().forecastRadioButton.isChecked():
+        if self.parentWidget().forecastLengthSpinBox.value() > 0:
             self.fields.append('C. Dk.+Forecast/LTA Pct.')
         if self.parentWidget().rainy_season_detection_dialog.sosEnabled:
             self.fields.append('Start of Season')
