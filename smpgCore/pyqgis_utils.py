@@ -94,19 +94,6 @@ def add_to_project(*layers: QgsVectorLayer) -> None:
         else: 
             QgsProject.instance().addMapLayer(layer)
 
-# def add_to_group(layer: QgsVectorLayer, group_name: str) -> None:
-#     """Add a layer to a group in the project.
-
-#     Args:
-#         layer (QgsVectorLayer): The layer to add to the group.
-#         group_name (str): The name of the group to add the layer to.
-#     """
-#     root = QgsProject.instance().layerTreeRoot()
-#     group = root.findGroup(group_name)
-#     if group is None:
-#         group = root.addGroup(group_name)
-#     group.addLayer(layer)
-
 def apply_style_file(source: str, map: QgsVectorLayer, attribute: str):
     """Apply a style from a style file to a vector layer.
 
