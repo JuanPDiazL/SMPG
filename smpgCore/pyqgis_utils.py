@@ -1,11 +1,19 @@
 import os
 
+from PyQt5.QtGui import QColor
+from PyQt5 import QtCore
+
 from qgis.core import (
     QgsProject,
     QgsVectorLayer,
     QgsVectorLayerJoinInfo,
     QgsGraduatedSymbolRenderer,
+    QgsCategorizedSymbolRenderer,
     QgsGradientColorRamp,
+    QgsFillSymbol,
+    QgsSimpleFillSymbolLayer,
+    QgsRendererRange,
+    QgsRendererCategory,
     QgsClassificationQuantile,
     QgsMessageLog,
 )
@@ -95,7 +103,7 @@ def add_to_project(*layers: QgsVectorLayer) -> None:
             QgsProject.instance().addMapLayer(layer)
 
 def apply_style_file(source: str, map: QgsVectorLayer, attribute: str):
-    """Apply a style from a style file to a vector layer.
+    """Apply a style from a file to a vector layer.
 
     Args:
         source (str): The path to the style file.
@@ -106,39 +114,35 @@ def apply_style_file(source: str, map: QgsVectorLayer, attribute: str):
     map.renderer().setClassAttribute(attribute)
     map.triggerRepaint()
 
-def apply_default_attr_style(map_layer: QgsVectorLayer, class_attribute: str) -> None:
-    """Apply a default attribute style to the given map layer.
-    
-    If the class_attribute is recognized, this function will apply a 
-    pre-defined attribute style to the layer. Otherwise, it will fall back to 
-    applying a default symbology.
+def apply_symbology(map_layer: QgsVectorLayer, class_attribute: str, symbology: dict) -> None:
+    """Apply a symbology to the given map layer.
     
     Args:
         map_layer (QgsVectorLayer): The layer object that will receive the 
             style.
         class_attribute (str): A string representing the attribute on which the 
             style is based.
+        symbology (dict): A dictionary containing the symbology information.
     """
-    layer_styles_folder = os.path.join(os.path.dirname(__file__), 'res', 'layer_styles')
-    attribute_style_relation = {
-        'C. Dk./LTA Pct.':          'rainfall_anomaly_percent_polygon',
-        'C. Dk.+Forecast/LTA Pct.': 'rainfall_anomaly_percent_polygon',
-        'Ensemble Med./LTA Pct.':   'rainfall_anomaly_percent_polygon',
-        'Probability Below Normal': 'prob_below_normal_polygons',
-        'Probability of Normal':    'prob_above_normal_polygons',
-        'Probability Above Normal': 'prob_above_normal_polygons',
-        'Ensemble Med. Pctl.':      'SMPG_precipitation_percentile',
-        'Current Season Pctl.':     'SMPG_precipitation_percentile',
-        'Start of Season':          'start_of_season',
-        'Start of Season Anomaly':  'start_of_season_anomaly',
-    }
-    for attribute_key in attribute_style_relation:
-        if class_attribute.endswith(attribute_key):
-            style_file = attribute_style_relation[attribute_key]
-            style_file_path = os.path.join(layer_styles_folder, f'{style_file}.qml')
-            apply_style_file(style_file_path, map_layer, class_attribute)
-            return
-    apply_default_symbology(map_layer, class_attribute)
+    legend_type = symbology["type"]
+    legend = symbology["legend"]
+    legend_classes = []
+    if legend_type == "graduated":
+        renderer_constructor = QgsGraduatedSymbolRenderer
+        renderer_class_constructor = QgsRendererRange
+    elif legend_type == "categorized":
+        renderer_constructor = QgsCategorizedSymbolRenderer
+        renderer_class_constructor = QgsRendererCategory
+    for key, value in legend.items():
+        symbol_layer = QgsSimpleFillSymbolLayer(
+            color=QColor(value["color"]), 
+            strokeStyle=QtCore.Qt.PenStyle.NoPen
+        )
+        symbol = QgsFillSymbol([symbol_layer])
+        legend_class = renderer_class_constructor(*value["values"], symbol, key)
+        legend_classes.append(legend_class)
+    renderer = renderer_constructor(class_attribute, legend_classes)
+    map_layer.setRenderer(renderer)
 
 def apply_default_symbology(map_layer: QgsVectorLayer, class_attribute: str, nclasses=10):
     """Apply a default symbology to the given map layer.
