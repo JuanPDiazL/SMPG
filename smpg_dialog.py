@@ -502,7 +502,9 @@ Github Project Page: {self.metadata["homepage"]}
                         self.selected_layer,
                         self.targetFieldComboBox.currentText(),
                         self.map_settings_dialog.settings['selected_fields'],
-                        data_path_relation)
+                        data_path_relation,
+                        self.structured_dataset.properties,
+                        )
  
         export_to_web_files(
             self.destination_path, 

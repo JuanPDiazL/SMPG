@@ -5,6 +5,7 @@ from qgis.core import (
 )
 
 from ..pyqgis_utils import *
+from ..utils import Properties
 
 styles = {
     "prob_below_normal": {
@@ -58,7 +59,7 @@ styles = {
             "\u226590 Extremely Wet": {"color": "#1f78b4", "values": [90, 100]},
         },
     },
-    "sos_eos_detection": {
+    "sos_eos_detection_base": {
         "type": "categorized",
         "legend": {
             "No Start": {"color": "#fff77d", "values": ["No Start"]},
@@ -114,7 +115,7 @@ attribute_style_relation = {
     'Start of Season Anomaly':  'sos_eos_anomaly',
 }
 
-def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selected_stats: list[str], data_path_relation: dict):
+def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selected_stats: list[str], data_path_relation: dict, dataset_properties: Properties):
     """
     Generates QGIS vector layers from a CSV file and adds them to the project.
 
@@ -135,6 +136,21 @@ def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selecte
         add_to_project(csv_selected_stats_layer)
         csv_climatology_stats_layer = load_layer_file(climatology_csv_path)
         add_to_project(csv_climatology_stats_layer)
+        
+        # Legend for SoS and EOS
+        base_sos = list(styles["sos_eos_detection_base"]["legend"].values())[2:] # variable part of the sos legend
+        monitoring_ids = dataset_properties.sub_season_monitoring_ids
+        size_legend = min(len(base_sos), len(monitoring_ids))
+        sos_variable_legend = zip(monitoring_ids, base_sos)
+        sos_eos_style = {"type": "categorized", "legend": 
+            {"No Start": {"color": "#fff77d", "values": ["No Start"]},
+            "Possible Start": {"color": "#dfd75d", "values": ["Possible Start"]}}}
+        for i, (id, legend) in enumerate(sos_variable_legend):
+            if i+1 == size_legend and size_legend < len(monitoring_ids):
+                id = f"\u2265{id}"
+            sos_eos_style["legend"][id] = legend
+            sos_eos_style["legend"][id]["values"][0] = id
+        styles["sos_eos_detection"] = sos_eos_style
     
     for stat in selected_stats:
         map_clone = map_layer.clone()
