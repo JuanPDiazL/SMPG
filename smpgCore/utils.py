@@ -688,13 +688,11 @@ def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
 
 def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: pd.DataFrame, parameters: Parameters, properties: Properties):
     sos_parameters = parameters.rainy_season_detection["sos"]
-    indexof_sos_axis_start = 3
-    indexof_sos_axis_end = 21
+    indexof_sos_axis_end = min(18 + properties.season_start_index, 
+                               properties.season_end_index) # 18 is the length of the sos legend
     def get_sos_class(sos_index):
-        if ((indexof_sos_axis_start < sos_index < indexof_sos_axis_end)):
+        if ((sos_index < indexof_sos_axis_end)):
             return properties.sub_season_ids[sos_index]
-        elif sos_index <= indexof_sos_axis_start:
-            return f'≤{properties.sub_season_ids[indexof_sos_axis_start]}'
         elif sos_index >= indexof_sos_axis_end:
             return f'≥{properties.sub_season_ids[indexof_sos_axis_end]}'
 
