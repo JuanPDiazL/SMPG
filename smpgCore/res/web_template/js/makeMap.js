@@ -120,29 +120,28 @@ const sosClassColors = [
     '#CFA836', 
     '#966300'
 ];
-const getSosCategories = () => Object.fromEntries(sosClassColors.map((value, index, array) => {
-    let key, color = value, fun;
-    if (index === 0) {
-        key = "No Start";
-        fun = (x) => x === "No Start";
-    } else if (index === 1) {
-        key = "Possible St.";
-        fun = (x) => x === "Possible Start";
-    } else if (index === 2) {
-        key = `≤${datasetProperties["sub_season_ids"][3]}`;
-        fun = (x) => x === key;
-    } else if (index === 20) {
-        key = `≥${datasetProperties["sub_season_ids"][21]}`;
-        fun = (x) => x === key;
-    } else {
-        key = datasetProperties["sub_season_ids"][index+1];
-        fun = (x) => x === key;
+
+function getSosEosCategories(suffix='Start') {
+    let categoryLabels = [`No ${suffix}`, `Possible ${suffix}`]
+        .concat(datasetProperties["sub_season_monitoring_ids"]);
+    let sizeCategories = Math.min(categoryLabels.length, sosClassColors.length);
+    let varCategoryPairs = zip(categoryLabels, sosClassColors);
+    
+    let _categories = {};
+    for (let i=0; i < varCategoryPairs.length; i++) {
+        let label = varCategoryPairs[i][0];
+        let color = varCategoryPairs[i][1];
+        if (i+1 === sizeCategories && sizeCategories < categoryLabels.length) {
+            label = `≥${label}`;
+        }
+        _categories[label] = {'color': color, 'function': (x) => x === label};
     }
-    return [key, {"color": color, "function": fun}]
-}));
+    return _categories
+}
 
 function drawMap(mapGeoJson, referenceMapGeoJson) {
-    categories["Start of Season"] = getSosCategories(); // prepare some needed data
+    // prepare categories
+    categories["Start of Season"] = getSosEosCategories(); 
     const layerArea = d3.geoArea(referenceMapGeoJson);
     const layerBounds = d3.geoBounds(referenceMapGeoJson);
 
@@ -354,7 +353,7 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
                     .attr("transform", `translate(${coordX},${coordY})`)
                 })
             .each((d, i, nodes) => {
-                console.log(nodes[i].getBoundingClientRect().width);
+                // console.log(nodes[i].getBoundingClientRect().width);
             })
             
         // Update polygon color based on the selected property

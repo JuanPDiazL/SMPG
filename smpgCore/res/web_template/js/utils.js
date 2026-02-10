@@ -124,6 +124,12 @@ function toggleDarkMode() {
     setCookie(DARKMODE_COOKIE_NAME, document.body.classList.toggle('darkmode'));
 }
 
+function zip(...arrays) {
+  const minLength = Math.min(...arrays.map(arr => arr.length));
+  return Array.from({ length: minLength }, (_, i) => 
+    arrays.map(arr => arr[i])
+  );
+}
 
 function getLast(arr) {
     return arr[arr.length - 1];
