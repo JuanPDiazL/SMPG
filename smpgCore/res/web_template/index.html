@@ -77,6 +77,11 @@
                             </div>
                         </div>
                         <div id="mapContainer">
+                            <div id="mapDescriptionContainer" class="w3-margin w3-hide">
+                                <span><button id="mapDescriptionShowButton" class="mi w3-button w3-border capture-ignore" title="Show description" onclick="toggleMapDescription()">info</button></span>
+                                <span><button id="mapDescriptionHideButton" class="mi w3-button w3-hide capture-ignore" title="Hide description" onclick="toggleMapDescription()">close</button></span>
+                                <span><p id="mapDescription" class="w3-leftbar w3-hide"></p></span>
+                            </div>
                             <svg id="mapSvg">
                             </svg>
                         </div>
@@ -201,6 +206,11 @@
         const MODAL = document.getElementById('modal');
         const MODAL_HEADER = document.getElementById('modalHeaderText');
         const MODAL_TEXT = document.getElementById('modalText');
+        const MAP_DESCRIPTION = d3.select('#mapDescription');
+        const MAP_DESCRIPTION_CONTAINER = d3.select('#mapDescriptionContainer');
+        const MAP_DESCRIPTION_SHOW_BUTTON = d3.select('#mapDescriptionShowButton');
+        const MAP_DESCRIPTION_HIDE_BUTTON = d3.select('#mapDescriptionHideButton');
+
 
         let selectNode = d3.select("#featureSelect").node();
         let legendCbNode = d3.select("#showLegend").node();

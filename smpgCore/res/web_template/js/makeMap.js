@@ -96,7 +96,33 @@ let categories = {
         '3 Dk. Late': { 'color': '#FF734A', 'function': (x) => x === '3 Dekads Late' },
         '≥4 Dk. Late': { 'color': '#BA0070', 'function': (x) => x === '≥4 Dekads Late' },
     },
+    'End of Season Anomaly': {
+        'No End': { 'color': '#FFF77D', 'function': (x) => x === 'No End'},
+        '≥4 Dk. Early': { 'color': '#004280', 'function': (x) => x === '≥4 Dekads Early' },
+        '3 Dk. Early': { 'color': '#0073F0', 'function': (x) => x === '3 Dekads Early' },
+        '2 Dk. Early': { 'color': '#008FF5', 'function': (x) => x === '2 Dekads Early' },
+        '1 Dk. Early': { 'color': '#00A6F5', 'function': (x) => x === '1 Dekads Early' },
+        'Average': { 'color': '#CCCCCC', 'function': (x) => x === 'Average' },
+        '1 Dk. Late': { 'color': '#FFD4E6', 'function': (x) => x === '1 Dekads Late' },
+        '2 Dk. Late': { 'color': '#FFC78F', 'function': (x) => x === '2 Dekads Late' },
+        '3 Dk. Late': { 'color': '#FF734A', 'function': (x) => x === '3 Dekads Late' },
+        '≥4 Dk. Late': { 'color': '#BA0070', 'function': (x) => x === '≥4 Dekads Late' },
+    },
 };
+
+const mapDescriptions = {
+  "C. Dk./LTA Pct.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period (current dekad: C.Dk.).",
+  "C.Dk./LTA PC.Dk. + Forecast/LTA Pct.": "Depicts the percent of average for the accumulated precipitation from the Start of Season (SOS) up to the current period, including the forecast.",
+  "Current Season Pctl.": "Shows the percentile rank of the accumulated precipitation from the SOS up to the current period, based on historical data.",
+  "Ensemble Med. Pctl.": "Depicts the percentile rank of the median value of all possible outcomes at the End of Season (EOS). The ensemble is created using historical data from selected years (from Section 4) to simulate a range of potential outcomes.",
+  "Ensemble Med./LTA Pct.": "Displays the percent of average for the EOS median value of all possible outcomes compared against the long-term average (LTA).",
+  "Probability Below Normal": "This map displays the probability of the season's outcome below the 33rd percentile of the historical distribution.",
+  "Probability of Normal": "This map displays the probability of the season's outcome between the 33rd and 67th percentiles.",
+  "Probability Above Normal": "This map displays the probability of the season's outcome above the 67th percentile of the historical distribution.",
+  "Start of Season": "These maps show when the start of a rainy season has begun (for instance: Mar-1). The results of these maps depend on the selected method, and its parameters.",
+  "Start of Season Anomaly": "This map shows how many periods the Start of season differs from the average (for instance: 2 Dekads Early)."
+};
+
 const sosClassColors = [
     '#FFF77D', 
     '#DFD75D', 
@@ -142,6 +168,7 @@ function getSosEosCategories(suffix='Start') {
 function drawMap(mapGeoJson, referenceMapGeoJson) {
     // prepare categories
     categories["Start of Season"] = getSosEosCategories(); 
+    categories["End of Season"] = getSosEosCategories('End');
     const layerArea = d3.geoArea(referenceMapGeoJson);
     const layerBounds = d3.geoBounds(referenceMapGeoJson);
 
@@ -161,6 +188,8 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         'Current Season Pctl.': (col) => place_general_stats[col]['Current Season Pctl.'],
         'Start of Season': (col) => place_general_stats[col]['Start of Season'],
         'Start of Season Anomaly': (col) => place_general_stats[col]['Start of Season Anomaly'],
+        'End of Season': (col) => place_general_stats[col]['End of Season'],
+        'End of Season Anomaly': (col) => place_general_stats[col]['End of Season Anomaly'],
     }
 
     const projection = d3.geoMercator()
@@ -382,5 +411,8 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         }
         // Update the header text
         HEADER.text(`Dataset: ${datasetProperties.dataset_name}, Stat: ${this.value ? this.value : "None"}`);
+        // Update description
+        MAP_DESCRIPTION.text(mapDescriptions[this.value]);
+        MAP_DESCRIPTION_CONTAINER.classed('w3-hide', !mapDescriptions[this.value]);
     });
 }

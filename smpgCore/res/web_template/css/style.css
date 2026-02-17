@@ -312,6 +312,17 @@ path {
     position: absolute;
     background-color: #1d2a35cc;
 }
+#mapDescriptionContainer {
+    display: flex;
+    position: absolute;
+    max-width: 50%;
+    font-size: larger;
+    line-height: 1.25;
+}
+#mapDescription {
+    background-color: #fffb;
+    margin-top: 0;
+}
 
 #mapTooltip {
     min-height: 1em;
