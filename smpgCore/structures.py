@@ -241,7 +241,7 @@ class Place:
             'Ensemble Med.': ensemble_median[-1],
             'LTA up to Current Season': lta_upto_current_season,
             'C. Dk./LTA Pct.': (self.current_cumsum_mon[-1]/lta_upto_current_season)*100,
-            'C. Dk.+Forecast/LTA Pct.': ((self.current_cumsum_mon[-1]+self.forecast_values)/lta_upto_forecast)*100,
+            'C. Dk.+Forecast/LTA Pct.': ((self.current_cumsum_mon[-1]+self.forecast_accumulation.iloc[-1])/lta_upto_forecast)*100,
             'Ensemble Med./LTA Pct.': (ensemble_median[-1]/seasonal_lta[-1])*100,
             'Ensemble Med. Pctl.': percentiles_from_values(self.seasonal_totals, [ensemble_median[-1]])[0],
             'St. Dev.': standard_dev[-1],
