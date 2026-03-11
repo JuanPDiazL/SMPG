@@ -77,34 +77,32 @@ class Properties:
 class Parameters:
     """It represents the parameters that define how the data should be processed.
 
-    Attributes
-        climatology_start (str): The start year of the climatology period. 
-            Defaults to 1991.
-        climatology_end (str): The end year of the climatology period. 
-            Defaults to 2020.
-        season_start (str): The start month of the monitoring season. 
-            Defaults to None.
-        season_end (str): The end month of the monitoring season. 
-            Defaults to None.
+    Attributes:
+        shapefile_path (str): The path to the shapefile.
+        target_id_field (str): The name of the field that contains the unique
+            identifier for each polygon in the shapefile.
+        reference_shapefile_path (str): The path to the shapefile that will be 
+            used as reference, but not in the actual computation.
+        climatology_start (str): The start year of the climatology period.
+        climatology_end (str): The end year of the climatology period.
+        season_start (str): The start month of the monitoring season.
+        season_end (str): The end month of the monitoring season.
         cross_years (bool): A boolean indicating whether to use July-June 
-            seasons. Defaults to False.
+            seasons.
         selected_years (list | int): This represents the selected years.
             When it is a list, it is the list of selected years.
-            When it is a int, it is the number of similar years. 
-            Defaults to None.
+            When it is a int, it is the number of similar years.
         use_pearson (bool): A boolean indicating whether to use Pearson's 
-            correlation coefficient for selecting similar years. 
-            Defaults to False.
-        is_forecast (bool): A boolean indicating whether the dataset has a 
-            forecast period. Defaults to False.
-        output_web (bool): A boolean indicating whether to output the web 
-            reports. Defaults to True.
+            correlation coefficient for selecting similar years.
+        forecast_length (int): The length of the forecast period.
         output_stats (bool): A boolean indicating whether to output the 
-            statistical results as CSV. Defaults to True.
+            statistical results as CSV.
         output_parameters (bool): A boolean indicating whether to output the 
-            parameters used in the computation. Defaults to False.
+            parameters used in the computation.
         mapping_attributes (list[str]): A list of attribute names that should 
-            be used to generate the QGIS maps. Defaults to [].
+            be used to generate the QGIS maps.
+        open_web_report (bool): A boolean indicating whether to open the web 
+            report once the computation is finished.
     """
     def __init__(self, parameters={}, **kwargs) -> None:
         """Constructor.
