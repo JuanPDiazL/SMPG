@@ -223,16 +223,6 @@ Github Project Page: {self.metadata["homepage"]}
         else:
             selected_years = self.similarYearsComboBox.currentText()
 
-        rainy_season_detection = {
-            "sos": {
-                "enabled": self.rainy_season_detection_dialog.sosEnabled,
-                "method": self.rainy_season_detection_dialog.sosDetectionMethod,
-                "first_threshold": self.rainy_season_detection_dialog.sosFirstThreshold,
-                "second_threshold": self.rainy_season_detection_dialog.sosSecondThreshold,
-                "fixed_first_threshold": self.rainy_season_detection_dialog.sosFixedFirstThreshold,
-                "fixed_second_threshold": self.rainy_season_detection_dialog.sosFixedSecondThreshold,
-            }
-        }
         return {
             "climatology_start": self.climatologyStartComboBox.currentText(),
             "climatology_end": self.climatologyEndComboBox.currentText(),
@@ -242,7 +232,12 @@ Github Project Page: {self.metadata["homepage"]}
             "selected_years": selected_years,
             "forecast_length": self.forecastLengthSpinBox.value(),
             "use_pearson": self.usePearsonCheckBox.isChecked(),
-            "rainy_season_detection": rainy_season_detection,
+            "rainy_season_detection_enabled": self.rainy_season_detection_dialog.sosEnabled,
+            "rainy_season_detection_sos_method": self.rainy_season_detection_dialog.sosDetectionMethod,
+            "rainy_season_detection_sos_first_threshold": self.rainy_season_detection_dialog.sosFirstThreshold,
+            "rainy_season_detection_sos_second_threshold": self.rainy_season_detection_dialog.sosSecondThreshold,
+            "rainy_season_detection_sos_fixed_first_threshold": self.rainy_season_detection_dialog.sosFixedFirstThreshold,
+            "rainy_season_detection_sos_fixed_second_threshold": self.rainy_season_detection_dialog.sosFixedSecondThreshold,
             "output_stats": self.exportStatsCheckBox.isChecked(),
             "output_parameters": self.exportParametersCheckBox.isChecked(),
             "mapping_attributes": self.map_settings_dialog.settings['selected_fields'],
@@ -250,7 +245,7 @@ Github Project Page: {self.metadata["homepage"]}
             "shapefile_path": self.shapefilePathLineEdit.text(),
             "target_id_field": self.targetFieldComboBox.currentText(),
             "reference_shapefile_path": self.referenceShapefilePathLineEdit.text(),
-            
+            "version": self.metadata['version'],
         }
 
     def update_fields(self, parameters: Parameters):
@@ -336,12 +331,12 @@ Github Project Page: {self.metadata["homepage"]}
         self.forecastLengthSpinBox.setSuffix(f" {self.dataset_properties.period_unit_id}s")
         
         self.rainySeasonDetectionButton.setEnabled(True)
-        self.rainy_season_detection_dialog.sosEnabled = parameters.rainy_season_detection["sos"]["enabled"]
-        self.rainy_season_detection_dialog.sosDetectionMethod = parameters.rainy_season_detection["sos"]["method"]
-        self.rainy_season_detection_dialog.sosFirstThreshold = parameters.rainy_season_detection["sos"]["first_threshold"]
-        self.rainy_season_detection_dialog.sosSecondThreshold = parameters.rainy_season_detection["sos"]["second_threshold"]
-        self.rainy_season_detection_dialog.sosFixedFirstThreshold = parameters.rainy_season_detection["sos"]["fixed_first_threshold"]
-        self.rainy_season_detection_dialog.sosFixedSecondThreshold = parameters.rainy_season_detection["sos"]["fixed_second_threshold"]
+        self.rainy_season_detection_dialog.sosEnabled = parameters.rainy_season_detection_enabled
+        self.rainy_season_detection_dialog.sosDetectionMethod = parameters.rainy_season_detection_sos_method
+        self.rainy_season_detection_dialog.sosFirstThreshold = parameters.rainy_season_detection_sos_first_threshold
+        self.rainy_season_detection_dialog.sosSecondThreshold = parameters.rainy_season_detection_sos_second_threshold
+        self.rainy_season_detection_dialog.sosFixedFirstThreshold = parameters.rainy_season_detection_sos_fixed_first_threshold
+        self.rainy_season_detection_dialog.sosFixedSecondThreshold = parameters.rainy_season_detection_sos_fixed_second_threshold
 
         # update outputs
         self.exportStatsCheckBox.setEnabled(True)
@@ -470,7 +465,8 @@ Github Project Page: {self.metadata["homepage"]}
         ###############
 
         # get parameters from GUI
-        parameters = Parameters(self.get_parameters_from_widgets())
+        parameters = Parameters()
+        parameters.set_parameters(self.get_parameters_from_widgets())
         
         compute_task = TaskHandler(
             'Dataset Computation Task',
@@ -537,12 +533,25 @@ Github Project Page: {self.metadata["homepage"]}
         # file reading
         try:
             with open(self.parameters_source, 'r') as json_file:
-                parameters = json.load(json_file)
-            parameters = Parameters(parameters)
+                external_parameters = json.load(json_file)
+                parameters = Parameters()
+                non_valid_parameters = parameters.set_parameters(external_parameters)
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Could not load parameters from {self.parameters_source}.\n\n{str(e)}\n\n{traceback.format_exc()}')
             return
         
+        # show parameters from the imported file that didn't load
+        if len(non_valid_parameters) > 0:
+            non_valid_parameters_str = '\n\n'.join([f'{key} = {value}' for key, value in non_valid_parameters.items()])
+            if parameters.version == "" or parameters.version != self.metadata['version']:
+                QMessageBox.information(self, "Some parameters couldn\'t be imported", 
+                                    f'The following parameters couln\'t be imported due to version changes or deprecation, please set them manually if necessary.\n\n{non_valid_parameters_str}', 
+                                    QMessageBox.Ok)
+            else:
+                QMessageBox.information(self, "Some parameters couldn\'t be imported", 
+                                    f'The following parameters couln\'t be imported, please set them manually if necessary.\n\n{non_valid_parameters_str}', 
+                                    QMessageBox.Ok)
+            
         #! this could be made to use the same function as the equivalent button event
         shp_source = parameters.shapefile_path
         layer_preload = validate_layer(load_layer_file(shp_source))

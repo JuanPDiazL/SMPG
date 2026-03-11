@@ -143,7 +143,7 @@ class Place:
         climatology_avg = self.seasonal_climatology.mean()
 
         # SOS detection
-        if parent.parameters.rainy_season_detection["sos"]["enabled"]:
+        if parent.parameters.rainy_season_detection_enabled:
             clim_avg_monitoring = climatology_avg[parent.properties.season_start_index:parent.properties.season_end_index]
             sos_data = get_start_of_season(current_season_monitoring, clim_avg_monitoring, self.seasonal_mon_clim,
                                                             parent.parameters,

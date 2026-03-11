@@ -169,7 +169,7 @@
         const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
         const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null);
         const hasForecast = parameters['forecast_length'] > 0;
-        const hasSos = parameters['rainy_season_detection']['sos']['enabled'];
+        const hasSos = parameters['rainy_season_detection_enabled'];
 
         const hasMap = isDeclared("topojson_map") && topojson_map !== null;
         const hasReferenceMap = isDeclared("reference_topojson_map") && reference_topojson_map !== null;

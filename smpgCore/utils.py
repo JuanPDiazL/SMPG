@@ -104,7 +104,7 @@ class Parameters:
         open_web_report (bool): A boolean indicating whether to open the web 
             report once the computation is finished.
     """
-    def __init__(self, parameters={}, **kwargs) -> None:
+    def __init__(self) -> None:
         """Constructor.
 
         Args:
@@ -112,9 +112,9 @@ class Parameters:
                 Defaults to {}.
         """
         # input defaults
-        self.shapefile_path: str = ''
-        self.target_id_field: str = ''
-        self.reference_shapefile_path: str = ''
+        self.shapefile_path = ''
+        self.target_id_field = ''
+        self.reference_shapefile_path = ''
         # climatology defaults
         self.climatology_start: Optional[str] = '1991'
         self.climatology_end: Optional[str] = '2020'
@@ -127,26 +127,20 @@ class Parameters:
         self.use_pearson = False
         # analysis defaults
         self.forecast_length = 0
-        self.rainy_season_detection = {
-            "sos": {
-                "enabled": False,
-                "method": "fixed",
-                "first_threshold": 25,
-                "second_threshold": 20,
-                "fixed_first_threshold": 20,
-                "fixed_second_threshold": 50,
-            },
-            "eos": {
-                "enabled": False,
-            },
-        }
+        # rainy season detection defaults
+        self.rainy_season_detection_enabled = False
+        self.rainy_season_detection_sos_method = "fixed"
+        self.rainy_season_detection_sos_first_threshold = 25
+        self.rainy_season_detection_sos_second_threshold = 20
+        self.rainy_season_detection_sos_fixed_first_threshold = 20
+        self.rainy_season_detection_sos_fixed_second_threshold = 50
         # output defaults
         self.output_stats = True
         self.output_parameters = False
         self.mapping_attributes: list[str] = []
         self.open_web_report = True
-
-        self.set_parameters(parameters, **kwargs)
+        # info
+        self.version = ""
 
     def set_parameters(self, parameters={}, **kwargs) -> dict:
         """
@@ -161,14 +155,14 @@ class Parameters:
             dict: The non-attribute parameters that were not set as attributes 
                 of this class.
         """
-        non_attributes = {}
+        non_valid_attributes = {}
         all_parameters = {**parameters, **kwargs}
         for key, value in all_parameters.items():
             if hasattr(self, key):
                 setattr(self, key, value)
             else:
-                non_attributes[key] = value
-        return non_attributes
+                non_valid_attributes[key] = value
+        return non_valid_attributes
     
     def to_dict(self):
         """converts the object to a dict.
@@ -685,7 +679,13 @@ def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
     return np.nan, False, NO_START_STR
 
 def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: pd.DataFrame, parameters: Parameters, properties: Properties):
-    sos_parameters = parameters.rainy_season_detection["sos"]
+    sos_parameters = {
+        "method": parameters.rainy_season_detection_sos_method,
+        "first_threshold": parameters.rainy_season_detection_sos_first_threshold,
+        "second_threshold": parameters.rainy_season_detection_sos_second_threshold,
+        "fixed_first_threshold": parameters.rainy_season_detection_sos_fixed_first_threshold,
+        "fixed_second_threshold": parameters.rainy_season_detection_sos_fixed_second_threshold,
+    }
     indexof_sos_axis_end = min(18 + properties.season_start_index, 
                                properties.season_end_index) # 18 is the length of the sos legend
     def get_sos_class(sos_index):
