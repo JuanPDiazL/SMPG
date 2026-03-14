@@ -3,7 +3,7 @@
 const UNCAT_COLOR = '#aaaf';
 let categories = {
     '': { 'Uncategorized': {color:UNCAT_COLOR, 'function': () => true} },
-    'C. Dk./LTA Pct.': {
+    'Total up to Current Season/LTA Pct.': {
         '0-19': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-39': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-59': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -15,7 +15,7 @@ let categories = {
         '140-159': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'C. Dk.+Forecast/LTA Pct.': {
+    'Total up to Forecast/LTA Pct.': {
         '0-19': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-39': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-59': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -111,7 +111,7 @@ let categories = {
 };
 
 const mapDescriptions = {
-  "C. Dk./LTA Pct.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period (current dekad: C.Dk.).",
+  "Total up to Current Season/LTA Pct.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period.",
   "C.Dk./LTA PC.Dk. + Forecast/LTA Pct.": "Depicts the percent of average for the accumulated precipitation from the Start of Season (SOS) up to the current period, including the forecast.",
   "Current Season Pctl.": "Shows the percentile rank of the accumulated precipitation from the SOS up to the current period, based on historical data.",
   "Ensemble Med. Pctl.": "Depicts the percentile rank of the median value of all possible outcomes at the End of Season (EOS). The ensemble is created using historical data from selected years (from Section 4) to simulate a range of potential outcomes.",
@@ -178,8 +178,8 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
 
     let mapStats = {
         '': () => undefined,
-        'C. Dk./LTA Pct.': (col) => seasonal_general_stats[col]['C. Dk./LTA Pct.'],
-        'C. Dk.+Forecast/LTA Pct.': (col) => seasonal_general_stats[col]['C. Dk.+Forecast/LTA Pct.'],
+        'Total up to Current Season/LTA Pct.': (col) => seasonal_general_stats[col]['Total up to Current Season/LTA Pct.'],
+        'Total up to Forecast/LTA Pct.': (col) => seasonal_general_stats[col]['Total up to Forecast/LTA Pct.'],
         'Ensemble Med./LTA Pct.': (col) => selected_seasons_general_stats[col]['Ensemble Med./LTA Pct.'],
         'Probability Below Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Below Normal Pct.'],
         'Probability of Normal': (col) => selected_seasons_general_stats[col]['E. Prob. of Normal Pct.'],

@@ -154,7 +154,7 @@ const chartColors = {
     'Current Season': '#0000FF',
     'Seasonal Accumulation': '#78ADD2',
     'Current Season Accumulation': '#0000FF',
-    'Current Season Total': '#0000FF',
+    'Current Accumulation to Present': '#0000FF',
     'Forecast': '#FF00FF',
     'Forecast Accumulation': '#FF00FF',
 
@@ -205,7 +205,7 @@ function makeAccumulationsPlot(containerElement) {
                 place_general_stats[index]['Climatology 67 Pctl.'],
             ],
             'Forecast Accumulation': [
-                place_general_stats[index]['Current Season Total'], 
+                place_general_stats[index]['Current Accumulation to Present'], 
                 ...place_long_term_stats[index]['Forecast Accumulation']
                 .slice(monitoringOffset+currentMonitoringLength),
             ]
@@ -223,15 +223,15 @@ function makeAccumulationsTable(containerElement) {
         const assesmentTitle = `Assessment at Current ${period_unit}`;
         data[assesmentTitle] = [
             [null, 'Sel. Yrs.', 'Clim.'],
-            [`LTA C. ${SHORT_NAMES[period_unit]}`, selected_seasons_general_stats[index]['LTA up to Current Season'], seasonal_general_stats[index]['LTA up to Current Season']],
-            [`C. ${SHORT_NAMES[period_unit]}/LTA Pct.`, selected_seasons_general_stats[index]['C. Dk./LTA Pct.'], seasonal_general_stats[index]['C. Dk./LTA Pct.']],
+            [`LTA up to Current Season`, selected_seasons_general_stats[index]['LTA up to Current Season'], seasonal_general_stats[index]['LTA up to Current Season']],
+            [`Total up to Current Season/LTA Pct.`, selected_seasons_general_stats[index]['Total up to Current Season/LTA Pct.'], seasonal_general_stats[index]['Total up to Current Season/LTA Pct.']],
         ]
         data["[hide header]"] = [
-            [`Total C. ${SHORT_NAMES[period_unit]}`, place_general_stats[index]['Current Season Total']],
+            [`Current Accumulation to Present`, place_general_stats[index]['Current Accumulation to Present']],
         ];
         if(hasForecast) {
             data["[hide header]"].push(
-            [`Total C. ${SHORT_NAMES[period_unit]}+Forecast`, place_general_stats[index]['Current Season+Forecast']]);
+            [`Current Accumulation to Forecast`, place_general_stats[index]['Current Accumulation to Forecast']]);
         }
 
         return data;
@@ -406,11 +406,11 @@ function makeAccumulationPercentilesPlot(containerElement) {
         'end_xs': [xNames.length - 1],
     };
     const xsDataRelation = {
-        'Current Season Total': 'end_xs',
+        'Current Accumulation to Present': 'end_xs',
     };
     const plotTypes = {
         'Seasonal Accumulation': 'bar',
-        'Current Season Total': 'bar',
+        'Current Accumulation to Present': 'bar',
         'Climatology Average': 'line',
         'D4: 3 Pctl.': 'line',
         'D3: 6 Pctl.': 'line',
@@ -423,7 +423,7 @@ function makeAccumulationPercentilesPlot(containerElement) {
         const xLength = seasonal_current_totals[index].length + 1;
         return {
             'Seasonal Accumulation': seasonal_current_totals[index],
-            'Current Season Total': [place_general_stats[index]['Current Season Total']],
+            'Current Accumulation to Present': [place_general_stats[index]['Current Accumulation to Present']],
             'Climatology Average': extendScalar(place_general_stats[index]['Climatology Average at Current Dekad'], xLength),
             '67 Pctl.': extendScalar(place_general_stats[index]['Seasonal 67 Pctl.'], xLength),
             '33 Pctl.': extendScalar(place_general_stats[index]['Seasonal 33 Pctl.'], xLength),

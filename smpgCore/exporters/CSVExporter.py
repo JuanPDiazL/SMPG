@@ -14,7 +14,7 @@ def wrap_stats(place_general_stats: dict, seasonal_general_stats: pd.Series):
    
     """
     return pd.Series({
-        'Current Season Total': place_general_stats.loc['Current Season Total'],
+        'Current Accumulation to Present': place_general_stats['Current Accumulation to Present'],
         'LTA': seasonal_general_stats['LTA'],
         'LTA up to Current Season': seasonal_general_stats['LTA up to Current Season'],
         'Median': seasonal_general_stats['Median'],
@@ -38,8 +38,8 @@ def wrap_summary(place_general_stats: dict, seasonal_general_stats: pd.Series):
         Series: A new pandas Series with the wrapped summary data.
     """
     return pd.Series({
-        'C. Dk./LTA Pct.': seasonal_general_stats['C. Dk./LTA Pct.'],
-        'C. Dk.+Forecast/LTA Pct.': seasonal_general_stats['C. Dk.+Forecast/LTA Pct.'],
+        'Total up to Current Season/LTA Pct.': seasonal_general_stats['Total up to Current Season/LTA Pct.'],
+        'Total up to Forecast/LTA Pct.': seasonal_general_stats['Total up to Forecast/LTA Pct.'],
         'Ensemble Med./LTA Pct.': seasonal_general_stats['Ensemble Med./LTA Pct.'],
         'Probability Below Normal': seasonal_general_stats['E. Prob. Below Normal Pct.'],
         'Probability of Normal': seasonal_general_stats['E. Prob. of Normal Pct.'],

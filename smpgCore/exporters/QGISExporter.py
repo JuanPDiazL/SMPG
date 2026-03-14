@@ -103,8 +103,8 @@ styles = {
 }
 
 attribute_style_relation = {
-    'C. Dk./LTA Pct.':          'anomaly_percent',
-    'C. Dk.+Forecast/LTA Pct.': 'anomaly_percent',
+    'Total up to Current Season/LTA Pct.':  'anomaly_percent',
+    'Total up to Forecast/LTA Pct.':        'anomaly_percent',
     'Ensemble Med./LTA Pct.':   'anomaly_percent',
     'Probability Below Normal': 'prob_below_normal',
     'Probability of Normal':    'prob_above_normal',
@@ -129,7 +129,7 @@ def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selecte
     """
     selected_csv_path = data_path_relation['selected_years_summary'][1]
     climatology_csv_path = data_path_relation['climatology_summary'][1]
-    climatology_years_attributes = ['C. Dk./LTA Pct.', 'C. Dk.+Forecast/LTA Pct.']
+    climatology_years_attributes = ['Total up to Current Season/LTA Pct.', 'Total up to Forecast/LTA Pct.']
 
     if selected_stats != []:
         csv_selected_stats_layer = load_layer_file(selected_csv_path)

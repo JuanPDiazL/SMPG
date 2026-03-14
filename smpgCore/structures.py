@@ -175,7 +175,8 @@ class Place:
         self.place_general_stats = pd.Series({
             'Current Season Pctl.': percentiles_from_values(self.seasonal_current_totals.to_numpy(), 
                 [self.current_cumsum_mon[-1]])[0],
-            'Current Season Total': self.current_cumsum_mon[-1],
+            'Current Accumulation to Present': self.current_cumsum_mon[-1],
+            'Current Accumulation to Forecast': self.current_cumsum_mon[-1] + self.forecast_accumulation.iloc[-1],
             'Seasonal 3 Pctl.': self.seasonal_pctls[0],
             'Seasonal 6 Pctl.': self.seasonal_pctls[1],
             'Seasonal 11 Pctl.': self.seasonal_pctls[2],
@@ -185,7 +186,6 @@ class Place:
             'Climatology Average at Current Dekad': self.clim_seasons_cumsum.mean()[self.current_index],
             'Climatology 33 Pctl.': self.clim_seasons_pctls[0],
             'Climatology 67 Pctl.': self.clim_seasons_pctls[1],
-            'Current Season+Forecast': self.current_cumsum_mon[-1] + self.forecast_accumulation.iloc[-1],
             **sos_data,
         }, 
         name=self.id
@@ -240,8 +240,8 @@ class Place:
             'Median': seasonal_ltm[-1],
             'Ensemble Med.': ensemble_median[-1],
             'LTA up to Current Season': lta_upto_current_season,
-            'C. Dk./LTA Pct.': (self.current_cumsum_mon[-1]/lta_upto_current_season)*100,
-            'C. Dk.+Forecast/LTA Pct.': ((self.current_cumsum_mon[-1]+self.forecast_accumulation.iloc[-1])/lta_upto_forecast)*100,
+            'Total up to Current Season/LTA Pct.': (self.current_cumsum_mon[-1]/lta_upto_current_season)*100,
+            'Total up to Forecast/LTA Pct.': ((self.current_cumsum_mon[-1]+self.forecast_accumulation.iloc[-1])/lta_upto_forecast)*100,
             'Ensemble Med./LTA Pct.': (ensemble_median[-1]/seasonal_lta[-1])*100,
             'Ensemble Med. Pctl.': percentiles_from_values(self.seasonal_totals, [ensemble_median[-1]])[0],
             'St. Dev.': standard_dev[-1],

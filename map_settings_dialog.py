@@ -76,11 +76,11 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
                 Expected keys are 'shp_source', 'selected_map', and 
                 'join_field'.
         """
-        self.fields = ['C. Dk./LTA Pct.', 'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
+        self.fields = ['Total up to Current Season/LTA Pct.', 'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
                   'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
                   'Current Season Pctl.']
         if self.parentWidget().forecastLengthSpinBox.value() > 0:
-            self.fields.append('C. Dk.+Forecast/LTA Pct.')
+            self.fields.append('Total up to Forecast/LTA Pct.')
         if self.parentWidget().rainy_season_detection_dialog.sosEnabled:
             self.fields.append('Start of Season')
             self.fields.append('Start of Season Anomaly')
