@@ -102,19 +102,6 @@ styles = {
     },
 }
 
-attribute_style_relation = {
-    'Total up to Current Season/LTA Pct.':  'anomaly_percent',
-    'Total up to Forecast/LTA Pct.':        'anomaly_percent',
-    'Ensemble Med./LTA Pct.':   'anomaly_percent',
-    'Probability Below Normal': 'prob_below_normal',
-    'Probability of Normal':    'prob_above_normal',
-    'Probability Above Normal': 'prob_above_normal',
-    'Ensemble Med. Pctl.':      'precipitation_percentile',
-    'Current Season Pctl.':     'precipitation_percentile',
-    'Start of Season':          'sos_eos_detection',
-    'Start of Season Anomaly':  'sos_eos_anomaly',
-}
-
 def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selected_stats: list[str], data_path_relation: dict, dataset_properties: Properties):
     """
     Generates QGIS vector layers from a CSV file and adds them to the project.
@@ -127,41 +114,51 @@ def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selecte
         summary_csv_path (str): The path to the CSV file containing the data to 
             be used for generating the layers.
     """
-    selected_csv_path = data_path_relation['selected_years_summary'][1]
-    climatology_csv_path = data_path_relation['climatology_summary'][1]
-    climatology_years_attributes = ['Total up to Current Season/LTA Pct.', 'Total up to Forecast/LTA Pct.']
-
-    if selected_stats != []:
-        csv_selected_stats_layer = load_layer_file(selected_csv_path)
-        add_to_project(csv_selected_stats_layer)
-        csv_climatology_stats_layer = load_layer_file(climatology_csv_path)
-        add_to_project(csv_climatology_stats_layer)
-        
-        # Legend for SoS and EOS
-        base_sos = list(styles["sos_eos_detection_base"]["legend"].values())[2:] # variable part of the sos legend
-        monitoring_ids = dataset_properties.sub_season_monitoring_ids
-        size_legend = min(len(base_sos), len(monitoring_ids))
-        sos_variable_legend = zip(monitoring_ids, base_sos)
-        sos_eos_style = {"type": "categorized", "legend": 
-            {"No Start": {"color": "#fff77d", "values": ["No Start"]},
-            "Possible Start": {"color": "#dfd75d", "values": ["Possible Start"]}}}
-        for i, (id, legend) in enumerate(sos_variable_legend):
-            if i+1 == size_legend and size_legend < len(monitoring_ids):
-                id = f"\u2265{id}"
-            sos_eos_style["legend"][id] = legend
-            sos_eos_style["legend"][id]["values"][0] = id
-        styles["sos_eos_detection"] = sos_eos_style
     
+    if selected_stats == []: return
+    
+    attribute_style_relation = {
+        'Total up to Current Season/LTA Pct.': {'classes': 'anomaly_percent', 'data': 'climatology_stats'},
+        'Total up to Forecast/LTA Pct.': {'classes': 'anomaly_percent', 'data': 'climatology_stats'},
+        'Ensemble Med./LTA Pct.': {'classes': 'anomaly_percent', 'data': 'selected_years_stats'},
+        'Probability Below Normal': {'classes': 'prob_below_normal', 'data': 'selected_years_stats'},
+        'Probability of Normal': {'classes': 'prob_above_normal', 'data': 'selected_years_stats'},
+        'Probability Above Normal': {'classes': 'prob_above_normal', 'data': 'selected_years_stats'},
+        'Ensemble Med. Pctl.': {'classes': 'precipitation_percentile', 'data': 'selected_years_stats'},
+        'Current Season Pctl.': {'classes': 'precipitation_percentile', 'data': 'general_stats'},
+        'Start of Season': {'classes': 'sos_eos_detection', 'data': 'general_stats'},
+        'Start of Season Anomaly': {'classes': 'sos_eos_anomaly', 'data': 'general_stats'},
+    }
+
+    # Read CSV files
+    data = {}
+    for key, value in data_path_relation.items():
+        item = {'path': value[1], 'layer': load_layer_file(value[1])}
+        add_to_project(item["layer"])
+        data[key] = item
+    
+    # Legend for SoS and EOS
+    base_sos = list(styles["sos_eos_detection_base"]["legend"].values())[2:] # variable part of the sos legend
+    monitoring_ids = dataset_properties.sub_season_monitoring_ids
+    size_legend = min(len(base_sos), len(monitoring_ids))
+    sos_variable_legend = zip(monitoring_ids, base_sos)
+    sos_eos_style = {"type": "categorized", "legend": 
+        {"No Start": {"color": "#fff77d", "values": ["No Start"]},
+        "Possible Start": {"color": "#dfd75d", "values": ["Possible Start"]}}}
+    for i, (id, legend) in enumerate(sos_variable_legend):
+        if i+1 == size_legend and size_legend < len(monitoring_ids):
+            id = f"\u2265{id}"
+        sos_eos_style["legend"][id] = legend
+        sos_eos_style["legend"][id]["values"][0] = id
+    styles["sos_eos_detection"] = sos_eos_style
+    
+    # Create vector layers
     for stat in selected_stats:
         map_clone = map_layer.clone()
         rename_layer(map_clone, suffix=f'_{stat}')
         add_to_project(map_clone)
-        if not stat in climatology_years_attributes:
-            class_attribute = f'{os.path.splitext(os.path.basename(selected_csv_path))[0]}_{stat}'
-            join_layers(csv_selected_stats_layer, map_clone, join_field)
-        else:
-            class_attribute = f'{os.path.splitext(os.path.basename(climatology_csv_path))[0]}_{stat}'
-            join_layers(csv_climatology_stats_layer, map_clone, join_field)
+        class_attribute = f'{os.path.splitext(os.path.basename(data[attribute_style_relation[stat]["data"]]["path"]))[0]}_{stat}'
+        join_layers(data[attribute_style_relation[stat]['data']]['layer'], map_clone, join_field)
         
-        classes = styles[attribute_style_relation[stat]]
+        classes = styles[attribute_style_relation[stat]['classes']]
         apply_symbology(map_clone, class_attribute, classes)

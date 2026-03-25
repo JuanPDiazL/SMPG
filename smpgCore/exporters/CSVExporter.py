@@ -2,59 +2,6 @@ import os
 import pandas as pd
 from ..structures import Dataset
 
-def wrap_stats(place_general_stats: dict, seasonal_general_stats: pd.Series):
-    """Wraps the statistical data for a place in a Series.
-
-    Args:
-        place_general_stats (dict): A dictionary of general statistics for a place.
-        seasonal_general_stats (Series): A pandas Series containing seasonal general statistics.
-
-    Returns:
-        Series: A new pandas Series with the wrapped statistical data.
-   
-    """
-    return pd.Series({
-        'Current Accumulation to Present': place_general_stats['Current Accumulation to Present'],
-        'LTA': seasonal_general_stats['LTA'],
-        'LTA up to Current Season': seasonal_general_stats['LTA up to Current Season'],
-        'Median': seasonal_general_stats['Median'],
-        'Ensemble Med.': seasonal_general_stats['Ensemble Med.'],
-        'St. Dev.': seasonal_general_stats['St. Dev.'],
-        'Climatology 33 Pctl.': place_general_stats['Climatology 33 Pctl.'],
-        'Climatology 67 Pctl.': place_general_stats['Climatology 67 Pctl.'],
-        'Ensemble 33 Pctl.': seasonal_general_stats['Ensemble 33 Pctl.'],
-        'Ensemble 67 Pctl.': seasonal_general_stats['Ensemble 67 Pctl.'],
-    }
-    , name=seasonal_general_stats.name)
-
-def wrap_summary(place_general_stats: dict, seasonal_general_stats: pd.Series):
-    """Wraps the summary data for a place in a dictionary.
-
-    Args:
-        place_general_stats (dict): A dictionary of general statistics for a place.
-        seasonal_general_stats (Series): A pandas Series containing seasonal general statistics.
-
-    Returns:
-        Series: A new pandas Series with the wrapped summary data.
-    """
-    return pd.Series({
-        'Total up to Current Season/LTA Pct.': seasonal_general_stats['Total up to Current Season/LTA Pct.'],
-        'Total up to Forecast/LTA Pct.': seasonal_general_stats['Total up to Forecast/LTA Pct.'],
-        'Ensemble Med./LTA Pct.': seasonal_general_stats['Ensemble Med./LTA Pct.'],
-        'Probability Below Normal': seasonal_general_stats['E. Prob. Below Normal Pct.'],
-        'Probability of Normal': seasonal_general_stats['E. Prob. of Normal Pct.'],
-        'Probability Above Normal': seasonal_general_stats['E. Prob. Above Normal Pct.'],
-        'Ensemble Med. Pctl.': seasonal_general_stats['Ensemble Med. Pctl.'],
-        'Current Season Pctl.': place_general_stats['Current Season Pctl.'],
-        'Start of Season Raw': place_general_stats['Start of Season Raw'],
-        'Start of Season': place_general_stats['Start of Season'],
-        'Start of Season of Avg. Raw': place_general_stats['Start of Season of Avg. Raw'],
-        'Start of Season of Avg.': place_general_stats['Start of Season of Avg.'],
-        'Start of Season Anomaly Raw': place_general_stats['Start of Season Anomaly Raw'],
-        'Start of Season Anomaly': place_general_stats['Start of Season Anomaly'],
-    }
-    , name=seasonal_general_stats.name)
-
 def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Statistics'):
     """
     Exports the statistical and summary data for a dataset to CSV files in a 
@@ -74,22 +21,19 @@ def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Stati
     stats_subfolder_path = os.path.join(destination_path, subFolderName)
     os.makedirs(stats_subfolder_path, exist_ok=True)
     climatology_stats = []
-    climatology_summary = []
     selected_years_stats = []
-    selected_years_summary = []
+    general_stats = []
     similar_seasons = []
     for place in dataset.places.values():
-        climatology_stats.append(wrap_stats(place.place_general_stats, place.seasonal_general_stats))
-        climatology_summary.append(wrap_summary(place.place_general_stats, place.seasonal_general_stats))
-        selected_years_stats.append(wrap_stats(place.place_general_stats, place.selected_seasons_general_stats))
-        selected_years_summary.append(wrap_summary(place.place_general_stats, place.selected_seasons_general_stats))
+        climatology_stats.append(pd.Series(place.seasonal_general_stats, name=place.id))
+        selected_years_stats.append(pd.Series(place.selected_seasons_general_stats, name=place.id))
+        general_stats.append(pd.Series(place.place_general_stats, name=place.id))
         similar_seasons.append(place.similar_seasons)
 
     data_path_relation = {
         'climatology_stats': [climatology_stats, f'{stats_subfolder_path}/climatology_stats{filename_suffix}.csv'],
-        'climatology_summary': [climatology_summary, f'{stats_subfolder_path}/climatology_summary{filename_suffix}.csv'],
         'selected_years_stats': [selected_years_stats, f'{stats_subfolder_path}/selected_years_stats{filename_suffix}.csv'],
-        'selected_years_summary': [selected_years_summary, f'{stats_subfolder_path}/selected_years_summary{filename_suffix}.csv'],
+        'general_stats': [general_stats, f'{stats_subfolder_path}/general_stats{filename_suffix}.csv'],
     }
 
     for series_list, path in data_path_relation.values():
