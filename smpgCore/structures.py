@@ -95,11 +95,12 @@ class Place:
         # forecast case
         if parent.parameters.forecast_length > 0:
             self.forecast_values = self.current_season[-parent.parameters.forecast_length:]
-            self.forecast_accumulation = self.forecast_values.cumsum()
+            self.forecast_cumsum = self.forecast_values.cumsum()
             self.current_season = self.current_season[:-parent.parameters.forecast_length]
         else:
             self.forecast_values = pd.Series([np.nan])
-            self.forecast_accumulation = pd.Series([np.nan])
+            self.forecast_cumsum = pd.Series([np.nan])
+            self.current_season_with_forecast = pd.Series([np.nan])
         
         # get selected seasons
         self.similar_seasons = get_similar_years(self.current_season.to_numpy(), 
@@ -118,12 +119,12 @@ class Place:
         
         # calculate derived dataframes
         current_season_monitoring = self.current_season[parent.properties.season_start_index:parent.properties.current_season_trim_index]
-        self.current_cumsum = self.current_season.cumsum()
+        current_season_monitoring_with_forecast = self.current_season[parent.properties.season_start_index:parent.properties.current_season_trim_index_with_forecast]
         self.current_cumsum_mon = current_season_monitoring.cumsum()
         self.current_index = len(current_season_monitoring) - 1
 
         self.seasonal_cumsum = self.seasonal_monitoring.cumsum(axis=1)
-        self.seasonal_totals = self.seasonal_cumsum.iloc[:, -1].rename(self.id)
+        self.seasonal_sums = self.seasonal_cumsum.iloc[:, -1].rename(self.id)
         self.seasonal_current_totals = self.seasonal_cumsum.iloc[:, self.current_index].rename(self.id)
         self.seasonal_ensemble = get_ensemble(current_season_monitoring, 
                                               self.seasonal_monitoring)
@@ -157,18 +158,107 @@ class Place:
             'Start of Season Anomaly Raw': None,
             'Start of Season Anomaly': None,
     }
-        # Generate required Series and Dataframes, these are the final results
-        self.seasonal_general_stats, self.seasonal_long_term_stats = \
-            self.get_place_stats(self.clim_seasons_cumsum, self.clim_seasons_ensemble)
-        self.selected_seasons_general_stats, self.selected_seasons_long_term_stats = \
-            self.get_place_stats(self.selected_seasons_cumsum, self.selected_seasons_ensemble)
+        # Stats for climatology seasons
+        clim_ensemble_sums = self.clim_seasons_ensemble.iloc[:, -1].to_numpy()
+
+        clim_avg = self.clim_seasons_cumsum.mean() # average aka. LTA (long term average)
+        clim_med = self.clim_seasons_cumsum.median()
+        clim_ensemble_med = self.clim_seasons_ensemble.median()
+        clim_ensemble_avg = self.clim_seasons_ensemble.mean()
+        clim_ensemble_percentiles = percentiles_to_values(clim_ensemble_sums, [33, 67])
+        clim_ensemble_percentile_probabilities = [
+            np.count_nonzero(clim_ensemble_sums < self.clim_seasons_pctls[0]) / len(clim_ensemble_sums),
+            np.count_nonzero((clim_ensemble_sums >= self.clim_seasons_pctls[0]) & 
+                             (clim_ensemble_sums < self.clim_seasons_pctls[1])) / len(clim_ensemble_sums),
+            np.count_nonzero(clim_ensemble_sums >= self.clim_seasons_pctls[1]) / len(clim_ensemble_sums),
+        ]
+        clim_std = self.clim_seasons_cumsum.std()
+
+        clim_avg_upto_current = clim_avg[self.current_index]
+        if not np.isnan(self.forecast_values.iloc[-1]):
+            clim_avg_upto_forecast = clim_avg[self.current_index + len(self.forecast_values)]
+        else:
+            clim_avg_upto_forecast = np.nan
+
+        self.seasonal_long_term_stats = pd.DataFrame.from_dict({
+            'LTA': clim_avg,
+            'Median': clim_med,
+            'Ensemble Med.': clim_ensemble_med,
+            'E. LTA': clim_ensemble_avg,
+        }, orient='index')
+        self.seasonal_general_stats = pd.Series({
+            'LTA': clim_avg[-1],
+            'E. LTA': clim_ensemble_avg[-1],
+            'Median': clim_med[-1],
+            'Ensemble Med.': clim_ensemble_med[-1],
+            'LTA up to Current Season': clim_avg_upto_current,
+            'Total up to Current Season/LTA Pct.': (self.current_cumsum_mon[-1]/clim_avg_upto_current)*100,
+            'Total up to Forecast/LTA Pct.': ((self.current_cumsum_mon[-1]+self.forecast_cumsum.iloc[-1])/clim_avg_upto_forecast)*100,
+            'Ensemble Med./LTA Pct.': (clim_ensemble_med[-1]/clim_avg[-1])*100,
+            'Ensemble Med. Pctl.': percentiles_from_values(self.seasonal_sums, [clim_ensemble_med[-1]])[0],
+            'St. Dev.': clim_std[-1],
+            'Ensemble 33 Pctl.': clim_ensemble_percentiles[0],
+            'Ensemble 67 Pctl.': clim_ensemble_percentiles[1],
+            'E. Prob. Below Normal Pct.': clim_ensemble_percentile_probabilities[0]*100,
+            'E. Prob. of Normal Pct.': clim_ensemble_percentile_probabilities[1]*100,
+            'E. Prob. Above Normal Pct.': clim_ensemble_percentile_probabilities[2]*100,
+        }, 
+        name=self.id)
+
+        # Stats for selected seasons        
+        selected_ensemble_sums = self.selected_seasons_ensemble.iloc[:, -1].to_numpy()
+
+        selected_avg = self.selected_seasons_cumsum.mean()
+        selected_med = self.selected_seasons_cumsum.median()
+        selected_ensemble_med = self.selected_seasons_ensemble.median()
+        selected_ensemble_avg = self.selected_seasons_ensemble.mean()
+        selected_ensemble_percentiles = percentiles_to_values(selected_ensemble_sums, [33, 67])
+        selected_ensemble_percentile_probabilities = [
+            np.count_nonzero(selected_ensemble_sums < self.clim_seasons_pctls[0]) / len(selected_ensemble_sums),
+            np.count_nonzero((selected_ensemble_sums >= self.clim_seasons_pctls[0]) & 
+                             (selected_ensemble_sums < self.clim_seasons_pctls[1])) / len(selected_ensemble_sums),
+            np.count_nonzero(selected_ensemble_sums >= self.clim_seasons_pctls[1]) / len(selected_ensemble_sums),
+        ]
+        selected_std = self.selected_seasons_cumsum.std()
+
+        selected_avg_upto_current = selected_avg[self.current_index]
+        if not np.isnan(self.forecast_values.iloc[-1]):
+            selected_avg_upto_forecast = selected_avg[self.current_index + len(self.forecast_values)]
+        else:
+            selected_avg_upto_forecast = np.nan
+
+        # calculate the stats
+        self.selected_seasons_long_term_stats = pd.DataFrame.from_dict({
+            'LTA': selected_avg,
+            'Median': selected_med,
+            'Ensemble Med.': selected_ensemble_med,
+            'E. LTA': selected_ensemble_avg,
+        }, orient='index')
+        self.selected_seasons_general_stats = pd.Series({
+            'LTA': selected_avg[-1],
+            'E. LTA': selected_ensemble_avg[-1],
+            'Median': selected_med[-1],
+            'Ensemble Med.': selected_ensemble_med[-1],
+            'LTA up to Current Season': selected_avg_upto_current,
+            'Total up to Current Season/LTA Pct.': (self.current_cumsum_mon[-1]/selected_avg_upto_current)*100,
+            'Total up to Forecast/LTA Pct.': ((self.current_cumsum_mon[-1]+self.forecast_cumsum.iloc[-1])/selected_avg_upto_forecast)*100,
+            'Ensemble Med./LTA Pct.': (selected_ensemble_med[-1]/selected_avg[-1])*100,
+            'Ensemble Med. Pctl.': percentiles_from_values(self.seasonal_sums, [selected_ensemble_med[-1]])[0],
+            'St. Dev.': selected_std[-1],
+            'Ensemble 33 Pctl.': selected_ensemble_percentiles[0],
+            'Ensemble 67 Pctl.': selected_ensemble_percentiles[1],
+            'E. Prob. Below Normal Pct.': selected_ensemble_percentile_probabilities[0]*100,
+            'E. Prob. of Normal Pct.': selected_ensemble_percentile_probabilities[1]*100,
+            'E. Prob. Above Normal Pct.': selected_ensemble_percentile_probabilities[2]*100,
+        }, 
+        name=self.id)
         
         place_lt_stats = {
             'Climatology Average': climatology_avg,
             'Current Season': self.current_season,
             'Current Season Accumulation': self.current_cumsum_mon,
             'Forecast': self.forecast_values,
-            'Forecast Accumulation': self.current_cumsum_mon[-1] + self.forecast_accumulation,
+            'Forecast Accumulation': self.current_cumsum_mon[-1] + self.forecast_cumsum,
         }
         self.place_long_term_stats = pd.DataFrame([pd.Series(v, name=k) for k, v in place_lt_stats.items()])
 
@@ -176,7 +266,7 @@ class Place:
             'Current Season Pctl.': percentiles_from_values(self.seasonal_current_totals.to_numpy(), 
                 [self.current_cumsum_mon[-1]])[0],
             'Current Accumulation to Present': self.current_cumsum_mon[-1],
-            'Current Accumulation to Forecast': self.current_cumsum_mon[-1] + self.forecast_accumulation.iloc[-1],
+            'Current Accumulation to Forecast': self.current_cumsum_mon[-1] + self.forecast_cumsum.iloc[-1],
             'Seasonal 3 Pctl.': self.seasonal_pctls[0],
             'Seasonal 6 Pctl.': self.seasonal_pctls[1],
             'Seasonal 11 Pctl.': self.seasonal_pctls[2],
@@ -190,66 +280,3 @@ class Place:
         }, 
         name=self.id
         )
-
-    def get_place_stats(self, seasonal_cumsum: pd.DataFrame, seasonal_ensemble: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
-        """Calculates and returns the place statistics for the seasons.
-
-        It calculates various statistics, including long-term averages (LTA), 
-        medians, standard deviations, and percentile probabilities. 
-        
-        Parameters:
-            seasonal_cumsum (pd.DataFrame): Cumulative sums of seasonal data
-            seasonal_ensemble (pd.DataFrame): Ensemble values for each season
-
-        Returns:
-            Tuple[pd.Series, pd.DataFrame]: A tuple containing the place general stats and long term stats
-        """
-        # calculate auxiliary variables
-        seasonal_totals = seasonal_cumsum.iloc[:, -1].to_numpy()
-        ensemble_totals = seasonal_ensemble.iloc[:, -1].to_numpy()
-
-        seasonal_lta = seasonal_cumsum.mean()
-        seasonal_ltm = seasonal_cumsum.median()
-        ensemble_median = seasonal_ensemble.median()
-        ensemble_lta = seasonal_ensemble.mean()
-        ensemble_pctls = percentiles_to_values(ensemble_totals, [33, 67])
-        ensemble_pctl_probabilities = [
-            np.count_nonzero(ensemble_totals < self.clim_seasons_pctls[0]) / len(ensemble_totals),
-            np.count_nonzero((ensemble_totals >= self.clim_seasons_pctls[0]) & 
-                             (ensemble_totals < self.clim_seasons_pctls[1])) / len(ensemble_totals),
-            np.count_nonzero(ensemble_totals >= self.clim_seasons_pctls[1]) / len(ensemble_totals),
-        ]
-        standard_dev = seasonal_cumsum.std()
-
-        lta_upto_current_season = seasonal_lta[self.current_index]
-        if not np.isnan(self.forecast_values.iloc[-1]):
-            lta_upto_forecast = seasonal_lta[self.current_index + len(self.forecast_values)]
-        else:
-            lta_upto_forecast = np.nan
-
-        # calculate the stats
-        seasonal_long_term_stats = pd.DataFrame.from_dict({
-            'LTA': seasonal_lta,
-            'Median': seasonal_ltm,
-            'Ensemble Med.': ensemble_median,
-            'E. LTA': ensemble_lta,
-        }, orient='index')
-        seasonal_general_stats = pd.Series({
-            'LTA': seasonal_lta[-1],
-            'E. LTA': ensemble_lta[-1],
-            'Median': seasonal_ltm[-1],
-            'Ensemble Med.': ensemble_median[-1],
-            'LTA up to Current Season': lta_upto_current_season,
-            'Total up to Current Season/LTA Pct.': (self.current_cumsum_mon[-1]/lta_upto_current_season)*100,
-            'Total up to Forecast/LTA Pct.': ((self.current_cumsum_mon[-1]+self.forecast_accumulation.iloc[-1])/lta_upto_forecast)*100,
-            'Ensemble Med./LTA Pct.': (ensemble_median[-1]/seasonal_lta[-1])*100,
-            'Ensemble Med. Pctl.': percentiles_from_values(self.seasonal_totals, [ensemble_median[-1]])[0],
-            'St. Dev.': standard_dev[-1],
-            'Ensemble 33 Pctl.': ensemble_pctls[0],
-            'Ensemble 67 Pctl.': ensemble_pctls[1],
-            'E. Prob. Below Normal Pct.': ensemble_pctl_probabilities[0]*100,
-            'E. Prob. of Normal Pct.': ensemble_pctl_probabilities[1]*100,
-            'E. Prob. Above Normal Pct.': ensemble_pctl_probabilities[2]*100,
-        }, 
-        name=self.id)
-        return seasonal_general_stats, seasonal_long_term_stats
