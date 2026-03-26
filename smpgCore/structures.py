@@ -112,7 +112,7 @@ class Place:
             selected_years = parent.properties.selected_years
         
         # build sub-dataframes
-        self.seasonal_climatology = self.seasons_df.loc[parent.properties.climatology_year_ids]
+        self.seasons_climatology = self.seasons_df.loc[parent.properties.climatology_year_ids]
         self.seasonal_monitoring = self.seasons_df.iloc[:, parent.properties.season_start_index:parent.properties.season_end_index]
         self.seasonal_mon_sel = self.seasonal_monitoring.loc[selected_years]
         self.seasonal_mon_clim = self.seasonal_monitoring.loc[parent.properties.climatology_year_ids]
@@ -125,9 +125,10 @@ class Place:
 
         self.seasonal_cumsum = self.seasonal_monitoring.cumsum(axis=1)
         self.seasonal_sums = self.seasonal_cumsum.iloc[:, -1].rename(self.id)
-        self.seasonal_current_totals = self.seasonal_cumsum.iloc[:, self.current_index].rename(self.id)
-        self.seasonal_ensemble = get_ensemble(current_season_monitoring, 
+        self.seasonal_sums_upto_current = self.seasonal_cumsum.iloc[:, self.current_index].rename(self.id)
+        self.seasons_ensemble = get_ensemble(current_season_monitoring, 
                                               self.seasonal_monitoring)
+        
         self.selected_seasons_cumsum = self.seasonal_mon_sel.cumsum(axis=1)
         self.selected_seasons_ensemble = get_ensemble(current_season_monitoring, 
                                                       self.seasonal_mon_sel)
@@ -139,9 +140,9 @@ class Place:
         # calculate stats
         self.clim_seasons_totals = self.clim_seasons_cumsum.iloc[:, -1].to_numpy()
         self.clim_seasons_pctls = percentiles_to_values(self.clim_seasons_totals, [33, 67])
-        self.seasonal_pctls = percentiles_to_values(self.seasonal_current_totals.to_numpy(), 
+        self.seasonal_pctls = percentiles_to_values(self.seasonal_sums_upto_current.to_numpy(), 
                                                              (3, 6, 11, 21, 33, 67))
-        climatology_avg = self.seasonal_climatology.mean()
+        climatology_avg = self.seasons_climatology.mean()
 
         # SOS detection
         if parent.parameters.rainy_season_detection_enabled:
@@ -157,7 +158,8 @@ class Place:
             'Start of Season of Avg.': None,
             'Start of Season Anomaly Raw': None,
             'Start of Season Anomaly': None,
-    }
+        }
+            
         # Stats for climatology seasons
         clim_ensemble_sums = self.clim_seasons_ensemble.iloc[:, -1].to_numpy()
 
@@ -263,7 +265,7 @@ class Place:
         self.place_long_term_stats = pd.DataFrame([pd.Series(v, name=k) for k, v in place_lt_stats.items()])
 
         self.place_general_stats = pd.Series({
-            'Current Season Pctl.': percentiles_from_values(self.seasonal_current_totals.to_numpy(), 
+            'Current Season Pctl.': percentiles_from_values(self.seasonal_sums_upto_current.to_numpy(), 
                 [self.current_cumsum_mon[-1]])[0],
             'Current Accumulation to Present': self.current_cumsum_mon[-1],
             'Current Accumulation to Forecast': self.current_cumsum_mon[-1] + self.forecast_cumsum.iloc[-1],

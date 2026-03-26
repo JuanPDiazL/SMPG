@@ -123,7 +123,7 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
         [p.place_general_stats for p in places.values()]),
         'place_long_term_stats_csv_obj': {k:v.place_long_term_stats for k, v in places.items()},
         'seasonal_current_totals_csv': pd.DataFrame(
-        [p.seasonal_current_totals for p in places.values()]),
+        [p.seasonal_sums_upto_current for p in places.values()]),
         'seasonal_general_stats_csv': pd.DataFrame(
         [p.seasonal_general_stats for p in places.values()]),
         'selected_seasons_general_stats_csv': pd.DataFrame(
@@ -133,7 +133,7 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
 
     seasonal_stats = {
         'seasonal_cumsum_csv_obj': {k:v.seasonal_cumsum for k, v in places.items()},
-        'seasonal_ensemble_csv_obj': {k:v.seasonal_ensemble for k, v in places.items()},
+        'seasonal_ensemble_csv_obj': {k:v.seasons_ensemble for k, v in places.items()},
         'seasonal_long_term_stats_csv_obj': {k:v.seasonal_long_term_stats for k, v in places.items()},
     }
     data_py_to_js(seasonal_stats, data_destination_path, 'seasonal_stats')
