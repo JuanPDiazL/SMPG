@@ -121,13 +121,17 @@ def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selecte
         'Total up to Current Season/LTA Pct.': {'classes': 'anomaly_percent', 'data': 'climatology_stats'},
         'Total up to Forecast/LTA Pct.': {'classes': 'anomaly_percent', 'data': 'climatology_stats'},
         'Ensemble Med./LTA Pct.': {'classes': 'anomaly_percent', 'data': 'selected_years_stats'},
+        'Ensemble Med. w Forecast/LTA Pct.': {'classes': 'anomaly_percent', 'data': 'selected_years_stats'},
         'Probability Below Normal': {'classes': 'prob_below_normal', 'data': 'selected_years_stats'},
         'Probability of Normal': {'classes': 'prob_above_normal', 'data': 'selected_years_stats'},
         'Probability Above Normal': {'classes': 'prob_above_normal', 'data': 'selected_years_stats'},
         'Ensemble Med. Pctl.': {'classes': 'precipitation_percentile', 'data': 'selected_years_stats'},
+        'Ensemble Med. Pctl. w/ Forecast': {'classes': 'precipitation_percentile', 'data': 'selected_years_stats'},
         'Current Season Pctl.': {'classes': 'precipitation_percentile', 'data': 'general_stats'},
         'Start of Season': {'classes': 'sos_eos_detection', 'data': 'general_stats'},
         'Start of Season Anomaly': {'classes': 'sos_eos_anomaly', 'data': 'general_stats'},
+        'Forecast Start of Season': {'classes': 'sos_eos_detection', 'data': 'general_stats'},
+        'Forecast Start of Season Anomaly': {'classes': 'sos_eos_anomaly', 'data': 'general_stats'},
     }
 
     # Read CSV files

@@ -63,7 +63,7 @@ class Dataset:
         self.properties.season_start_index = default_sub_seasons.index(self.parameters.season_start)
         self.properties.season_end_index = default_sub_seasons.index(self.parameters.season_end)+1
         self.properties.current_season_trim_index_with_forecast = min(self.properties.current_season_length, self.properties.season_end_index)
-        self.properties.current_season_trim_index = min(self.properties.current_season_length, self.properties.season_end_index) - parameters.forecast_length
+        self.properties.current_season_trim_index = self.properties.current_season_trim_index_with_forecast - parameters.forecast_length
 
         # create a dictionary with the places
         self.places: dict[str, Place] = {}
@@ -81,7 +81,7 @@ class Place:
         self.id = place_id # Unique identifier of the polygon
         indexes = parent.properties.year_ids
         columns = parent.properties.sub_season_ids
-        
+
         # split timeseries into years
         current_season = timeseries[parent.climatology_end_index : ]
         current_season.index = columns[:len(current_season)]
@@ -94,6 +94,7 @@ class Place:
         if parent.parameters.forecast_length > 0:
             forecast_values = current_season[-parent.parameters.forecast_length:]
             forecast_cumsum = forecast_values.cumsum()
+            current_season_with_forecast = current_season.copy()
             current_season = current_season[:-parent.parameters.forecast_length]
         else:
             forecast_values = pd.Series([np.nan])
@@ -117,8 +118,9 @@ class Place:
         
         # calculate derived dataframes
         current_season_monitoring = current_season[parent.properties.season_start_index:parent.properties.current_season_trim_index]
-        current_season_monitoring_with_forecast = current_season[parent.properties.season_start_index:parent.properties.current_season_trim_index_with_forecast]
+        current_season_monitoring_with_forecast = current_season_with_forecast[parent.properties.season_start_index:parent.properties.current_season_trim_index_with_forecast]
         current_cumsum_mon = current_season_monitoring.cumsum()
+        current_cumsum_mon_with_forecast = current_season_monitoring_with_forecast.cumsum()
         current_index = len(current_season_monitoring) - 1
 
         self.seasonal_cumsum = seasonal_monitoring.cumsum(axis=1)
@@ -130,9 +132,13 @@ class Place:
         self.selected_seasons_cumsum = seasonal_mon_sel.cumsum(axis=1)
         self.selected_seasons_ensemble = get_ensemble(current_season_monitoring, 
                                                       seasonal_mon_sel)
+        self.selected_seasons_ensemble_with_forecast = get_ensemble(current_season_monitoring_with_forecast, 
+                                                      seasonal_mon_sel)
         
         clim_seasons_cumsum = seasonal_mon_clim.cumsum(axis=1)
         clim_seasons_ensemble = get_ensemble(current_season_monitoring, 
+                                                  seasonal_mon_clim)
+        clim_seasons_ensemble_with_forecast = get_ensemble(current_season_monitoring_with_forecast, 
                                                   seasonal_mon_clim)
         
         # calculate stats
@@ -148,22 +154,31 @@ class Place:
             sos_data = get_start_of_season(current_season_monitoring, clim_avg_monitoring, seasonal_mon_clim,
                                                             parent.parameters,
                                                             parent.properties)
+            forecast_sos_data = get_start_of_season(current_season_monitoring_with_forecast, clim_avg_monitoring, seasonal_mon_clim,
+                                                            parent.parameters,
+                                                            parent.properties)
+            forecast_sos_data = {f'Forecast {key}': value for key, value in forecast_sos_data.items()} # Add the prefix "Forecast" to each key
+            sos_data = {**forecast_sos_data, **sos_data}
         else:
             sos_data = {
-            'Start of Season Raw': None,
-            'Start of Season': None,
-            'Start of Season of Avg. Raw': None,
-            'Start of Season of Avg.': None,
-            'Start of Season Anomaly Raw': None,
-            'Start of Season Anomaly': None,
-        }
+                'Start of Season Raw': None,
+                'Start of Season': None,
+                'Start of Season of Avg. Raw': None,
+                'Start of Season of Avg.': None,
+                'Start of Season Anomaly Raw': None,
+                'Start of Season Anomaly': None,
+            }
+            forecast_sos_data = {f'Forecast {key}': value for key, value in sos_data.items()}
+            sos_data = {**forecast_sos_data, **sos_data}
             
         # Stats for climatology seasons
         clim_ensemble_sums = clim_seasons_ensemble.iloc[:, -1].to_numpy()
+        clim_ensemble_sums_with_forecast = clim_seasons_ensemble_with_forecast.iloc[:, -1].to_numpy()
 
-        clim_avg = clim_seasons_cumsum.mean() # average aka. LTA (long term average)
+        clim_avg = clim_seasons_cumsum.mean() # cumulative average aka. LTA (long term average)
         clim_med = clim_seasons_cumsum.median()
         clim_ensemble_med = clim_seasons_ensemble.median()
+        clim_ensemble_med_with_forecast = clim_seasons_ensemble_with_forecast.median()
         # clim_ensemble_avg = clim_seasons_ensemble.mean()
         # clim_ensemble_percentiles = percentiles_to_values(clim_ensemble_sums, [33, 67])
         clim_ensemble_percentile_probabilities = [
@@ -171,6 +186,12 @@ class Place:
             np.count_nonzero((clim_ensemble_sums >= clim_seasons_pctls[0]) & 
                              (clim_ensemble_sums < clim_seasons_pctls[1])) / len(clim_ensemble_sums),
             np.count_nonzero(clim_ensemble_sums >= clim_seasons_pctls[1]) / len(clim_ensemble_sums),
+        ]
+        clim_ensemble_percentile_probabilities_with_forecast = [
+            np.count_nonzero(clim_ensemble_sums_with_forecast < clim_seasons_pctls[0]) / len(clim_ensemble_sums_with_forecast),
+            np.count_nonzero((clim_ensemble_sums_with_forecast >= clim_seasons_pctls[0]) & 
+                             (clim_ensemble_sums_with_forecast < clim_seasons_pctls[1])) / len(clim_ensemble_sums_with_forecast),
+            np.count_nonzero(clim_ensemble_sums_with_forecast >= clim_seasons_pctls[1]) / len(clim_ensemble_sums_with_forecast),
         ]
         clim_std = clim_seasons_cumsum.std()
 
@@ -191,33 +212,49 @@ class Place:
             # 'E. LTA': clim_ensemble_avg[-1],
             # 'Median': clim_med[-1],
             'Ensemble Med.': clim_ensemble_med[-1],
+            'Ensemble Med. w/ Forecast': clim_ensemble_med_with_forecast[-1],
             'LTA up to Current Season': clim_avg_upto_current,
             'Total up to Current Season/LTA Pct.': (current_cumsum_mon[-1]/clim_avg_upto_current)*100,
             'Total up to Forecast/LTA Pct.': ((current_cumsum_mon[-1]+forecast_cumsum.iloc[-1])/clim_avg_upto_forecast)*100,
             'Ensemble Med./LTA Pct.': (clim_ensemble_med[-1]/clim_avg[-1])*100,
+            'Ensemble Med. w Forecast/LTA Pct.': (clim_ensemble_med_with_forecast[-1]/clim_avg[-1])*100,
             'Ensemble Med. Pctl.': percentiles_from_values(seasonal_sums, [clim_ensemble_med[-1]])[0],
+            'Ensemble Med. Pctl. w/ Forecast': percentiles_from_values(seasonal_sums, [clim_ensemble_med_with_forecast[-1]])[0],
             'St. Dev.': clim_std[-1],
             # 'Ensemble 33 Pctl.': clim_ensemble_percentiles[0],
             # 'Ensemble 67 Pctl.': clim_ensemble_percentiles[1],
             'E. Prob. Below Normal Pct.': clim_ensemble_percentile_probabilities[0]*100,
             'E. Prob. of Normal Pct.': clim_ensemble_percentile_probabilities[1]*100,
             'E. Prob. Above Normal Pct.': clim_ensemble_percentile_probabilities[2]*100,
+            'E. Prob. Below Normal Pct. w/ Forecast': clim_ensemble_percentile_probabilities_with_forecast[0]*100,
+            'E. Prob. of Normal Pct. w/ Forecast': clim_ensemble_percentile_probabilities_with_forecast[1]*100,
+            'E. Prob. Above Normal Pct. w/ Forecast': clim_ensemble_percentile_probabilities_with_forecast[2]*100,
         }, 
         name=self.id)
 
         # Stats for selected seasons        
         selected_ensemble_sums = self.selected_seasons_ensemble.iloc[:, -1].to_numpy()
+        selected_ensemble_sums_with_forecast = self.selected_seasons_ensemble_with_forecast.iloc[:, -1].to_numpy()
 
         selected_avg = self.selected_seasons_cumsum.mean()
         # selected_med = self.selected_seasons_cumsum.median()
         selected_ensemble_med = self.selected_seasons_ensemble.median()
+        selected_ensemble_med_with_forecast = self.selected_seasons_ensemble_with_forecast.median()
         selected_ensemble_avg = self.selected_seasons_ensemble.mean()
+        selected_ensemble_avg_with_forecast = self.selected_seasons_ensemble_with_forecast.mean()
         selected_ensemble_percentiles = percentiles_to_values(selected_ensemble_sums, [33, 67])
+        selected_ensemble_percentiles_with_forecast = percentiles_to_values(selected_ensemble_sums_with_forecast, [33, 67])
         selected_ensemble_percentile_probabilities = [
             np.count_nonzero(selected_ensemble_sums < clim_seasons_pctls[0]) / len(selected_ensemble_sums),
             np.count_nonzero((selected_ensemble_sums >= clim_seasons_pctls[0]) & 
                              (selected_ensemble_sums < clim_seasons_pctls[1])) / len(selected_ensemble_sums),
             np.count_nonzero(selected_ensemble_sums >= clim_seasons_pctls[1]) / len(selected_ensemble_sums),
+        ]
+        selected_ensemble_percentile_probabilities_with_forecast = [
+            np.count_nonzero(selected_ensemble_sums_with_forecast < clim_seasons_pctls[0]) / len(selected_ensemble_sums_with_forecast),
+            np.count_nonzero((selected_ensemble_sums_with_forecast >= clim_seasons_pctls[0]) & 
+                             (selected_ensemble_sums_with_forecast < clim_seasons_pctls[1])) / len(selected_ensemble_sums_with_forecast),
+            np.count_nonzero(selected_ensemble_sums_with_forecast >= clim_seasons_pctls[1]) / len(selected_ensemble_sums_with_forecast),
         ]
         selected_std = self.selected_seasons_cumsum.std()
 
@@ -232,24 +269,34 @@ class Place:
             # 'LTA': selected_avg,
             # 'Median': selected_med,
             'Ensemble Med.': selected_ensemble_med,
+            'Ensemble Med. w/ Forecast': selected_ensemble_med_with_forecast,
             'E. LTA': selected_ensemble_avg,
         }, orient='index')
         self.selected_seasons_general_stats = pd.Series({
             'LTA': selected_avg[-1],
             'E. LTA': selected_ensemble_avg[-1],
+            'E. LTA w/ Forecast': selected_ensemble_avg_with_forecast[-1],
             # 'Median': selected_med[-1],
             'Ensemble Med.': selected_ensemble_med[-1],
+            'Ensemble Med. w/ Forecast': selected_ensemble_med_with_forecast[-1],
             'LTA up to Current Season': selected_avg_upto_current,
             'Total up to Current Season/LTA Pct.': (current_cumsum_mon[-1]/selected_avg_upto_current)*100,
             # 'Total up to Forecast/LTA Pct.': ((current_cumsum_mon[-1]+forecast_cumsum.iloc[-1])/selected_avg_upto_forecast)*100,
             'Ensemble Med./LTA Pct.': (selected_ensemble_med[-1]/selected_avg[-1])*100,
+            'Ensemble Med. w Forecast/LTA Pct.': (selected_ensemble_med_with_forecast[-1]/selected_avg[-1])*100,
             'Ensemble Med. Pctl.': percentiles_from_values(seasonal_sums, [selected_ensemble_med[-1]])[0],
+            'Ensemble Med. Pctl. w/ Forecast': percentiles_from_values(seasonal_sums, [selected_ensemble_med_with_forecast[-1]])[0],
             'St. Dev.': selected_std[-1],
             'Ensemble 33 Pctl.': selected_ensemble_percentiles[0],
             'Ensemble 67 Pctl.': selected_ensemble_percentiles[1],
+            'Ensemble 33 Pctl. w/ Forecast': selected_ensemble_percentiles_with_forecast[0],
+            'Ensemble 67 Pctl. w/ Forecast': selected_ensemble_percentiles_with_forecast[1],
             'E. Prob. Below Normal Pct.': selected_ensemble_percentile_probabilities[0]*100,
             'E. Prob. of Normal Pct.': selected_ensemble_percentile_probabilities[1]*100,
             'E. Prob. Above Normal Pct.': selected_ensemble_percentile_probabilities[2]*100,
+            'E. Prob. Below Normal Pct. w/ Forecast': selected_ensemble_percentile_probabilities_with_forecast[0]*100,
+            'E. Prob. of Normal Pct. w/ Forecast': selected_ensemble_percentile_probabilities_with_forecast[1]*100,
+            'E. Prob. Above Normal Pct. w/ Forecast': selected_ensemble_percentile_probabilities_with_forecast[2]*100,
         }, 
         name=self.id)
         
@@ -257,6 +304,7 @@ class Place:
             'Climatology Average': climatology_avg,
             'Current Season': current_season,
             'Current Season Accumulation': current_cumsum_mon,
+            'Current Season Accumulation with Forecast': current_cumsum_mon_with_forecast,
             'Forecast': forecast_values,
             'Forecast Accumulation': current_cumsum_mon[-1] + forecast_cumsum,
         }

@@ -39,6 +39,18 @@ let categories = {
         '140-159': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
+    'Ensemble Med. w Forecast/LTA Pct.': {
+        '0-19': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
+        '20-39': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
+        '40-59': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
+        '60-79': { 'color': '#ffe69e', 'function': (x) => x >= 60 && x < 80 },
+        '80-89': { 'color': '#fff9a3', 'function': (x) => x >= 80 && x < 90 },
+        '90-109': { 'color': '#f2f2f2', 'function': (x) => x >= 90 && x < 110 },
+        '110-119': { 'color': '#c6eab3', 'function': (x) => x >= 110 && x < 120 },
+        '120-139': { 'color': '#56cd94', 'function': (x) => x >= 120 && x < 140 },
+        '140-159': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
+        '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
+    },
     'Probability Below Normal': {
         '0-14': { 'color': '#2b83ba', 'function': (x) => x >= 0 && x < 15 },
         '15-29': { 'color': '#74b7ae', 'function': (x) => x >= 15 && x < 30 },
@@ -74,6 +86,16 @@ let categories = {
         '67-89': { 'color': '#a6cee3', 'function': (x) => x >= 67 && x < 90 },
         '≥90': { 'color': '#1f78b4', 'function': (x) => x >= 90 },
     },
+    'Ensemble Med. Pctl. w/ Forecast': {
+        '0-2': { 'color': '#7e0006', 'function': (x) => x >= 0 && x < 3 },
+        '3-5': { 'color': '#e20b00', 'function': (x) => x >= 3 && x < 6 },
+        '6-10': { 'color': '#e35a1a', 'function': (x) => x >= 6 && x < 11 },
+        '11-20': { 'color': '#faaf00', 'function': (x) => x >= 11 && x < 21 },
+        '21-32': { 'color': '#faff0f', 'function': (x) => x >= 21 && x < 33 },
+        '33-66': { 'color': '#f2f2f2', 'function': (x) => x >= 33 && x < 67 },
+        '67-89': { 'color': '#a6cee3', 'function': (x) => x >= 67 && x < 90 },
+        '≥90': { 'color': '#1f78b4', 'function': (x) => x >= 90 },
+    },
     'Current Season Pctl.': {
         '0-2': { 'color': '#7e0006', 'function': (x) => x >= 0 && x < 3 },
         '3-5': { 'color': '#e20b00', 'function': (x) => x >= 3 && x < 6 },
@@ -85,6 +107,18 @@ let categories = {
         '≥90': { 'color': '#1f78b4', 'function': (x) => x >= 90 },
     },
     'Start of Season Anomaly': {
+        'Yet to Start': { 'color': '#FFF77D', 'function': (x) => x === 'Yet to Start'},
+        '≥4 Dk. Early': { 'color': '#004280', 'function': (x) => x === '≥4 Dekads Early' },
+        '3 Dk. Early': { 'color': '#0073F0', 'function': (x) => x === '3 Dekads Early' },
+        '2 Dk. Early': { 'color': '#008FF5', 'function': (x) => x === '2 Dekads Early' },
+        '1 Dk. Early': { 'color': '#00A6F5', 'function': (x) => x === '1 Dekads Early' },
+        'Average': { 'color': '#CCCCCC', 'function': (x) => x === 'Average' },
+        '1 Dk. Late': { 'color': '#FFD4E6', 'function': (x) => x === '1 Dekads Late' },
+        '2 Dk. Late': { 'color': '#FFC78F', 'function': (x) => x === '2 Dekads Late' },
+        '3 Dk. Late': { 'color': '#FF734A', 'function': (x) => x === '3 Dekads Late' },
+        '≥4 Dk. Late': { 'color': '#BA0070', 'function': (x) => x === '≥4 Dekads Late' },
+    },
+    'Forecast Start of Season Anomaly': {
         'Yet to Start': { 'color': '#FFF77D', 'function': (x) => x === 'Yet to Start'},
         '≥4 Dk. Early': { 'color': '#004280', 'function': (x) => x === '≥4 Dekads Early' },
         '3 Dk. Early': { 'color': '#0073F0', 'function': (x) => x === '3 Dekads Early' },
@@ -168,6 +202,7 @@ function getSosEosCategories(suffix='Start') {
 function drawMap(mapGeoJson, referenceMapGeoJson) {
     // prepare categories
     categories["Start of Season"] = getSosEosCategories(); 
+    categories["Forecast Start of Season"] = getSosEosCategories();
     categories["End of Season"] = getSosEosCategories('End');
     const layerArea = d3.geoArea(referenceMapGeoJson);
     const layerBounds = d3.geoBounds(referenceMapGeoJson);
@@ -181,13 +216,17 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         'Total up to Current Season/LTA Pct.': (col) => seasonal_general_stats[col]['Total up to Current Season/LTA Pct.'],
         'Total up to Forecast/LTA Pct.': (col) => seasonal_general_stats[col]['Total up to Forecast/LTA Pct.'],
         'Ensemble Med./LTA Pct.': (col) => selected_seasons_general_stats[col]['Ensemble Med./LTA Pct.'],
+        'Ensemble Med. w Forecast/LTA Pct.': (col) => selected_seasons_general_stats[col]['Ensemble Med. w Forecast/LTA Pct.'],
         'Probability Below Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Below Normal Pct.'],
         'Probability of Normal': (col) => selected_seasons_general_stats[col]['E. Prob. of Normal Pct.'],
         'Probability Above Normal': (col) => selected_seasons_general_stats[col]['E. Prob. Above Normal Pct.'],
         'Ensemble Med. Pctl.': (col) => selected_seasons_general_stats[col]['Ensemble Med. Pctl.'],
+        'Ensemble Med. Pctl. w/ Forecast': (col) => selected_seasons_general_stats[col]['Ensemble Med. Pctl. w/ Forecast'],
         'Current Season Pctl.': (col) => place_general_stats[col]['Current Season Pctl.'],
         'Start of Season': (col) => place_general_stats[col]['Start of Season'],
         'Start of Season Anomaly': (col) => place_general_stats[col]['Start of Season Anomaly'],
+        'Forecast Start of Season': (col) => place_general_stats[col]['Forecast Start of Season'],
+        'Forecast Start of Season Anomaly': (col) => place_general_stats[col]['Forecast Start of Season Anomaly'],
         'End of Season': (col) => place_general_stats[col]['End of Season'],
         'End of Season Anomaly': (col) => place_general_stats[col]['End of Season Anomaly'],
     }

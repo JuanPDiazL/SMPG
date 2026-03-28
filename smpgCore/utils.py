@@ -62,6 +62,7 @@ class Properties:
         self.season_start_index: int
         self.season_end_index: int
         self.current_season_trim_index: int
+        self.current_season_trim_index_with_forecast: int
 
         if properties_dict is not None:
             self.update(properties_dict)

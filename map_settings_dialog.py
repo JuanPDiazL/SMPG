@@ -79,11 +79,18 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
         self.fields = ['Total up to Current Season/LTA Pct.', 'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
                   'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
                   'Current Season Pctl.']
+        
         if self.parentWidget().forecastLengthSpinBox.value() > 0:
             self.fields.append('Total up to Forecast/LTA Pct.')
+            self.fields.append('Ensemble Med. w Forecast/LTA Pct.')
+            self.fields.append('Ensemble Med. Pctl. w/ Forecast')
+
         if self.parentWidget().rainy_season_detection_dialog.sosEnabled:
             self.fields.append('Start of Season')
             self.fields.append('Start of Season Anomaly')
+            if self.parentWidget().forecastLengthSpinBox.value() > 0:
+                self.fields.append('Forecast Start of Season')
+                self.fields.append('Forecast Start of Season Anomaly')
 
         self.blackList.clear()
         self.whiteList.clear()

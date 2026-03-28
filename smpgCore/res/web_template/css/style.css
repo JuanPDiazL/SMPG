@@ -245,6 +245,9 @@ body {
 .current-sos-marker line {
     stroke: blue !important;
 }
+.forecast-sos-marker line {
+    stroke: #FF00FF !important;
+}
 .avg-sos-marker line {
     stroke: red !important;
     stroke-dashoffset: 10;
@@ -252,13 +255,15 @@ body {
 
 /* Custom line styles */
 
-.bb-line-LTA, .bb-line-Climatology-Average, .bb-line-Ensemble-Med-,
-.bb-line-Current-Season-Accumulation, .bb-line-Forecast, 
+.bb-line-LTA, .bb-line-Climatology-Average, 
+.bb-line-Ensemble-Med-, .bb-line-Ensemble-Med--w--Forecast,
+.bb-line-Current-Season-Accumulation, 
+.bb-line-Current-Season-Accumulation-with-Forecast, .bb-line-Forecast, 
 .bb-line-Forecast-Accumulation {
     stroke-width: 4px !important;
 }
 
-.bb-line-Ensemble-Med- {
+.bb-line-Ensemble-Med-, .bb-line-Ensemble-Med--w--Forecast {
     stroke-dasharray: 10 2;
 }
 
