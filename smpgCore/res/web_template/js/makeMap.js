@@ -130,18 +130,6 @@ let categories = {
         '3 Dk. Late': { 'color': '#FF734A', 'function': (x) => x === '3 Dekads Late' },
         '≥4 Dk. Late': { 'color': '#BA0070', 'function': (x) => x === '≥4 Dekads Late' },
     },
-    'End of Season Anomaly': {
-        'No End': { 'color': '#FFF77D', 'function': (x) => x === 'No End'},
-        '≥4 Dk. Early': { 'color': '#004280', 'function': (x) => x === '≥4 Dekads Early' },
-        '3 Dk. Early': { 'color': '#0073F0', 'function': (x) => x === '3 Dekads Early' },
-        '2 Dk. Early': { 'color': '#008FF5', 'function': (x) => x === '2 Dekads Early' },
-        '1 Dk. Early': { 'color': '#00A6F5', 'function': (x) => x === '1 Dekads Early' },
-        'Average': { 'color': '#CCCCCC', 'function': (x) => x === 'Average' },
-        '1 Dk. Late': { 'color': '#FFD4E6', 'function': (x) => x === '1 Dekads Late' },
-        '2 Dk. Late': { 'color': '#FFC78F', 'function': (x) => x === '2 Dekads Late' },
-        '3 Dk. Late': { 'color': '#FF734A', 'function': (x) => x === '3 Dekads Late' },
-        '≥4 Dk. Late': { 'color': '#BA0070', 'function': (x) => x === '≥4 Dekads Late' },
-    },
 };
 
 const mapDescriptions = {
@@ -181,7 +169,7 @@ const sosClassColors = [
     '#966300'
 ];
 
-function getSosEosCategories(suffix='Start') {
+function getSosCategories(suffix='Start') {
     let categoryLabels = [`No ${suffix}`, `Possible ${suffix}`]
         .concat(datasetProperties["sub_season_monitoring_ids"]);
     let sizeCategories = Math.min(categoryLabels.length, sosClassColors.length);
@@ -201,9 +189,8 @@ function getSosEosCategories(suffix='Start') {
 
 function drawMap(mapGeoJson, referenceMapGeoJson) {
     // prepare categories
-    categories["Start of Season"] = getSosEosCategories(); 
-    categories["Forecast Start of Season"] = getSosEosCategories();
-    categories["End of Season"] = getSosEosCategories('End');
+    categories["Start of Season"] = getSosCategories(); 
+    categories["Forecast Start of Season"] = getSosCategories();
     const layerArea = d3.geoArea(referenceMapGeoJson);
     const layerBounds = d3.geoBounds(referenceMapGeoJson);
 
@@ -227,8 +214,6 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         'Start of Season Anomaly': (col) => place_general_stats[col]['Start of Season Anomaly'],
         'Forecast Start of Season': (col) => place_general_stats[col]['Forecast Start of Season'],
         'Forecast Start of Season Anomaly': (col) => place_general_stats[col]['Forecast Start of Season Anomaly'],
-        'End of Season': (col) => place_general_stats[col]['End of Season'],
-        'End of Season Anomaly': (col) => place_general_stats[col]['End of Season Anomaly'],
     }
 
     const projection = d3.geoMercator()
