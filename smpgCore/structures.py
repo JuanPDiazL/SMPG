@@ -236,7 +236,7 @@ class Place:
         }, orient='index')
         self.selected_seasons_general_stats = pd.Series({
             'LTA': selected_avg[-1],
-            # 'E. LTA': selected_ensemble_avg[-1],
+            'E. LTA': selected_ensemble_avg[-1],
             # 'Median': selected_med[-1],
             'Ensemble Med.': selected_ensemble_med[-1],
             'LTA up to Current Season': selected_avg_upto_current,
