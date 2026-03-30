@@ -99,7 +99,7 @@ class Place:
         else:
             forecast_values = pd.Series([np.nan])
             forecast_cumsum = pd.Series([np.nan])
-            current_season_with_forecast = pd.Series([np.nan])
+            current_season_with_forecast = current_season.copy()
         
         # get selected seasons
         self.similar_seasons = get_similar_years(current_season.to_numpy(), 
