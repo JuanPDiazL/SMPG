@@ -407,9 +407,9 @@ function makeEnsembleTable(containerElement) {
             ],
             "Probability at EoS": [
                 [null, 'Sel. Yrs.', 'Clim.'],
-                ['Above Normal', selected_seasons_general_stats[index]['E. Prob. Above Normal Pct.'], seasonal_general_stats[index]['E. Prob. Above Normal Pct.']],
-                ['Normal', selected_seasons_general_stats[index]['E. Prob. of Normal Pct.'], seasonal_general_stats[index]['E. Prob. of Normal Pct.']],
-                ['Below Normal', selected_seasons_general_stats[index]['E. Prob. Below Normal Pct.'], seasonal_general_stats[index]['E. Prob. Below Normal Pct.']],
+                ['Above Normal', selected_seasons_general_stats[index]['Probability Above Normal'], seasonal_general_stats[index]['Probability Above Normal']],
+                ['Normal', selected_seasons_general_stats[index]['Probability of Normal'], seasonal_general_stats[index]['Probability of Normal']],
+                ['Below Normal', selected_seasons_general_stats[index]['Probability Below Normal'], seasonal_general_stats[index]['Probability Below Normal']],
             ]
         }
     };
@@ -491,9 +491,9 @@ function makeEnsembleWithForecastTable(containerElement) {
             ],
             "Probability at EoS": [
                 [null, 'Sel. Yrs.', 'Clim.'],
-                ['Above Normal', selected_seasons_general_stats[index]['E. Prob. Above Normal Pct. w/ Forecast'], seasonal_general_stats[index]['E. Prob. Above Normal Pct. w/ Forecast']],
-                ['Normal', selected_seasons_general_stats[index]['E. Prob. of Normal Pct. w/ Forecast'], seasonal_general_stats[index]['E. Prob. of Normal Pct. w/ Forecast']],
-                ['Below Normal', selected_seasons_general_stats[index]['E. Prob. Below Normal Pct. w/ Forecast'], seasonal_general_stats[index]['E. Prob. Below Normal Pct. w/ Forecast']],
+                ['Above Normal', selected_seasons_general_stats[index]['Probability Above Normal w/ Forecast'], seasonal_general_stats[index]['Probability Above Normal w/ Forecast']],
+                ['Normal', selected_seasons_general_stats[index]['Probability of Normal w/ Forecast'], seasonal_general_stats[index]['Probability of Normal w/ Forecast']],
+                ['Below Normal', selected_seasons_general_stats[index]['Probability Below Normal w/ Forecast'], seasonal_general_stats[index]['Probability Below Normal w/ Forecast']],
             ]
         }
     };
