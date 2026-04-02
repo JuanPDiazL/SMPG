@@ -84,6 +84,9 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
             self.fields.append('Total up to Forecast/LTA Pct.')
             self.fields.append('Ensemble Med. w Forecast/LTA Pct.')
             self.fields.append('Ensemble Med. Pctl. w/ Forecast')
+            self.fields.append('Probability Below Normal w/ Forecast')
+            self.fields.append('Probability of Normal w/ Forecast')
+            self.fields.append('Probability Above Normal w/ Forecast')
 
         if self.parentWidget().rainy_season_detection_dialog.sosEnabled:
             self.fields.append('Start of Season')
