@@ -23,7 +23,7 @@ styles = {
     "prob_above_normal": {
         "type": "graduated",
         "legend": {
-            "\u226420": {"color": "#e6e6e6", "values": [0, 20]},
+            "\u226420": {"color": "#e0e0e0", "values": [0, 20]},
             "20 - 40": {"color": "#f0f9e8", "values": [20, 40]},
             "40 - 60": {"color": "#bae4bc", "values": [40, 60]},
             "60 - 80": {"color": "#7bccc4", "values": [60, 80]},
@@ -39,7 +39,7 @@ styles = {
             "40 - 60": {"color": "#fec280", "values": [40, 60]},
             "60 - 80": {"color": "#ffe69e", "values": [60, 80]},
             "80 - 90": {"color": "#fff9a3", "values": [80, 90]},
-            "90 - 110": {"color": "#f2f2f2", "values": [90, 110]},
+            "90 - 110": {"color": "#e0e0e0", "values": [90, 110]},
             "110 - 120": {"color": "#c6eab3", "values": [110, 120]},
             "120 - 140": {"color": "#56cd94", "values": [120, 140]},
             "140 - 160": {"color": "#5cc9ea", "values": [140, 160]},
@@ -54,7 +54,7 @@ styles = {
             "6 - 11 Severe Drought": {"color": "#e35a1a", "values": [6, 11]},
             "11 - 21 Moderate Drought": {"color": "#faaf00", "values": [11, 21]},
             "21 - 33 Abnormally Dry": {"color": "#faff0f", "values": [21, 33]},
-            "33 - 67  Normal ": {"color": "#f2f2f2", "values": [33, 67]},
+            "33 - 67  Normal ": {"color": "#e0e0e0", "values": [33, 67]},
             "67 - 90 Wetter than Normal": {"color": "#a6cee3", "values": [67, 90]},
             "\u226590 Extremely Wet": {"color": "#1f78b4", "values": [90, 100]},
         },
