@@ -631,53 +631,53 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
         dq.popleft(); dq_c.popleft()
     return np.nan, False, NO_START_STR
 
-def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
-    """
-    Determines the index at which a rainy season have started based on the 
-    given data of a year, using ratios of change and proportions between 
-    periods.
+# def get_sos_pct_difference(year_data: pd.Series, first_value, second_value):
+#     """
+#     Determines the index at which a rainy season have started based on the 
+#     given data of a year, using ratios of change and proportions between 
+#     periods.
     
-    Args:
-        year_data (pd.Series): A pandas Series containing numerical data of the 
-            year.
-        first_value (int, optional): Percentage of change relative to the 
-            previous period.
-        second_value (int, optional): Percentage rain relative to the candidate 
-            period.
+#     Args:
+#         year_data (pd.Series): A pandas Series containing numerical data of the 
+#             year.
+#         first_value (int, optional): Percentage of change relative to the 
+#             previous period.
+#         second_value (int, optional): Percentage rain relative to the candidate 
+#             period.
     
-    Returns:
-        tuple: A tuple containing three elements:
-            - int: The index at which the season might have started, or NaN if 
-                no such index is found.
-            - bool: True if the season meets both conditions to start, 
-                False otherwise.
-            - str: A string indicating the class of the start.
-                Possible values are STARTED_STR, POSSIBLE_START_STR, 
-                and NO_START_STR.
-    """
-    # dq numbers: previous_p, candidate_p, subsequent_p1, subsequent_p2
-    dq = deque(maxlen=4) # when `dq` is full, drops elements on a FIFO manner
-    last_candidate = None
-    def candidate_condition(dq): 
-        return ((dq[1] - dq[0]) / dq[0] >= 1 + (first_value / 100)) and round(dq[1]) > 0
-    def confirming_condition(dq): 
-        return ((dq[3] + dq[2]) / dq[1] >= 1 + (second_value / 100))
+#     Returns:
+#         tuple: A tuple containing three elements:
+#             - int: The index at which the season might have started, or NaN if 
+#                 no such index is found.
+#             - bool: True if the season meets both conditions to start, 
+#                 False otherwise.
+#             - str: A string indicating the class of the start.
+#                 Possible values are STARTED_STR, POSSIBLE_START_STR, 
+#                 and NO_START_STR.
+#     """
+#     # dq numbers: previous_p, candidate_p, subsequent_p1, subsequent_p2
+#     dq = deque(maxlen=4) # when `dq` is full, drops elements on a FIFO manner
+#     last_candidate = None
+#     def candidate_condition(dq): 
+#         return ((dq[1] - dq[0]) / dq[0] >= 1 + (first_value / 100)) and round(dq[1]) > 0
+#     def confirming_condition(dq): 
+#         return ((dq[3] + dq[2]) / dq[1] >= 1 + (second_value / 100))
     
-    for i in range(len(year_data)): # check year data for SoS or candidates
-        dq.append(year_data[i])
-        if len(dq) < 4: continue # avoid out of bounds
-        if candidate_condition(dq): 
-            if last_candidate is None: last_candidate = i - 2
-            if confirming_condition(dq):
-                return i - 2, True, STARTED_STR
+#     for i in range(len(year_data)): # check year data for SoS or candidates
+#         dq.append(year_data[i])
+#         if len(dq) < 4: continue # avoid out of bounds
+#         if candidate_condition(dq): 
+#             if last_candidate is None: last_candidate = i - 2
+#             if confirming_condition(dq):
+#                 return i - 2, True, STARTED_STR
             
-    if last_candidate is not None: 
-        return last_candidate, False, POSSIBLE_START_STR
-    while len(dq) >= 2: # check remaining values in `dq` for candidate
-        if candidate_condition(dq):
-            return len(year_data) - len(dq) + 1, False, POSSIBLE_START_STR
-        dq.popleft()
-    return np.nan, False, NO_START_STR
+#     if last_candidate is not None: 
+#         return last_candidate, False, POSSIBLE_START_STR
+#     while len(dq) >= 2: # check remaining values in `dq` for candidate
+#         if candidate_condition(dq):
+#             return len(year_data) - len(dq) + 1, False, POSSIBLE_START_STR
+#         dq.popleft()
+#     return np.nan, False, NO_START_STR
 
 def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: pd.DataFrame, parameters: Parameters, properties: Properties):
     sos_parameters = {
