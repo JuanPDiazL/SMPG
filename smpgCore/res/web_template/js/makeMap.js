@@ -250,8 +250,8 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     .fitSize([internal_width, internal_height], referenceMapGeoJson); // Fit the map to the SVG viewport size
     // Select an SVG container
     const svg = d3.select("#mapSvg")
-        .attr("width", internal_width)
-        .attr("height", internal_height)
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", `0, 0, ${internal_width}, ${internal_height}`)
 
     // define tooltip
     const tooltip = d3.select("#mapTooltipText")
@@ -333,12 +333,6 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
         })
 
     const legend = svg.append("g").attr("id", "#mapLegend");
-
-    svg
-    .attr("width", null)
-    .attr("height", null)
-    .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", `0, 0, ${internal_width}, ${internal_height}`)
 
     // Define the zoom behavior
     const svgZoomHandler = d3.zoom()
