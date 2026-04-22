@@ -22,8 +22,6 @@
     <script src="./js/utils.js"></script>
     <div id="documentRoot">
 
-        <h1 id="noscriptMessage">JavaScript is required</h1>
-
         <div id="leftSidebar" class="w3-sidebar w3-bar-block w3-card-4 w3-animate-left">
             <header id="leftSidebarHeader" class="w3-container w3-card w3-blue-grey w3-padding-small">
                 <span><button id="closeButton" class="mi w3-button w3-ripple w3-left" title="Close places menu" onclick="menuToggle()">close</button></span>
@@ -230,8 +228,6 @@
         let colorNode = d3.select("#colorSelect").node();
         colorNode.value = '';
         let resetMapViewportButton = d3.select("#resetMapViewport").node();
-        
-        d3.select('#noscriptMessage').attr('class', 'w3-hide');
         
         // set page state using cookies
         setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
