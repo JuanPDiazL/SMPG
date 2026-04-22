@@ -1,7 +1,7 @@
 "use strict";
 
 const UNCAT_COLOR = '#aaaf';
-let categories = {
+let mapStatsCategories = {
     '': { 'Uncategorized': {color:UNCAT_COLOR, 'function': () => true} },
     'Total up to Current Season/LTA Pct.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
@@ -158,16 +158,16 @@ let categories = {
 };
 
 const mapDescriptions = {
-  "Total up to Current Season/LTA Pct.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period.",
-  "C.Dk./LTA PC.Dk. + Forecast/LTA Pct.": "Depicts the percent of average for the accumulated precipitation from the Start of Season (SOS) up to the current period, including the forecast.",
-  "Current Season Pctl.": "Shows the percentile rank of the accumulated precipitation from the SOS up to the current period, based on historical data.",
-  "Ensemble Med. Pctl.": "Depicts the percentile rank of the median value of all possible outcomes at the End of Season (EOS). The ensemble is created using historical data from selected years (from Section 4) to simulate a range of potential outcomes.",
-  "Ensemble Med./LTA Pct.": "Displays the percent of average for the EOS median value of all possible outcomes compared against the long-term average (LTA).",
-  "Probability Below Normal": "This map displays the probability of the season's outcome below the 33rd percentile of the historical distribution.",
-  "Probability of Normal": "This map displays the probability of the season's outcome between the 33rd and 67th percentiles.",
-  "Probability Above Normal": "This map displays the probability of the season's outcome above the 67th percentile of the historical distribution.",
-  "Start of Season": "These maps show when the start of a rainy season has begun (for instance: Mar-1). The results of these maps depend on the selected method, and its parameters.",
-  "Start of Season Anomaly": "This map shows how many periods the Start of season differs from the average (for instance: 2 Dekads Early)."
+    "Total up to Current Season/LTA Pct.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period.",
+    "C.Dk./LTA PC.Dk. + Forecast/LTA Pct.": "Depicts the percent of average for the accumulated precipitation from the Start of Season (SOS) up to the current period, including the forecast.",
+    "Current Season Pctl.": "Shows the percentile rank of the accumulated precipitation from the SOS up to the current period, based on historical data.",
+    "Ensemble Med. Pctl.": "Depicts the percentile rank of the median value of all possible outcomes at the End of Season (EOS). The ensemble is created using historical data from selected years (from Section 4) to simulate a range of potential outcomes.",
+    "Ensemble Med./LTA Pct.": "Displays the percent of average for the EOS median value of all possible outcomes compared against the long-term average (LTA).",
+    "Probability Below Normal": "This map displays the probability of the season's outcome below the 33rd percentile of the historical distribution.",
+    "Probability of Normal": "This map displays the probability of the season's outcome between the 33rd and 67th percentiles.",
+    "Probability Above Normal": "This map displays the probability of the season's outcome above the 67th percentile of the historical distribution.",
+    "Start of Season": "These maps show when the start of a rainy season has begun (for instance: Mar-1). The results of these maps depend on the selected method, and its parameters.",
+    "Start of Season Anomaly": "This map shows how many periods the Start of season differs from the average (for instance: 2 Dekads Early)."
 };
 
 const sosClassColors = [
@@ -212,54 +212,46 @@ function getSosCategories(suffix='Start') {
     return _categories
 }
 
+let getPlaceMapStats = (place) => {
+    return {
+        '': () => undefined,
+        'Total up to Current Season/LTA Pct.': seasonal_general_stats[place]['Total up to Current Season/LTA Pct.'],
+        'Total up to Forecast/LTA Pct.': seasonal_general_stats[place]['Total up to Forecast/LTA Pct.'],
+        'Ensemble Med./LTA Pct.': selected_seasons_general_stats[place]['Ensemble Med./LTA Pct.'],
+        'Ensemble Med. w Forecast/LTA Pct.': selected_seasons_general_stats[place]['Ensemble Med. w Forecast/LTA Pct.'],
+        'Probability Below Normal': selected_seasons_general_stats[place]['Probability Below Normal'],
+        'Probability Below Normal w/ Forecast': selected_seasons_general_stats[place]['Probability Below Normal w/ Forecast'],
+        'Probability of Normal': selected_seasons_general_stats[place]['Probability of Normal'],
+        'Probability of Normal w/ Forecast': selected_seasons_general_stats[place]['Probability of Normal w/ Forecast'],
+        'Probability Above Normal': selected_seasons_general_stats[place]['Probability Above Normal'],
+        'Probability Above Normal w/ Forecast': selected_seasons_general_stats[place]['Probability Above Normal w/ Forecast'],
+        'Ensemble Med. Pctl.': selected_seasons_general_stats[place]['Ensemble Med. Pctl.'],
+        'Ensemble Med. Pctl. w/ Forecast': selected_seasons_general_stats[place]['Ensemble Med. Pctl. w/ Forecast'],
+        'Current Season Pctl.': place_general_stats[place]['Current Season Pctl.'],
+        'Start of Season': place_general_stats[place]['Start of Season'],
+        'Start of Season Anomaly': place_general_stats[place]['Start of Season Anomaly'],
+        'Forecast Start of Season': place_general_stats[place]['Forecast Start of Season'],
+        'Forecast Start of Season Anomaly': place_general_stats[place]['Forecast Start of Season Anomaly'],
+    };
+};
+
 function drawMap(mapGeoJson, referenceMapGeoJson) {
     // prepare categories
-    categories["Start of Season"] = getSosCategories(); 
-    categories["Forecast Start of Season"] = getSosCategories();
+    mapStatsCategories["Start of Season"] = getSosCategories(); 
+    mapStatsCategories["Forecast Start of Season"] = getSosCategories();
     const layerArea = d3.geoArea(referenceMapGeoJson);
     const layerBounds = d3.geoBounds(referenceMapGeoJson);
 
     const FONT_SIZE = 13;
-    let width = 800;
-    let height = 800;
-
-    let mapStats = {
-        '': () => undefined,
-        'Total up to Current Season/LTA Pct.': (col) => seasonal_general_stats[col]['Total up to Current Season/LTA Pct.'],
-        'Total up to Forecast/LTA Pct.': (col) => seasonal_general_stats[col]['Total up to Forecast/LTA Pct.'],
-        'Ensemble Med./LTA Pct.': (col) => selected_seasons_general_stats[col]['Ensemble Med./LTA Pct.'],
-        'Ensemble Med. w Forecast/LTA Pct.': (col) => selected_seasons_general_stats[col]['Ensemble Med. w Forecast/LTA Pct.'],
-        'Probability Below Normal': (col) => selected_seasons_general_stats[col]['Probability Below Normal'],
-        'Probability Below Normal w/ Forecast': (col) => selected_seasons_general_stats[col]['Probability Below Normal w/ Forecast'],
-        'Probability of Normal': (col) => selected_seasons_general_stats[col]['Probability of Normal'],
-        'Probability of Normal w/ Forecast': (col) => selected_seasons_general_stats[col]['Probability of Normal w/ Forecast'],
-        'Probability Above Normal': (col) => selected_seasons_general_stats[col]['Probability Above Normal'],
-        'Probability Above Normal w/ Forecast': (col) => selected_seasons_general_stats[col]['Probability Above Normal w/ Forecast'],
-        'Ensemble Med. Pctl.': (col) => selected_seasons_general_stats[col]['Ensemble Med. Pctl.'],
-        'Ensemble Med. Pctl. w/ Forecast': (col) => selected_seasons_general_stats[col]['Ensemble Med. Pctl. w/ Forecast'],
-        'Current Season Pctl.': (col) => place_general_stats[col]['Current Season Pctl.'],
-        'Start of Season': (col) => place_general_stats[col]['Start of Season'],
-        'Start of Season Anomaly': (col) => place_general_stats[col]['Start of Season Anomaly'],
-        'Forecast Start of Season': (col) => place_general_stats[col]['Forecast Start of Season'],
-        'Forecast Start of Season Anomaly': (col) => place_general_stats[col]['Forecast Start of Season Anomaly'],
-    }
+    let internal_width = 800;
+    let internal_height = 800;
 
     const projection = d3.geoMercator()
-    .fitSize([width, height], referenceMapGeoJson); // Fit the map to the SVG viewport size
+    .fitSize([internal_width, internal_height], referenceMapGeoJson); // Fit the map to the SVG viewport size
     // Select an SVG container
     const svg = d3.select("#mapSvg")
-        .attr("width", width)
-        .attr("height", height)
-
-    // const shadow = svg.select("#mapDefs")
-    //     .append("filter")
-    //     .attr("id", "shadow")
-    //     .append("feDropShadow")
-    //     .attr("dx", 3)
-    //     .attr("dy", 3)
-    //     .attr("stdDeviation", 0)
-    //     .attr("flood-color", "rgb(0,0,0)")
-    //     .attr("flood-opacity", 1)
+        .attr("width", internal_width)
+        .attr("height", internal_height)
 
     // define tooltip
     const tooltip = d3.select("#mapTooltipText")
@@ -288,7 +280,7 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
             mapSelectorPath
             .attr("d", d3.geoPath().projection(projection)(d))
             .style("display", null)
-            let displayLabeltext = d.properties[selectNode.value];
+            let displayLabeltext = d.properties[featureSelect.value];
             const idText = d.properties[fieldId]
             displayLabeltext += displayLabeltext === idText? "" : ` (${idText})`
             tooltip.text(displayLabeltext);
@@ -346,21 +338,22 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     .attr("width", null)
     .attr("height", null)
     .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", `0, 0, ${width}, ${height}`)
+    .attr("viewBox", `0, 0, ${internal_width}, ${internal_height}`)
 
+    // Define the zoom behavior
     const svgZoomHandler = d3.zoom()
     .on('zoom', (event) => {
         const transform = event.transform;
-        const viewWidth = (width*transform.k);
-        const viewHeight = (height*transform.k);
+        const viewWidth = (internal_width*transform.k);
+        const viewHeight = (internal_height*transform.k);
         
-        // Calculate bounds for zooming
+        // Calculate zoom bounds
         const overlap = 0.9;
         transform.k = Math.max(overlap, transform.k);
-        transform.x = Math.max((width * overlap) - viewWidth, transform.x);
-        transform.x = Math.min(width * (1 - overlap), transform.x);
-        transform.y = Math.max((height * overlap) - viewHeight, transform.y);
-        transform.y = Math.min(height * (1 - overlap), transform.y);
+        transform.x = Math.max((internal_width * overlap) - viewWidth, transform.x);
+        transform.x = Math.min(internal_width * (1 - overlap), transform.x);
+        transform.y = Math.max((internal_height * overlap) - viewHeight, transform.y);
+        transform.y = Math.min(internal_height * (1 - overlap), transform.y);
 
         svg.selectAll(".zoomable")
         .attr('transform', transform);
@@ -368,7 +361,7 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
 
     svg.call(svgZoomHandler);
 
-    selectNode.addEventListener("change", function() {
+    featureSelect.addEventListener("change", function() {
         const displayId = this.value;
         // Update label text based on the selected property
         labels.text(d => d.properties[displayId]);
@@ -383,13 +376,12 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
     });
     colorNode.addEventListener("change", function() {
         const selectedStatId = this.value;
-        const selectedStats = mapStats[selectedStatId];
-        const selectedBins = categories[selectedStatId];
+        const selectedBins = mapStatsCategories[selectedStatId];
         // Update legend based on the selected property
         const legendElementHeight = 16;
         const legendElementGap = 1;
-        const startY = height - 30;
-        const startX = width - 30;
+        const startY = internal_height - 30;
+        const startX = internal_width - 30;
         const coordX = startX;
 
         legend.selectChildren().remove()
@@ -443,7 +435,7 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
             let category = "Uncategorized";
 
             if (datasetProperties['place_ids'].includes(String(d.properties[fieldId]))) {
-                const value = selectedStats(d.properties[fieldId]);
+                const value = getPlaceMapStats(d.properties[fieldId])[selectedStatId];
                 category = categorizeValue(value, selectedBins);
             }
             // check if there is any uncategorized polygon
@@ -453,7 +445,7 @@ function drawMap(mapGeoJson, referenceMapGeoJson) {
                 return UNCAT_COLOR;
             }
             if (category === "Uncategorized") {
-                return categories[""]["color"];
+                return mapStatsCategories[""]["color"];
             }
             return selectedBins[category]["color"];
         });

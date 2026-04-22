@@ -136,7 +136,6 @@
     <script>"use strict";
         // Globals
         let previousSelectionElement = null;
-        let property_ids = null;
         let fieldId = null;
         
         let card1 = null;
@@ -145,7 +144,7 @@
         let card4 = null;
         let sidebarElements = [];
 
-        // Data
+        // Decompress and parse data
         let datasetProperties = JSON.parse(decompress(dataset_properties_json));
         let parameters = JSON.parse(decompress(parameters_json));
         let place_general_stats = csvParse(decompress(place_general_stats_csv));
@@ -161,6 +160,7 @@
         let selected_seasons_ensemble_with_forecast = parseRowsObjectCsv(decompress(selected_seasons_ensemble_with_forecast_csv_obj));
         let selected_seasons_long_term_stats   = parseRowsObjectCsv(decompress(selected_seasons_long_term_stats_csv_obj));
 
+        // Global data properties
         const period_unit = datasetProperties['period_unit_id'];
         const monitoringOffset = datasetProperties['sub_season_offset'];
         const firstPlaceKey = datasetProperties['place_ids'][0];
@@ -223,7 +223,7 @@
         const MAP_DESCRIPTION_HIDE_BUTTON = d3.select('#mapDescriptionHideButton');
 
 
-        let selectNode = d3.select("#featureSelect").node();
+        let featureSelect = d3.select("#featureSelect").node();
         let legendCbNode = d3.select("#showLegend").node();
         let colorNode = d3.select("#colorSelect").node();
         colorNode.value = '';
@@ -239,7 +239,7 @@
         card4 = new chartCard('#row2', "Seasonal Accumulation Percentiles");
         sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
-        window.onhashchange = handleNavigation; // update everything when when the url changes
+        window.onhashchange = handleNavigation; // update everything when the url changes
         if(hasMap) {
             var object_map = JSON.parse(decompress(topojson_map));
             if (hasReferenceMap) {
@@ -251,11 +251,11 @@
             let mapJson = topojson.feature(object_map, object_map.objects.map);
             let referenceMapJson = topojson.feature(reference_object_map, reference_object_map.objects.map);
 
-            property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
+            let property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
             fieldId = parameters["target_id_field"];
-            updateSelect(selectNode, property_ids);
+            updateSelect(featureSelect, property_ids);
             updateSelect(colorNode, mapFields);
-            selectNode.value = fieldId;
+            featureSelect.value = fieldId;
             drawMap(mapJson, referenceMapJson);
         } else {
             navigateTo({"place": firstPlaceKey})
