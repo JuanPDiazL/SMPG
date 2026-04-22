@@ -223,11 +223,10 @@
         const MAP_DESCRIPTION_HIDE_BUTTON = d3.select('#mapDescriptionHideButton');
 
 
-        let featureSelect = d3.select("#featureSelect").node();
-        let legendCbNode = d3.select("#showLegend").node();
-        let colorNode = d3.select("#colorSelect").node();
-        colorNode.value = '';
-        let resetMapViewportButton = d3.select("#resetMapViewport").node();
+        let featureSelect = d3.select("#featureSelect");
+        let showLegendCheckBox = d3.select("#showLegend");
+        let colorSelect = d3.select("#colorSelect");
+        let resetMapViewportButton = d3.select("#resetMapViewport");
         
         // set page state using cookies
         setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
@@ -254,7 +253,7 @@
             let property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
             fieldId = parameters["target_id_field"];
             updateSelect(featureSelect, property_ids);
-            updateSelect(colorNode, mapFields);
+            updateSelect(colorSelect, mapFields);
             featureSelect.value = fieldId;
             drawMap(mapJson, referenceMapJson);
         } else {

@@ -46,7 +46,7 @@ function handleNavigation(event) {
     }
     
     if(isViewMap) {
-        HEADER.text(`Dataset: ${datasetProperties.dataset_name}, Stat: ${colorNode.value ? colorNode.value : "None"}`);
+        HEADER.text(`Dataset: ${datasetProperties.dataset_name}`);
         mapRoot.classed(HIDE_CLASS, false);
         plotsRoot.classed(HIDE_CLASS, true);
     } else {
@@ -268,13 +268,16 @@ function makeSelectionMenu(data) {
     return sidebarElements;
 }
 
-function updateSelect(node, items) {
-    items.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item;  // You can set a value attribute if needed
-        option.text = item;   // Set the text content of the option
-        node.appendChild(option);
-    });
+function updateSelect(selectElement, items) {
+    selectElement.selectAll("option")
+        .data(items)
+        .join(
+            enter => enter.append("option")
+                .attr("value", d => d)
+                .text(d => d),
+            update => update, // Existing elements don't need changes if data matches
+            exit => exit.remove() // Remove options no longer in the data
+        );
 }
 
 function categorizeValue(value, bins) {
