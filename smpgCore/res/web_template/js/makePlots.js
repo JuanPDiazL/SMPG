@@ -734,15 +734,17 @@ class chartCard {
                 "full title": "Seasonal Accumulation Percentiles",
                 "cardElementsBuilder": makeAccumulationPercentilesCard,
             },
-            "Map": {
-                "full title": "Map",
-                "cardElementsBuilder": makeMapCard,
-            },
         };
         if (hasForecast) {
             this.cardTypes["Ensemble with Forecast"] = {
                 "full title": "Ensemble with Forecast",
                 "cardElementsBuilder": makeEnsembleWithForecastCard,
+            };
+        }
+        if (hasMap) {
+            this.cardTypes["Map"] = {
+                "full title": "Map",
+                "cardElementsBuilder": makeMapCard,
             };
         }
         this.cardType = defaultCardType;
