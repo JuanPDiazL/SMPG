@@ -489,3 +489,9 @@ class d3Map {
 
     }
 }
+
+function makeMapCard(containerElement) {
+    return {
+        "map": makeD3Map(containerElement),
+    }
+}

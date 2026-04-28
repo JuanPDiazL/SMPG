@@ -245,6 +245,13 @@ function makeAccumulationsTable(containerElement) {
     return table;
 }
 
+function makeAccumulationsCard(containerElement) {
+    return {
+        "plot": makeAccumulationsPlot(containerElement),
+        "table": makeAccumulationsTable(containerElement),
+    }
+}
+
 function makeCurrentYearPlot(containerElement) {
     let xNames = [...datasetProperties['sub_season_ids']];
     
@@ -343,6 +350,13 @@ function makeCurrentYearTable(containerElement) {
     return table;
 }
 
+function makeCurrentYearCard(containerElement) {
+    return {
+        "plot": makeCurrentYearPlot(containerElement),
+        "table": makeCurrentYearTable(containerElement),
+    }
+}
+
 function makeEnsemblePlot(containerElement) {
     let xNames = datasetProperties['sub_season_monitoring_ids'];
     
@@ -416,6 +430,13 @@ function makeEnsembleTable(containerElement) {
 
     const table = new Table(containerElement, getAccumulationsCurrentTableData)
     return table;
+}
+
+function makeEnsembleCard(containerElement) {
+    return {
+        "plot": makeEnsemblePlot(containerElement),
+        "table": makeEnsembleTable(containerElement),
+    }
 }
 
 function makeEnsembleWithForecastPlot(containerElement) {
@@ -502,6 +523,13 @@ function makeEnsembleWithForecastTable(containerElement) {
     return table;
 }
 
+function makeEnsembleWithForecastCard(containerElement) {
+    return {
+        "plot": makeEnsembleWithForecastPlot(containerElement),
+        "table": makeEnsembleWithForecastTable(containerElement),
+    }
+}
+
 function makeAccumulationPercentilesPlot(containerElement) {
     let xNames = [...datasetProperties['year_ids']];
     xNames.push(datasetProperties['current_season_id']);
@@ -559,6 +587,13 @@ function makeAccumulationPercentilesTable(containerElement) {
 
     const table = new Table(containerElement, getAccumulationsCurrentTableData)
     return table;
+}
+
+function makeAccumulationPercentilesCard(containerElement) {
+    return {
+        "plot": makeAccumulationPercentilesPlot(containerElement),
+        "table": makeAccumulationPercentilesTable(containerElement),
+    }
 }
 
 class BBPlot {
@@ -681,40 +716,33 @@ class chartCard {
         this.cardTypes = {
             "Disabled": {
                 "full title": "Disabled",
-                "plot": () => {},
-                "table": () => {},
+                "cardElementsBuilder": () => {},
             },
             "Seasonal Accumulations": {
                 "full title": "Seasonal Accumulations",
-                "plot": makeAccumulationsPlot,
-                "table": makeAccumulationsTable,
+                "cardElementsBuilder": makeAccumulationsCard,
             }, 
             "Current Year Status": {
                 "full title": `Current Year Status: ${datasetProperties.current_season_id}. Climatology: [${datasetProperties.climatology_year_ids[0]}, ${getLast(datasetProperties.climatology_year_ids)}]`,
-                "plot": makeCurrentYearPlot,
-                "table": makeCurrentYearTable,
+                "cardElementsBuilder": makeCurrentYearCard,
             }, 
             "Ensemble": {
                 "full title": "Ensemble",
-                "plot": makeEnsemblePlot,
-                "table": makeEnsembleTable,
+                "cardElementsBuilder": makeEnsembleCard,
             },
             "Seasonal Accumulation Percentiles": {
                 "full title": "Seasonal Accumulation Percentiles",
-                "plot": makeAccumulationPercentilesPlot,
-                "table": makeAccumulationPercentilesTable,
+                "cardElementsBuilder": makeAccumulationPercentilesCard,
             },
             "Map": {
                 "full title": "Map",
-                "plot": makeD3Map,
-                "table": () => {},
+                "cardElementsBuilder": makeMapCard,
             },
         };
         if (hasForecast) {
             this.cardTypes["Ensemble with Forecast"] = {
                 "full title": "Ensemble with Forecast",
-                "plot": makeEnsembleWithForecastPlot,
-                "table": makeEnsembleWithForecastTable,
+                "cardElementsBuilder": makeEnsembleWithForecastCard,
             };
         }
         this.cardType = defaultCardType;
@@ -730,17 +758,8 @@ class chartCard {
         this.cardHeader = this.cardElement
             .append("header")
             .attr("class", "card-header w3-blue-grey");
-        this.toggleTableButton = this.cardHeader
-            .append("span")
-            .append("button")
-                .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
-                .attr("title", "Toggle display table")
-                .text("table_chart")
-                .on("click", (event) => {
-                    if(this.table !== null) {
-                        this.table.tableContainer.classed("w3-hide", !this.table.tableContainer.classed("w3-hide"));
-                    }
-                });
+        this.cardButtonGroup = this.cardHeader
+            .append("div");
         this.graphTypeSelectContainer = this.cardHeader
             .append("div")
             .attr("class", "card-title-select w3-dropdown-click")
@@ -770,9 +789,22 @@ class chartCard {
         this.cardBody = this.cardElement
             .append("div")
             .attr("class", "plot-container w3-container w3-padding-small");
-            
-        this.chart = this.cardTypes[this.cardType]["plot"](this.cardBody);
-        this.table = this.cardTypes[this.cardType]["table"](this.cardBody);
+        
+        this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
+        
+        if (this.cardElements["table"] !== undefined) {
+            this.toggleTableButton = this.cardButtonGroup
+                .append("span")
+                .append("button")
+                    .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
+                    .attr("title", "Toggle display table")
+                    .text("table_chart")
+                    .on("click", (event) => {
+                        if(this.table !== null) {
+                            this.cardElements["table"].tableContainer.classed("w3-hide", !this.cardElements["table"].tableContainer.classed("w3-hide"));
+                        }
+                    });
+        }
     }
 
     changePlot(event) {
@@ -784,14 +816,14 @@ class chartCard {
             return;
         }
 
-        this.chart = this.cardTypes[plotType]["plot"](this.cardBody);
-        this.table = this.cardTypes[plotType]["table"](this.cardBody);
+        this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
         this.update(this.dataIndex);
     }
 
     update(index) {
         this.dataIndex = index;
-        this.chart.update(index);
-        this.table.update(index);
+        for (const elementKey of Object.keys(this.cardElements)) {
+            this.cardElements[elementKey].update(index);
+        }
     }
 }
