@@ -369,12 +369,18 @@ class d3Map {
             const viewHeight = (internal_height*transform.k);
             
             // Calculate zoom bounds
-            const overlap = 0.9;
-            transform.k = Math.max(overlap, transform.k);
-            transform.x = Math.max((internal_width * overlap) - viewWidth, transform.x);
-            transform.x = Math.min(internal_width * (1 - overlap), transform.x);
-            transform.y = Math.max((internal_height * overlap) - viewHeight, transform.y);
-            transform.y = Math.min(internal_height * (1 - overlap), transform.y);
+            const min_zoom = 0.9;
+            const max_zoom = 10;
+
+            // Restrict zoom range
+            transform.k = Math.max(min_zoom, transform.k); // Min zoom
+            // transform.k = Math.min(max_zoom, transform.k); // Max zoom
+
+            // Restrict movement out of bounds
+            transform.x = Math.max((internal_width * min_zoom) - viewWidth, transform.x);
+            transform.x = Math.min(internal_width * (1 - min_zoom), transform.x);
+            transform.y = Math.max((internal_height * min_zoom) - viewHeight, transform.y);
+            transform.y = Math.min(internal_height * (1 - min_zoom), transform.y);
 
             svg.selectAll(".zoomable")
             .attr('transform', transform);
