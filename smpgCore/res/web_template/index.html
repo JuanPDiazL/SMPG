@@ -80,8 +80,6 @@
                                 <span><button id="mapDescriptionHideButton" class="mi w3-button w3-hide capture-ignore" title="Hide description" onclick="toggleMapDescription()">close</button></span>
                                 <span><p id="mapDescription" class="w3-leftbar w3-hide"></p></span>
                             </div>
-                            <svg id="mapSvg">
-                            </svg>
                         </div>
                     </div>
                     <div id="plotsRoot" class="w3-hide">
@@ -240,22 +238,8 @@
 
         window.onhashchange = handleNavigation; // update everything when the url changes
         if(hasMap) {
-            var object_map = JSON.parse(decompress(topojson_map));
-            if (hasReferenceMap) {
-                var reference_object_map = JSON.parse(decompress(reference_topojson_map));
-            } else {
-                var reference_object_map = object_map;
-            }
-
-            let mapJson = topojson.feature(object_map, object_map.objects.map);
-            let referenceMapJson = topojson.feature(reference_object_map, reference_object_map.objects.map);
-
-            let property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
-            fieldId = parameters["target_id_field"];
-            updateSelect(featureSelect, property_ids);
-            updateSelect(colorSelect, mapFields);
-            featureSelect.value = fieldId;
-            drawMap(mapJson, referenceMapJson);
+            const mapContainer = d3.select("#mapContainer");
+            makeD3Map(mapContainer);
         } else {
             navigateTo({"place": firstPlaceKey})
         }

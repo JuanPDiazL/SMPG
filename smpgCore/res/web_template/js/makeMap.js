@@ -235,227 +235,257 @@ let getPlaceMapStats = (place) => {
     };
 };
 
-function drawMap(mapGeoJson, referenceMapGeoJson) {
-    // prepare categories
+function makeD3Map(containerElement) {
+    var topoJsonObjectMap = JSON.parse(decompress(topojson_map));
+    if (hasReferenceMap) {
+        var referenceTopoJsonObjectMap = JSON.parse(decompress(reference_topojson_map));
+    } else {
+        var referenceTopoJsonObjectMap = topoJsonObjectMap;
+    }
+
+    let mapJson = topojson.feature(topoJsonObjectMap, topoJsonObjectMap.objects.map);
+    let referenceMapJson = topojson.feature(referenceTopoJsonObjectMap, referenceTopoJsonObjectMap.objects.map);
+
+    // Populate stat selects
+    let property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
+    fieldId = parameters["target_id_field"];
+    updateSelect(featureSelect, property_ids);
+    updateSelect(colorSelect, mapFields);
+
+    // Prepare categories
     mapStatsCategories["Start of Season"] = getSosCategories(); 
     mapStatsCategories["Forecast Start of Season"] = getSosCategories();
-    const layerArea = d3.geoArea(referenceMapGeoJson);
-    const layerBounds = d3.geoBounds(referenceMapGeoJson);
+    featureSelect.value = fieldId;
 
-    const FONT_SIZE = 13;
-    let internal_width = 800;
-    let internal_height = 800;
-
-    const projection = d3.geoMercator()
-    .fitSize([internal_width, internal_height], referenceMapGeoJson); // Fit the map to the SVG viewport size
-    // Select an SVG container
-    const svg = d3.select("#mapSvg")
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", `0, 0, ${internal_width}, ${internal_height}`)
-
-    // define tooltip
-    const tooltip = d3.select("#mapTooltipText")
-
-    // Draw the map
-    const referencePolygons = svg.append("g")
-        .attr("id", "#referenceMapPolygons")
-        .attr("class", "zoomable")
-        .selectAll(".country")
-        .data(referenceMapGeoJson.features)
-        .enter().append("path")
-        .attr("class", d => `reference-polygon`)
-        .attr("d", d3.geoPath().projection(projection))
-        .style("fill", "#ffff")
-
-    const polygons = svg.append("g")
-        .attr("id", "#mapPolygons")
-        .attr("class", "zoomable")
-        .selectAll(".country")
-        .data(mapGeoJson.features)
-        .enter().append("path")
-        .attr("class", d => `country country-${d.properties[fieldId]} w3-ripple`)
-        .attr("d", d3.geoPath().projection(projection))
-        .style("fill", UNCAT_COLOR)
-        .on("mouseover", (event, d) => {
-            mapSelectorPath
-            .attr("d", d3.geoPath().projection(projection)(d))
-            .style("display", null)
-            let displayLabeltext = d.properties[featureSelect.value];
-            const idText = d.properties[fieldId]
-            displayLabeltext += displayLabeltext === idText? "" : ` (${idText})`
-            tooltip.text(displayLabeltext);
-        })
-        .on("mouseout", (event, d) => {
-            mapSelectorPath
-            .style("display", "none")
-            tooltip.text("None");
-        })
-        .on("click", (event, d) => {
-            mapPersistentSelectorPath
-            .attr("d", d3.geoPath().projection(projection)(d))
-            .style("display", null)
-            navigateTo({"place": d.properties[fieldId], "mode": "plots"});
-        })
-
-    // draw selection bounding box rectangle
-    const mapPersistentSelectorPath = svg.append("g")
-        .attr("id", "#mapPersistentSelector")
-        .attr("class", "zoomable")
-        .append("path")
-        .attr("class","persistent-selection-path")
-    const mapSelectorPath = svg.append("g")
-        .attr("id", "#mapSelector")
-        .attr("class", "zoomable")
-        .append("path")
-        .attr("class","selection-path")
-
-    const polygonTooltips = polygons.append("title")
-        .attr("class", "country-polygon-tooltip")
-        .text(d => d.properties[fieldId])
-        
-    // draw labels
-    const labels = svg.append("g")
-        .attr("id", "#mapLabels")
-        .attr("class", "zoomable")
-        .selectAll(".map-text-label")
-        .data(mapGeoJson.features)
-        .enter().append("text")
-        .text(d => d.properties[fieldId])
-        .attr("class", "map-text-label svg-outline-text")
-        .attr("transform", d => `translate(${projection(d3.geoCentroid(d))})`)
-        .attr("font-size", FONT_SIZE)
-        .style("dominant-baseline", "middle")
-        // .style("text-anchor", "middle")
-        .style("display", d => {
-            const areaRatio = d3.geoArea(d) / layerArea;
-            const xRatio = (d.bbox[2] - d.bbox[0]) / (layerBounds[1][0] - layerBounds[0][0]);
-            return areaRatio > 0.004 && xRatio > 0.08 ? null : "none"
-        })
-
-    const legend = svg.append("g").attr("id", "#mapLegend");
-
-    // Define the zoom behavior
-    const svgZoomHandler = d3.zoom()
-    .on('zoom', (event) => {
-        const transform = event.transform;
-        const viewWidth = (internal_width*transform.k);
-        const viewHeight = (internal_height*transform.k);
-        
-        // Calculate zoom bounds
-        const overlap = 0.9;
-        transform.k = Math.max(overlap, transform.k);
-        transform.x = Math.max((internal_width * overlap) - viewWidth, transform.x);
-        transform.x = Math.min(internal_width * (1 - overlap), transform.x);
-        transform.y = Math.max((internal_height * overlap) - viewHeight, transform.y);
-        transform.y = Math.min(internal_height * (1 - overlap), transform.y);
-
-        svg.selectAll(".zoomable")
-        .attr('transform', transform);
-    });
-
-    svg.call(svgZoomHandler);
-
-    featureSelect.on("change", (event) => {
-        const displayId = event.target.value;
-        
-        // Update label text based on the selected property
-        labels.text(d => d.properties[displayId]);
-        polygonTooltips.text(d => d.properties[displayId]);
-    });
-    showLegendCheckBox.on("change", (event) => {
-        const showLegend = event.target.checked;
-        legend.style("display", showLegend? null : "none");
-    });
-    resetMapViewportButton.on("click", (event) => {
-        svg.call(svgZoomHandler.transform, d3.zoomIdentity)
-    });
-    colorSelect
-        .attr("value", "")
-        .on("change", (event) => {
-            const selectedStatId = event.target.value;
-            const selectedBins = mapStatsCategories[selectedStatId];
-            // Update legend based on the selected property
-            const legendElementHeight = 16;
-            const legendElementGap = 1;
-            const startY = internal_height - 30;
-            const startX = internal_width - 30;
-            const coordX = startX;
-
-            legend.selectChildren().remove()
-            legend.selectAll().append("g")
-                .data(Object.entries(selectedBins))
-                .join("g")
-                .attr("class", "legend-element")
-                .attr("transform", (d, i, nodes) => {
-                    const offset = nodes.length - i - 1;
-                    const coordY = startY - (offset * (legendElementHeight + legendElementGap));
-                    return `translate(${coordX},${coordY})`;
-                })
-                .call(g => { //populate legend elements
-                    g.append("rect")
-                        .attr("width", 16)
-                        .attr("height", 16)
-                        .attr("fill", d => d[1].color);
-                        // .attr("stroke", "#000f")
-                        // .attr("stroke-width", 1)
-                    g.append("text")
-                        .attr("class", "legend-labels svg-outline-text")
-                        .attr("x", -4)
-                        .attr("y", 9)
-                        .attr("dy", "0")
-                        .attr("font-size", FONT_SIZE)
-                        .attr("text-anchor", "end")
-                        .style("dominant-baseline", "middle")
-                        .text(d => d[0]);
-                    })
-                .call(g => { // add title
-                    const offset = g.size() - 1;
-                    const coordY = startY - (offset * (legendElementHeight + legendElementGap));
-                    legend.append("text")
-                        .text(selectedStatId)
-                        .attr("class", "legend-title svg-outline-text")
-                        .attr("x", 20)
-                        .attr("y", -9)
-                        .attr("dy", "0")
-                        .attr("font-size", FONT_SIZE)
-                        .attr("text-anchor", "end")
-                        .style("dominant-baseline", "middle")
-                        .attr("transform", `translate(${coordX},${coordY})`)
-                    })
-                .each((d, i, nodes) => {
-                    // console.log(nodes[i].getBoundingClientRect().width);
-                })
-                
-            // Update polygon color based on the selected property
-            let hasUncategorizedPolygons = false;
-            polygons.style("fill", d => {
-                let category = "Uncategorized";
-
-                if (datasetProperties['place_ids'].includes(String(d.properties[fieldId]))) {
-                    const value = getPlaceMapStats(d.properties[fieldId])[selectedStatId];
-                    category = categorizeValue(value, selectedBins);
-                }
-                // check if there is any uncategorized polygon
-                hasUncategorizedPolygons |= (category === "Uncategorized");
-                
-                if (selectedStatId === "") {
-                    return UNCAT_COLOR;
-                }
-                if (category === "Uncategorized") {
-                    return mapStatsCategories[""]["color"];
-                }
-                return selectedBins[category]["color"];
-            });
-            if (hasUncategorizedPolygons && selectedStatId !== "") {
-                // add a legend for uncategorized polygons
-                showModal(`There was missing data when drawing map.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Target Field: ${parameters.target_id_field}`)
-            }
-            // Update the header text
-            HEADER.text(`Dataset: ${datasetProperties.dataset_name}, Stat: ${selectedStatId ? selectedStatId : "None"}`);
-            // Update description
-            MAP_DESCRIPTION.text(mapDescriptions[selectedStatId]);
-            MAP_DESCRIPTION_CONTAINER.classed('w3-hide', !mapDescriptions[selectedStatId]);
-        });
+    const map = new d3Map(containerElement, mapJson, referenceMapJson);
+    return map;
 }
 
+class d3Map {
+    constructor(containerElement, geoJsonMap, geoJsonReferenceMap) {
+        const layerArea = d3.geoArea(geoJsonReferenceMap);
+        const layerBounds = d3.geoBounds(geoJsonReferenceMap);
+
+        const FONT_SIZE = 13;
+        let internal_width = 800;
+        let internal_height = 800;
+
+        // Create SVG container
+        const svg = containerElement.append("svg")
+            .attr("id", "#mapSvg")
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .attr("viewBox", `0, 0, ${internal_width}, ${internal_height}`)
+
+        const projection = d3.geoMercator()
+        .fitSize([internal_width, internal_height], geoJsonReferenceMap); // Fit the map to the SVG viewport size
+
+        // define tooltip
+        const tooltip = d3.select("#mapTooltipText")
+
+        // Draw the map
+        const referencePolygons = svg.append("g")
+            .attr("id", "#referenceMapPolygons")
+            .attr("class", "zoomable")
+            .selectAll(".country")
+            .data(geoJsonReferenceMap.features)
+            .enter().append("path")
+            .attr("class", d => `reference-polygon`)
+            .attr("d", d3.geoPath().projection(projection))
+            .style("fill", "#ffff")
+
+        const polygons = svg.append("g")
+            .attr("id", "#mapPolygons")
+            .attr("class", "zoomable")
+            .selectAll(".country")
+            .data(geoJsonMap.features)
+            .enter().append("path")
+            .attr("class", d => `country country-${d.properties[fieldId]} w3-ripple`)
+            .attr("d", d3.geoPath().projection(projection))
+            .style("fill", UNCAT_COLOR)
+            .on("mouseover", (event, d) => {
+                mapSelectorPath
+                .attr("d", d3.geoPath().projection(projection)(d))
+                .style("display", null)
+                let displayLabeltext = d.properties[featureSelect.value];
+                const idText = d.properties[fieldId]
+                displayLabeltext += displayLabeltext === idText? "" : ` (${idText})`
+                tooltip.text(displayLabeltext);
+            })
+            .on("mouseout", (event, d) => {
+                mapSelectorPath
+                .style("display", "none")
+                tooltip.text("None");
+            })
+            .on("click", (event, d) => {
+                mapPersistentSelectorPath
+                .attr("d", d3.geoPath().projection(projection)(d))
+                .style("display", null)
+                navigateTo({"place": d.properties[fieldId], "mode": "plots"});
+            })
+
+        // draw selection bounding box rectangle
+        const mapPersistentSelectorPath = svg.append("g")
+            .attr("id", "#mapPersistentSelector")
+            .attr("class", "zoomable")
+            .append("path")
+            .attr("class","persistent-selection-path")
+        const mapSelectorPath = svg.append("g")
+            .attr("id", "#mapSelector")
+            .attr("class", "zoomable")
+            .append("path")
+            .attr("class","selection-path")
+
+        const polygonTooltips = polygons.append("title")
+            .attr("class", "country-polygon-tooltip")
+            .text(d => d.properties[fieldId])
+            
+        // draw labels
+        const labels = svg.append("g")
+            .attr("id", "#mapLabels")
+            .attr("class", "zoomable")
+            .selectAll(".map-text-label")
+            .data(geoJsonMap.features)
+            .enter().append("text")
+            .text(d => d.properties[fieldId])
+            .attr("class", "map-text-label svg-outline-text")
+            .attr("transform", d => `translate(${projection(d3.geoCentroid(d))})`)
+            .attr("font-size", FONT_SIZE)
+            .style("dominant-baseline", "middle")
+            // .style("text-anchor", "middle")
+            .style("display", d => {
+                const areaRatio = d3.geoArea(d) / layerArea;
+                const xRatio = (d.bbox[2] - d.bbox[0]) / (layerBounds[1][0] - layerBounds[0][0]);
+                return areaRatio > 0.004 && xRatio > 0.08 ? null : "none"
+            })
+
+        const legend = svg.append("g").attr("id", "#mapLegend");
+
+        // Define the zoom behavior
+        const svgZoomHandler = d3.zoom()
+        .on('zoom', (event) => {
+            const transform = event.transform;
+            const viewWidth = (internal_width*transform.k);
+            const viewHeight = (internal_height*transform.k);
+            
+            // Calculate zoom bounds
+            const overlap = 0.9;
+            transform.k = Math.max(overlap, transform.k);
+            transform.x = Math.max((internal_width * overlap) - viewWidth, transform.x);
+            transform.x = Math.min(internal_width * (1 - overlap), transform.x);
+            transform.y = Math.max((internal_height * overlap) - viewHeight, transform.y);
+            transform.y = Math.min(internal_height * (1 - overlap), transform.y);
+
+            svg.selectAll(".zoomable")
+            .attr('transform', transform);
+        });
+        svg.call(svgZoomHandler);
+
+        featureSelect.on("change", (event) => {
+            const displayId = event.target.value;
+            
+            // Update label text based on the selected property
+            labels.text(d => d.properties[displayId]);
+            polygonTooltips.text(d => d.properties[displayId]);
+        });
+        showLegendCheckBox
+            .attr("checked", "checked")
+            .on("change", (event) => {
+                const showLegend = event.target.checked;
+                legend.style("display", showLegend? null : "none");
+            });
+        resetMapViewportButton.on("click", (event) => {
+            svg.call(svgZoomHandler.transform, d3.zoomIdentity)
+        });
+        colorSelect
+            .attr("value", "")
+            .on("change", (event) => {
+                const selectedStatId = event.target.value;
+                const selectedBins = mapStatsCategories[selectedStatId];
+                // Update legend based on the selected property
+                const legendElementHeight = 16;
+                const legendElementGap = 1;
+                const startY = internal_height - 30;
+                const startX = internal_width - 30;
+                const coordX = startX;
+
+                legend.selectChildren().remove()
+                legend.selectAll().append("g")
+                    .data(Object.entries(selectedBins))
+                    .join("g")
+                    .attr("class", "legend-element")
+                    .attr("transform", (d, i, nodes) => {
+                        const offset = nodes.length - i - 1;
+                        const coordY = startY - (offset * (legendElementHeight + legendElementGap));
+                        return `translate(${coordX},${coordY})`;
+                    })
+                    .call(g => { //populate legend elements
+                        g.append("rect")
+                            .attr("width", 16)
+                            .attr("height", 16)
+                            .attr("fill", d => d[1].color);
+                            // .attr("stroke", "#000f")
+                            // .attr("stroke-width", 1)
+                        g.append("text")
+                            .attr("class", "legend-labels svg-outline-text")
+                            .attr("x", -4)
+                            .attr("y", 9)
+                            .attr("dy", "0")
+                            .attr("font-size", FONT_SIZE)
+                            .attr("text-anchor", "end")
+                            .style("dominant-baseline", "middle")
+                            .text(d => d[0]);
+                        })
+                    .call(g => { // add title
+                        const offset = g.size() - 1;
+                        const coordY = startY - (offset * (legendElementHeight + legendElementGap));
+                        legend.append("text")
+                            .text(selectedStatId)
+                            .attr("class", "legend-title svg-outline-text")
+                            .attr("x", 20)
+                            .attr("y", -9)
+                            .attr("dy", "0")
+                            .attr("font-size", FONT_SIZE)
+                            .attr("text-anchor", "end")
+                            .style("dominant-baseline", "middle")
+                            .attr("transform", `translate(${coordX},${coordY})`)
+                        })
+                    .each((d, i, nodes) => {
+                        // console.log(nodes[i].getBoundingClientRect().width);
+                    })
+                    
+                // Update polygon color based on the selected property
+                let hasUncategorizedPolygons = false;
+                polygons.style("fill", d => {
+                    let category = "Uncategorized";
+
+                    if (datasetProperties['place_ids'].includes(String(d.properties[fieldId]))) {
+                        const value = getPlaceMapStats(d.properties[fieldId])[selectedStatId];
+                        category = categorizeValue(value, selectedBins);
+                    }
+                    // check if there is any uncategorized polygon
+                    hasUncategorizedPolygons |= (category === "Uncategorized");
+                    
+                    if (selectedStatId === "") {
+                        return UNCAT_COLOR;
+                    }
+                    if (category === "Uncategorized") {
+                        return mapStatsCategories[""]["color"];
+                    }
+                    return selectedBins[category]["color"];
+                });
+                if (hasUncategorizedPolygons && selectedStatId !== "") {
+                    // add a legend for uncategorized polygons
+                    showModal(`There was missing data when drawing map.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Target Field: ${parameters.target_id_field}`)
+                }
+                // Update the header text
+                HEADER.text(`Dataset: ${datasetProperties.dataset_name}, Stat: ${selectedStatId ? selectedStatId : "None"}`);
+                // Update description
+                MAP_DESCRIPTION.text(mapDescriptions[selectedStatId]);
+                MAP_DESCRIPTION_CONTAINER.classed('w3-hide', !mapDescriptions[selectedStatId]);
+            });
+    }
+
+    update(index) {
+
+    }
 }

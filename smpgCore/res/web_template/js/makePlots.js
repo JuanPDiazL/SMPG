@@ -704,6 +704,11 @@ class chartCard {
                 "plot": makeAccumulationPercentilesPlot,
                 "table": makeAccumulationPercentilesTable,
             },
+            "Map": {
+                "full title": "Map",
+                "plot": makeD3Map,
+                "table": () => {},
+            },
         };
         if (hasForecast) {
             this.cardTypes["Ensemble with Forecast"] = {
