@@ -711,7 +711,7 @@ class Table {
 }
 
 class chartCard {
-    constructor(containerSelector, defaultCardType = null) {
+    constructor(containerSelector, defaultCardType) {
         this.dataIndex = -1;
         this.cardTypes = {
             "Disabled": {
@@ -783,7 +783,8 @@ class chartCard {
             .on("click", (event) => {
                 const graphTypeSelectContent = this.graphTypeSelectContent;
                 graphTypeSelectContent.classed("w3-show", false);
-                this.changePlot(event);
+                this.cardType = event.target.value;
+                this.changePlot();
             });
 
         this.cardBody = this.cardElement
@@ -792,7 +793,19 @@ class chartCard {
         
         this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
         
-        if (this.cardElements["table"] !== undefined) {
+    }
+
+    changePlot() {
+        this.graphTypeSelectOpenButton.text(this.cardTypes[this.cardType]["full title"]);
+        this.cardBody.selectChildren().remove();
+
+        if (this.cardType == "Disabled") {
+            return;
+        }
+        this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
+        
+        this.cardButtonGroup.selectChildren().remove();
+        if (this.cardElements["table"]) {
             this.toggleTableButton = this.cardButtonGroup
                 .append("span")
                 .append("button")
@@ -800,23 +813,11 @@ class chartCard {
                     .attr("title", "Toggle display table")
                     .text("table_chart")
                     .on("click", (event) => {
-                        if(this.table !== null) {
-                            this.cardElements["table"].tableContainer.classed("w3-hide", !this.cardElements["table"].tableContainer.classed("w3-hide"));
-                        }
+                        this.cardElements["table"].tableContainer.classed("w3-hide", !this.cardElements["table"].tableContainer.classed("w3-hide"));
                     });
         }
-    }
 
-    changePlot(event) {
-        const plotType = event.target.value;
-        this.cardType = plotType;
-        this.graphTypeSelectOpenButton.text(this.cardTypes[plotType]["full title"]);
-        this.cardBody.selectChildren().remove();
-        if (plotType == "Disabled") {
-            return;
-        }
-
-        this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
+        // Fills data in the card
         this.update(this.dataIndex);
     }
 

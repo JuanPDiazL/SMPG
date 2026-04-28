@@ -263,6 +263,9 @@ function makeD3Map(containerElement) {
 
 class d3Map {
     constructor(containerElement, geoJsonMap, geoJsonReferenceMap) {
+        this.geoJsonMap = geoJsonMap;
+        this.geoJsonReferenceMap = geoJsonReferenceMap;
+
         const layerArea = d3.geoArea(geoJsonReferenceMap);
         const layerBounds = d3.geoBounds(geoJsonReferenceMap);
 
@@ -276,7 +279,7 @@ class d3Map {
             .attr("preserveAspectRatio", "xMinYMin meet")
             .attr("viewBox", `0, 0, ${internal_width}, ${internal_height}`)
 
-        const projection = d3.geoMercator()
+        this.projection = d3.geoMercator()
         .fitSize([internal_width, internal_height], geoJsonReferenceMap); // Fit the map to the SVG viewport size
 
         // define tooltip
@@ -290,21 +293,21 @@ class d3Map {
             .data(geoJsonReferenceMap.features)
             .enter().append("path")
             .attr("class", d => `reference-polygon`)
-            .attr("d", d3.geoPath().projection(projection))
+            .attr("d", d3.geoPath().projection(this.projection))
             .style("fill", "#ffff")
 
         const polygons = svg.append("g")
             .attr("id", "#mapPolygons")
             .attr("class", "zoomable")
             .selectAll(".country")
-            .data(geoJsonMap.features)
+            .data(this.geoJsonMap.features)
             .enter().append("path")
             .attr("class", d => `country country-${d.properties[fieldId]} w3-ripple`)
-            .attr("d", d3.geoPath().projection(projection))
+            .attr("d", d3.geoPath().projection(this.projection))
             .style("fill", UNCAT_COLOR)
             .on("mouseover", (event, d) => {
                 mapSelectorPath
-                .attr("d", d3.geoPath().projection(projection)(d))
+                .attr("d", d3.geoPath().projection(this.projection)(d))
                 .style("display", null)
                 let displayLabeltext = d.properties[featureSelect.value];
                 const idText = d.properties[fieldId]
@@ -317,14 +320,12 @@ class d3Map {
                 tooltip.text("None");
             })
             .on("click", (event, d) => {
-                mapPersistentSelectorPath
-                .attr("d", d3.geoPath().projection(projection)(d))
-                .style("display", null)
+                this.update(d.properties[fieldId]);
                 navigateTo({"place": d.properties[fieldId], "mode": "plots"});
             })
 
         // draw selection bounding box rectangle
-        const mapPersistentSelectorPath = svg.append("g")
+        this.mapPersistentSelectorPath = svg.append("g")
             .attr("id", "#mapPersistentSelector")
             .attr("class", "zoomable")
             .append("path")
@@ -344,11 +345,11 @@ class d3Map {
             .attr("id", "#mapLabels")
             .attr("class", "zoomable")
             .selectAll(".map-text-label")
-            .data(geoJsonMap.features)
+            .data(this.geoJsonMap.features)
             .enter().append("text")
             .text(d => d.properties[fieldId])
             .attr("class", "map-text-label svg-outline-text")
-            .attr("transform", d => `translate(${projection(d3.geoCentroid(d))})`)
+            .attr("transform", d => `translate(${this.projection(d3.geoCentroid(d))})`)
             .attr("font-size", FONT_SIZE)
             .style("dominant-baseline", "middle")
             // .style("text-anchor", "middle")
@@ -486,7 +487,15 @@ class d3Map {
     }
 
     update(index) {
-
+        // find geojson entry
+        const feature = this.geoJsonMap.features.find(f => f.properties[fieldId] == index);
+        
+        if (feature) {
+            // Mark current entry on map
+            this.mapPersistentSelectorPath
+                .attr("d", d3.geoPath().projection(this.projection)(feature))
+                .style("display", null)
+        }
     }
 }
 
