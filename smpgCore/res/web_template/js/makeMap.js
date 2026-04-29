@@ -480,19 +480,6 @@ class d3Map {
 }
 
 function makeD3Map(containerElement) {
-    var topoJsonObjectMap = JSON.parse(decompress(topojson_map));
-    if (hasReferenceMap) {
-        var referenceTopoJsonObjectMap = JSON.parse(decompress(reference_topojson_map));
-    } else {
-        var referenceTopoJsonObjectMap = topoJsonObjectMap;
-    }
-
-    let mapJson = topojson.feature(topoJsonObjectMap, topoJsonObjectMap.objects.map);
-    let referenceMapJson = topojson.feature(referenceTopoJsonObjectMap, referenceTopoJsonObjectMap.objects.map);
-
-    // Populate stat selects
-    let property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
-    fieldId = parameters["target_id_field"];
     updateSelect(featureSelect, property_ids);
     updateSelect(colorSelect, mapFields);
 

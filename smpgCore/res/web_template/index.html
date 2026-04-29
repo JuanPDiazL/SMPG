@@ -134,12 +134,12 @@
     <script>"use strict";
         // Globals
         let previousSelectionElement = null;
-        let fieldId = null;
         
         let card1 = null;
         let card2 = null;
         let card3 = null;
         let card4 = null;
+
         let sidebarElements = [];
 
         // Decompress and parse data
@@ -191,6 +191,23 @@
                 mapFields.push('Forecast Start of Season');
                 mapFields.push('Forecast Start of Season Anomaly');
             }
+        }
+
+        // Initialize map data
+        if(hasMap) {
+            var topoJsonObjectMap = JSON.parse(decompress(topojson_map));
+            if (hasReferenceMap) {
+                var referenceTopoJsonObjectMap = JSON.parse(decompress(reference_topojson_map));
+            } else {
+                var referenceTopoJsonObjectMap = topoJsonObjectMap;
+            }
+
+            var mapJson = topojson.feature(topoJsonObjectMap, topoJsonObjectMap.objects.map);
+            var referenceMapJson = topojson.feature(referenceTopoJsonObjectMap, referenceTopoJsonObjectMap.objects.map);
+
+            // Populate stat selects
+            var property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
+            var fieldId = parameters["target_id_field"];
         }
 
         // Debug data logs
