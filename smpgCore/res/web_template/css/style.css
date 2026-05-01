@@ -180,6 +180,15 @@ body {
     pointer-events: none;
 }
 
+.control-panel-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: auto;
+    margin: 1rem;
+    display: inline-block;
+}
+
 .chart-table {
     background-color: white !important;
     opacity: .8;
@@ -292,49 +301,37 @@ path {
     height: 100%;
 }
 
-#mapContainer {
+.map-container {
+    display: flex;
+    justify-content: center;
     position: relative;
     max-width: 100%;
     height: 100%;
-    aspect-ratio: 1;
     background-color: #fff;
-    border: 1px solid #ccc;
     align-content: center;
-}.darkmode #mapContainer {
+}.darkmode .map-container {
     background-color: var(--dark-bg-color) !important;
 }
 
-#mapSvg {
+.map-svg {
+    aspect-ratio: 1;
     max-width: 100%;
     max-height: 100%;
+    border: 1px solid #ccc;
 }
 
-#mapOverlay {
-    position: absolute;
-    background-color: #fffc;
-    z-index: 1;
-}.darkmode #mapOverlay {
-    position: absolute;
-    background-color: #1d2a35cc;
-}
-#mapDescriptionContainer {
+.map-description-container {
     display: flex;
     position: absolute;
+    top: 0;
+    left: 0;
     max-width: 50%;
     font-size: larger;
     line-height: 1.25;
 }
-#mapDescription {
+.map-description-text {
     background-color: #fffb;
     margin-top: 0;
-}
-
-#mapTooltip {
-    min-height: 1em;
-}
-
-#mapForm select {
-    width: 10em;
 }
 
 .selection-path {
@@ -385,7 +382,7 @@ path {
     stroke-width: 3px;
 }
 
-#mapLegend {
+.map-legend {
     position: absolute;
     right: 5pt;
     bottom: 1pt;

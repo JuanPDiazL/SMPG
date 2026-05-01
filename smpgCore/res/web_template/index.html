@@ -44,43 +44,6 @@
                 </header>
                 <div id="contentBody" class="w3-padding-small">
                     <div id="mapRoot" class="w3-hide">
-                        <div id="mapOverlay" class="smpg-right w3-card capture-ignore">
-                            <header class="w3-container w3-blue-grey">
-                                <span style="font-size: 1.7em;">Map Options</span>
-                                <span><button class="mi w3-button w3-ripple w3-right" title="Move to the other side" onclick="$('#mapOverlay').toggleClass(['smpg-left', 'smpg-right']);">swap_horiz</button></span>
-                            </header>
-                            <div id="overlayContent" class="w3-container w3-padding-small">
-                                <div id="mapTooltip">
-                                    <span id="mapTooltipStaticText">Selected Polygon: </span>
-                                    <span id="mapTooltipText">None</span>
-                                </div>
-                                <br>
-                                <div id="mapForm">
-                                    <label>Select Labels </label>
-                                    <select name="feature" id="featureSelect" class=" w3-border">
-                                        <option value="" selected>None</option>
-                                    </select>
-                                    <br>
-                                    <label>Show Legend</label>
-                                    <input id="showLegend" class="w3-check" type="checkbox" checked="checked">
-                                    <br>
-                                    <br>
-                                    <label>Select Stats </label>
-                                    <select name="color" id="colorSelect" class=" w3-border">
-                                        <option value="" selected>None</option>
-                                    </select>
-                                    <br>
-                                    <button id="resetMapViewport" class="w3-button w3-ripple w3-border w3-section w3-light-gray w3-hover-blue-grey">Reset Map Viewport</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="mapContainer">
-                            <div id="mapDescriptionContainer" class="w3-margin w3-hide">
-                                <span><button id="mapDescriptionShowButton" class="mi w3-button w3-border capture-ignore" title="Show description" onclick="toggleMapDescription()">info</button></span>
-                                <span><button id="mapDescriptionHideButton" class="mi w3-button w3-hide capture-ignore" title="Hide description" onclick="toggleMapDescription()">close</button></span>
-                                <span><p id="mapDescription" class="w3-leftbar w3-hide"></p></span>
-                            </div>
-                        </div>
                     </div>
                     <div id="plotsRoot" class="w3-hide">
                         <div id="row1" class="plots-row content-row w3-row-padding">
@@ -207,7 +170,7 @@
 
             // Populate stat selects
             var property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
-            var fieldId = parameters["target_id_field"];
+            var idField = parameters["target_id_field"];
         }
 
         // Debug data logs
@@ -232,16 +195,6 @@
         const MODAL = document.getElementById('modal');
         const MODAL_HEADER = document.getElementById('modalHeaderText');
         const MODAL_TEXT = document.getElementById('modalText');
-        const MAP_DESCRIPTION = d3.select('#mapDescription');
-        const MAP_DESCRIPTION_CONTAINER = d3.select('#mapDescriptionContainer');
-        const MAP_DESCRIPTION_SHOW_BUTTON = d3.select('#mapDescriptionShowButton');
-        const MAP_DESCRIPTION_HIDE_BUTTON = d3.select('#mapDescriptionHideButton');
-
-
-        let featureSelect = d3.select("#featureSelect");
-        let showLegendCheckBox = d3.select("#showLegend");
-        let colorSelect = d3.select("#colorSelect");
-        let resetMapViewportButton = d3.select("#resetMapViewport");
         
         // set page state using cookies
         setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
@@ -255,8 +208,8 @@
 
         window.onhashchange = handleNavigation; // update everything when the url changes
         if(hasMap) {
-            const mapContainer = d3.select("#mapContainer");
-            makeD3Map(mapContainer);
+            const mapContainer = d3.select("#mapRoot");
+            makeMapCard(mapContainer);
         } else {
             navigateTo({"place": firstPlaceKey})
         }

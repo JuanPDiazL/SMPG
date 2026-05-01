@@ -306,9 +306,3 @@ function closeModal() {
     MODAL_HEADER.textContent = "";
     MODAL_TEXT.innerHTML = "";
 }
-
-function toggleMapDescription() {
-    MAP_DESCRIPTION.classed("w3-hide", !MAP_DESCRIPTION.classed("w3-hide"));
-    MAP_DESCRIPTION_SHOW_BUTTON.classed("w3-hide", !MAP_DESCRIPTION.classed("w3-hide"));
-    MAP_DESCRIPTION_HIDE_BUTTON.classed("w3-hide", MAP_DESCRIPTION.classed("w3-hide"));
-}
