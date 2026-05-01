@@ -4,6 +4,7 @@ body {
     --sidebarWidth: 15em;
     --mainWidth: calc(100% - var(--sidebarWidth));
     --dark-bg-color: #1d2a35;
+    --dark-bg-color-translucent: #1d2a35bb;
     --dark-stroke-color: #2d3a45;
     line-height: .9;
     height: 100vh;
@@ -180,13 +181,16 @@ body {
     pointer-events: none;
 }
 
-.control-panel-container {
+.map-control-panel-container {
     position: absolute;
     top: 0;
     right: 0;
+    background-color: white;
     width: auto;
     margin: 1rem;
     display: inline-block;
+}.darkmode .map-control-panel-container {
+    background-color: var(--dark-bg-color);
 }
 
 .chart-table {
@@ -332,6 +336,9 @@ path {
 .map-description-text {
     background-color: #fffb;
     margin-top: 0;
+}.darkmode .map-description-text {
+    background-color: var(--dark-bg-color-translucent);
+
 }
 
 .selection-path {
