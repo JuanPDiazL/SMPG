@@ -223,7 +223,7 @@ function makeSelectionMenu(data) {
         placeLink.className = 'w3-bar-item w3-button w3-ripple';
         placeLink.innerHTML = place;
         placeLink.addEventListener('click', function () {
-            navigateTo({"place": place, "mode": "plots"});
+            navigateTo({"place": place});
         });
         sidebarList.appendChild(listElement);
     }
