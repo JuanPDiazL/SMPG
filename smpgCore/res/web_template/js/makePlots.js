@@ -712,7 +712,6 @@ class Table {
 
 class chartCard {
     constructor(containerSelector, defaultCardType) {
-        this.dataIndex = -1;
         this.cardTypes = {
             "Disabled": {
                 "full title": "Disabled",
@@ -749,15 +748,12 @@ class chartCard {
         }
         this.cardType = defaultCardType;
 
-        this.cardContainer = d3.select(containerSelector);
-        this.cardRoot = this.cardContainer
+        this.elementContainer = d3.select(containerSelector);
+        this.cardContainer = this.elementContainer
             .append("div")
-            .attr("class", "plot-card w3-container w3-half w3-cell w3-margin-bottom w3-padding-small");
-        this.cardElement = this.cardRoot
-            .append("div")
-            .attr("class", "w3-card");
+            .attr("class", "plot-card");
 
-        this.cardHeader = this.cardElement
+        this.cardHeader = this.cardContainer
             .append("header")
             .attr("class", "card-header w3-blue-grey");
         this.cardButtonGroup = this.cardHeader
@@ -785,19 +781,20 @@ class chartCard {
             .on("click", (event) => {
                 const graphTypeSelectContent = this.graphTypeSelectContent;
                 graphTypeSelectContent.classed("w3-show", false);
-                this.cardType = event.target.value;
-                this.changePlot();
+                const selectedCardType = event.target.value;
+                this.changePlot(selectedCardType);
             });
 
-        this.cardBody = this.cardElement
+        this.cardBody = this.cardContainer
             .append("div")
             .attr("class", "plot-container w3-container w3-padding-small");
         
         this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
-        
+        this.changePlot(defaultCardType);
     }
 
-    changePlot() {
+    changePlot(cardType) {
+        this.cardType = cardType;
         this.graphTypeSelectOpenButton.text(this.cardTypes[this.cardType]["full title"]);
         this.cardBody.selectChildren().remove();
 
@@ -820,11 +817,10 @@ class chartCard {
         }
 
         // Fills data in the card
-        this.update(this.dataIndex);
+        this.update(currentDataIndex);
     }
 
     update(index) {
-        this.dataIndex = index;
         for (const elementKey of Object.keys(this.cardElements)) {
             this.cardElements[elementKey].update(index);
         }

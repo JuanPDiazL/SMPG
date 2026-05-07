@@ -452,8 +452,6 @@ class d3Map {
             // add a legend for uncategorized polygons
             showModal(`There was missing data when drawing map.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Target Field: ${parameters.target_id_field}`)
         }
-        // Update the header text
-        HEADER.text(`Dataset: ${datasetProperties.dataset_name}, Stat: ${statId ? statId : "None"}`);
     }
 }
 

@@ -50,9 +50,8 @@ function handleNavigation(event) {
         mapRoot.classed(HIDE_CLASS, false);
         plotsRoot.classed(HIDE_CLASS, true);
     } else {
-        let selectedPlace = "";
         if (Object.values(datasetProperties["place_ids"]).includes(place)){
-            selectedPlace = place;
+            currentDataIndex = place;
         }
         else{
             showModal(`There is no data for ${place}.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Selected Region ID: ${place}<br>Target Field: ${parameters.target_id_field}`);
@@ -62,8 +61,8 @@ function handleNavigation(event) {
         mapRoot.classed(HIDE_CLASS, true);
         plotsRoot.classed(HIDE_CLASS, false);
 
-        updateDocument(selectedPlace);
-        previousSelectionElement = sidebarElements[selectedPlace];
+        updateDocument(currentDataIndex);
+        previousSelectionElement = sidebarElements[currentDataIndex];
     }
 }
 

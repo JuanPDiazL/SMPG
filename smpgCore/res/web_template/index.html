@@ -96,30 +96,23 @@
 
     <script>"use strict";
         // Globals
-        let previousSelectionElement = null;
-        
-        let card1 = null;
-        let card2 = null;
-        let card3 = null;
-        let card4 = null;
-
-        let sidebarElements = [];
+        var previousSelectionElement = null;
 
         // Decompress and parse data
-        let datasetProperties = JSON.parse(decompress(dataset_properties_json));
-        let parameters = JSON.parse(decompress(parameters_json));
-        let place_general_stats = csvParse(decompress(place_general_stats_csv));
-        let place_long_term_stats = parseRowsObjectCsv(decompress(place_long_term_stats_csv_obj));
-        let seasonal_current_totals = csvParseRows(decompress(seasonal_current_totals_csv));
-        let seasonal_general_stats = csvParse(decompress(seasonal_general_stats_csv));
-        let selected_seasons_general_stats = csvParse(decompress(selected_seasons_general_stats_csv));
-        let seasonal_cumsum = parseRowsObjectCsv(decompress(seasonal_cumsum_csv_obj));
-        let seasonal_ensemble = parseRowsObjectCsv(decompress(seasonal_ensemble_csv_obj));
-        let seasonal_long_term_stats  = parseRowsObjectCsv(decompress(seasonal_long_term_stats_csv_obj));
-        let selected_seasons_cumsum = parseRowsObjectCsv(decompress(selected_seasons_cumsum_csv_obj));
-        let selected_seasons_ensemble = parseRowsObjectCsv(decompress(selected_seasons_ensemble_csv_obj));
-        let selected_seasons_ensemble_with_forecast = parseRowsObjectCsv(decompress(selected_seasons_ensemble_with_forecast_csv_obj));
-        let selected_seasons_long_term_stats   = parseRowsObjectCsv(decompress(selected_seasons_long_term_stats_csv_obj));
+        var datasetProperties = JSON.parse(decompress(dataset_properties_json));
+        var parameters = JSON.parse(decompress(parameters_json));
+        var place_general_stats = csvParse(decompress(place_general_stats_csv));
+        var place_long_term_stats = parseRowsObjectCsv(decompress(place_long_term_stats_csv_obj));
+        var seasonal_current_totals = csvParseRows(decompress(seasonal_current_totals_csv));
+        var seasonal_general_stats = csvParse(decompress(seasonal_general_stats_csv));
+        var selected_seasons_general_stats = csvParse(decompress(selected_seasons_general_stats_csv));
+        var seasonal_cumsum = parseRowsObjectCsv(decompress(seasonal_cumsum_csv_obj));
+        var seasonal_ensemble = parseRowsObjectCsv(decompress(seasonal_ensemble_csv_obj));
+        var seasonal_long_term_stats  = parseRowsObjectCsv(decompress(seasonal_long_term_stats_csv_obj));
+        var selected_seasons_cumsum = parseRowsObjectCsv(decompress(selected_seasons_cumsum_csv_obj));
+        var selected_seasons_ensemble = parseRowsObjectCsv(decompress(selected_seasons_ensemble_csv_obj));
+        var selected_seasons_ensemble_with_forecast = parseRowsObjectCsv(decompress(selected_seasons_ensemble_with_forecast_csv_obj));
+        var selected_seasons_long_term_stats   = parseRowsObjectCsv(decompress(selected_seasons_long_term_stats_csv_obj));
 
         // Global data properties
         const period_unit = datasetProperties['period_unit_id'];
@@ -155,6 +148,8 @@
                 mapFields.push('Forecast Start of Season Anomaly');
             }
         }
+
+        var currentDataIndex = firstPlaceKey;
 
         // Initialize map data
         if(hasMap) {
@@ -200,11 +195,11 @@
         setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
         setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
-        card1 = new chartCard('#row1', "Seasonal Accumulations");
-        card2 = new chartCard('#row1', "Current Year Status");
-        card3 = new chartCard('#row2', "Ensemble");
-        card4 = new chartCard('#row2', "Seasonal Accumulation Percentiles");
-        sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
+        var card1 = new chartCard('#row1', "Seasonal Accumulations");
+        var card2 = new chartCard('#row1', "Current Year Status");
+        var card3 = new chartCard('#row2', "Ensemble");
+        var card4 = new chartCard('#row2', "Seasonal Accumulation Percentiles");
+        var sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
         window.onhashchange = handleNavigation; // update everything when the url changes
         if(hasMap) {
