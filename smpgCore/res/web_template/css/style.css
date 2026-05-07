@@ -10,10 +10,6 @@ body {
     height: 100vh;
 }
 
-#noscriptMessage {
-    text-align: center;
-}
-
 .darkmode, 
 .darkmode .chart-table, 
 .darkmode #documentRoot, 
@@ -30,23 +26,6 @@ body {
     fill: #000;
     stroke: #fffc;
 }
-
-.smpg-left {
-    left: calc(var(--sidebarWidth) + 1em);
-    text-align: left;
-
-}.sidebar-closed .smpg-left {
-    left: 1em;
-    text-align: left;
-}
-.smpg-right {
-    right: 1em;
-    text-align: right;
-}
-.smpg-bottom {
-    bottom: 1em;
-}
-
 
 #leftSidebar {
     width: var(--sidebarWidth);
@@ -209,24 +188,11 @@ body {
     margin: 8px 8px;
 }
 
-#plotsRoot {
-    height: 100%;
-}
-
-/* .plots-row {
-    height: 50%;
-}
-
-.plot-card {
-    width: 50%;
-    height: 100%;
-} */
-
 .plot-container {
     position: relative;
     width: 100%;
     /* height: 100%; */
-    aspect-ratio: 16/9;
+    /* aspect-ratio: 16/9; */
     padding-bottom: 0 !important;
 }
 
@@ -298,13 +264,6 @@ path {
 
 /* Map Styles */
 
-#mapRoot {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-}
-
 .map-container {
     display: flex;
     justify-content: center;
@@ -318,9 +277,8 @@ path {
 }
 
 .map-svg {
-    aspect-ratio: 1;
     max-width: 100%;
-    max-height: 100%;
+    height: 100%;
     border: 1px solid #ccc;
 }
 
@@ -395,4 +353,16 @@ path {
     bottom: 1pt;
     display: inline-block;
     pointer-events: none;
+}
+
+.grid-stack {
+}
+
+.grid-stack-item {
+}
+
+.grid-stack-item-content {
+    /* background-color: white;
+    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12); */
+    
 }

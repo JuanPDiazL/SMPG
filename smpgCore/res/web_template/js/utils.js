@@ -21,49 +21,29 @@ function navigateTo(queryParams={}, keepOlpParams=true) {
 function handleNavigation(event) {
     const oldUrl = event.oldUrl;
     const params = getHashParamsObject();
-    const mode = params['mode'];
     const place = params['place'];
-    let mapRoot = d3.select('#mapRoot');
-    let plotsRoot = d3.select('#plotsRoot');
-    let isViewMap = false;
-    switch (mode) {
-        case "map":
-            if (hasMap) {
-                isViewMap = true;
-                break;
-            }
-        case "plots":
-            // isViewMap = false;
-            break;
-        default:
-            if (hasMap) {
-                isViewMap = true;
-                break;
-            } else {
-                // isViewMap = false;
-            }
-            break;
-    }
-    
-    if(isViewMap) {
-        HEADER.text(`Dataset: ${datasetProperties.dataset_name}`);
-        mapRoot.classed(HIDE_CLASS, false);
-        plotsRoot.classed(HIDE_CLASS, true);
-    } else {
-        if (Object.values(datasetProperties["place_ids"]).includes(place)){
-            currentDataIndex = place;
-        }
-        else{
-            showModal(`There is no data for ${place}.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Selected Region ID: ${place}<br>Target Field: ${parameters.target_id_field}`);
-            return;
-        }
-        HEADER.textContent = `Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}]`;
-        mapRoot.classed(HIDE_CLASS, true);
-        plotsRoot.classed(HIDE_CLASS, false);
 
-        updateDocument(currentDataIndex);
-        previousSelectionElement = sidebarElements[currentDataIndex];
+    if (Object.values(datasetProperties["place_ids"]).includes(place)){
+        currentDataIndex = place;
     }
+    else{
+        showModal(`There is no data for ${place}.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Selected Region ID: ${place}<br>Target Field: ${parameters.target_id_field}`);
+        return;
+    }
+    HEADER.text(`Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}], Dataset: ${datasetProperties.dataset_name}`);
+
+    card1.update(currentDataIndex);
+    card2.update(currentDataIndex);
+    card3.update(currentDataIndex);
+    card4.update(currentDataIndex);
+    card5.update(currentDataIndex);
+
+    if(previousSelectionElement != null) {
+        previousSelectionElement.classList.remove('selected');
+    }
+    sidebarElements[currentDataIndex].classList.add('selected');
+
+    previousSelectionElement = sidebarElements[currentDataIndex];
 }
 
 function getHashParams(param=null) {
@@ -104,10 +84,6 @@ function setCookie(name, value) {
 
 function isDeclared(variableName) {
     return typeof window[variableName] !== "undefined";   
-}
-
-function goToMap() {
-    navigateTo({"mode": "map"}, false);
 }
 
 function setDarkMode(value) {
@@ -232,19 +208,6 @@ function confirmSearch(event) {
         selectedPlace.firstChild.click();
         console.log(selectedPlace, 'clicked');
     }
-}
-
-function updateDocument(place) {
-    card1.update(place);
-    card2.update(place);
-    card3.update(place);
-    card4.update(place);
-
-    if(previousSelectionElement != null) {
-        previousSelectionElement.classList.remove('selected');
-    }
-    sidebarElements[place].classList.add('selected');
-    d3.select('#contentHeaderText').text(place);
 }
 
 function makeSelectionMenu(data) {
