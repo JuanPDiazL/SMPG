@@ -251,7 +251,7 @@
         
         var sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
-        window.onhashchange = handleNavigation; // update everything when the url changes
+        window.addEventListener("hashchange", handleNavigation); // update everything when the url changes
         
 
         navigateTo({"place": getHashParamsObject()['place'] || firstPlaceKey});
