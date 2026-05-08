@@ -32,11 +32,9 @@ function handleNavigation(event) {
     }
     HEADER.text(`Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}], Dataset: ${datasetProperties.dataset_name}`);
 
-    card1.update(currentDataIndex);
-    card2.update(currentDataIndex);
-    card3.update(currentDataIndex);
-    card4.update(currentDataIndex);
-    card5.update(currentDataIndex);
+    for (const card of cards) {
+        card.update(currentDataIndex);
+    }
 
     if(previousSelectionElement != null) {
         previousSelectionElement.classList.remove('selected');

@@ -239,11 +239,13 @@
         setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
         setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
-        var card1 = new chartCard('[gs-id="item1"] .grid-stack-item-content', "Seasonal Accumulations");
-        var card2 = new chartCard('[gs-id="item2"] .grid-stack-item-content', "Map");
-        var card3 = new chartCard('[gs-id="item3"] .grid-stack-item-content', "Current Year Status");
-        var card4 = new chartCard('[gs-id="item4"] .grid-stack-item-content', "Ensemble");
-        var card5 = new chartCard('[gs-id="item5"] .grid-stack-item-content', "Seasonal Accumulation Percentiles");
+        var cards = [
+            new chartCard('[gs-id="item1"] .grid-stack-item-content', "Seasonal Accumulations"),
+            new chartCard('[gs-id="item2"] .grid-stack-item-content', "Map"),
+            new chartCard('[gs-id="item3"] .grid-stack-item-content', "Current Year Status"),
+            new chartCard('[gs-id="item4"] .grid-stack-item-content', "Ensemble"),
+            new chartCard('[gs-id="item5"] .grid-stack-item-content', "Seasonal Accumulation Percentiles"),
+        ];
 
         grid.update({sizeToContent: true});
         
