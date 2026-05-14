@@ -13,7 +13,6 @@ body {
 .darkmode, 
 .darkmode .chart-table, 
 .darkmode #documentRoot, 
-.darkmode .plot-container,
 .darkmode #openMapBtn:not(:hover),
 .darkmode #placeSearch,
 .darkmode .bb text {
@@ -91,12 +90,29 @@ body {
     background-color: inherit;
 }
 
-.plot-container {
-    background-color: white;
+.plot-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
 }
 
-.plot-card {
+.card-header {
+    height: fit-content;
+}
+
+p.card-title {
+    margin: 1em;
+}
+
+.card-body {
+    flex-grow: 1; /* Takes remaining space */
     position: relative;
+    overflow: auto;
+    width: 100%;
+    background-color: white;
+}.darkmode .card-body {
+    background-color: var(--dark-bg-color);
 }
 
 .card-title-select {
@@ -172,6 +188,25 @@ body {
     background-color: var(--dark-bg-color);
 }
 
+.plot-context-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+.plot-chart-container {
+    flex-grow: 1; /* Takes remaining space */
+    position: relative;
+    overflow: auto;
+    width: 100%;
+}
+
+.plot-legend-container {
+    padding-top: 0 !important;
+    height: fit-content;
+}
+
 .chart-table {
     background-color: white !important;
     opacity: .8;
@@ -188,20 +223,8 @@ body {
     margin: 8px 8px;
 }
 
-.plot-container {
-    position: relative;
-    width: 100%;
-    /* height: 100%; */
-    /* aspect-ratio: 16/9; */
-    padding-bottom: 0 !important;
-}
-
 .bb-chart {
     position: relative;
-}
-
-.legend-container {
-    padding-top: 0 !important;
 }
 
 .bb-legend-item {
@@ -270,7 +293,6 @@ path {
     position: relative;
     max-width: 100%;
     height: 100%;
-    background-color: #fff;
     align-content: center;
 }.darkmode .map-container {
     background-color: var(--dark-bg-color) !important;
@@ -355,14 +377,7 @@ path {
     pointer-events: none;
 }
 
-.grid-stack {
-}
-
-.grid-stack-item {
-}
-
 .grid-stack-item-content {
-    /* background-color: white;
-    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12); */
+    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
     
 }

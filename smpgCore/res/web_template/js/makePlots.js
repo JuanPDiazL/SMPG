@@ -137,12 +137,8 @@ const defaultOptions = {
     bar: {
         front: true,
     },
-    size: {
-        width: 800,
-        height: 450,
-    },
     resize: {
-        auto: "viewBox"
+        auto: "viewBox",
     },
 };
 const chartColors = {
@@ -610,12 +606,13 @@ class BBPlot {
         this.gridLinesGetter = gridLinesGetter;
         this.customSettings = customSettings;
 
-        const chartContainer = this.containerElement
-            .append("div")
-            .attr("class", "chart-container w3-container w3-padding-small");
-        const legendContainer = this.containerElement
-            .append("div")
-            .attr("class", "legend-container w3-container w3-padding-small");
+        this.allContainer = this.containerElement.append("div")
+            .attr("class", "plot-context-container");
+
+        const chartContainer = this.allContainer.append("div")
+            .attr("class", "plot-chart-container w3-container w3-padding-small");
+        const legendContainer = this.allContainer.append("div")
+            .attr("class", "plot-legend-container w3-container w3-padding-small");
         
         
         const chartOptions = {
@@ -661,6 +658,10 @@ class BBPlot {
             unload: true,
         });
         this.plot.xgrids(this.gridLinesGetter(index));
+    }
+
+    resize(size) {
+        this.plot.resize();
     }
 }
 
@@ -787,7 +788,7 @@ class chartCard {
 
         this.cardBody = this.cardContainer
             .append("div")
-            .attr("class", "plot-container w3-container w3-padding-small");
+            .attr("class", "card-body w3-container w3-padding-small");
         
         this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
         this.changePlot(defaultCardType);
@@ -823,6 +824,12 @@ class chartCard {
     update(index) {
         for (const elementKey of Object.keys(this.cardElements)) {
             this.cardElements[elementKey].update(index);
+        }
+    }
+
+    resize(size) {
+        for (const elementKey of Object.keys(this.cardElements)) {
+            this.cardElements[elementKey].resize(size);
         }
     }
 }

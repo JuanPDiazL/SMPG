@@ -93,6 +93,8 @@
     <script>"use strict";
         // Globals
         var previousSelectionElement = null;
+        var resizeTimeout = false; // holder for timeout
+        var resizeDelay = 300; // debounce delay
 
         // Decompress and parse data
         var datasetProperties = JSON.parse(decompress(dataset_properties_json));
@@ -246,13 +248,18 @@
             new chartCard('[gs-id="item4"] .grid-stack-item-content', "Ensemble"),
             new chartCard('[gs-id="item5"] .grid-stack-item-content', "Seasonal Accumulation Percentiles"),
         ];
-
-        grid.update({sizeToContent: true});
         
         var sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
         window.addEventListener("hashchange", handleNavigation); // update everything when the url changes
-        
+        window.addEventListener("resize", (event) => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {handleResize(event)}, resizeDelay);
+        });
+        grid.on("resize resizestop", (event) => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {handleResize(event)}, resizeDelay);
+        });
 
         navigateTo({"place": getHashParamsObject()['place'] || firstPlaceKey});
         window.dispatchEvent(new HashChangeEvent('hashchange',

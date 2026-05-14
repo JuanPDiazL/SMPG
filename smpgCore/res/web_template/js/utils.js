@@ -44,6 +44,22 @@ function handleNavigation(event) {
     previousSelectionElement = sidebarElements[currentDataIndex];
 }
 
+function handleResize(event) {
+    for (const card of cards) {
+        for (const elementKey of Object.keys(card.cardElements)) {
+            if (["map", "plot"].includes(elementKey)) {
+                const container = card.cardBody.node();
+                // Get container dimensions
+                const rect = container.getBoundingClientRect();
+                const width = rect.width;
+                const height = rect.height;
+
+                card.cardElements[elementKey].resize([width, height]);
+            }
+        }
+    }
+}
+
 function getHashParams(param=null) {
     const hashParams = new URLSearchParams(window.location.hash.substring(1)); // Remove the leading '#'
     if (param) {

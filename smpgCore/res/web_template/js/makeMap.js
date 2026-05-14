@@ -252,7 +252,7 @@ class d3Map {
         // Create SVG container
         this.svg = containerElement.append("svg")
             .attr("class", "map-svg")
-            .attr("preserveAspectRatio", "xMinYMin meet")
+            // .attr("preserveAspectRatio", "xMinYMin meet")
             .attr("viewBox", `0, 0, ${this.internal_width}, ${this.internal_height}`)
 
         this.projection = d3.geoMercator()
@@ -330,27 +330,15 @@ class d3Map {
 
         // Define the zoom behavior
         this.svgZoomHandler = d3.zoom()
+        .scaleExtent([0.9, 8])
+        .translateExtent([[this.internal_width*-0.1, this.internal_height*-0.1],
+            [this.internal_width*1.1, this.internal_height*1.1]])
         .on('zoom', (event) => {
             const transform = event.transform;
-            const viewWidth = (this.internal_width*transform.k);
-            const viewHeight = (this.internal_height*transform.k);
-            
-            // Calculate zoom bounds
-            const min_zoom = 0.9;
-            const max_zoom = 10;
-
-            // Restrict zoom range
-            transform.k = Math.max(min_zoom, transform.k); // Min zoom
-            // transform.k = Math.min(max_zoom, transform.k); // Max zoom
-
-            // Restrict movement out of bounds
-            transform.x = Math.max((this.internal_width * min_zoom) - viewWidth, transform.x);
-            transform.x = Math.min(this.internal_width * (1 - min_zoom), transform.x);
-            transform.y = Math.max((this.internal_height * min_zoom) - viewHeight, transform.y);
-            transform.y = Math.min(this.internal_height * (1 - min_zoom), transform.y);
 
             this.svg.selectAll(".zoomable")
-            .attr('transform', transform);
+            .attr("transform", transform)
+            .attr("stroke-width", 1 / transform.k);
         });
         this.svg.call(this.svgZoomHandler);
     }
@@ -452,6 +440,12 @@ class d3Map {
             // add a legend for uncategorized polygons
             showModal(`There was missing data when drawing map.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Target Field: ${parameters.target_id_field}`)
         }
+    }
+
+    resize(size=null) {
+        size = size || [this.svg.node().parentElement.clientWidth, 
+                        this.svg.node().parentElement.clientHeight];
+        this.svg.attr('viewBox', `0 0 ${this.internal_width} ${this.internal_height}`);
     }
 }
 
