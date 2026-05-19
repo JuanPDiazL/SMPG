@@ -465,10 +465,24 @@ class mapControlPanel {
         
         // Header
         this.controlPanelHeader = this.controlPanelContainer.append("header")
-            .attr("class", "card-header w3-container w3-blue-grey");
-        this.controlPanelHeader.append("p")
+            .attr("class", "card-header w3-blue-grey");
+            
+        // Buttons
+        this.headerButtonGroup = this.controlPanelHeader.append("div");
+        this.hideButton = this.headerButtonGroup.append("span").append("button")
+            .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
+            .attr("title", "Hide Map Control Panel")
+            .text("close")
+            .on("click", () => {
+                this.controlPanelContainer.classed("w3-hide", true)
+            });
+
+        // Title
+        this.controlPanelHeader.append("div")
             .attr("class", "card-title-select")
-            .text("Map Parameters");
+            .append("p")
+                .attr("class", "card-title")
+                .text("Map Parameters");
         
         // Body
         this.controlPanelBody = this.controlPanelContainer.append("div")
