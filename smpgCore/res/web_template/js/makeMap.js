@@ -334,11 +334,9 @@ class d3Map {
         .translateExtent([[this.internal_width*-0.1, this.internal_height*-0.1],
             [this.internal_width*1.1, this.internal_height*1.1]])
         .on('zoom', (event) => {
-            const transform = event.transform;
-
             this.svg.selectAll(".zoomable")
-            .attr("transform", transform)
-            .attr("stroke-width", 1 / transform.k);
+            .attr("transform", event.transform)
+            .attr("stroke-width", 1 / event.transform.k);
         });
         this.svg.call(this.svgZoomHandler);
     }
