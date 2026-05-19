@@ -762,7 +762,7 @@ class chartCard {
         this.graphTypeSelectContainer = this.cardHeader
             .append("div")
             .attr("class", "card-title-select w3-dropdown-click")
-            .on("click", (event) => {
+            .on("click.openDropDownMenu", (event) => {
                 const graphTypeSelectContent = this.graphTypeSelectContent;
                 graphTypeSelectContent
                     .classed("w3-show", !graphTypeSelectContent.classed("w3-show"));
@@ -779,7 +779,7 @@ class chartCard {
                 .attr("class", "card-title-select-button w3-bar-item w3-button")
                 .attr("value", d => d)
                 .text(d => d)
-            .on("click", (event) => {
+            .on("click.selectCardType", (event) => {
                 const graphTypeSelectContent = this.graphTypeSelectContent;
                 graphTypeSelectContent.classed("w3-show", false);
                 const selectedCardType = event.target.value;
