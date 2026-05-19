@@ -800,6 +800,7 @@ class chartCard {
         this.cardBody.selectChildren().remove();
 
         if (this.cardType == "Disabled") {
+            this.cardElements = {}
             return;
         }
         this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
