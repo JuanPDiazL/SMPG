@@ -757,8 +757,8 @@ class chartCard {
         this.cardHeader = this.cardContainer
             .append("header")
             .attr("class", "card-header w3-blue-grey");
-        this.cardButtonGroup = this.cardHeader
-            .append("div");
+        this.cardButtonGroup = this.cardHeader.append("div")
+            .attr("class", "card-button-group");
         this.graphTypeSelectContainer = this.cardHeader
             .append("div")
             .attr("class", "card-title-select w3-dropdown-click")
@@ -773,7 +773,7 @@ class chartCard {
             .text(this.cardTypes[this.cardType]["full title"]);
         this.graphTypeSelectContent = this.cardHeader
             .append("div")
-            .attr("class", "card-title-select- w3-dropdown-content w3-bar-block w3-border");
+            .attr("class", "w3-dropdown-content w3-bar-block w3-border");
         this.graphTypeSelectContent.selectAll("button").data(Object.keys(this.cardTypes))
             .join("button")
                 .attr("class", "card-title-select-button w3-bar-item w3-button")
