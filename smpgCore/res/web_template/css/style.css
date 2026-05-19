@@ -74,18 +74,23 @@ body {
     margin-left: unset;
 }
 
+#contentRoot {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: inherit;
+    margin: auto auto;
+    box-sizing: border-box;
+}
+
 #contentHeader {
     height: 2.5em;
 }
     
-#contentRoot {
-    background-color: inherit;
-    margin: auto auto;
-    height: calc(100% - 2.5em);
-    box-sizing: border-box;
-}
-
 #contentBody {
+    flex-grow: 1; /* Takes remaining space */
+    position: relative;
+    overflow: auto;
     height: 100%;
     background-color: inherit;
 }

@@ -195,6 +195,7 @@
             // row: 6,
             column: 6,
             handle: "header.card-header *",
+            cellHeight: "25%" // 1 divided by number of rows in screen
         };
 
         var gridstackItems = [
@@ -208,7 +209,7 @@
             {
                 id: "item2",
                 w: 2,
-                h: 2,
+                h: 4,
                 x: 2,
                 y: 0,
             },
@@ -248,7 +249,7 @@
             new chartCard('[gs-id="item4"] .grid-stack-item-content', "Ensemble"),
             new chartCard('[gs-id="item5"] .grid-stack-item-content', "Seasonal Accumulation Percentiles"),
         ];
-        
+
         var sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
         window.addEventListener("hashchange", handleNavigation); // update everything when the url changes
