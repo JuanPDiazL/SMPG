@@ -45,19 +45,24 @@ function handleNavigation(event) {
 }
 
 function handleResize(event) {
-    for (const card of cards) {
-        for (const elementKey of Object.keys(card.cardElements)) {
-            if (["map", "plot"].includes(elementKey)) {
-                const container = card.cardBody.node();
-                // Get container dimensions
-                const rect = container.getBoundingClientRect();
-                const width = rect.width;
-                const height = rect.height;
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        contentHeight = window.innerHeight - d3.select("#contentHeader").node().getBoundingClientRect().height;
+        grid.cellHeight(contentHeight/4);
+        for (const card of cards) {
+            for (const elementKey of Object.keys(card.cardElements)) {
+                if (["map", "plot"].includes(elementKey)) {
+                    const container = card.cardBody.node();
+                    // Get container dimensions
+                    const rect = container.getBoundingClientRect();
+                    const width = rect.width;
+                    const height = rect.height;
 
-                card.cardElements[elementKey].resize([width, height]);
+                    card.cardElements[elementKey].resize([width, height]);
+                }
             }
         }
-    }
+    }, resizeDelay);
 }
 
 function getHashParams(param=null) {

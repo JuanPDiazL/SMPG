@@ -95,6 +95,7 @@
         var previousSelectionElement = null;
         var resizeTimeout = false; // holder for timeout
         var resizeDelay = 300; // debounce delay
+        var contentHeight = null;
 
         // Decompress and parse data
         var datasetProperties = JSON.parse(decompress(dataset_properties_json));
@@ -194,8 +195,16 @@
             // float: false,
             // row: 6,
             column: 6,
-            handle: "header.card-header *",
-            cellHeight: "25%" // 1 divided by number of rows in screen
+            handle: ".card-header",
+            columnOpts: {
+                breakpointForWindow: true,  // test window vs grid size
+                columnMax: 6,
+                breakpoints: [
+                    {w:640, c:1},
+                    {w:800, c:2},
+                    {w:1024, c:3}
+                ]
+            },
         };
 
         var gridstackItems = [
@@ -253,14 +262,8 @@
         var sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
         window.addEventListener("hashchange", handleNavigation); // update everything when the url changes
-        window.addEventListener("resize", (event) => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {handleResize(event)}, resizeDelay);
-        });
-        grid.on("resize resizestop", (event) => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {handleResize(event)}, resizeDelay);
-        });
+        window.addEventListener("resize", handleResize);
+        grid.on("resize resizestop", handleResize);
 
         navigateTo({"place": getHashParamsObject()['place'] || firstPlaceKey});
         window.dispatchEvent(new HashChangeEvent('hashchange',
