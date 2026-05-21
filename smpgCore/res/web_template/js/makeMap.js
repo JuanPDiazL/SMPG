@@ -290,7 +290,7 @@ class d3Map {
             })
             .on("click", (event, d) => {
                 this.update(d.properties[idField]);
-                navigateTo({"place": d.properties[idField], "mode": "plots"});
+                navigateTo({"place": d.properties[idField]});
             })
 
         // draw selection bounding box rectangle
