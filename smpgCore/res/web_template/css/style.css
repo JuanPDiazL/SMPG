@@ -83,10 +83,6 @@ body {
     box-sizing: border-box;
 }
 
-#contentHeader {
-    height: 2.5em;
-}
-    
 #contentBody {
     flex-grow: 1; /* Takes remaining space */
     position: relative;
