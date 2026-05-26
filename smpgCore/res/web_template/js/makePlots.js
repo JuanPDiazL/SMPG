@@ -768,8 +768,8 @@ class chartCard {
                     .classed("w3-show", !graphTypeSelectContent.classed("w3-show"));
             });
         this.graphTypeSelectOpenButton = this.graphTypeSelectContainer
-            .append("button")
-            .attr("class", "card-title-select-button w3-button")
+            .append("span")
+            .attr("class", "card-title-select-button")
             .text(this.cardTypes[this.cardType]["full title"]);
         this.graphTypeSelectContent = this.cardHeader
             .append("div")

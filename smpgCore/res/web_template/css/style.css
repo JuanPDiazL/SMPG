@@ -382,8 +382,7 @@ path {
 }
 
 /* Freeze contents when editing*/
-.grid-stack-item:not(.ui-draggable-disabled) .card-body,
-.grid-stack-item:not(.ui-draggable-disabled) .card-title-select {
+.grid-stack-item:not(.ui-draggable-disabled) .card-body {
     pointer-events: none;
 }
 
