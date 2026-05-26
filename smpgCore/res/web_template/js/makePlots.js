@@ -813,7 +813,7 @@ class chartCard {
             this.cardElements = {}
             return;
         }
-        
+
         this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
 
         if (this.cardElements["table"]) {
@@ -823,6 +823,15 @@ class chartCard {
                     .text("table_chart")
                     .on("click", (event) => {
                         this.cardElements["table"].tableContainer.classed("w3-hide", !this.cardElements["table"].tableContainer.classed("w3-hide"));
+                    });
+        }
+        if (this.cardElements["controlPanel"]) {
+            this.openMapControlPanelButton = this.cardButtonGroup.append("span").append("button")
+                    .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
+                    .attr("title", "Open Control Panel")
+                    .text("settings")
+                    .on("click", (event) => {
+                        this.cardElements["controlPanel"].controlPanelContainer.classed("w3-hide", !this.cardElements["controlPanel"].controlPanelContainer.classed("w3-hide"));
                     });
         }
 
