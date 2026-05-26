@@ -1,6 +1,6 @@
 /* Page elements */
 
-body {
+:root {
     --sidebarWidth: 15em;
     --mainWidth: calc(100% - var(--sidebarWidth));
     --dark-bg-color: #1d2a35;
