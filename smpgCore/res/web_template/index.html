@@ -194,10 +194,11 @@
 
         var gridstackOptions = {
             animate: false,
-            // float: false,
+            float: true,
             // row: 6,
             column: 6,
             handle: ".card-header",
+            resizable: { handles: 'all'},
             columnOpts: {
                 breakpointForWindow: true,  // test window vs grid size
                 columnMax: 6,
