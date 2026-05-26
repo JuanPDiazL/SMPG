@@ -806,10 +806,16 @@ class chartCard {
         this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
         
         this.cardButtonGroup.selectChildren().remove();
+        this.closeButton = this.cardButtonGroup.append("span").append("button")
+            .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
+            .attr("title", "Close Card")
+            .text("close")
+            .on("click", (event) => {
+                grid.removeWidget(this.elementContainer.node().parentElement);
+            });
+
         if (this.cardElements["table"]) {
-            this.toggleTableButton = this.cardButtonGroup
-                .append("span")
-                .append("button")
+            this.toggleTableButton = this.cardButtonGroup.append("span").append("button")
                     .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
                     .attr("title", "Toggle display table")
                     .text("table_chart")

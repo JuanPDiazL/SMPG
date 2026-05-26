@@ -287,3 +287,18 @@ function closeModal() {
     MODAL_HEADER.textContent = "";
     MODAL_TEXT.innerHTML = "";
 }
+
+function add_widget(options) {
+    gridstackWidgetCount++;
+    let defaultOptions = {
+        smpgCardType: "Disabled",
+
+        id: `item${gridstackWidgetCount}`,
+        w: 2,
+        h: 2,
+        ...options
+    }
+    grid.addWidget(defaultOptions);
+    cards.push(new chartCard(`[gs-id="${defaultOptions['id']}"] .grid-stack-item-content`,
+        defaultOptions['smpgCardType']),)
+}
