@@ -799,20 +799,22 @@ class chartCard {
         this.graphTypeSelectOpenButton.text(this.cardTypes[this.cardType]["full title"]);
         this.cardBody.selectChildren().remove();
 
-        if (this.cardType == "Disabled") {
-            this.cardElements = {}
-            return;
-        }
-        this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
         
         this.cardButtonGroup.selectChildren().remove();
         this.closeButton = this.cardButtonGroup.append("span").append("button")
-            .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
+            .attr("class", "card-button card-edit-button mi w3-button w3-ripple w3-right capture-ignore")
             .attr("title", "Close Card")
             .text("close")
             .on("click", (event) => {
                 grid.removeWidget(this.elementContainer.node().parentElement);
             });
+
+        if (this.cardType == "Disabled") {
+            this.cardElements = {}
+            return;
+        }
+        
+        this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
 
         if (this.cardElements["table"]) {
             this.toggleTableButton = this.cardButtonGroup.append("span").append("button")

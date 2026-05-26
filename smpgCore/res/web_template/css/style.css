@@ -166,7 +166,7 @@ p.card-title {
 
 .mi.w3-button { /* Icon Buttons */
     font-size: 1.5em;
-    padding: 2px 12px;
+    padding: 1.5px 12px;
 }
 
 /* Chart */
@@ -379,6 +379,20 @@ path {
     bottom: 1pt;
     display: inline-block;
     pointer-events: none;
+}
+
+/* Freeze contents when editing*/
+.grid-stack-item:not(.ui-draggable-disabled) .card-body,
+.grid-stack-item:not(.ui-draggable-disabled) .card-title-select {
+    pointer-events: none;
+}
+
+/* Hide non-edit button when editing*/
+.grid-stack-item:not(.ui-draggable-disabled) .card-button-group .card-button:not(.card-edit-button) {
+    display: none;
+}
+.grid-stack-item.ui-draggable-disabled .card-button-group .card-button.card-edit-button {
+    display: none;
 }
 
 .grid-stack-item-content {

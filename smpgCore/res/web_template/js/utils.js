@@ -302,3 +302,11 @@ function add_widget(options) {
     cards.push(new chartCard(`[gs-id="${defaultOptions['id']}"] .grid-stack-item-content`,
         defaultOptions['smpgCardType']),)
 }
+
+function toggleLayoutEdit() {
+    editingLayout = !editingLayout;
+    EDIT_LAYOUT_BUTTON.classed("w3-hide", editingLayout);
+    STOP_EDIT_LAYOUT_BUTTON.classed("w3-hide", !editingLayout);
+    ADD_WIDGET_BUTTON.classed("w3-hide", !editingLayout);
+    grid.setStatic(!editingLayout);
+}
