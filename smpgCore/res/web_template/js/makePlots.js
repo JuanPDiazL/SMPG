@@ -108,11 +108,11 @@ const defaultOptions = {
             const scaleX = svgWidth / viewBox[2];
             const scaleY  = svgHeight / viewBox[3];
             let transformedX = pos.xAxis * scaleX;
-            const transformedY = pos.y * scaleY;
-            if(transformedX + width > svgWidth) {
-                // avoid out of bounds
-                transformedX -= width;
-            }
+            let transformedY = pos.y * scaleY;
+            // avoid out of bounds
+            if(transformedX + width > svgWidth) {transformedX -= width;}
+            if (transformedY + height > svgHeight) {transformedY -= height;}
+
             return {
                 top: transformedY,
                 left: transformedX
