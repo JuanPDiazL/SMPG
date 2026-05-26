@@ -131,9 +131,9 @@ function getLast(arr) {
 
 function setMenuState(value) {
     setCookie(MENU_HIDE_STATE_COOKIE_NAME, value);
-    if (value === "true") {
+    if (!value || value === "true") {
         BODY.classList.add('sidebar-closed');
-    } else {
+    } else if (value === "false") {
         BODY.classList.remove('sidebar-closed');
     }
 }
