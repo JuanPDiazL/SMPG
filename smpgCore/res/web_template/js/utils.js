@@ -308,5 +308,6 @@ function toggleLayoutEdit() {
     EDIT_LAYOUT_BUTTON.classed("w3-hide", editingLayout);
     STOP_EDIT_LAYOUT_BUTTON.classed("w3-hide", !editingLayout);
     ADD_WIDGET_BUTTON.classed("w3-hide", !editingLayout);
+    SORT_LAYOUT_BUTTON.classed("w3-hide", !editingLayout)
     grid.setStatic(!editingLayout);
 }
