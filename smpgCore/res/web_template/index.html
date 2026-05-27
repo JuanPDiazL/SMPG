@@ -132,7 +132,7 @@
         const hasMap = isDeclared("topojson_map") && topojson_map !== null;
         const hasReferenceMap = isDeclared("reference_topojson_map") && reference_topojson_map !== null;
         
-        const mapFields = ['Total up to Current Season/LTA Pct.', 
+        const mapFields = ['None', 'Total up to Current Season/LTA Pct.', 
             'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
             'Probability of Normal', 'Probability Above Normal', 
             'Ensemble Med. Pctl.', 'Current Season Pctl.',
@@ -170,6 +170,7 @@
 
             // Populate stat selects
             var property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
+            property_ids.splice(0, 0, "None"); // Add None element
             var idField = parameters["target_id_field"];
         }
 

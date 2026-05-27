@@ -2,7 +2,7 @@
 
 const UNCAT_COLOR = '#aaaf';
 let mapStatsCategories = {
-    '': { 'Uncategorized': {color:UNCAT_COLOR, 'function': () => true} },
+    'None': { 'Uncategorized': {color:UNCAT_COLOR, 'function': () => true} },
     'Total up to Current Season/LTA Pct.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
@@ -214,7 +214,7 @@ function getSosCategories(suffix='Start') {
 
 let getPlaceMapStats = (place) => {
     return {
-        '': () => undefined,
+        'None': () => undefined,
         'Total up to Current Season/LTA Pct.': seasonal_general_stats[place]['Total up to Current Season/LTA Pct.'],
         'Total up to Forecast/LTA Pct.': seasonal_general_stats[place]['Total up to Forecast/LTA Pct.'],
         'Ensemble Med./LTA Pct.': selected_seasons_general_stats[place]['Ensemble Med./LTA Pct.'],
@@ -377,49 +377,51 @@ class d3Map {
         const coordX = startX;
 
         this.legend.selectChildren().remove()
-        this.legend.selectAll().append("g")
-            .data(Object.entries(selectedBins))
-            .join("g")
-            .attr("class", "legend-element")
-            .attr("transform", (d, i, nodes) => {
-                const offset = nodes.length - i - 1;
-                const coordY = startY - (offset * (legendElementHeight + legendElementGap));
-                return `translate(${coordX},${coordY})`;
-            })
-            .call(g => { //populate legend elements
-                g.append("rect")
-                    .attr("width", 16)
-                    .attr("height", 16)
-                    .attr("fill", d => d[1].color);
-                    // .attr("stroke", "#000f")
-                    // .attr("stroke-width", 1)
-                g.append("text")
-                    .attr("class", "legend-labels svg-outline-text")
-                    .attr("x", -4)
-                    .attr("y", 9)
-                    .attr("dy", "0")
-                    .attr("font-size", this.FONT_SIZE)
-                    .attr("text-anchor", "end")
-                    .style("dominant-baseline", "middle")
-                    .text(d => d[0]);
+        if (statId !== "None") {
+            this.legend.selectAll().append("g")
+                .data(Object.entries(selectedBins))
+                .join("g")
+                .attr("class", "legend-element")
+                .attr("transform", (d, i, nodes) => {
+                    const offset = nodes.length - i - 1;
+                    const coordY = startY - (offset * (legendElementHeight + legendElementGap));
+                    return `translate(${coordX},${coordY})`;
                 })
-            .call(g => { // add title
-                const offset = g.size() - 1;
-                const coordY = startY - (offset * (legendElementHeight + legendElementGap));
-                this.legend.append("text")
-                    .text(statId)
-                    .attr("class", "legend-title svg-outline-text")
-                    .attr("x", 20)
-                    .attr("y", -9)
-                    .attr("dy", "0")
-                    .attr("font-size", this.FONT_SIZE)
-                    .attr("text-anchor", "end")
-                    .style("dominant-baseline", "middle")
-                    .attr("transform", `translate(${coordX},${coordY})`)
+                .call(g => { //populate legend elements
+                    g.append("rect")
+                        .attr("width", 16)
+                        .attr("height", 16)
+                        .attr("fill", d => d[1].color);
+                        // .attr("stroke", "#000f")
+                        // .attr("stroke-width", 1)
+                    g.append("text")
+                        .attr("class", "legend-labels svg-outline-text")
+                        .attr("x", -4)
+                        .attr("y", 9)
+                        .attr("dy", "0")
+                        .attr("font-size", this.FONT_SIZE)
+                        .attr("text-anchor", "end")
+                        .style("dominant-baseline", "middle")
+                        .text(d => d[0]);
+                    })
+                .call(g => { // add title
+                    const offset = g.size() - 1;
+                    const coordY = startY - (offset * (legendElementHeight + legendElementGap));
+                    this.legend.append("text")
+                        .text(statId)
+                        .attr("class", "legend-title svg-outline-text")
+                        .attr("x", 20)
+                        .attr("y", -9)
+                        .attr("dy", "0")
+                        .attr("font-size", this.FONT_SIZE)
+                        .attr("text-anchor", "end")
+                        .style("dominant-baseline", "middle")
+                        .attr("transform", `translate(${coordX},${coordY})`)
+                    })
+                .each((d, i, nodes) => {
+                    // console.log(nodes[i].getBoundingClientRect().width);
                 })
-            .each((d, i, nodes) => {
-                // console.log(nodes[i].getBoundingClientRect().width);
-            })
+        }
             
         // Update polygon color based on the selected property
         let hasUncategorizedPolygons = false;
@@ -433,7 +435,7 @@ class d3Map {
             // check if there is any uncategorized polygon
             hasUncategorizedPolygons |= (category === "Uncategorized");
             
-            if (statId === "") {
+            if (statId === "None") {
                 return UNCAT_COLOR;
             }
             if (category === "Uncategorized") {
@@ -441,7 +443,7 @@ class d3Map {
             }
             return selectedBins[category]["color"];
         });
-        if (hasUncategorizedPolygons && statId !== "") {
+        if (hasUncategorizedPolygons && statId !== "None") {
             // add a legend for uncategorized polygons
             showModal(`There was missing data when drawing map.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Target Field: ${parameters.target_id_field}`)
         }
@@ -504,10 +506,6 @@ class mapControlPanel {
                 const displayId = event.target.value;
                 map.changeLabels(displayId);
             });
-        this.labelFieldSelect.append("option")
-            .attr("value", "")
-            .attr("selected", "")
-            .text("None");
         updateSelect(this.labelFieldSelect, property_ids);
         this.labelFieldSelect.property("value", idField);
 
@@ -523,10 +521,6 @@ class mapControlPanel {
                 map.changeLegend(selectedStatId);
                 description.changeStat(selectedStatId);
             });
-        this.legendStatSelect.append("option")
-            .attr("value", "")
-            .attr("selected", "")
-            .text("None");
         updateSelect(this.legendStatSelect, mapFields);
 
         // Show legend checkbox
