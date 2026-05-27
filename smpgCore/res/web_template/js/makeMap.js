@@ -330,6 +330,13 @@ class d3Map {
 
         // Define the zoom behavior
         this.svgZoomHandler = d3.zoom()
+        .filter((event) => {
+            // Discard one finger touch events
+            if (event.type === "touchstart" && event.touches.length < 2) {
+                return false;
+            }
+            return true;
+        })
         .scaleExtent([0.9, 8])
         .translateExtent([[this.internal_width*-0.1, this.internal_height*-0.1],
             [this.internal_width*1.1, this.internal_height*1.1]])
