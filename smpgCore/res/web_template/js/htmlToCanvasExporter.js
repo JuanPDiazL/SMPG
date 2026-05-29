@@ -17,24 +17,8 @@ function save_reports() {
     let node = null;
 
     let params = getHashParamsObject();
-    const mapName = `${datasetProperties['dataset_name']}${colorNode.value ? "_" : ""}${colorNode.value}`;
-    let filename;
-    switch (params['mode']) {
-        case 'map':
-            node = document.getElementById('mapContainer')
-            filename = mapName;
-            break;
-
-        case 'plots':
-            node = document.getElementById('contentRoot');
-            filename = params['place'];
-            break;
-
-        default:
-            node = document.getElementById('mapContainer')
-            filename = mapName;
-            break;
-    }
+    node = document.getElementById('contentRoot');
+    let filename = params['place'];
     
     // add offset to fix bad rendering
     const zoom = window.devicePixelRatio;
