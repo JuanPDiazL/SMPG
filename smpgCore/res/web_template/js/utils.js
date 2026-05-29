@@ -47,8 +47,8 @@ function handleNavigation(event) {
 function handleResize(event) {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
-        contentHeight = window.innerHeight - d3.select("#contentHeader").node().getBoundingClientRect().height;
-        grid.cellHeight(contentHeight/4);
+        contentHeight = Math.max(900, window.innerHeight - d3.select("#contentHeader").node().getBoundingClientRect().height);
+        grid.cellHeight(contentHeight/GS_V_RES);
         for (const card of cards) {
             for (const elementKey of Object.keys(card.cardElements)) {
                 if (["map", "plot"].includes(elementKey)) {

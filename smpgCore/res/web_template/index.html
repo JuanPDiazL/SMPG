@@ -202,23 +202,27 @@
         const STOP_EDIT_LAYOUT_BUTTON = d3.select('#stopEditLayoutButton');
         const SORT_LAYOUT_BUTTON = d3.select('#sortLayoutButton');
 
-
+        const GS_H_RES = 12;
+        const GS_V_RES = 8;
+        const GS_H_CELL_SIZE = Math.round((1/3) * GS_H_RES);
+        const GS_V_CELL_SIZE = Math.round((1/2) * GS_V_RES);
 
         var gridstackOptions = {
             animate: false,
             float: true,
             // row: 6,
-            column: 6,
+            column: GS_H_RES,
             // handle: ".card-header",
             resizable: { handles: 'all'},
             staticGrid: true,
             columnOpts: {
-                breakpointForWindow: true,  // test window vs grid size
-                columnMax: 6,
+                breakpointForWindow: false,
+                layout: 'list',
+                columnMax: GS_H_RES,
                 breakpoints: [
-                    {w:640, c:1},
-                    {w:800, c:2},
-                    {w:1024, c:3}
+                    {w:800,  c:GS_H_CELL_SIZE*1},
+                    {w:1100, c:GS_H_CELL_SIZE*2},
+                    {w:1280, c:GS_H_CELL_SIZE*3},
                 ]
             },
         };
@@ -226,28 +230,28 @@
         var gridstackItems = [
             {
                 id: "item2",
-                w: 2,
-                h: 4,
+                w: GS_H_CELL_SIZE,
+                h: GS_V_CELL_SIZE*2,
             },
             {
                 id: "item1",
-                w: 2,
-                h: 2,
+                w: GS_H_CELL_SIZE,
+                h: GS_V_CELL_SIZE,
             },
             {
                 id: "item3",
-                w: 2,
-                h: 2,
+                w: GS_H_CELL_SIZE,
+                h: GS_V_CELL_SIZE,
             },
             {
                 id: "item4",
-                w: 2,
-                h: 2,
+                w: GS_H_CELL_SIZE,
+                h: GS_V_CELL_SIZE,
             },
             {
                 id: "item5",
-                w: 2,
-                h: 2,
+                w: GS_H_CELL_SIZE,
+                h: GS_V_CELL_SIZE,
             },
         ];
         gridstackWidgetCount = gridstackItems.length;
