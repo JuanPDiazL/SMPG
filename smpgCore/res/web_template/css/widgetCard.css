@@ -35,3 +35,8 @@ p.card-title {
     word-wrap: break-word;
     word-break: break-word;
 }
+
+.card-button {
+    display: flex;
+    margin: 8px 8px;
+}

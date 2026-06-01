@@ -9,18 +9,6 @@
     pointer-events: none;
 }
 
-.map-control-panel-container {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background-color: white;
-    width: auto;
-    margin: 1rem;
-    display: inline-block;
-}.darkmode .map-control-panel-container {
-    background-color: var(--dark-bg-color);
-}
-
 .plot-context-container {
     display: flex;
     flex-direction: column;
@@ -50,12 +38,6 @@
     font-size: x-small;
     box-shadow: #000 1px 1px 1px;
 }
-
-.card-button {
-    display: flex;
-    margin: 8px 8px;
-}
-
 
 /* Plot internal elements */
 
