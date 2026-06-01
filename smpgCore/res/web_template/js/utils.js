@@ -1,4 +1,8 @@
+// This file contains utility functions and options
+
 "use strict";
+
+// Constants
 const SMPG_COOKIE_PREFIX = 'SMPG_';
 const DARKMODE_COOKIE_NAME = `${SMPG_COOKIE_PREFIX}DARKMODE`;
 const MENU_HIDE_STATE_COOKIE_NAME = `${SMPG_COOKIE_PREFIX}MENU_HIDE_STATE`;

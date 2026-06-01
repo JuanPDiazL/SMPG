@@ -1,3 +1,5 @@
+// This file contains the code to construct the map
+
 "use strict";
 
 const UNCAT_COLOR = '#aaaf';
