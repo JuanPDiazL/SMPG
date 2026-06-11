@@ -195,9 +195,9 @@ class Place:
         ]
         clim_std = clim_seasons_cumsum.std()
 
-        clim_avg_upto_current = clim_avg[current_index]
+        clim_avg_upto_current = clim_avg.iloc[current_index]
         if not np.isnan(forecast_values.iloc[-1]):
-            clim_avg_upto_forecast = clim_avg[current_index + len(forecast_values)]
+            clim_avg_upto_forecast = clim_avg.iloc[current_index + len(forecast_values)]
         else:
             clim_avg_upto_forecast = np.nan
 
@@ -208,19 +208,19 @@ class Place:
             # 'E. LTA': clim_ensemble_avg,
         }, orient='index')
         self.seasonal_general_stats = pd.Series({
-            'LTA': clim_avg[-1],
+            'LTA': clim_avg.iloc[-1],
             # 'E. LTA': clim_ensemble_avg[-1],
             # 'Median': clim_med[-1],
-            'Ensemble Med.': clim_ensemble_med[-1],
-            'Ensemble Med. w/ Forecast': clim_ensemble_med_with_forecast[-1],
+            'Ensemble Med.': clim_ensemble_med.iloc[-1],
+            'Ensemble Med. w/ Forecast': clim_ensemble_med_with_forecast.iloc[-1],
             'LTA up to Current Season': clim_avg_upto_current,
-            'Total up to Current Season/LTA Pct.': (current_cumsum_mon[-1]/clim_avg_upto_current)*100,
-            'Total up to Forecast/LTA Pct.': ((current_cumsum_mon[-1]+forecast_cumsum.iloc[-1])/clim_avg_upto_forecast)*100,
-            'Ensemble Med./LTA Pct.': (clim_ensemble_med[-1]/clim_avg[-1])*100,
-            'Ensemble Med. w Forecast/LTA Pct.': (clim_ensemble_med_with_forecast[-1]/clim_avg[-1])*100,
-            'Ensemble Med. Pctl.': percentiles_from_values(seasonal_sums, [clim_ensemble_med[-1]])[0],
-            'Ensemble Med. Pctl. w/ Forecast': percentiles_from_values(seasonal_sums, [clim_ensemble_med_with_forecast[-1]])[0],
-            'St. Dev.': clim_std[-1],
+            'Total up to Current Season/LTA Pct.': (current_cumsum_mon.iloc[-1]/clim_avg_upto_current)*100,
+            'Total up to Forecast/LTA Pct.': ((current_cumsum_mon.iloc[-1]+forecast_cumsum.iloc[-1])/clim_avg_upto_forecast)*100,
+            'Ensemble Med./LTA Pct.': (clim_ensemble_med.iloc[-1]/clim_avg.iloc[-1])*100,
+            'Ensemble Med. w Forecast/LTA Pct.': (clim_ensemble_med_with_forecast.iloc[-1]/clim_avg.iloc[-1])*100,
+            'Ensemble Med. Pctl.': percentiles_from_values(seasonal_sums, [clim_ensemble_med.iloc[-1]])[0],
+            'Ensemble Med. Pctl. w/ Forecast': percentiles_from_values(seasonal_sums, [clim_ensemble_med_with_forecast.iloc[-1]])[0],
+            'St. Dev.': clim_std.iloc[-1],
             # 'Ensemble 33 Pctl.': clim_ensemble_percentiles[0],
             # 'Ensemble 67 Pctl.': clim_ensemble_percentiles[1],
             'Probability Below Normal': clim_ensemble_percentile_probabilities[0]*100,
@@ -258,9 +258,9 @@ class Place:
         ]
         selected_std = self.selected_seasons_cumsum.std()
 
-        selected_avg_upto_current = selected_avg[current_index]
+        selected_avg_upto_current = selected_avg.iloc[current_index]
         if not np.isnan(forecast_values.iloc[-1]):
-            selected_avg_upto_forecast = selected_avg[current_index + len(forecast_values)]
+            selected_avg_upto_forecast = selected_avg.iloc[current_index + len(forecast_values)]
         else:
             selected_avg_upto_forecast = np.nan
 
@@ -273,20 +273,20 @@ class Place:
             'E. LTA': selected_ensemble_avg,
         }, orient='index')
         self.selected_seasons_general_stats = pd.Series({
-            'LTA': selected_avg[-1],
-            'E. LTA': selected_ensemble_avg[-1],
-            'E. LTA w/ Forecast': selected_ensemble_avg_with_forecast[-1],
+            'LTA': selected_avg.iloc[-1],
+            'E. LTA': selected_ensemble_avg.iloc[-1],
+            'E. LTA w/ Forecast': selected_ensemble_avg_with_forecast.iloc[-1],
             # 'Median': selected_med[-1],
-            'Ensemble Med.': selected_ensemble_med[-1],
-            'Ensemble Med. w/ Forecast': selected_ensemble_med_with_forecast[-1],
+            'Ensemble Med.': selected_ensemble_med.iloc[-1],
+            'Ensemble Med. w/ Forecast': selected_ensemble_med_with_forecast.iloc[-1],
             'LTA up to Current Season': selected_avg_upto_current,
-            'Total up to Current Season/LTA Pct.': (current_cumsum_mon[-1]/selected_avg_upto_current)*100,
-            # 'Total up to Forecast/LTA Pct.': ((current_cumsum_mon[-1]+forecast_cumsum.iloc[-1])/selected_avg_upto_forecast)*100,
-            'Ensemble Med./LTA Pct.': (selected_ensemble_med[-1]/selected_avg[-1])*100,
-            'Ensemble Med. w Forecast/LTA Pct.': (selected_ensemble_med_with_forecast[-1]/selected_avg[-1])*100,
-            'Ensemble Med. Pctl.': percentiles_from_values(seasonal_sums, [selected_ensemble_med[-1]])[0],
-            'Ensemble Med. Pctl. w/ Forecast': percentiles_from_values(seasonal_sums, [selected_ensemble_med_with_forecast[-1]])[0],
-            'St. Dev.': selected_std[-1],
+            'Total up to Current Season/LTA Pct.': (current_cumsum_mon.iloc[-1]/selected_avg_upto_current)*100,
+            # 'Total up to Forecast/LTA Pct.': ((current_cumsum_mon.iloc[-1]+forecast_cumsum.iloc[-1])/selected_avg_upto_forecast)*100,
+            'Ensemble Med./LTA Pct.': (selected_ensemble_med.iloc[-1]/selected_avg.iloc[-1])*100,
+            'Ensemble Med. w Forecast/LTA Pct.': (selected_ensemble_med_with_forecast.iloc[-1]/selected_avg.iloc[-1])*100,
+            'Ensemble Med. Pctl.': percentiles_from_values(seasonal_sums, [selected_ensemble_med.iloc[-1]])[0],
+            'Ensemble Med. Pctl. w/ Forecast': percentiles_from_values(seasonal_sums, [selected_ensemble_med_with_forecast.iloc[-1]])[0],
+            'St. Dev.': selected_std.iloc[-1],
             'Ensemble 33 Pctl.': selected_ensemble_percentiles[0],
             'Ensemble 67 Pctl.': selected_ensemble_percentiles[1],
             'Ensemble 33 Pctl. w/ Forecast': selected_ensemble_percentiles_with_forecast[0],
@@ -306,22 +306,22 @@ class Place:
             'Current Season Accumulation': current_cumsum_mon,
             'Current Season Accumulation with Forecast': current_cumsum_mon_with_forecast,
             'Forecast': forecast_values,
-            'Forecast Accumulation': current_cumsum_mon[-1] + forecast_cumsum,
+            'Forecast Accumulation': current_cumsum_mon.iloc[-1] + forecast_cumsum,
         }
         self.place_long_term_stats = pd.DataFrame([pd.Series(v, name=k) for k, v in place_lt_stats.items()])
 
         self.place_general_stats = pd.Series({
             'Current Season Pctl.': percentiles_from_values(self.seasonal_sums_upto_current.to_numpy(), 
-                [current_cumsum_mon[-1]])[0],
-            'Current Accumulation to Present': current_cumsum_mon[-1],
-            'Current Accumulation to Forecast': current_cumsum_mon[-1] + forecast_cumsum.iloc[-1],
+                [current_cumsum_mon.iloc[-1]])[0],
+            'Current Accumulation to Present': current_cumsum_mon.iloc[-1],
+            'Current Accumulation to Forecast': current_cumsum_mon.iloc[-1] + forecast_cumsum.iloc[-1],
             'Seasonal 3 Pctl.': seasonal_pctls[0],
             'Seasonal 6 Pctl.': seasonal_pctls[1],
             'Seasonal 11 Pctl.': seasonal_pctls[2],
             'Seasonal 21 Pctl.': seasonal_pctls[3],
             'Seasonal 33 Pctl.': seasonal_pctls[4],
             'Seasonal 67 Pctl.': seasonal_pctls[5],
-            'Climatology Average at Current Dekad': clim_seasons_cumsum.mean()[current_index],
+            'Climatology Average at Current Dekad': clim_seasons_cumsum.mean().iloc[current_index],
             'Climatology 33 Pctl.': clim_seasons_pctls[0],
             'Climatology 67 Pctl.': clim_seasons_pctls[1],
             **sos_data,

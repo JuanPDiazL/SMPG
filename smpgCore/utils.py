@@ -407,7 +407,7 @@ def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFram
     if post_data_slice.empty:
         return post_data.apply(lambda _: fixed_series_cumsum, axis=1)
     return post_data_slice.apply(lambda row: pd.concat(
-        [fixed_series_cumsum, (fixed_series_cumsum[-1] + row.cumsum())]), 
+        [fixed_series_cumsum, (fixed_series_cumsum.iloc[-1] + row.cumsum())]), 
         axis=1)
 
 
