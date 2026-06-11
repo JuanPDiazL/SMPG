@@ -133,34 +133,58 @@ var gridstackOptions = {
         ]
     },
 };
-
-var gridstackItems = [
-    {
-        id: "item2",
-        w: GS_H_CELL_SIZE,
-        h: GS_V_CELL_SIZE*2,
-    },
-    {
-        id: "item1",
-        w: GS_H_CELL_SIZE,
-        h: GS_V_CELL_SIZE,
-    },
-    {
-        id: "item3",
-        w: GS_H_CELL_SIZE,
-        h: GS_V_CELL_SIZE,
-    },
-    {
-        id: "item4",
-        w: GS_H_CELL_SIZE,
-        h: GS_V_CELL_SIZE,
-    },
-    {
-        id: "item5",
-        w: GS_H_CELL_SIZE,
-        h: GS_V_CELL_SIZE,
-    },
-];
+if (hasMap) {
+    var gridstackItems = [
+        {
+            id: "item2",
+            w: GS_H_CELL_SIZE,
+            h: GS_V_CELL_SIZE*2,
+        },
+        {
+            id: "item1",
+            w: GS_H_CELL_SIZE,
+            h: GS_V_CELL_SIZE,
+        },
+        {
+            id: "item3",
+            w: GS_H_CELL_SIZE,
+            h: GS_V_CELL_SIZE,
+        },
+        {
+            id: "item4",
+            w: GS_H_CELL_SIZE,
+            h: GS_V_CELL_SIZE,
+        },
+        {
+            id: "item5",
+            w: GS_H_CELL_SIZE,
+            h: GS_V_CELL_SIZE,
+        },
+    ];
+} else {
+    var gridstackItems = [
+        {
+            id: "item1",
+            w: GS_H_CELL_SIZE*1.5,
+            h: GS_V_CELL_SIZE,
+        },
+        {
+            id: "item3",
+            w: GS_H_CELL_SIZE*1.5,
+            h: GS_V_CELL_SIZE,
+        },
+        {
+            id: "item4",
+            w: GS_H_CELL_SIZE*1.5,
+            h: GS_V_CELL_SIZE,
+        },
+        {
+            id: "item5",
+            w: GS_H_CELL_SIZE*1.5,
+            h: GS_V_CELL_SIZE,
+        },
+    ];
+}
 gridstackWidgetCount = gridstackItems.length;
 var grid = GridStack.init(gridstackOptions);
 grid.load(gridstackItems);
@@ -171,11 +195,13 @@ setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
 var cards = [
     new chartCard('[gs-id="item1"] .grid-stack-item-content', "Seasonal Accumulations"),
-    new chartCard('[gs-id="item2"] .grid-stack-item-content', "Map"),
     new chartCard('[gs-id="item3"] .grid-stack-item-content', "Current Year Status"),
     new chartCard('[gs-id="item4"] .grid-stack-item-content', "Ensemble"),
     new chartCard('[gs-id="item5"] .grid-stack-item-content', "Seasonal Accumulation Percentiles"),
 ];
+if (hasMap) {
+    cards.push(new chartCard('[gs-id="item2"] .grid-stack-item-content', "Map"));
+}
 
 var sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
