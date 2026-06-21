@@ -193,10 +193,16 @@ grid.load(gridstackItems);
 setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
 setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
+if (hasForecast) {
+    var ensembleCard = new chartCard('[gs-id="item4"] .grid-stack-item-content', "Ensemble with Forecast");
+} else {
+    var ensembleCard = new chartCard('[gs-id="item4"] .grid-stack-item-content', "Ensemble");
+}
+
 var cards = [
     new chartCard('[gs-id="item1"] .grid-stack-item-content', "Seasonal Accumulations"),
     new chartCard('[gs-id="item3"] .grid-stack-item-content', "Current Year Status"),
-    new chartCard('[gs-id="item4"] .grid-stack-item-content', "Ensemble"),
+    ensembleCard,
     new chartCard('[gs-id="item5"] .grid-stack-item-content', "Seasonal Accumulation Percentiles"),
 ];
 if (hasMap) {
