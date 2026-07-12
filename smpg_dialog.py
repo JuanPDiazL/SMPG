@@ -29,8 +29,8 @@ import json
 import traceback
 import webbrowser
 
-from PyQt5 import uic
-from PyQt5.QtWidgets import (
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QMessageBox,
     QFileDialog,
