@@ -21,12 +21,9 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
-# Initialize Qt resources from file resources.py
-from .resources import *
 # Import the code for the dialog
 from .smpg_dialog import SMPGDialog
 import os.path
@@ -50,28 +47,12 @@ class SMPG:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&SMPG')
+        self.menu = u'&SMPG'
         self.master_dlg = None
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
-
-    # noinspection PyMethodMayBeStatic
-    def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
-        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('SMPG', message)
-
 
     def add_action(
         self,
@@ -154,7 +135,7 @@ class SMPG:
             'icon.png')
         self.add_action(
             icon_path,
-            text=self.tr(u'SMPG'),
+            text=u'SMPG',
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -165,7 +146,7 @@ class SMPG:
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&SMPG'),
+                u'&SMPG',
                 action)
             self.iface.removeToolBarIcon(action)
         if self.master_dlg is not None:
