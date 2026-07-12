@@ -1,6 +1,13 @@
 import numpy as np
 import pandas as pd
+
+
+from qgis.core import (
+    QgsVectorLayer,
+)
+
 from .utils import *
+from .pyqgis_utils import get_polygon_field_data
 
 # TODO: remove conversion methods from this class to dedicated functions
 class Dataset:
@@ -13,7 +20,7 @@ class Dataset:
         parameters (Parameters): Computation parameters.
         places (dict[str, Place]): Dictionary of place objects.
     """
-    def __init__(self, name: str, dataset: pd.DataFrame, col_names: list[str], parameters: Parameters) -> None:
+    def __init__(self, name: str, dataset: pd.DataFrame, col_names: list[str], parameters: Parameters, vector_layer: QgsVectorLayer) -> None:
         """Constructor
 
         Args:
@@ -23,8 +30,15 @@ class Dataset:
             parameters (Parameters): computation parameters.
         """
         self.name = name
-        self.dataset = dataset
         self.timestamps = col_names
+        
+        # Filter dataset rows to the ones existing in the vector layer
+        if vector_layer is not None:
+            polygon_selected_data = get_polygon_field_data(vector_layer, parameters.target_id_field)
+            filtered_dataset = dataset[dataset.index.isin(polygon_selected_data.values())]
+            self.dataset = filtered_dataset
+        else: 
+            self.dataset = dataset
         
         self.properties = Properties(properties_dict=parse_timestamps(self.timestamps))
         self.parameters = parameters
@@ -59,7 +73,7 @@ class Dataset:
         self.properties.selected_years = self.parameters.selected_years
         self.properties.sub_season_monitoring_ids = slice_by_element(default_sub_seasons, self.parameters.season_start, self.parameters.season_end)
         self.properties.sub_season_offset = default_sub_seasons.index(self.parameters.season_start)
-        self.properties.place_ids = dataset.index.astype(str).tolist()
+        self.properties.place_ids = self.dataset.index.astype(str).tolist()
         self.properties.season_start_index = default_sub_seasons.index(self.parameters.season_start)
         self.properties.season_end_index = default_sub_seasons.index(self.parameters.season_end)+1
         self.properties.current_season_trim_index_with_forecast = min(self.properties.current_season_length, self.properties.season_end_index)
@@ -67,7 +81,7 @@ class Dataset:
 
         # create a dictionary with the places
         self.places: dict[str, Place] = {}
-        for place, timeseries in dataset.iterrows():
+        for place, timeseries in self.dataset.iterrows():
             # print(place)
             self.places[place] = Place(place, timeseries, self)
     

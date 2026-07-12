@@ -482,7 +482,7 @@ Github Project Page: {self.metadata["homepage"]}
 
     def compute(self, parameters):
         """Calculates derived data from the dataset, and returns it."""
-        self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, parameters)
+        self.structured_dataset = Dataset(self.dataset_filename, self.parsed_dataset, self.col_names, parameters, self.selected_layer)
         return self.structured_dataset
     
     def post_computation(self):

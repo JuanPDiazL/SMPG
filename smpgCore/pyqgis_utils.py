@@ -16,6 +16,7 @@ from qgis.core import (
     QgsRendererCategory,
     QgsClassificationQuantile,
     QgsMessageLog,
+    QgsWkbTypes,
 )
 
 def load_layer_file(source: str) -> QgsVectorLayer:
@@ -61,6 +62,22 @@ def get_fields(layer :QgsVectorLayer) -> list[str]:
     if layer is not None:
         return layer.fields().names()
     return []
+
+def get_polygon_field_data(layer :QgsVectorLayer, field: str) -> dict[str, str]:
+    """Get the field data for each polygon of a layer.
+    
+    Args:
+        layer (QgsVectorLayer): The layer to get the polygon IDs from.
+        field (str): The field to get the data for.
+
+    Returns:
+       dict[str]: A dictionary with polygon IDs as keys and field data as values.
+    """
+    field_data = {}
+    for feature in layer.getFeatures():
+        if feature.geometry().type() == QgsWkbTypes.PolygonGeometry:
+            field_data[feature.id()] = feature[field]
+    return field_data
 
 def get_vector_layers() -> dict[str, QgsVectorLayer]:
     """Get all vector layers in the project.
