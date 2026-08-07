@@ -128,6 +128,24 @@ grid.load(gridstackItems);
 
 var cards = parseWidgets(layout);
 
+const position = { x: 0, y: 0 }
+
+// drag window (parent of card header)
+interact('.drag-handle').draggable({
+  listeners: {
+    start (event) {
+      console.log(event.type, event.target)
+    },
+    move (event) {
+      position.x += event.dx
+      position.y += event.dy
+
+      event.target.parentElement.style.transform =
+        `translate(${position.x}px, ${position.y}px)`
+    },
+  }
+})
+
 var sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
 window.addEventListener("hashchange", handleNavigation); // update everything when the url changes

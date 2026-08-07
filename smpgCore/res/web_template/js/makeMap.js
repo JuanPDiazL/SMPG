@@ -472,11 +472,11 @@ class mapControlPanel {
         this.containerElement = containerElement;
 
         this.controlPanelContainer = containerElement.append("div")
-            .attr("class", "map-control-panel-container w3-card capture-ignore");
+            .attr("class", "map-control-panel-container w3-card draggable capture-ignore");
         
         // Header
         this.controlPanelHeader = this.controlPanelContainer.append("header")
-            .attr("class", "card-header w3-blue-grey");
+            .attr("class", "card-header w3-blue-grey drag-handle");
             
         // Buttons
         this.headerButtonGroup = this.controlPanelHeader.append("div");
