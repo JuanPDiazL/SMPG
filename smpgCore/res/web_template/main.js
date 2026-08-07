@@ -7,7 +7,6 @@ var previousSelectionElement = null;
 var resizeTimeout = false; // holder for timeout
 var resizeDelay = 300; // debounce delay
 var contentHeight = null;
-var gridstackWidgetCount = null;
 var editingLayout = false;
 
 // Decompress and parse data
@@ -109,105 +108,25 @@ const EDIT_LAYOUT_BUTTON = d3.select('#editLayoutButton');
 const STOP_EDIT_LAYOUT_BUTTON = d3.select('#stopEditLayoutButton');
 const SORT_LAYOUT_BUTTON = d3.select('#sortLayoutButton');
 
-const GS_H_RES = 12;
-const GS_V_RES = 8;
-const GS_H_CELL_SIZE = Math.round((1/3) * GS_H_RES);
-const GS_V_CELL_SIZE = Math.round((1/2) * GS_V_RES);
-
-var gridstackOptions = {
-    animate: false,
-    float: true,
-    // row: 6,
-    column: GS_H_RES,
-    // handle: ".card-header",
-    resizable: { handles: 'all'},
-    staticGrid: true,
-    columnOpts: {
-        breakpointForWindow: false,
-        layout: 'list',
-        columnMax: GS_H_RES,
-        breakpoints: [
-            {w:800,  c:GS_H_CELL_SIZE*1},
-            {w:1100, c:GS_H_CELL_SIZE*2},
-            {w:1280, c:GS_H_CELL_SIZE*3},
-        ]
-    },
-};
-if (hasMap) {
-    var gridstackItems = [
-        {
-            id: "item2",
-            w: GS_H_CELL_SIZE,
-            h: GS_V_CELL_SIZE*2,
-        },
-        {
-            id: "item1",
-            w: GS_H_CELL_SIZE,
-            h: GS_V_CELL_SIZE,
-        },
-        {
-            id: "item3",
-            w: GS_H_CELL_SIZE,
-            h: GS_V_CELL_SIZE,
-        },
-        {
-            id: "item4",
-            w: GS_H_CELL_SIZE,
-            h: GS_V_CELL_SIZE,
-        },
-        {
-            id: "item5",
-            w: GS_H_CELL_SIZE,
-            h: GS_V_CELL_SIZE,
-        },
-    ];
-} else {
-    var gridstackItems = [
-        {
-            id: "item1",
-            w: GS_H_CELL_SIZE*1.5,
-            h: GS_V_CELL_SIZE,
-        },
-        {
-            id: "item3",
-            w: GS_H_CELL_SIZE*1.5,
-            h: GS_V_CELL_SIZE,
-        },
-        {
-            id: "item4",
-            w: GS_H_CELL_SIZE*1.5,
-            h: GS_V_CELL_SIZE,
-        },
-        {
-            id: "item5",
-            w: GS_H_CELL_SIZE*1.5,
-            h: GS_V_CELL_SIZE,
-        },
-    ];
-}
-gridstackWidgetCount = gridstackItems.length;
-var grid = GridStack.init(gridstackOptions);
-grid.load(gridstackItems);
-
 // set page state using cookies
 setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
 setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
+
 if (hasForecast) {
-    var ensembleCard = new chartCard('[gs-id="item4"] .grid-stack-item-content', "Ensemble with Forecast");
-} else {
-    var ensembleCard = new chartCard('[gs-id="item4"] .grid-stack-item-content', "Ensemble");
+    layout.gridstackWidgets.ensemble.smpgOpts.smpgCardType  = "Ensemble with Forecast";
 }
 
-var cards = [
-    new chartCard('[gs-id="item1"] .grid-stack-item-content', "Seasonal Accumulations"),
-    new chartCard('[gs-id="item3"] .grid-stack-item-content', "Current Year Status"),
-    ensembleCard,
-    new chartCard('[gs-id="item5"] .grid-stack-item-content', "Seasonal Accumulation Percentiles"),
-];
-if (hasMap) {
-    cards.push(new chartCard('[gs-id="item2"] .grid-stack-item-content', "Map"));
+if (!hasMap) {
+    layout.gridstackWidgets.map.smpgOpts.smpgCardType = "Disabled";
 }
+
+var gridstackItems = parseGridstackItems(layout);
+var gridstackWidgetCount = gridstackItems.length;
+var grid = GridStack.init(gridstackBaseLayerOptions);
+grid.load(gridstackItems);
+
+var cards = parseWidgets(layout);
 
 var sidebarElements = makeSelectionMenu(datasetProperties['place_ids']); //init places list
 
