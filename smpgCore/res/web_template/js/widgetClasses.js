@@ -124,7 +124,7 @@ class chartCard {
     constructor(containerSelector, defaultCardType) {
         this.cardTypes = {
             "Disabled": {
-                "full title": "Disabled",
+                "full title": "Empty Widget",
                 "cardElementsBuilder": () => {},
             },
             "Seasonal Accumulations": {
