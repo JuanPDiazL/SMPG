@@ -28,7 +28,7 @@ function parseGridstackItems(layout) {
     for (const gridItemId in layout.gridstackWidgets) {
         let gridItem = layout.gridstackWidgets[gridItemId];
         parsedItems.push({
-            id: gridItem.gridstackOpts.id,
+            id: gridItemId,
             w: gridItem.gridstackOpts.width * GS_H_CELL_SIZE,
             h: gridItem.gridstackOpts.height * GS_V_CELL_SIZE,
         });
@@ -37,13 +37,13 @@ function parseGridstackItems(layout) {
 }
 
 function parseWidgets(layout) {
-    let parsedWidgets = [];
+    let parsedWidgets = {};
     for (const gridItemId in layout.gridstackWidgets) {
         let gridItem = layout.gridstackWidgets[gridItemId];
-        parsedWidgets.push(
-            new chartCard(`[gs-id="${gridItem.gridstackOpts.id}"] .grid-stack-item-content`,
-                gridItem.smpgOpts.smpgCardType
-            ));
+        parsedWidgets[gridItemId] = new chartCard(
+            `[gs-id="${gridItemId}"] .grid-stack-item-content`,
+            gridItem.smpgOpts.smpgCardType
+        );
     }
     return parsedWidgets;
 }

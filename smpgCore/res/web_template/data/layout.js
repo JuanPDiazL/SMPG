@@ -5,21 +5,14 @@ var layout = {
             yResolution: 8,
             widgetWidth: 1/3,
             widgetHeight: 1/2,
-            smpgDefaultOpts: {
-                smpgCardType: "Disabled",
-                id: () => crypto.randomUUID(),
-                width: 1,
-                height: 1,
-            },
         },
     },
     gridstackWidgets: {
-        map: {
+        svgMap: {
             smpgOpts: {
                 smpgCardType: "Map",
             },
             gridstackOpts: {
-                id: "mapWidget",
                 width: 1,
                 height: 2,
             },
@@ -29,17 +22,15 @@ var layout = {
                 smpgCardType: "Seasonal Accumulations",
             },
             gridstackOpts: {
-                id: "accumulationsWidget",
                 width: 1,
                 height: 1,
             },
         },
-        current: {
+        currentYear: {
             smpgOpts: {
                 smpgCardType: "Current Year Status",
             },
             gridstackOpts: {
-                id: "currentYearWidget",
                 width: 1,
                 height: 1,
             },
@@ -49,7 +40,6 @@ var layout = {
                 smpgCardType: "Ensemble",
             },
             gridstackOpts: {
-                id: "ensembleWidget",
                 width: 1,
                 height: 1,
             },
@@ -59,13 +49,9 @@ var layout = {
                 smpgCardType: "Seasonal Accumulation Percentiles",
             },
             gridstackOpts: {
-                id: "seasonalPercentilesWidget",
                 width: 1,
                 height: 1,
             },
         },
     },
-    floatingWidgets: {
-
-    }
 }

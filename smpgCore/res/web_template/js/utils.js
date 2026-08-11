@@ -69,7 +69,7 @@ function handleResize(event) {
     resizeTimeout = setTimeout(() => {
         contentHeight = Math.max(900, window.innerHeight - d3.select("#contentHeader").node().getBoundingClientRect().height);
         grid.cellHeight(contentHeight/GS_V_RES);
-        for (const card of cards) {
+        for (const card of Object.values(cards)) {
             for (const elementKey of Object.keys(card.cardElements)) {
                 if (["map", "plot"].includes(elementKey)) {
                     const container = card.cardBody.node();
@@ -444,19 +444,19 @@ function closeModal() {
  * and registers a new chartCard instance for tracking.
  * @param {Object} options - Widget configuration options (e.g., smpgCardType, w, h). Overrides default values.
  */
-function add_widget(options) {
+function add_widget(options={}) {
     gridstackWidgetCount++;
+    let newId = crypto.randomUUID();
     let defaultOptions = {
-        smpgCardType: "Disabled",
-
-        id: `item${gridstackWidgetCount}`,
+        id: newId,
         w: 2,
         h: 2,
         ...options
     }
     grid.addWidget(defaultOptions);
-    cards.push(new chartCard(`[gs-id="${defaultOptions['id']}"] .grid-stack-item-content`,
-        defaultOptions['smpgCardType']),)
+    cards[newId] = new chartCard(`[gs-id="${defaultOptions['id']}"] .grid-stack-item-content`,
+        "Disabled"
+    );
 }
 
 /**
