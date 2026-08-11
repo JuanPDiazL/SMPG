@@ -47,7 +47,7 @@ function handleNavigation(event) {
     }
     HEADER.text(`Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}], Dataset: ${datasetProperties.dataset_name}`);
 
-    for (const card of cards) {
+    for (const card of Object.values(cards)) {
         card.update(currentDataIndex);
     }
 
