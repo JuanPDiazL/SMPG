@@ -23,6 +23,10 @@ var gridstackBaseLayerOptions = {
     },
 };
 
+/**
+ * Parses the layout gridstack items from the layout object and returns an array of gridstack items.
+ * @param {Object} layout - Object containing the layout gridstack items.
+ */
 function parseGridstackItems(layout) {
     let parsedItems = [];
     for (const gridItemId in layout.gridstackWidgets) {
@@ -36,6 +40,10 @@ function parseGridstackItems(layout) {
     return parsedItems;
 }
 
+/**
+ * Parses the layout smpg widgets from the layout object and returns an array of gridstack items.
+ * @param {Object} layout - Object containing the layout smpg widgets.
+ */
 function parseWidgets(layout) {
     let parsedWidgets = {};
     for (const gridItemId in layout.gridstackWidgets) {
