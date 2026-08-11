@@ -72,6 +72,12 @@ class BBPlot {
     resize(size) {
         this.plot.resize();
     }
+
+    getProperties() {
+        return {
+            
+        }
+    }
 }
 
 class Table {
@@ -117,6 +123,12 @@ class Table {
                                         });
                                 })
             });
+    }
+
+    getProperties() {
+        return {
+            tableShown: !this.tableContainer.classed("w3-hide"),
+        }
     }
 }
 
@@ -258,5 +270,20 @@ class chartCard {
         for (const elementKey of Object.keys(this.cardElements)) {
             this.cardElements[elementKey].resize(size);
         }
+    }
+
+    getProperties() {
+        let cardElementsProps = {};
+        for (const key in this.cardElements) {
+            const elementProperties = this.cardElements[key].getProperties();
+            if (Object.keys(elementProperties) .length > 0) {
+                cardElementsProps[key] = elementProperties;
+            }
+        }
+
+        return {
+            smpgCardType: this.cardType,
+            ...cardElementsProps,
+        };
     }
 }

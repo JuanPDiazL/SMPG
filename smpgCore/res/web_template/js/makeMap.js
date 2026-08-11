@@ -243,6 +243,7 @@ class d3Map {
         this.geoJsonReferenceMap = geoJsonReferenceMap;
 
         this.currentDisplayField = idField
+        this.currentLegendStat = "None";
 
         const layerArea = d3.geoArea(geoJsonReferenceMap);
         const layerBounds = d3.geoBounds(geoJsonReferenceMap);
@@ -370,6 +371,7 @@ class d3Map {
     }
 
     changeLegend(statId) {
+        this.currentLegendStat = statId;
         const selectedBins = mapStatsCategories[statId];
         // Update legend based on the selected property
         const legendElementHeight = 16;
@@ -456,6 +458,14 @@ class d3Map {
                         this.svg.node().parentElement.clientHeight];
         this.svg.attr('viewBox', `0 0 ${this.internal_width} ${this.internal_height}`);
     }
+
+    getProperties() {
+        return {
+            label_field: this.currentDisplayField,
+            legend_stat: this.currentLegendStat,
+            show_legend: !this.legend.classed("w3.hide"),
+        }
+    }
 }
 
 function makeD3Map(containerElement) {
@@ -532,7 +542,7 @@ class mapControlPanel {
             .attr("checked", "checked")
             .on("change", (event) => {
                 const showLegend = event.target.checked;
-                map.legend.style("display", showLegend? null : "none");
+                map.legend.classed("w3-hide", showLegend? null : "none");
             });
         this.controlPanelBody.append("label")
             .text("Show Legend");
@@ -561,6 +571,10 @@ class mapControlPanel {
     }
 
     update(index) {}
+
+    getProperties() {
+        return {}
+    }
 }
 
 class mapDescription {
@@ -595,6 +609,12 @@ class mapDescription {
     }
 
     update(index) {}
+
+    getProperties() {
+        return {
+            show_description: this.mapDescriptionContainer.classed("w3-hide")
+        }
+    }
 }
 
 function makeMapCard(containerElement) {
