@@ -238,12 +238,14 @@ let getPlaceMapStats = (place) => {
 };
 
 class d3Map {
-    constructor(containerElement, geoJsonMap, geoJsonReferenceMap) {
+    constructor(containerElement, geoJsonMap, geoJsonReferenceMap, options={}) {
+        this.options = {
+            label_field: options.label_field ?? idField,
+            legend_stat: options.legend_stat ?? "None",
+            show_legend: options.show_legend ?? true,
+        };
         this.geoJsonMap = geoJsonMap;
         this.geoJsonReferenceMap = geoJsonReferenceMap;
-
-        this.currentDisplayField = idField
-        this.currentLegendStat = "None";
 
         const layerArea = d3.geoArea(geoJsonReferenceMap);
         const layerBounds = d3.geoBounds(geoJsonReferenceMap);
@@ -278,22 +280,18 @@ class d3Map {
             .enter().append("path")
             .attr("class", d => `country country-${d.properties[idField]} w3-ripple`)
             .attr("d", d3.geoPath().projection(this.projection))
-            .style("fill", UNCAT_COLOR)
             .on("mouseover", (event, d) => {
                 mapSelectorPath
                 .attr("d", d3.geoPath().projection(this.projection)(d))
                 .style("display", null)
-                let displayLabeltext = d.properties[this.currentDisplayField];
-                const idText = d.properties[idField]
-                displayLabeltext += displayLabeltext === idText? "" : ` (${idText})`
             })
             .on("mouseout", (event, d) => {
                 mapSelectorPath
                 .style("display", "none")
             })
             .on("click", (event, d) => {
-                this.update(d.properties[idField]);
-                navigateTo({"place": d.properties[idField]});
+                const placeIndex = d.properties[idField];
+                this.update(placeIndex);
             })
 
         // draw selection bounding box rectangle
@@ -308,7 +306,7 @@ class d3Map {
 
         this.polygonTooltips = this.polygons.append("title")
             .attr("class", "country-polygon-tooltip")
-            .text(d => d.properties[idField])
+            .text(d => d.properties[this.options.label_field])
             
         // draw labels
         this.labels = this.svg.append("g")
@@ -316,7 +314,7 @@ class d3Map {
             .selectAll(".map-text-label")
             .data(this.geoJsonMap.features)
             .enter().append("text")
-            .text(d => d.properties[idField])
+            .text(d => d.properties[this.options.label_field])
             .attr("class", "map-text-label svg-outline-text")
             .attr("transform", d => `translate(${this.projection(d3.geoCentroid(d))})`)
             .attr("font-size", this.FONT_SIZE)
@@ -349,6 +347,9 @@ class d3Map {
             .attr("stroke-width", 1 / event.transform.k);
         });
         this.svg.call(this.svgZoomHandler);
+
+        this.changeLegend(this.options.legend_stat);
+        this.changeLegendDisplay(this.options.show_legend);
     }
 
     update(index) {
@@ -360,18 +361,25 @@ class d3Map {
             this.mapPersistentSelectorPath
                 .attr("d", d3.geoPath().projection(this.projection)(feature))
                 .style("display", null)
+            
+            navigateTo({"place": index});
         }
+    }
+
+    changeLegendDisplay(state) {
+        this.options.show_legend = state;
+        this.legend.classed("w3-hide", this.options.show_legend? null : "none");
     }
 
     changeLabels(fieldId) {
         // Update label text based on the selected property
-        this.currentDisplayField = fieldId;
-        this.labels.text(d => d.properties[fieldId]);
-        this.polygonTooltips.text(d => d.properties[fieldId]);
+        this.options.label_field = fieldId;
+        this.labels.text(d => d.properties[this.options.label_field]);
+        this.polygonTooltips.text(d => d.properties[this.options.label_field]);
     }
 
     changeLegend(statId) {
-        this.currentLegendStat = statId;
+        this.options.legend_stat = statId;
         const selectedBins = mapStatsCategories[statId];
         // Update legend based on the selected property
         const legendElementHeight = 16;
@@ -460,11 +468,7 @@ class d3Map {
     }
 
     getProperties() {
-        return {
-            label_field: this.currentDisplayField,
-            legend_stat: this.currentLegendStat,
-            show_legend: !this.legend.classed("w3.hide"),
-        }
+        return this.options;
     }
 }
 
@@ -519,7 +523,7 @@ class mapControlPanel {
                 map.changeLabels(displayId);
             });
         updateSelect(this.labelFieldSelect, property_ids);
-        this.labelFieldSelect.property("value", idField);
+        this.labelFieldSelect.property("value", map.options.label_field);
 
         this.controlPanelBody.append("br");
 
@@ -534,15 +538,16 @@ class mapControlPanel {
                 description.changeStat(selectedStatId);
             });
         updateSelect(this.legendStatSelect, mapFields);
+        this.legendStatSelect.property("value", map.options.legend_stat);
 
         // Show legend checkbox
         this.showLegendCheckbox = this.controlPanelBody.append("input")
             .attr("class", "w3-check")
             .attr("type", "checkbox")
-            .attr("checked", "checked")
+            .attr("checked", map.options.show_legend ? "checked" : null)
             .on("change", (event) => {
                 const showLegend = event.target.checked;
-                map.legend.classed("w3-hide", showLegend? null : "none");
+                map.changeLegendDisplay(showLegend);
             });
         this.controlPanelBody.append("label")
             .text("Show Legend");
@@ -553,10 +558,10 @@ class mapControlPanel {
         this.showDescriptionCheckbox = this.controlPanelBody.append("input")
             .attr("class", "w3-check")
             .attr("type", "checkbox")
-            .attr("checked", "checked")
+            .attr("checked", description.options.show_description ? "checked" : null)
             .on("change", (event) => {
                 const state = event.target.checked;
-                description.mapDescriptionContainer.classed("w3-hide", !state)
+                description.changeVisibility(state);
             });
         this.controlPanelBody.append("label")
             .text("Show Map Description");
@@ -578,12 +583,16 @@ class mapControlPanel {
 }
 
 class mapDescription {
-    constructor(containerElement) {
+    constructor(containerElement, options={}) {
+        this.options = {
+            show_description: options.show_description ?? false,
+        };
+
         this.containerElement = containerElement;
-        this.show = false;
 
         this.mapDescriptionContainer = this.containerElement.append("div")
-            .attr("class", "map-description-container w3-margin w3-hide")
+            .attr("class", "map-description-container w3-margin")
+        this.mapDescriptionContainer.classed("w3-hide", !this.options.show_description);
 
         this.mapDescriptionIcon = this.mapDescriptionContainer.append("span")
             .attr("class", "map-description-icon mi w3-margin-right capture-ignore")
@@ -595,25 +604,24 @@ class mapDescription {
 
     changeStat(statId) {
         if (!mapDescriptions[statId]) {
-            this.mapDescriptionContainer.classed("w3-hide", true)
-            this.mapDescriptionText.text()
+            this.mapDescriptionContainer.classed("w3-hide", true);
+            this.mapDescriptionText.text("");
             return;
         }
-        this.mapDescriptionContainer.classed("w3-hide", false)
+        this.mapDescriptionContainer.classed("w3-hide", !this.options.show_description);
         this.mapDescriptionText.text(mapDescriptions[statId])
     }
 
     changeVisibility(state) {
-        this.show = state;
-        this.mapDescriptionContainer.classed("w3-hide", !state)
+        this.options.show_description = state;
+        this.mapDescriptionContainer.classed("w3-hide", 
+            !this.options.show_description || this.mapDescriptionText.text() === "");
     }
 
     update(index) {}
 
     getProperties() {
-        return {
-            show_description: this.mapDescriptionContainer.classed("w3-hide")
-        }
+        return this.options;
     }
 }
 
