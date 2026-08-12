@@ -387,11 +387,43 @@ class d3Map {
         const startY = this.internal_height - 30;
         const startX = this.internal_width - 30;
         const coordX = startX;
+        
+        // Update polygon color based on the selected property
+        let hasUncategorizedPolygons = false;
+        let polygonBins = objectMap(selectedBins, (value, key, obj) => {
+            return [];
+        });
+        this.polygons.style("fill", d => {
+            let category = "Uncategorized";
 
+            if (datasetProperties['place_ids'].includes(String(d.properties[idField]))) {
+                const value = getPlaceMapStats(d.properties[idField])[statId];
+                category = categorizeValue(value, selectedBins);
+            }
+            // check if there is any uncategorized polygon
+            hasUncategorizedPolygons |= (category === "Uncategorized");
+            
+            if (statId === "None") {
+                return UNCAT_COLOR;
+            }
+            if (category === "Uncategorized") {
+                return mapStatsCategories[""]["color"];
+            }
+            polygonBins[category].push(d);
+            return selectedBins[category]["color"];
+        });
+        
+        if (hasUncategorizedPolygons && statId !== "None") {
+            // add a legend for uncategorized polygons
+            showModal(`There was missing data when drawing map.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Target Field: ${parameters.target_id_field}`)
+        }
+
+        // Build legend
+        const nonEmptyBins = Object.entries(selectedBins).filter(([k, v]) => polygonBins[k].length > 0);
         this.legend.selectChildren().remove()
         if (statId !== "None") {
             this.legend.selectAll().append("g")
-                .data(Object.entries(selectedBins))
+                .data(nonEmptyBins)
                 .join("g")
                 .attr("class", "legend-element")
                 .attr("transform", (d, i, nodes) => {
@@ -433,31 +465,6 @@ class d3Map {
                 .each((d, i, nodes) => {
                     // console.log(nodes[i].getBoundingClientRect().width);
                 })
-        }
-            
-        // Update polygon color based on the selected property
-        let hasUncategorizedPolygons = false;
-        this.polygons.style("fill", d => {
-            let category = "Uncategorized";
-
-            if (datasetProperties['place_ids'].includes(String(d.properties[idField]))) {
-                const value = getPlaceMapStats(d.properties[idField])[statId];
-                category = categorizeValue(value, selectedBins);
-            }
-            // check if there is any uncategorized polygon
-            hasUncategorizedPolygons |= (category === "Uncategorized");
-            
-            if (statId === "None") {
-                return UNCAT_COLOR;
-            }
-            if (category === "Uncategorized") {
-                return mapStatsCategories[""]["color"];
-            }
-            return selectedBins[category]["color"];
-        });
-        if (hasUncategorizedPolygons && statId !== "None") {
-            // add a legend for uncategorized polygons
-            showModal(`There was missing data when drawing map.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Target Field: ${parameters.target_id_field}`)
         }
     }
 
