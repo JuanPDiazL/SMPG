@@ -4,7 +4,7 @@
 class BBPlot {
     constructor(containerElement, dataGetter, xNames, xsDefinition, 
         xsDataRelation, chartTypes, 
-        gridLinesGetter = () => [], 
+        gridLinesGetter = null, 
         customSettings = {}) {
         this.containerElement = containerElement;
         this.dataGetter = dataGetter;
@@ -12,7 +12,7 @@ class BBPlot {
         this.xsDefinition = xsDefinition;
         this.xsDataRelation = xsDataRelation;
         this.chartTypes = chartTypes;
-        this.gridLinesGetter = gridLinesGetter;
+        this.gridLinesGetter = () => [] ?? gridLinesGetter;
         this.customSettings = customSettings;
 
         this.allContainer = this.containerElement.append("div")
@@ -25,27 +25,24 @@ class BBPlot {
         
         
         const chartOptions = {
-            axis: { x: { tick: { format: (index) => { return this.xNames[index]; }, }, }, },
-            tooltip: { format: { value: function (value, ratio, id) { return Math.round(value); }, }, },
+            axis: { x: { tick: { format: (index) => this.xNames[index] }, }, },
             legend: {
                 contents: {
                     bindto: legendContainer.node(),
-                    template: (title, color, data) => getLegend(title, color, data, this.chartTypes),
                 },
             },
-            point: { show: true, },
-            bar: {
-                zerobased: false,
-            },
-            area: {
-                zerobased: false,
-            }
         };
-        this.plot = bb.generate({
-            bindto: chartContainer.node(),
-            data: { json: {}, },
-            ..._.merge(defaultOptions, chartOptions, this.customSettings)
-        });
+        this.plot = bb.generate(
+            _.merge(
+                {
+                    bindto: chartContainer.node(),
+                    data: { json: {}, },
+                }, 
+                globalBBChartDefaultOptions, 
+                chartOptions, 
+                this.customSettings,
+            )
+        );
     }
 
     update(index) {

@@ -44,7 +44,7 @@ function getLegend(title, color, data, chartTypes = {}, points = {}) {
     return `<span style='padding:2px; font-size:10.5px;'><span class="mi mi-button" style="color:${color};">${chartType}</span> ${title}</span>`;
 }
 
-const defaultOptions = {
+const globalBBChartDefaultOptions = {
     axis: {
         x: {
             // min: .5,
@@ -90,11 +90,14 @@ const defaultOptions = {
         },
     },
     legend: {
-        // usePoint: true,
+        contents: {
+            template: (title, color, data) => getLegend(title, color, data, this.chartTypes),
+        },
     },
     tooltip: {
         order: 'desc',
         grouped: true,
+        format: { value: function (value, ratio, id) { return Math.round(value); }, },
         position: function (data, width, height, element, pos) {
             // get root svg from element
             let svg = element;
@@ -122,7 +125,7 @@ const defaultOptions = {
         },
     },
     point: {
-        show: false,
+        show: true,
     },
     transition: {
         duration: false,
@@ -132,6 +135,7 @@ const defaultOptions = {
     },
     area: {
         front: false,
+        zerobased: true,
     },
     padding: {
         mode: 'fit',
