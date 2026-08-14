@@ -45,6 +45,7 @@ const mapFields = ['None', 'Total up to Current Season/LTA Pct.',
     'Ensemble Med. Pctl.', 'Current Season Pctl.',
     ];
 if(hasForecast) {
+    mapFields.push('Forecast Pctl.');
     mapFields.push('Total up to Forecast/LTA Pct.');
     mapFields.push('Ensemble Med. w Forecast/LTA Pct.');
     mapFields.push('Ensemble Med. Pctl. w/ Forecast');

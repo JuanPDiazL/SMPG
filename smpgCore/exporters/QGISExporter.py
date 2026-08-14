@@ -49,14 +49,14 @@ styles = {
     "precipitation_percentile": {
         "type": "graduated",
         "legend": {
-            "\u22643 Exceptional Drought": {"color": "#7e0006", "values": [0, 3]},
-            "3 - 6 Extreme Drought": {"color": "#e20b00", "values": [3, 6]},
-            "6 - 11 Severe Drought": {"color": "#e35a1a", "values": [6, 11]},
-            "11 - 21 Moderate Drought": {"color": "#faaf00", "values": [11, 21]},
-            "21 - 33 Abnormally Dry": {"color": "#faff0f", "values": [21, 33]},
-            "33 - 67  Normal ": {"color": "#e0e0e0", "values": [33, 67]},
-            "67 - 90 Wetter than Normal": {"color": "#a6cee3", "values": [67, 90]},
-            "\u226590 Extremely Wet": {"color": "#1f78b4", "values": [90, 100]},
+            "Exceptionally Dry": {"color": "#7e0006", "values": [0, 2]},
+            "Extremely Dry": {"color": "#e20b00", "values": [2, 5]},
+            "Severely Dry": {"color": "#e35a1a", "values": [5, 10]},
+            "Moderately Dry": {"color": "#faaf00", "values": [10, 20]},
+            "Abnormally Dry": {"color": "#faff0f", "values": [20, 30]},
+            "Normal": {"color": "#e0e0e0", "values": [30, 70]},
+            "Wetter than Normal": {"color": "#a6cee3", "values": [70, 90]},
+            "Extremely Wet": {"color": "#1f78b4", "values": [90, 100]}
         },
     },
     "sos_eos_detection_base": {
@@ -131,6 +131,7 @@ def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selecte
         'Ensemble Med. Pctl.': {'classes': 'precipitation_percentile', 'data': 'selected_years_stats'},
         'Ensemble Med. Pctl. w/ Forecast': {'classes': 'precipitation_percentile', 'data': 'selected_years_stats'},
         'Current Season Pctl.': {'classes': 'precipitation_percentile', 'data': 'general_stats'},
+        'Forecast Pctl.': {'classes': 'precipitation_percentile', 'data': 'general_stats'},
         'Start of Season': {'classes': 'sos_eos_detection', 'data': 'general_stats'},
         'Start of Season Anomaly': {'classes': 'sos_eos_anomaly', 'data': 'general_stats'},
         'Forecast Start of Season': {'classes': 'sos_eos_detection', 'data': 'general_stats'},

@@ -81,6 +81,7 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
                   'Current Season Pctl.']
         
         if self.parentWidget().forecastLengthSpinBox.value() > 0:
+            self.fields.append('Forecast Pctl.')
             self.fields.append('Total up to Forecast/LTA Pct.')
             self.fields.append('Ensemble Med. w Forecast/LTA Pct.')
             self.fields.append('Ensemble Med. Pctl. w/ Forecast')
