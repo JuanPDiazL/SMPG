@@ -418,7 +418,7 @@ class d3Map {
                 return UNCAT_COLOR;
             }
             if (category === "Uncategorized") {
-                return mapStatsCategories[""]["color"];
+                return mapStatsCategories["None"]["color"];
             }
             polygonBins[category].push(d);
             return selectedBins[category]["color"];
