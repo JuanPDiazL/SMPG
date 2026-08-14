@@ -159,8 +159,11 @@ const chartColors = {
     'Current Season Accumulation': '#0000FF',
     'Current Season Accumulation with Forecast': '#0000FF',
     'Current Accumulation to Present': '#0000FF',
+    'Current Accumulation to Forecast': '#FF00FF',
     'Forecast': '#FF00FF',
     'Forecast Accumulation': '#FF00FF',
+    'Seasonal Accumulation to Forecast': '#2A7E41',
+    
 
     '67 Pctl.': '#00FF00',
     'D0: 31 Pctl.': '#FFFF00',

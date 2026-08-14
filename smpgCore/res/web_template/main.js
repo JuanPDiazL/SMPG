@@ -15,6 +15,7 @@ var parameters = JSON.parse(decompress(parameters_json));
 var place_general_stats = csvParse(decompress(place_general_stats_csv));
 var place_long_term_stats = parseRowsObjectCsv(decompress(place_long_term_stats_csv_obj));
 var seasonal_current_totals = csvParseRows(decompress(seasonal_current_totals_csv));
+var seasonal_forecast_totals = csvParseRows(decompress(seasonal_forecast_totals_csv));
 var seasonal_general_stats = csvParse(decompress(seasonal_general_stats_csv));
 var selected_seasons_general_stats = csvParse(decompress(selected_seasons_general_stats_csv));
 var seasonal_cumsum = parseRowsObjectCsv(decompress(seasonal_cumsum_csv_obj));
@@ -115,6 +116,7 @@ setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
 if (hasForecast) {
     layout.gridstackWidgets.ensemble.smpgOpts.smpgCardType  = "Ensemble with Forecast";
+    layout.gridstackWidgets.seasonalPercentiles.smpgOpts.smpgCardType  = "Seasonal Accumulation Percentiles with Forecast";
 }
 
 if (!hasMap) {

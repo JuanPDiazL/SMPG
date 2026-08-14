@@ -37,7 +37,7 @@ function makeAccumulationsPlot(containerElement) {
             ],
             'Forecast Accumulation': [
                 place_general_stats[index]['Current Accumulation to Present'], 
-                ...place_long_term_stats[index]['Forecast Accumulation']
+                ...place_long_term_stats[index]['Current+Forecast Accumulation']
                 .slice(monitoringOffset+currentMonitoringLength),
             ],
         };
@@ -78,6 +78,8 @@ function makeAccumulationsCard(containerElement) {
         "table": makeAccumulationsTable(containerElement),
     }
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 function makeCurrentYearPlot(containerElement) {
     let xNames = [...datasetProperties['sub_season_ids']];
@@ -184,6 +186,8 @@ function makeCurrentYearCard(containerElement) {
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 function makeEnsemblePlot(containerElement) {
     let xNames = datasetProperties['sub_season_monitoring_ids'];
     
@@ -266,6 +270,8 @@ function makeEnsembleCard(containerElement) {
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 function makeEnsembleWithForecastPlot(containerElement) {
     let xNames = datasetProperties['sub_season_monitoring_ids'];
     
@@ -317,7 +323,7 @@ function makeEnsembleWithForecastPlot(containerElement) {
             ],
             'Forecast Accumulation': [
                 place_general_stats[index]['Current Accumulation to Present'], 
-                ...place_long_term_stats[index]['Forecast Accumulation']
+                ...place_long_term_stats[index]['Current+Forecast Accumulation']
                 .slice(monitoringOffset+currentMonitoringLength),
             ],
         }
@@ -356,6 +362,8 @@ function makeEnsembleWithForecastCard(containerElement) {
         "table": makeEnsembleWithForecastTable(containerElement),
     }
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 function makeAccumulationPercentilesPlot(containerElement) {
     let xNames = [...datasetProperties['year_ids']];
@@ -420,5 +428,98 @@ function makeAccumulationPercentilesCard(containerElement) {
     return {
         "plot": makeAccumulationPercentilesPlot(containerElement),
         "table": makeAccumulationPercentilesTable(containerElement),
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+function makeForecastAccumulationPercentilesPlot(containerElement) {
+    let xNames = [...datasetProperties['year_ids']];
+    xNames.push(datasetProperties['current_season_id']);
+
+    const customSettings = {
+        bar: {
+            overlap: true,
+            padding: 0,
+            width: {
+                ratio: 1.75,
+            },
+        },
+        groups: [
+            [
+                'Current Accumulation to Present',
+                'Current Accumulation to Forecast',
+            ],
+            [
+                'Seasonal Accumulation to Present',
+                'Seasonal Accumulation to Forecast',
+            ],
+        ],
+    };
+    
+    const xsDefinition = {
+        'default_xs': ascendingArray(xNames.length),
+        'end_xs': [xNames.length - 1],
+    };
+    const xsDataRelation = {
+        'Current Accumulation to Present': 'end_xs',
+        'Current Accumulation to Forecast': 'end_xs',
+    };
+    const plotTypes = {
+        'Seasonal Accumulation to Present': 'bar',
+        'Seasonal Accumulation to Forecast': 'bar',
+        'Current Accumulation to Present': 'bar',
+        'Current Accumulation to Forecast': 'bar',
+        'Climatology Average': 'line',
+        'D4: 3 Pctl.': 'line',
+        'D3: 6 Pctl.': 'line',
+        'D2: 11 Pctl.': 'line',
+        'D1: 21 Pctl.': 'line',
+        'D0: 31 Pctl.': 'line',
+        '67 Pctl.': 'line',
+    };
+    const getForecastAccumulationsCurrentPlotData = (index) => {
+        const xLength = seasonal_current_totals[index].length + 1;
+        return {
+            'Seasonal Accumulation to Forecast': seasonal_forecast_totals[index],
+            'Seasonal Accumulation to Present': seasonal_current_totals[index],
+            'Current Accumulation to Forecast': [place_general_stats[index]['Current Accumulation to Forecast']],
+            'Current Accumulation to Present': [place_general_stats[index]['Current Accumulation to Present']],
+            'Climatology Average': extendScalar(place_general_stats[index]['Climatology Average at Forecast'], xLength),
+            '67 Pctl.': extendScalar(place_general_stats[index]['Seasonal Forecast 67 Pctl.'], xLength),
+            '33 Pctl.': extendScalar(place_general_stats[index]['Seasonal Forecast 33 Pctl.'], xLength),
+            'D1: 21 Pctl.': extendScalar(place_general_stats[index]['Seasonal Forecast 21 Pctl.'], xLength),
+            'D2: 11 Pctl.': extendScalar(place_general_stats[index]['Seasonal Forecast 11 Pctl.'], xLength),
+            'D3: 6 Pctl.': extendScalar(place_general_stats[index]['Seasonal Forecast 6 Pctl.'], xLength),
+            'D4: 3 Pctl.': extendScalar(place_general_stats[index]['Seasonal Forecast 3 Pctl.'], xLength),
+        }
+    };
+    const plot = new BBPlot(containerElement, getForecastAccumulationsCurrentPlotData, xNames, 
+        xsDefinition, xsDataRelation, plotTypes, null, customSettings);
+    return plot;
+}
+
+function makeForecastAccumulationPercentilesTable(containerElement) {
+    const getForecastAccumulationsCurrentTableData = (index) => {
+        return {
+            "Historical Rainfall Statistics": [
+                ['67 Percentile', place_general_stats[index]['Seasonal Forecast 67 Pctl.'], null],
+                ['33 Percentile', place_general_stats[index]['Seasonal Forecast 33 Pctl.'], null],
+                ['11 Percentile', place_general_stats[index]['Seasonal Forecast 11 Pctl.'], null],
+            ],
+            "Current Season Statistics": [
+                ['Forecast Pctl.', place_general_stats[index]['Forecast Pctl.']],
+            ]
+        }
+    };
+
+    const table = new Table(containerElement, getForecastAccumulationsCurrentTableData)
+    return table;
+}
+
+function makeForecastAccumulationPercentilesCard(containerElement) {
+    return {
+        "plot": makeForecastAccumulationPercentilesPlot(containerElement),
+        "table": makeForecastAccumulationPercentilesTable(containerElement),
     }
 }

@@ -136,10 +136,13 @@ class Place:
         current_cumsum_mon = current_season_monitoring.cumsum()
         current_cumsum_mon_with_forecast = current_season_monitoring_with_forecast.cumsum()
         current_index = len(current_season_monitoring) - 1
+        forecast_index = current_index + parent.parameters.forecast_length
 
         self.seasonal_cumsum = seasonal_monitoring.cumsum(axis=1)
         seasonal_sums = self.seasonal_cumsum.iloc[:, -1].rename(self.id)
         self.seasonal_sums_upto_current = self.seasonal_cumsum.iloc[:, current_index].rename(self.id)
+        self.seasonal_sums_upto_forecast = self.seasonal_cumsum.iloc[:, forecast_index].rename(self.id)
+
         self.seasons_ensemble = get_ensemble(current_season_monitoring, 
                                               seasonal_monitoring)
         
@@ -159,6 +162,8 @@ class Place:
         clim_seasons_totals = clim_seasons_cumsum.iloc[:, -1].to_numpy()
         clim_seasons_pctls = percentiles_to_values(clim_seasons_totals, [33, 67])
         seasonal_pctls = percentiles_to_values(self.seasonal_sums_upto_current.to_numpy(), 
+                                                             (3, 6, 11, 21, 33, 67))
+        seasonal_forecast_pctls = percentiles_to_values(self.seasonal_sums_upto_forecast.to_numpy(), 
                                                              (3, 6, 11, 21, 33, 67))
         climatology_avg = seasons_climatology.mean()
 
@@ -320,22 +325,35 @@ class Place:
             'Current Season Accumulation': current_cumsum_mon,
             'Current Season Accumulation with Forecast': current_cumsum_mon_with_forecast,
             'Forecast': forecast_values,
-            'Forecast Accumulation': current_cumsum_mon.iloc[-1] + forecast_cumsum,
+            'Forecast Accumulation': forecast_cumsum,
+            'Current+Forecast Accumulation': current_cumsum_mon.iloc[-1] + forecast_cumsum,
         }
         self.place_long_term_stats = pd.DataFrame([pd.Series(v, name=k) for k, v in place_lt_stats.items()])
 
         self.place_general_stats = pd.Series({
             'Current Season Pctl.': percentiles_from_values(self.seasonal_sums_upto_current.to_numpy(), 
                 [current_cumsum_mon.iloc[-1]])[0],
+            'Forecast Pctl.': percentiles_from_values(self.seasonal_sums_upto_forecast.to_numpy(), 
+                [current_cumsum_mon.iloc[-1] + forecast_cumsum.iloc[-1]])[0],
             'Current Accumulation to Present': current_cumsum_mon.iloc[-1],
             'Current Accumulation to Forecast': current_cumsum_mon.iloc[-1] + forecast_cumsum.iloc[-1],
+
             'Seasonal 3 Pctl.': seasonal_pctls[0],
             'Seasonal 6 Pctl.': seasonal_pctls[1],
             'Seasonal 11 Pctl.': seasonal_pctls[2],
             'Seasonal 21 Pctl.': seasonal_pctls[3],
             'Seasonal 33 Pctl.': seasonal_pctls[4],
             'Seasonal 67 Pctl.': seasonal_pctls[5],
-            'Climatology Average at Current Dekad': clim_seasons_cumsum.mean().iloc[current_index],
+
+            'Seasonal Forecast 3 Pctl.': seasonal_forecast_pctls[0],
+            'Seasonal Forecast 6 Pctl.': seasonal_forecast_pctls[1],
+            'Seasonal Forecast 11 Pctl.': seasonal_forecast_pctls[2],
+            'Seasonal Forecast 21 Pctl.': seasonal_forecast_pctls[3],
+            'Seasonal Forecast 33 Pctl.': seasonal_forecast_pctls[4],
+            'Seasonal Forecast 67 Pctl.': seasonal_forecast_pctls[5],
+            
+            'Climatology Average at Current Dekad': clim_avg.iloc[current_index],
+            'Climatology Average at Forecast': clim_avg.iloc[forecast_index],
             'Climatology 33 Pctl.': clim_seasons_pctls[0],
             'Climatology 67 Pctl.': clim_seasons_pctls[1],
             **sos_data,

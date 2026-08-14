@@ -124,6 +124,8 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
         'place_long_term_stats_csv_obj': {k:v.place_long_term_stats for k, v in places.items()},
         'seasonal_current_totals_csv': pd.DataFrame(
         [p.seasonal_sums_upto_current for p in places.values()]),
+        'seasonal_forecast_totals_csv': pd.DataFrame(
+        [p.seasonal_sums_upto_forecast for p in places.values()]),
         'seasonal_general_stats_csv': pd.DataFrame(
         [p.seasonal_general_stats for p in places.values()]),
         'selected_seasons_general_stats_csv': pd.DataFrame(
