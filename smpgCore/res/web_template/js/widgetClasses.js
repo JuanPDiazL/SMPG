@@ -132,7 +132,7 @@ class Table {
 class chartCard {
     constructor(containerSelector, defaultCardType) {
         this.cardTypes = {
-            "Disabled": {
+            "Empty Widget": {
                 "full title": "Empty Widget",
                 "cardElementsBuilder": () => {},
             },

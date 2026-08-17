@@ -455,7 +455,7 @@ function add_widget(options={}) {
     }
     grid.addWidget(defaultOptions);
     cards[newId] = new chartCard(`[gs-id="${defaultOptions['id']}"] .grid-stack-item-content`,
-        "Disabled"
+        "Empty Widget"
     );
 }
 
