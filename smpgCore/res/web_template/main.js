@@ -116,8 +116,8 @@ setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
 
 if (hasForecast) {
-    layout.gridstackWidgets.ensemble.smpgOpts.smpgCardType  = "Ensemble with Forecast";
-    layout.gridstackWidgets.seasonalPercentiles.smpgOpts.smpgCardType  = "Seasonal Accumulation Percentiles with Forecast";
+    layout.gridstackWidgets.w4.smpgOpts.smpgCardType  = "Ensemble with Forecast";
+    layout.gridstackWidgets.w5.smpgOpts.smpgCardType  = "Seasonal Accumulation Percentiles with Forecast";
 }
 
 if (!hasMap) {

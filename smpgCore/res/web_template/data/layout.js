@@ -8,7 +8,7 @@ var layout = {
         },
     },
     gridstackWidgets: {
-        svgMap: {
+        w1: {
             smpgOpts: {
                 smpgCardType: "Map",
             },
@@ -17,7 +17,7 @@ var layout = {
                 height: 2,
             },
         },
-        accumulations: {
+        w2: {
             smpgOpts: {
                 smpgCardType: "Seasonal Accumulations",
             },
@@ -26,7 +26,7 @@ var layout = {
                 height: 1,
             },
         },
-        currentYear: {
+        w3: {
             smpgOpts: {
                 smpgCardType: "Current Year Status",
             },
@@ -35,7 +35,7 @@ var layout = {
                 height: 1,
             },
         },
-        ensemble: {
+        w4: {
             smpgOpts: {
                 smpgCardType: "Ensemble",
             },
@@ -44,7 +44,7 @@ var layout = {
                 height: 1,
             },
         },
-        seasonalPercentiles: {
+        w5: {
             smpgOpts: {
                 smpgCardType: "Seasonal Accumulation Percentiles",
             },

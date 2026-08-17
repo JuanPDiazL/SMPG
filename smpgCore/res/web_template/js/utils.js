@@ -446,7 +446,7 @@ function closeModal() {
  */
 function add_widget(options={}) {
     gridstackWidgetCount++;
-    let newId = crypto.randomUUID();
+    let newId = `w${gridstackWidgetCount}`;
     let defaultOptions = {
         id: newId,
         w: 2,
