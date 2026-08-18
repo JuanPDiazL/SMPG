@@ -135,6 +135,7 @@ class Place:
         current_season_monitoring_with_forecast = current_season_with_forecast[parent.properties.season_start_index:parent.properties.current_season_trim_index_with_forecast]
         current_cumsum_mon = current_season_monitoring.cumsum()
         current_cumsum_mon_with_forecast = current_season_monitoring_with_forecast.cumsum()
+
         current_monitoring_index = len(current_season_monitoring) - 1
         current_index = len(current_season) - 1
         forecast_monitoring_index = current_monitoring_index + parent.parameters.forecast_length
