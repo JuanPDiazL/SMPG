@@ -135,13 +135,15 @@ class Place:
         current_season_monitoring_with_forecast = current_season_with_forecast[parent.properties.season_start_index:parent.properties.current_season_trim_index_with_forecast]
         current_cumsum_mon = current_season_monitoring.cumsum()
         current_cumsum_mon_with_forecast = current_season_monitoring_with_forecast.cumsum()
-        current_index = len(current_season_monitoring) - 1
+        current_monitoring_index = len(current_season_monitoring) - 1
+        current_index = len(current_season) - 1
+        forecast_monitoring_index = current_monitoring_index + parent.parameters.forecast_length
         forecast_index = current_index + parent.parameters.forecast_length
 
         self.seasonal_cumsum = seasonal_monitoring.cumsum(axis=1)
         seasonal_sums = self.seasonal_cumsum.iloc[:, -1].rename(self.id)
-        self.seasonal_sums_upto_current = self.seasonal_cumsum.iloc[:, current_index].rename(self.id)
-        self.seasonal_sums_upto_forecast = self.seasonal_cumsum.iloc[:, forecast_index].rename(self.id)
+        self.seasonal_sums_upto_current = self.seasonal_cumsum.iloc[:, current_monitoring_index].rename(self.id)
+        self.seasonal_sums_upto_forecast = self.seasonal_cumsum.iloc[:, forecast_monitoring_index].rename(self.id)
 
         self.seasons_ensemble = get_ensemble(current_season_monitoring, 
                                               seasonal_monitoring)
@@ -214,9 +216,9 @@ class Place:
         ]
         clim_std = clim_seasons_cumsum.std()
 
-        clim_avg_upto_current = clim_avg.iloc[current_index]
+        clim_avg_upto_current = clim_avg.iloc[current_monitoring_index]
         if not np.isnan(forecast_values.iloc[-1]):
-            clim_avg_upto_forecast = clim_avg.iloc[current_index + len(forecast_values)]
+            clim_avg_upto_forecast = clim_avg.iloc[current_monitoring_index + len(forecast_values)]
         else:
             clim_avg_upto_forecast = np.nan
 
@@ -277,9 +279,9 @@ class Place:
         ]
         selected_std = self.selected_seasons_cumsum.std()
 
-        selected_avg_upto_current = selected_avg.iloc[current_index]
+        selected_avg_upto_current = selected_avg.iloc[current_monitoring_index]
         if not np.isnan(forecast_values.iloc[-1]):
-            selected_avg_upto_forecast = selected_avg.iloc[current_index + len(forecast_values)]
+            selected_avg_upto_forecast = selected_avg.iloc[current_monitoring_index + len(forecast_values)]
         else:
             selected_avg_upto_forecast = np.nan
 
@@ -352,8 +354,8 @@ class Place:
             'Seasonal Forecast 33 Pctl.': seasonal_forecast_pctls[4],
             'Seasonal Forecast 67 Pctl.': seasonal_forecast_pctls[5],
             
-            'Climatology Average at Current Dekad': clim_avg.iloc[current_index],
-            'Climatology Average at Forecast': clim_avg.iloc[forecast_index],
+            'Climatology Average at Current Dekad': clim_avg.iloc[current_monitoring_index],
+            'Climatology Average at Forecast': clim_avg.iloc[forecast_monitoring_index],
             'Climatology 33 Pctl.': clim_seasons_pctls[0],
             'Climatology 67 Pctl.': clim_seasons_pctls[1],
             **sos_data,
