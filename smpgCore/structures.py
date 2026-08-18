@@ -219,7 +219,7 @@ class Place:
 
         clim_avg_upto_current = clim_avg.iloc[current_monitoring_index]
         if not np.isnan(forecast_values.iloc[-1]):
-            clim_avg_upto_forecast = clim_avg.iloc[current_monitoring_index + len(forecast_values)]
+            clim_avg_upto_forecast = clim_avg.iloc[current_monitoring_index + parent.parameters.forecast_length]
         else:
             clim_avg_upto_forecast = np.nan
 
@@ -282,7 +282,7 @@ class Place:
 
         selected_avg_upto_current = selected_avg.iloc[current_monitoring_index]
         if not np.isnan(forecast_values.iloc[-1]):
-            selected_avg_upto_forecast = selected_avg.iloc[current_monitoring_index + len(forecast_values)]
+            selected_avg_upto_forecast = selected_avg.iloc[current_monitoring_index + parent.parameters.forecast_length]
         else:
             selected_avg_upto_forecast = np.nan
 
