@@ -39,12 +39,16 @@ const hasSos = parameters['rainy_season_detection_enabled'];
 const hasMap = isDeclared("topojson_map") && topojson_map !== null;
 const hasReferenceMap = isDeclared("reference_topojson_map") && reference_topojson_map !== null;
 
-const mapFields = ['None', 'Total up to Current Season/LTA Pct.', 
+const mapFields = ['None', 'Current Season/Avg Pct.', 
+    'Total up to Current Season/LTA Pct.', 
     'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
     'Probability of Normal', 'Probability Above Normal', 
     'Ensemble Med. Pctl.', 'Current Season Pctl.',
     ];
 if(hasForecast) {
+    mapFields.push('Forecast 1st Period/Avg Pct.');
+    if (parameters['forecast_length'] >= 2) mapFields.push('Forecast Accumulation/Avg Pct.');
+    if (parameters['forecast_length'] >= 3) mapFields.push('Forecast 3rd Period/Avg Pct.');
     mapFields.push('Forecast Pctl.');
     mapFields.push('Total up to Forecast/LTA Pct.');
     mapFields.push('Ensemble Med. w Forecast/LTA Pct.');

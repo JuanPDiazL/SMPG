@@ -139,7 +139,8 @@ class Place:
         current_monitoring_index = len(current_season_monitoring) - 1
         current_index = len(current_season) - 1
         forecast_monitoring_index = current_monitoring_index + parent.parameters.forecast_length
-        forecast_index = current_index + parent.parameters.forecast_length
+        forecast_start_index = current_index + 1
+        forecast_end_index = current_index + parent.parameters.forecast_length
 
         self.seasonal_cumsum = seasonal_monitoring.cumsum(axis=1)
         seasonal_sums = self.seasonal_cumsum.iloc[:, -1].rename(self.id)
@@ -169,6 +170,10 @@ class Place:
         seasonal_forecast_pctls = percentiles_to_values(self.seasonal_sums_upto_forecast.to_numpy(), 
                                                              (3, 6, 11, 21, 33, 67))
         climatology_avg = seasons_climatology.mean()
+        
+        forecast_pct_avg = [(forecast_values.iloc[i]/climatology_avg.iloc[i+forecast_start_index])*100 
+                            for i in range(parent.parameters.forecast_length)] \
+                                + ([None]*(3-parent.parameters.forecast_length))
 
         # SOS detection
         if parent.parameters.rainy_season_detection_enabled:
@@ -338,6 +343,13 @@ class Place:
                 [current_cumsum_mon.iloc[-1]])[0],
             'Forecast Pctl.': percentiles_from_values(self.seasonal_sums_upto_forecast.to_numpy(), 
                 [current_cumsum_mon.iloc[-1] + forecast_cumsum.iloc[-1]])[0],
+
+            'Current Season/Avg Pct.': (current_season.iloc[-1] / climatology_avg.iloc[current_index])*100,
+            'Forecast 1st Period/Avg Pct.': forecast_pct_avg[0],
+            'Forecast 2nd Period/Avg Pct.': forecast_pct_avg[1],
+            'Forecast 3rd Period/Avg Pct.': forecast_pct_avg[2],
+            'Forecast Accumulation/Avg Pct.': (forecast_cumsum.iloc[-1] / climatology_avg.iloc[forecast_start_index:forecast_end_index+1].sum())*100,
+
             'Current Accumulation to Present': current_cumsum_mon.iloc[-1],
             'Current Accumulation to Forecast': current_cumsum_mon.iloc[-1] + forecast_cumsum.iloc[-1],
 

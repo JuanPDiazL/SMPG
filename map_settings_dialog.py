@@ -76,11 +76,16 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
                 Expected keys are 'shp_source', 'selected_map', and 
                 'join_field'.
         """
-        self.fields = ['Total up to Current Season/LTA Pct.', 'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
-                  'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
-                  'Current Season Pctl.']
+        self.fields = ['Current Season/Avg Pct.', 'Total up to Current Season/LTA Pct.', 
+                       'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
+                       'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
+                       'Current Season Pctl.']
         
-        if self.parentWidget().forecastLengthSpinBox.value() > 0:
+        forecast_length = self.parentWidget().forecastLengthSpinBox.value()
+        if forecast_length > 0:
+            self.fields.append('Forecast 1st Period/Avg Pct.')
+            if forecast_length >= 2: self.fields.append('Forecast Accumulation/Avg Pct.')
+            if forecast_length >= 3: self.fields.append('Forecast 3rd Period/Avg Pct.')
             self.fields.append('Forecast Pctl.')
             self.fields.append('Total up to Forecast/LTA Pct.')
             self.fields.append('Ensemble Med. w Forecast/LTA Pct.')
