@@ -118,12 +118,12 @@ def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selecte
     if selected_stats == []: return
     
     attribute_style_relation = {
-        'Current Season/Avg Pct.': {'classes': 'anomaly_percent', 'data': 'general_stats'},
+        'Current Period/Avg Pct.': {'classes': 'anomaly_percent', 'data': 'general_stats'},
         'Forecast 1st Period/Avg Pct.': {'classes': 'anomaly_percent', 'data': 'general_stats'},
         'Forecast 2nd Period/Avg Pct.': {'classes': 'anomaly_percent', 'data': 'general_stats'},
         'Forecast 3rd Period/Avg Pct.': {'classes': 'anomaly_percent', 'data': 'general_stats'},
         'Forecast Accumulation/Avg Pct.': {'classes': 'anomaly_percent', 'data': 'general_stats'},
-        'Total up to Current Season/LTA Pct.': {'classes': 'anomaly_percent', 'data': 'climatology_stats'},
+        'Total up to Current Period/LTA Pct.': {'classes': 'anomaly_percent', 'data': 'climatology_stats'},
         'Total up to Forecast/LTA Pct.': {'classes': 'anomaly_percent', 'data': 'climatology_stats'},
         'Ensemble Med./LTA Pct.': {'classes': 'anomaly_percent', 'data': 'selected_years_stats'},
         'Ensemble Med. w Forecast/LTA Pct.': {'classes': 'anomaly_percent', 'data': 'selected_years_stats'},

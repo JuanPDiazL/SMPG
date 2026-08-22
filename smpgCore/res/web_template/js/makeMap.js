@@ -5,7 +5,7 @@
 const UNCAT_COLOR = '#aaaf';
 let mapStatsCategories = {
     'None': { 'Uncategorized': {color:UNCAT_COLOR, 'function': () => true} },
-    'Total up to Current Season/LTA Pct.': {
+    'Total up to Current Period/LTA Pct.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -17,7 +17,7 @@ let mapStatsCategories = {
         '140-160': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'Current Season/Avg Pct.': {
+    'Current Period/Avg Pct.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -242,7 +242,7 @@ let mapStatsCategories = {
 };
 
 const mapDescriptions = {
-    "Total up to Current Season/LTA Pct.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period.",
+    "Total up to Current Period/LTA Pct.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period.",
     "C.Dk./LTA PC.Dk. + Forecast/LTA Pct.": "Depicts the percent of average for the accumulated precipitation from the Start of Season (SOS) up to the current period, including the forecast.",
     "Current Season Pctl.": "Shows the percentile rank of the accumulated precipitation from the SOS up to the current period, based on historical data.",
     "Ensemble Med. Pctl.": "Depicts the percentile rank of the median value of all possible outcomes at the End of Season (EOS). The ensemble is created using historical data from selected years (from Section 4) to simulate a range of potential outcomes.",
@@ -299,9 +299,9 @@ function getSosCategories(suffix='Start') {
 let getPlaceMapStats = (place) => {
     return {
         'None': () => undefined,
-        'Current Season/Avg Pct.': place_general_stats[place]['Current Season/Avg Pct.'],
+        'Current Period/Avg Pct.': place_general_stats[place]['Current Period/Avg Pct.'],
         'Forecast/Avg Pct.': place_general_stats[place]['Forecast/Avg Pct.'],
-        'Total up to Current Season/LTA Pct.': seasonal_general_stats[place]['Total up to Current Season/LTA Pct.'],
+        'Total up to Current Period/LTA Pct.': seasonal_general_stats[place]['Total up to Current Period/LTA Pct.'],
         'Total up to Forecast/LTA Pct.': seasonal_general_stats[place]['Total up to Forecast/LTA Pct.'],
         'Ensemble Med./LTA Pct.': selected_seasons_general_stats[place]['Ensemble Med./LTA Pct.'],
         'Ensemble Med. w Forecast/LTA Pct.': selected_seasons_general_stats[place]['Ensemble Med. w Forecast/LTA Pct.'],

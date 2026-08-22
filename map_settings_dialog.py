@@ -76,7 +76,7 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
                 Expected keys are 'shp_source', 'selected_map', and 
                 'join_field'.
         """
-        self.fields = ['Current Season/Avg Pct.', 'Total up to Current Season/LTA Pct.', 
+        self.fields = ['Current Period/Avg Pct.', 'Total up to Current Period/LTA Pct.', 
                        'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
                        'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
                        'Current Season Pctl.']

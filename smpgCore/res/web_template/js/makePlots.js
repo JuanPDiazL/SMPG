@@ -54,8 +54,8 @@ function makeAccumulationsTable(containerElement) {
         const assesmentTitle = `Assessment at Current ${period_unit}`;
         data[assesmentTitle] = [
             [null, 'Sel. Yrs.', 'Clim.'],
-            [`LTA up to Current Season`, selected_seasons_general_stats[index]['LTA up to Current Season'], seasonal_general_stats[index]['LTA up to Current Season']],
-            [`Total up to Current Season/LTA Pct.`, selected_seasons_general_stats[index]['Total up to Current Season/LTA Pct.'], seasonal_general_stats[index]['Total up to Current Season/LTA Pct.']],
+            [`LTA up to Current Period`, selected_seasons_general_stats[index]['LTA up to Current Period'], seasonal_general_stats[index]['LTA up to Current Period']],
+            [`Total up to Current Period/LTA Pct.`, selected_seasons_general_stats[index]['Total up to Current Period/LTA Pct.'], seasonal_general_stats[index]['Total up to Current Period/LTA Pct.']],
         ]
         data["[hide header]"] = [
             [`Current Accumulation to Present`, place_general_stats[index]['Current Accumulation to Present']],
