@@ -41,6 +41,10 @@ function getLegend(title, color, data, chartTypes = {}, points = {}) {
             chartType = 'show_chart';
             break;
     }
+    if (datasetProperties.selected_years.length > 5 
+        && datasetProperties.selected_years.includes(title)) {
+        return "";
+    }
     return `<span style='padding:2px; font-size:10.5px;'><span class="mi mi-button" style="color:${color};">${chartType}</span> ${title}</span>`;
 }
 
