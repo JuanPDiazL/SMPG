@@ -282,19 +282,19 @@ function makeEnsembleWithForecastPlot(containerElement) {
     };
     const xsDataRelation = {
         'Forecast Accumulation': 'forecast_xs',
-        'E. LTA w/ Forecast±St. Dev.': 'scatter_xs',
+        'E. LTA w. Forecast±St. Dev.': 'scatter_xs',
         'LTA±St. Dev.': 'scatter_xs',
         'E. LTA±St. Dev.': 'scatter_xs',
         '(33, 67) Pctl.': 'scatter_xs',
-        'E. w/ Forecast (33, 67) Pctl.': 'scatter_xs',
+        'E. w. Forecast (33, 67) Pctl.': 'scatter_xs',
     };
     const plotTypes = {
-        'E. LTA w/ Forecast±St. Dev.': 'scatter',
+        'E. LTA w. Forecast±St. Dev.': 'scatter',
         'LTA±20%': 'area-line-range',
         'LTA±St. Dev.': 'scatter',
         'E. LTA±St. Dev.': 'scatter',
         '(33, 67) Pctl.': 'scatter',
-        'E. w/ Forecast (33, 67) Pctl.': 'scatter',
+        'E. w. Forecast (33, 67) Pctl.': 'scatter',
     };
     const getEnsemblePlotData = (index) => {
         const xLength = seasonal_current_totals[index].length + 1;
@@ -302,24 +302,24 @@ function makeEnsembleWithForecastPlot(containerElement) {
             ...selected_seasons_ensemble_with_forecast[index],
             'LTA±20%': arrayMoreLess20(seasonal_long_term_stats[index]['LTA']),
             'LTA': seasonal_long_term_stats[index]['LTA'],
-            'Ensemble Med. w/ Forecast': selected_seasons_long_term_stats[index]['Ensemble Med. w/ Forecast'],
+            'Ensemble Med. w. Forecast': selected_seasons_long_term_stats[index]['Ensemble Med. w. Forecast'],
             'Current Season Accumulation': place_long_term_stats[index]['Current Season Accumulation']
             .slice(monitoringOffset),
             'LTA±St. Dev.': [
                 seasonal_general_stats[index]['LTA'] + seasonal_general_stats[index]['St. Dev.'],
                 seasonal_general_stats[index]['LTA'] - seasonal_general_stats[index]['St. Dev.'],
             ],
-            'E. LTA w/ Forecast±St. Dev.': [
-                selected_seasons_general_stats[index]['E. LTA w/ Forecast'] + selected_seasons_general_stats[index]['St. Dev.'],
-                selected_seasons_general_stats[index]['E. LTA w/ Forecast'] - selected_seasons_general_stats[index]['St. Dev.'],
+            'E. LTA w. Forecast±St. Dev.': [
+                selected_seasons_general_stats[index]['E. LTA w. Forecast'] + selected_seasons_general_stats[index]['St. Dev.'],
+                selected_seasons_general_stats[index]['E. LTA w. Forecast'] - selected_seasons_general_stats[index]['St. Dev.'],
             ],
             '(33, 67) Pctl.': [
                 place_general_stats[index]['Climatology 33 Pctl.'],
                 place_general_stats[index]['Climatology 67 Pctl.'],
             ],
-            'E. w/ Forecast (33, 67) Pctl.': [
-                selected_seasons_general_stats[index]['Ensemble 33 Pctl. w/ Forecast'],
-                selected_seasons_general_stats[index]['Ensemble 67 Pctl. w/ Forecast'],
+            'E. w. Forecast (33, 67) Pctl.': [
+                selected_seasons_general_stats[index]['Ensemble 33 Pctl. w. Forecast'],
+                selected_seasons_general_stats[index]['Ensemble 67 Pctl. w. Forecast'],
             ],
             'Forecast Accumulation': [
                 place_general_stats[index]['Current Accumulation to Present'], 
@@ -338,16 +338,16 @@ function makeEnsembleWithForecastTable(containerElement) {
         return {
             "Projection at EoS": [
                 [null, 'Sel. Yrs.', 'Clim.'],
-                ['Ensemble Med. w/ Forecast', selected_seasons_general_stats[index]['Ensemble Med. w/ Forecast'], seasonal_general_stats[index]['Ensemble Med. w/ Forecast']],
+                ['Ensemble Med. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. w. Forecast'], seasonal_general_stats[index]['Ensemble Med. w. Forecast']],
                 ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
                 ['Ensemble Med. w Forecast/LTA Pct.', selected_seasons_general_stats[index]['Ensemble Med. w Forecast/LTA Pct.'], seasonal_general_stats[index]['Ensemble Med. w Forecast/LTA Pct.']],
-                ['Ensemble Med. Pctl. w/ Forecast', selected_seasons_general_stats[index]['Ensemble Med. Pctl. w/ Forecast'], selected_seasons_general_stats[index]['Ensemble Med. Pctl. w/ Forecast']],
+                ['Ensemble Med. Pctl. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. Pctl. w. Forecast'], selected_seasons_general_stats[index]['Ensemble Med. Pctl. w. Forecast']],
             ],
             "Probability at EoS": [
                 [null, 'Sel. Yrs.', 'Clim.'],
-                ['Above Normal', selected_seasons_general_stats[index]['Probability Above Normal w/ Forecast'], seasonal_general_stats[index]['Probability Above Normal w/ Forecast']],
-                ['Normal', selected_seasons_general_stats[index]['Probability of Normal w/ Forecast'], seasonal_general_stats[index]['Probability of Normal w/ Forecast']],
-                ['Below Normal', selected_seasons_general_stats[index]['Probability Below Normal w/ Forecast'], seasonal_general_stats[index]['Probability Below Normal w/ Forecast']],
+                ['Above Normal', selected_seasons_general_stats[index]['Probability Above Normal w. Forecast'], seasonal_general_stats[index]['Probability Above Normal w. Forecast']],
+                ['Normal', selected_seasons_general_stats[index]['Probability of Normal w. Forecast'], seasonal_general_stats[index]['Probability of Normal w. Forecast']],
+                ['Below Normal', selected_seasons_general_stats[index]['Probability Below Normal w. Forecast'], seasonal_general_stats[index]['Probability Below Normal w. Forecast']],
             ]
         }
     };

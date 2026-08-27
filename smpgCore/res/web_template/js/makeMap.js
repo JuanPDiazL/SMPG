@@ -134,7 +134,7 @@ let mapStatsCategories = {
         '75-90': { 'color': '#ed6e43', 'function': (x) => x >= 75 && x < 90 },
         '90-100': { 'color': '#d7191c', 'function': (x) => x >= 90 && x <= 100 },
     },
-    'Probability Below Normal w/ Forecast': {
+    'Probability Below Normal w. Forecast': {
         '0-15': { 'color': '#2b83ba', 'function': (x) => x >= 0 && x < 15 },
         '15-30': { 'color': '#74b7ae', 'function': (x) => x >= 15 && x < 30 },
         '30-45': { 'color': '#e7f6b8', 'function': (x) => x >= 30 && x < 45 },
@@ -151,7 +151,7 @@ let mapStatsCategories = {
         '80-90': { 'color': '#43a2ca', 'function': (x) => x >= 80 && x < 90 },
         '90-100': { 'color': '#0868ac', 'function': (x) => x >= 90 && x <= 100 },
     },
-    'Probability of Normal w/ Forecast': {
+    'Probability of Normal w. Forecast': {
         '0-20': { 'color': '#e0e0e0', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f0f9e8', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#bae4bc', 'function': (x) => x >= 40 && x < 60 },
@@ -167,7 +167,7 @@ let mapStatsCategories = {
         '80-90': { 'color': '#43a2ca', 'function': (x) => x >= 80 && x < 90 },
         '90-100': { 'color': '#0868ac', 'function': (x) => x >= 90 && x <= 100 },
     },
-    'Probability Above Normal w/ Forecast': {
+    'Probability Above Normal w. Forecast': {
         '0-20': { 'color': '#e0e0e0', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f0f9e8', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#bae4bc', 'function': (x) => x >= 40 && x < 60 },
@@ -185,7 +185,7 @@ let mapStatsCategories = {
         'Wetter than Normal': { 'color': '#a6cee3', 'function': (x) => x > 70 && x <= 90 },
         'Extremely Wet': { 'color': '#1f78b4', 'function': (x) => x > 90 },
     },
-    'Ensemble Med. Pctl. w/ Forecast': {
+    'Ensemble Med. Pctl. w. Forecast': {
         'Exceptionally Dry': { 'color': '#7e0006', 'function': (x) => x <= 2 },
         'Extremely Dry': { 'color': '#e20b00', 'function': (x) => x > 2 && x <= 5 },
         'Severely Dry': { 'color': '#e35a1a', 'function': (x) => x > 5 && x <= 10 },
@@ -306,13 +306,13 @@ let getPlaceMapStats = (place) => {
         'Ensemble Med./LTA Pct.': selected_seasons_general_stats[place]['Ensemble Med./LTA Pct.'],
         'Ensemble Med. w Forecast/LTA Pct.': selected_seasons_general_stats[place]['Ensemble Med. w Forecast/LTA Pct.'],
         'Probability Below Normal': selected_seasons_general_stats[place]['Probability Below Normal'],
-        'Probability Below Normal w/ Forecast': selected_seasons_general_stats[place]['Probability Below Normal w/ Forecast'],
+        'Probability Below Normal w. Forecast': selected_seasons_general_stats[place]['Probability Below Normal w. Forecast'],
         'Probability of Normal': selected_seasons_general_stats[place]['Probability of Normal'],
-        'Probability of Normal w/ Forecast': selected_seasons_general_stats[place]['Probability of Normal w/ Forecast'],
+        'Probability of Normal w. Forecast': selected_seasons_general_stats[place]['Probability of Normal w. Forecast'],
         'Probability Above Normal': selected_seasons_general_stats[place]['Probability Above Normal'],
-        'Probability Above Normal w/ Forecast': selected_seasons_general_stats[place]['Probability Above Normal w/ Forecast'],
+        'Probability Above Normal w. Forecast': selected_seasons_general_stats[place]['Probability Above Normal w. Forecast'],
         'Ensemble Med. Pctl.': selected_seasons_general_stats[place]['Ensemble Med. Pctl.'],
-        'Ensemble Med. Pctl. w/ Forecast': selected_seasons_general_stats[place]['Ensemble Med. Pctl. w/ Forecast'],
+        'Ensemble Med. Pctl. w. Forecast': selected_seasons_general_stats[place]['Ensemble Med. Pctl. w. Forecast'],
         'Current Season Pctl.': place_general_stats[place]['Current Season Pctl.'],
         'Forecast Pctl.': place_general_stats[place]['Forecast Pctl.'],
         'Start of Season': place_general_stats[place]['Start of Season'],

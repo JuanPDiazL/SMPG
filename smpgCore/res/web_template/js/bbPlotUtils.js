@@ -153,7 +153,7 @@ const chartColors = {
     'LTA±20%': '#00AFE5',
     'Climatology Average': '#FF0000',
     'Ensemble Med.': '#000000',
-    'Ensemble Med. w/ Forecast': '#000000',
+    'Ensemble Med. w. Forecast': '#000000',
     'Current Season': '#0000FF',
     'Seasonal Accumulation': '#78ADD2',
     'Current Season Accumulation': '#0000FF',
@@ -175,7 +175,7 @@ const chartColors = {
     'LTA±St. Dev.': '#008000',
     '(33, 67) Pctl.': '#000000',
     'E. LTA±St. Dev.': '#FFA500',
-    'E. LTA w/ Forecast±St. Dev.': '#FFA500',
+    'E. LTA w. Forecast±St. Dev.': '#FFA500',
     'E. (33, 67) Pctl.': '#0000FF',
-    'E. w/ Forecast (33, 67) Pctl.': '#0000FF',
+    'E. w. Forecast (33, 67) Pctl.': '#0000FF',
 }
