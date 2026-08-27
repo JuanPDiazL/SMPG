@@ -300,7 +300,10 @@ let getPlaceMapStats = (place) => {
     return {
         'None': () => undefined,
         'Current Period Pct. of Avg.': place_general_stats[place]['Current Period Pct. of Avg.'],
-        'Forecast Pct. of Avg.': place_general_stats[place]['Forecast Pct. of Avg.'],
+        'Forecast 1st Period Pct. of Avg.': place_general_stats[place]['Forecast 1st Period Pct. of Avg.'],
+        'Forecast 2nd Period Pct. of Avg.': place_general_stats[place]['Forecast 2nd Period Pct. of Avg.'],
+        'Forecast 3rd Period Pct. of Avg.': place_general_stats[place]['Forecast 3rd Period Pct. of Avg.'],
+        'Forecast Accumulation Pct. of Avg.': place_general_stats[place]['Forecast Accumulation Pct. of Avg.'],
         'Total up to Current Period Pct. of Avg.': seasonal_general_stats[place]['Total up to Current Period Pct. of Avg.'],
         'Total up to Forecast Pct. of Avg.': seasonal_general_stats[place]['Total up to Forecast Pct. of Avg.'],
         'Ensemble Med. Pct. of Avg.': selected_seasons_general_stats[place]['Ensemble Med. Pct. of Avg.'],
