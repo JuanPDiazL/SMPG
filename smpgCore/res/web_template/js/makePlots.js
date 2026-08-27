@@ -55,7 +55,7 @@ function makeAccumulationsTable(containerElement) {
         data[assesmentTitle] = [
             [null, 'Sel. Yrs.', 'Clim.'],
             [`LTA up to Current Period`, selected_seasons_general_stats[index]['LTA up to Current Period'], seasonal_general_stats[index]['LTA up to Current Period']],
-            [`Total up to Current Period/LTA Pct.`, selected_seasons_general_stats[index]['Total up to Current Period/LTA Pct.'], seasonal_general_stats[index]['Total up to Current Period/LTA Pct.']],
+            [`Total up to Current Period Pct. of Avg.`, selected_seasons_general_stats[index]['Total up to Current Period Pct. of Avg.'], seasonal_general_stats[index]['Total up to Current Period Pct. of Avg.']],
         ]
         data["[hide header]"] = [
             [`Current Accumulation to Present`, place_general_stats[index]['Current Accumulation to Present']],
@@ -247,7 +247,7 @@ function makeEnsembleTable(containerElement) {
                 [null, 'Sel. Yrs.', 'Clim.'],
                 ['Ensemble Med.', selected_seasons_general_stats[index]['Ensemble Med.'], seasonal_general_stats[index]['Ensemble Med.']],
                 ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
-                ['Ensemble Med./LTA Pct.', selected_seasons_general_stats[index]['Ensemble Med./LTA Pct.'], seasonal_general_stats[index]['Ensemble Med./LTA Pct.']],
+                ['Ensemble Med. Pct. of Avg.', selected_seasons_general_stats[index]['Ensemble Med. Pct. of Avg.'], seasonal_general_stats[index]['Ensemble Med. Pct. of Avg.']],
                 ['Ensemble Med. Pctl.', selected_seasons_general_stats[index]['Ensemble Med. Pctl.'], selected_seasons_general_stats[index]['Ensemble Med. Pctl.']],
             ],
             "Probability at EoS": [
@@ -340,7 +340,7 @@ function makeEnsembleWithForecastTable(containerElement) {
                 [null, 'Sel. Yrs.', 'Clim.'],
                 ['Ensemble Med. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. w. Forecast'], seasonal_general_stats[index]['Ensemble Med. w. Forecast']],
                 ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
-                ['Ensemble Med. w Forecast/LTA Pct.', selected_seasons_general_stats[index]['Ensemble Med. w Forecast/LTA Pct.'], seasonal_general_stats[index]['Ensemble Med. w Forecast/LTA Pct.']],
+                ['Ensemble Med. w Forecast Pct. of Avg.', selected_seasons_general_stats[index]['Ensemble Med. w Forecast Pct. of Avg.'], seasonal_general_stats[index]['Ensemble Med. w Forecast Pct. of Avg.']],
                 ['Ensemble Med. Pctl. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. Pctl. w. Forecast'], selected_seasons_general_stats[index]['Ensemble Med. Pctl. w. Forecast']],
             ],
             "Probability at EoS": [

@@ -5,7 +5,7 @@
 const UNCAT_COLOR = '#aaaf';
 let mapStatsCategories = {
     'None': { 'Uncategorized': {color:UNCAT_COLOR, 'function': () => true} },
-    'Total up to Current Period/LTA Pct.': {
+    'Total up to Current Period Pct. of Avg.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -17,7 +17,7 @@ let mapStatsCategories = {
         '140-160': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'Current Period/Avg Pct.': {
+    'Current Period Pct. of Avg.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -29,7 +29,7 @@ let mapStatsCategories = {
         '140-160': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'Forecast 1st Period/Avg Pct.': {
+    'Forecast 1st Period Pct. of Avg.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -41,7 +41,7 @@ let mapStatsCategories = {
         '140-160': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'Forecast 2nd Period/Avg Pct.': {
+    'Forecast 2nd Period Pct. of Avg.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -53,7 +53,7 @@ let mapStatsCategories = {
         '140-160': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'Forecast 3rd Period/Avg Pct.': {
+    'Forecast 3rd Period Pct. of Avg.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -65,7 +65,7 @@ let mapStatsCategories = {
         '140-160': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'Forecast Accumulation/Avg Pct.': {
+    'Forecast Accumulation Pct. of Avg.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -77,7 +77,7 @@ let mapStatsCategories = {
         '140-160': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'Total up to Forecast/LTA Pct.': {
+    'Total up to Forecast Pct. of Avg.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -89,7 +89,7 @@ let mapStatsCategories = {
         '140-160': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'Forecast/Avg Pct.': {
+    'Forecast Pct. of Avg.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -101,7 +101,7 @@ let mapStatsCategories = {
         '140-160': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'Ensemble Med./LTA Pct.': {
+    'Ensemble Med. Pct. of Avg.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -113,7 +113,7 @@ let mapStatsCategories = {
         '140-160': { 'color': '#5cc9ea', 'function': (x) => x >= 140 && x < 160 },
         '≥160': { 'color': '#2a83ba', 'function': (x) => x >= 160 },
     },
-    'Ensemble Med. w Forecast/LTA Pct.': {
+    'Ensemble Med. w Forecast Pct. of Avg.': {
         '0-20': { 'color': '#be6b05', 'function': (x) => x >= 0 && x < 20 },
         '20-40': { 'color': '#f38124', 'function': (x) => x >= 20 && x < 40 },
         '40-60': { 'color': '#fec280', 'function': (x) => x >= 40 && x < 60 },
@@ -242,11 +242,11 @@ let mapStatsCategories = {
 };
 
 const mapDescriptions = {
-    "Total up to Current Period/LTA Pct.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period.",
-    "C.Dk./LTA PC.Dk. + Forecast/LTA Pct.": "Depicts the percent of average for the accumulated precipitation from the Start of Season (SOS) up to the current period, including the forecast.",
+    "Total up to Current Period Pct. of Avg.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period.",
+    "C.Dk./LTA PC.Dk. + Forecast Pct. of Avg.": "Depicts the percent of average for the accumulated precipitation from the Start of Season (SOS) up to the current period, including the forecast.",
     "Current Season Pctl.": "Shows the percentile rank of the accumulated precipitation from the SOS up to the current period, based on historical data.",
     "Ensemble Med. Pctl.": "Depicts the percentile rank of the median value of all possible outcomes at the End of Season (EOS). The ensemble is created using historical data from selected years (from Section 4) to simulate a range of potential outcomes.",
-    "Ensemble Med./LTA Pct.": "Displays the percent of average for the EOS median value of all possible outcomes compared against the long-term average (LTA).",
+    "Ensemble Med. Pct. of Avg.": "Displays the percent of average for the EOS median value of all possible outcomes compared against the long-term average (LTA).",
     "Probability Below Normal": "This map displays the probability of the season's outcome below the 33rd percentile of the historical distribution.",
     "Probability of Normal": "This map displays the probability of the season's outcome between the 33rd and 67th percentiles.",
     "Probability Above Normal": "This map displays the probability of the season's outcome above the 67th percentile of the historical distribution.",
@@ -299,12 +299,12 @@ function getSosCategories(suffix='Start') {
 let getPlaceMapStats = (place) => {
     return {
         'None': () => undefined,
-        'Current Period/Avg Pct.': place_general_stats[place]['Current Period/Avg Pct.'],
-        'Forecast/Avg Pct.': place_general_stats[place]['Forecast/Avg Pct.'],
-        'Total up to Current Period/LTA Pct.': seasonal_general_stats[place]['Total up to Current Period/LTA Pct.'],
-        'Total up to Forecast/LTA Pct.': seasonal_general_stats[place]['Total up to Forecast/LTA Pct.'],
-        'Ensemble Med./LTA Pct.': selected_seasons_general_stats[place]['Ensemble Med./LTA Pct.'],
-        'Ensemble Med. w Forecast/LTA Pct.': selected_seasons_general_stats[place]['Ensemble Med. w Forecast/LTA Pct.'],
+        'Current Period Pct. of Avg.': place_general_stats[place]['Current Period Pct. of Avg.'],
+        'Forecast Pct. of Avg.': place_general_stats[place]['Forecast Pct. of Avg.'],
+        'Total up to Current Period Pct. of Avg.': seasonal_general_stats[place]['Total up to Current Period Pct. of Avg.'],
+        'Total up to Forecast Pct. of Avg.': seasonal_general_stats[place]['Total up to Forecast Pct. of Avg.'],
+        'Ensemble Med. Pct. of Avg.': selected_seasons_general_stats[place]['Ensemble Med. Pct. of Avg.'],
+        'Ensemble Med. w Forecast Pct. of Avg.': selected_seasons_general_stats[place]['Ensemble Med. w Forecast Pct. of Avg.'],
         'Probability Below Normal': selected_seasons_general_stats[place]['Probability Below Normal'],
         'Probability Below Normal w. Forecast': selected_seasons_general_stats[place]['Probability Below Normal w. Forecast'],
         'Probability of Normal': selected_seasons_general_stats[place]['Probability of Normal'],

@@ -39,19 +39,19 @@ const hasSos = parameters['rainy_season_detection_enabled'];
 const hasMap = isDeclared("topojson_map") && topojson_map !== null;
 const hasReferenceMap = isDeclared("reference_topojson_map") && reference_topojson_map !== null;
 
-const mapFields = ['None', 'Current Period/Avg Pct.', 
-    'Total up to Current Period/LTA Pct.', 
-    'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
+const mapFields = ['None', 'Current Period Pct. of Avg.', 
+    'Total up to Current Period Pct. of Avg.', 
+    'Ensemble Med. Pct. of Avg.', 'Probability Below Normal', 
     'Probability of Normal', 'Probability Above Normal', 
     'Ensemble Med. Pctl.', 'Current Season Pctl.',
     ];
 if(hasForecast) {
-    mapFields.push('Forecast 1st Period/Avg Pct.');
-    if (parameters['forecast_length'] >= 2) mapFields.push('Forecast Accumulation/Avg Pct.');
-    if (parameters['forecast_length'] >= 3) mapFields.push('Forecast 3rd Period/Avg Pct.');
+    mapFields.push('Forecast 1st Period Pct. of Avg.');
+    if (parameters['forecast_length'] >= 2) mapFields.push('Forecast Accumulation Pct. of Avg.');
+    if (parameters['forecast_length'] >= 3) mapFields.push('Forecast 3rd Period Pct. of Avg.');
     mapFields.push('Forecast Pctl.');
-    mapFields.push('Total up to Forecast/LTA Pct.');
-    mapFields.push('Ensemble Med. w Forecast/LTA Pct.');
+    mapFields.push('Total up to Forecast Pct. of Avg.');
+    mapFields.push('Ensemble Med. w Forecast Pct. of Avg.');
     mapFields.push('Ensemble Med. Pctl. w. Forecast');
     mapFields.push('Probability Below Normal w. Forecast');
     mapFields.push('Probability of Normal w. Forecast');

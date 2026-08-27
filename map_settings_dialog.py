@@ -76,19 +76,19 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
                 Expected keys are 'shp_source', 'selected_map', and 
                 'join_field'.
         """
-        self.fields = ['Current Period/Avg Pct.', 'Total up to Current Period/LTA Pct.', 
-                       'Ensemble Med./LTA Pct.', 'Probability Below Normal', 
+        self.fields = ['Current Period Pct. of Avg.', 'Total up to Current Period Pct. of Avg.', 
+                       'Ensemble Med. Pct. of Avg.', 'Probability Below Normal', 
                        'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
                        'Current Season Pctl.']
         
         forecast_length = self.parentWidget().forecastLengthSpinBox.value()
         if forecast_length > 0:
-            self.fields.append('Forecast 1st Period/Avg Pct.')
-            if forecast_length >= 2: self.fields.append('Forecast Accumulation/Avg Pct.')
-            if forecast_length >= 3: self.fields.append('Forecast 3rd Period/Avg Pct.')
+            self.fields.append('Forecast 1st Period Pct. of Avg.')
+            if forecast_length >= 2: self.fields.append('Forecast Accumulation Pct. of Avg.')
+            if forecast_length >= 3: self.fields.append('Forecast 3rd Period Pct. of Avg.')
             self.fields.append('Forecast Pctl.')
-            self.fields.append('Total up to Forecast/LTA Pct.')
-            self.fields.append('Ensemble Med. w Forecast/LTA Pct.')
+            self.fields.append('Total up to Forecast Pct. of Avg.')
+            self.fields.append('Ensemble Med. w Forecast Pct. of Avg.')
             self.fields.append('Ensemble Med. Pctl. w. Forecast')
             self.fields.append('Probability Below Normal w. Forecast')
             self.fields.append('Probability of Normal w. Forecast')
