@@ -76,30 +76,26 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
                 Expected keys are 'shp_source', 'selected_map', and 
                 'join_field'.
         """
-        self.fields = ['Current Period Pct. of Avg.', 'Total up to Current Period Pct. of Avg.', 
-                       'Ensemble Med. Pct. of Avg.', 'Probability Below Normal', 
-                       'Probability of Normal', 'Probability Above Normal', 'Ensemble Med. Pctl.', 
-                       'Current Season Pctl.']
-        
         forecast_length = self.parentWidget().forecastLengthSpinBox.value()
-        if forecast_length > 0:
-            self.fields.append('Forecast 1st Period Pct. of Avg.')
-            if forecast_length >= 2: self.fields.append('Forecast Accumulation Pct. of Avg.')
-            if forecast_length >= 3: self.fields.append('Forecast 3rd Period Pct. of Avg.')
-            self.fields.append('Forecast Pctl.')
-            self.fields.append('Total up to Forecast Pct. of Avg.')
-            self.fields.append('Ensemble Med. w Forecast Pct. of Avg.')
-            self.fields.append('Ensemble Med. Pctl. w. Forecast')
-            self.fields.append('Probability Below Normal w. Forecast')
-            self.fields.append('Probability of Normal w. Forecast')
-            self.fields.append('Probability Above Normal w. Forecast')
+        sos = self.parentWidget().rainy_season_detection_dialog.sosEnabled
 
-        if self.parentWidget().rainy_season_detection_dialog.sosEnabled:
-            self.fields.append('Start of Season')
-            self.fields.append('Start of Season Anomaly')
-            if self.parentWidget().forecastLengthSpinBox.value() > 0:
-                self.fields.append('Forecast Start of Season')
-                self.fields.append('Forecast Start of Season Anomaly')
+        self.fields = (
+            ['Current Period Pct. of Avg.', 'Total up to Current Period Pct. of Avg.',
+             'Ensemble Med. Pct. of Avg.', 'Probability Below Normal',
+             'Probability of Normal', 'Probability Above Normal',
+             'Ensemble Med. Pctl.', 'Current Season Pctl.']
+            + (['Forecast Pctl.', 'Total up to Forecast Pct. of Avg.',
+                'Ensemble Med. w Forecast Pct. of Avg.', 'Ensemble Med. Pctl. w. Forecast',
+                'Probability Below Normal w. Forecast', 'Probability of Normal w. Forecast',
+                'Probability Above Normal w. Forecast']
+               if forecast_length > 0 else [])
+            + (['Forecast 1st Period Pct. of Avg.'] if forecast_length >= 1 else [])
+            + (['Forecast Accumulation Pct. of Avg.'] if forecast_length >= 2 else [])
+            + (['Forecast 3rd Period Pct. of Avg.'] if forecast_length >= 3 else [])
+            + (['Start of Season', 'Start of Season Anomaly'] if sos else [])
+            + (['Forecast Start of Season', 'Forecast Start of Season Anomaly']
+               if sos and forecast_length > 0 else [])
+        )
 
         self.blackList.clear()
         self.whiteList.clear()

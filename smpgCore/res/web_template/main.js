@@ -33,38 +33,32 @@ const firstPlaceKey = datasetProperties['place_ids'][0];
 const monitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
 const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
 const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null);
-const hasForecast = parameters['forecast_length'] > 0;
+const hasForecast = parameters['forecast_length'];
 const hasSos = parameters['rainy_season_detection_enabled'];
 
 const hasMap = isDeclared("topojson_map") && topojson_map !== null;
 const hasReferenceMap = isDeclared("reference_topojson_map") && reference_topojson_map !== null;
 
-const mapFields = ['None', 'Current Period Pct. of Avg.', 
-    'Total up to Current Period Pct. of Avg.', 
-    'Ensemble Med. Pct. of Avg.', 'Probability Below Normal', 
-    'Probability of Normal', 'Probability Above Normal', 
+const mapFields = [
+    'None', 'Current Period Pct. of Avg.',
+    'Total up to Current Period Pct. of Avg.',
+    'Ensemble Med. Pct. of Avg.', 'Probability Below Normal',
+    'Probability of Normal', 'Probability Above Normal',
     'Ensemble Med. Pctl.', 'Current Season Pctl.',
-    ];
-if(hasForecast) {
-    mapFields.push('Forecast 1st Period Pct. of Avg.');
-    if (parameters['forecast_length'] >= 2) mapFields.push('Forecast Accumulation Pct. of Avg.');
-    if (parameters['forecast_length'] >= 3) mapFields.push('Forecast 3rd Period Pct. of Avg.');
-    mapFields.push('Forecast Pctl.');
-    mapFields.push('Total up to Forecast Pct. of Avg.');
-    mapFields.push('Ensemble Med. w Forecast Pct. of Avg.');
-    mapFields.push('Ensemble Med. Pctl. w. Forecast');
-    mapFields.push('Probability Below Normal w. Forecast');
-    mapFields.push('Probability of Normal w. Forecast');
-    mapFields.push('Probability Above Normal w. Forecast');
-}
-if(hasSos) {
-    mapFields.push('Start of Season');
-    mapFields.push('Start of Season Anomaly');
-    if (hasForecast) {
-        mapFields.push('Forecast Start of Season');
-        mapFields.push('Forecast Start of Season Anomaly');
-    }
-}
+    ...(hasForecast ? [
+        'Forecast Pctl.', 'Total up to Forecast Pct. of Avg.',
+        'Ensemble Med. w Forecast Pct. of Avg.', 'Ensemble Med. Pctl. w. Forecast',
+        'Probability Below Normal w. Forecast', 'Probability of Normal w. Forecast',
+        'Probability Above Normal w. Forecast',
+    ] : []),
+    ...(hasForecast ? ['Forecast 1st Period Pct. of Avg.'] : []),
+    ...(hasForecast >= 2 ? ['Forecast Accumulation Pct. of Avg.'] : []),
+    ...(hasForecast >= 3 ? ['Forecast 3rd Period Pct. of Avg.'] : []),
+    ...(hasSos ? [
+        'Start of Season', 'Start of Season Anomaly'] : []),
+    ...(hasSos && hasForecast ? [
+        'Forecast Start of Season', 'Forecast Start of Season Anomaly'] : []),
+];
 
 var currentDataIndex = firstPlaceKey;
 
