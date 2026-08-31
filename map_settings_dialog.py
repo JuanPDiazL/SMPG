@@ -69,37 +69,12 @@ class MapSettingsDialog(QDialog, MAP_SETTINGS_DIALOG_CLASS):
 
     def update_input_states(self, settings: dict):
         """
-        Updates the GUI state based on the provided map settings dictionary.
-
-        Args:
-            settings (dict): A dictionary containing the current map settings.
-                Expected keys are 'shp_source', 'selected_map', and 
-                'join_field'.
+        Updates the GUI state based on the provided settings dictionary.
         """
-        forecast_length = self.parentWidget().forecastLengthSpinBox.value()
-        sos = self.parentWidget().rainy_season_detection_dialog.sosEnabled
-
-        self.fields = (
-            ['Current Period Pct. of Avg.', 'Total up to Current Period Pct. of Avg.',
-             'Ensemble Med. Pct. of Avg.', 'Probability Below Normal',
-             'Probability of Normal', 'Probability Above Normal',
-             'Ensemble Med. Pctl.', 'Current Season Pctl.']
-            + (['Forecast Pctl.', 'Total up to Forecast Pct. of Avg.',
-                'Ensemble Med. w Forecast Pct. of Avg.', 'Ensemble Med. Pctl. w. Forecast',
-                'Probability Below Normal w. Forecast', 'Probability of Normal w. Forecast',
-                'Probability Above Normal w. Forecast']
-               if forecast_length > 0 else [])
-            + (['Forecast 1st Period Pct. of Avg.'] if forecast_length >= 1 else [])
-            + (['Forecast Accumulation Pct. of Avg.'] if forecast_length >= 2 else [])
-            + (['Forecast 3rd Period Pct. of Avg.'] if forecast_length >= 3 else [])
-            + (['Start of Season', 'Start of Season Anomaly'] if sos else [])
-            + (['Forecast Start of Season', 'Forecast Start of Season Anomaly']
-               if sos and forecast_length > 0 else [])
-        )
 
         self.blackList.clear()
         self.whiteList.clear()
-        for item in self.fields:
+        for item in self.parentWidget().maps_stats_list:
             if item in settings['selected_fields']:
                 self.whiteList.addItem(item)
             else:

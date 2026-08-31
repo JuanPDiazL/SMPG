@@ -97,6 +97,7 @@ class RainySeasonDetectionDialog(QDialog, SOS_DIALOG_CLASS):
         self.sosSecondThreshold = self.sos2ndThresholdSpinBox.value()
         self.sosFixedFirstThreshold = self.sosFixed1stThresholdSpinBox.value()
         self.sosFixedSecondThreshold = self.sosFixed2ndThresholdSpinBox.value()
+        self.parentWidget().update_map_stats_list()
         super(RainySeasonDetectionDialog, self).accept()
 
     def reject(self) -> None:

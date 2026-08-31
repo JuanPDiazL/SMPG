@@ -189,6 +189,7 @@ Github Project Page: {self.metadata["homepage"]}
         self.customYearsRadioButton.toggled.connect(self.year_selection_rb_event)
         self.similarYearsRadioButton.toggled.connect(self.year_selection_rb_event)
         self.selectYearsButton.clicked.connect(self.select_years_btn_event)
+        self.forecastLengthSpinBox.valueChanged.connect(self.update_map_stats_list)
 
         self.loadFileButton.clicked.connect(self.load_file_btn_event)
         self.importParametersButton.clicked.connect(self.import_parameters_btn_event)
@@ -344,6 +345,7 @@ Github Project Page: {self.metadata["homepage"]}
         self.exportParametersCheckBox.setEnabled(True)
         self.exportParametersCheckBox.setChecked(parameters.output_parameters)
         self.mappingButton.setEnabled(parameters.output_stats)
+        self.update_map_stats_list()
         self.map_settings_dialog.settings['selected_fields'] = parameters.mapping_attributes
         self.openWebReportCheckBox.setEnabled(True)
         self.openWebReportCheckBox.setChecked(parameters.open_web_report)
@@ -705,6 +707,28 @@ Current {dataset_properties.period_unit_id}: {sub_season_ids[dataset_properties.
             return
         self.reference_layer = layer_preload
         self.referenceShapefilePathLineEdit.setText(shp_source)
+
+    def update_map_stats_list(self):
+        """Function to update the map stat fields based on the current form state."""
+        forecast_length = self.forecastLengthSpinBox.value()
+        sos = self.rainy_season_detection_dialog.sosEnabled
+        self.maps_stats_list = (
+            ['Current Period Pct. of Avg.', 'Total up to Current Period Pct. of Avg.',
+             'Ensemble Med. Pct. of Avg.', 'Probability Below Normal',
+             'Probability of Normal', 'Probability Above Normal',
+             'Ensemble Med. Pctl.', 'Current Season Pctl.']
+            + (['Forecast Pctl.', 'Total up to Forecast Pct. of Avg.',
+                'Ensemble Med. w Forecast Pct. of Avg.', 'Ensemble Med. Pctl. w. Forecast',
+                'Probability Below Normal w. Forecast', 'Probability of Normal w. Forecast',
+                'Probability Above Normal w. Forecast']
+               if forecast_length > 0 else [])
+            + (['Forecast 1st Period Pct. of Avg.'] if forecast_length >= 1 else [])
+            + (['Forecast Accumulation Pct. of Avg.'] if forecast_length >= 2 else [])
+            + (['Forecast 3rd Period Pct. of Avg.'] if forecast_length >= 3 else [])
+            + (['Start of Season', 'Start of Season Anomaly'] if sos else [])
+            + (['Forecast Start of Season', 'Forecast Start of Season Anomaly']
+               if sos and forecast_length > 0 else [])
+        )
 
     def showEvent(self, a0):
         """Function to run when the dialog is oppened."""
