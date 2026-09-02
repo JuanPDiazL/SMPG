@@ -76,7 +76,7 @@ def layer_to_topojson(layer: QgsVectorLayer) -> dict:
     """Converts a vector layer into GeoJSON"""
     exporter = QgsJsonExporter()
     geojson: dict = json.loads(exporter.exportFeatures(layer.getFeatures()))
-    return Topology()({'map': geojson}, 1e4)
+    return Topology()({'map': geojson})
 
 def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_layer: QgsVectorLayer, subFolderName, structured_dataset: Dataset, ):
     """Outputs all the required data for a dynamic web report.
