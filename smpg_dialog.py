@@ -346,7 +346,7 @@ Github Project Page: {self.metadata["homepage"]}
         self.exportParametersCheckBox.setChecked(parameters.output_parameters)
         self.mappingButton.setEnabled(parameters.output_stats)
         self.update_map_stats_list()
-        self.map_settings_dialog.settings['selected_fields'] = parameters.mapping_attributes
+        self.map_settings_dialog.settings['selected_fields'] = list(set(parameters.mapping_attributes) & set(self.maps_stats_list))
         self.openWebReportCheckBox.setEnabled(True)
         self.openWebReportCheckBox.setChecked(parameters.open_web_report)
         if parameters.target_id_field in get_fields(self.selected_layer):
