@@ -41,6 +41,8 @@ const hasReferenceMap = isDeclared("reference_topojson_map") && reference_topojs
 
 const mapFields = [
     'None',
+    'Current Accumulation to Present',
+    'Average Total',
     'Current Period Pct. of Avg.',
     'Total up to Current Period Pct. of Avg.',
     'Ensemble Med. Pct. of Avg.',

@@ -8,6 +8,26 @@ from ..pyqgis_utils import *
 from ..utils import Properties
 
 styles = {
+    "total_rainfall": {
+        "type": "graduated",
+        "legend": {
+            '0-10': {'color': '#E1E1E1', 'values': [0, 10]},
+            '10-50': {'color': '#FBEEDD', 'values': [10, 50]},
+            '50-100': {'color': '#F4D1A2', 'values': [50, 100]},
+            '100-150': {'color': '#FFB062', 'values': [100, 150]},
+            '150-200': {'color': '#E4E28F', 'values': [150, 200]},
+            '200-250': {'color': '#D0CD3C', 'values': [200, 250]},
+            '250-300': {'color': '#B5FFAD', 'values': [250, 300]},
+            '300-400': {'color': '#7BF773', 'values': [300, 400]},
+            '400-500': {'color': '#31DD39', 'values': [400, 500]},
+            '500-750': {'color': '#31C639', 'values': [500, 750]},
+            '750-1000': {'color': '#B5F7FF', 'values': [750, 1000]},
+            '1000-1250': {'color': '#52A5F7', 'values': [1000, 1250]},
+            '1250-1500': {'color': '#186BEF', 'values': [1250, 1500]},
+            '1500-2000': {'color': '#2600FF', 'values': [1500, 2000]},
+            '≥2000': {'color': '#000080', 'values': [2000, float('inf')]},
+        },
+    },
     "prob_below_normal": {
         "type": "graduated",
         "legend": {
@@ -118,6 +138,8 @@ def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selecte
     if selected_stats == []: return
     
     attribute_style_relation = {
+        'Current Accumulation to Present': {'classes': 'total_rainfall', 'data': 'general_stats'},
+        'Average Total': {'classes': 'total_rainfall', 'data': 'climatology_stats', 'key': 'LTA'},
         'Current Period Pct. of Avg.': {'classes': 'anomaly_percent', 'data': 'general_stats'},
         'Forecast 1st Period Pct. of Avg.': {'classes': 'anomaly_percent', 'data': 'general_stats'},
         'Forecast 2nd Period Pct. of Avg.': {'classes': 'anomaly_percent', 'data': 'general_stats'},
@@ -170,7 +192,8 @@ def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selecte
         map_clone = map_layer.clone()
         rename_layer(map_clone, suffix=f'_{stat}')
         add_to_project(map_clone)
-        class_attribute = f'{os.path.splitext(os.path.basename(data[attribute_style_relation[stat]["data"]]["path"]))[0]}_{stat}'
+        stat_key = attribute_style_relation[stat]['key'] if 'key' in attribute_style_relation[stat] else stat
+        class_attribute = f'{os.path.splitext(os.path.basename(data[attribute_style_relation[stat]["data"]]["path"]))[0]}_{stat_key}'
         join_layers(data[attribute_style_relation[stat]['data']]['layer'], map_clone, join_field)
         
         classes = styles[attribute_style_relation[stat]['classes']]
