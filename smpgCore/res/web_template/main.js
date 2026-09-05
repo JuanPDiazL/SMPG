@@ -40,24 +40,33 @@ const hasMap = isDeclared("topojson_map") && topojson_map !== null;
 const hasReferenceMap = isDeclared("reference_topojson_map") && reference_topojson_map !== null;
 
 const mapFields = [
-    'None', 'Current Period Pct. of Avg.',
+    'None',
+    'Current Period Pct. of Avg.',
     'Total up to Current Period Pct. of Avg.',
-    'Ensemble Med. Pct. of Avg.', 'Probability Below Normal',
-    'Probability of Normal', 'Probability Above Normal',
-    'Ensemble Med. Pctl.', 'Current Season Pctl.',
+    'Ensemble Med. Pct. of Avg.',
+    'Probability Below Normal',
+    'Probability of Normal',
+    'Probability Above Normal',
+    'Ensemble Med. Pctl.',
+    'Current Season Pctl.',
     ...(hasForecast ? [
-        'Forecast Pctl.', 'Total up to Forecast Pct. of Avg.',
-        'Ensemble Med. w Forecast Pct. of Avg.', 'Ensemble Med. Pctl. w. Forecast',
-        'Probability Below Normal w. Forecast', 'Probability of Normal w. Forecast',
+        'Forecast Pctl.',
+        'Total up to Forecast Pct. of Avg.',
+        'Ensemble Med. w Forecast Pct. of Avg.',
+        'Ensemble Med. Pctl. w. Forecast',
+        'Probability Below Normal w. Forecast',
+        'Probability of Normal w. Forecast',
         'Probability Above Normal w. Forecast',
     ] : []),
     ...(hasForecast ? ['Forecast 1st Period Pct. of Avg.'] : []),
     ...(hasForecast >= 2 ? ['Forecast Accumulation Pct. of Avg.'] : []),
     ...(hasForecast >= 3 ? ['Forecast 3rd Period Pct. of Avg.'] : []),
     ...(hasSos ? [
-        'Start of Season', 'Start of Season Anomaly'] : []),
+        'Start of Season',
+        'Start of Season Anomaly'] : []),
     ...(hasSos && hasForecast ? [
-        'Forecast Start of Season', 'Forecast Start of Season Anomaly'] : []),
+        'Forecast Start of Season',
+        'Forecast Start of Season Anomaly'] : []),
 ];
 
 var currentDataIndex = firstPlaceKey;

@@ -713,21 +713,35 @@ Current {dataset_properties.period_unit_id}: {sub_season_ids[dataset_properties.
         forecast_length = self.forecastLengthSpinBox.value()
         sos = self.rainy_season_detection_dialog.sosEnabled
         self.maps_stats_list = (
-            ['Current Period Pct. of Avg.', 'Total up to Current Period Pct. of Avg.',
-             'Ensemble Med. Pct. of Avg.', 'Probability Below Normal',
-             'Probability of Normal', 'Probability Above Normal',
-             'Ensemble Med. Pctl.', 'Current Season Pctl.']
-            + (['Forecast Pctl.', 'Total up to Forecast Pct. of Avg.',
-                'Ensemble Med. w Forecast Pct. of Avg.', 'Ensemble Med. Pctl. w. Forecast',
-                'Probability Below Normal w. Forecast', 'Probability of Normal w. Forecast',
-                'Probability Above Normal w. Forecast']
-               if forecast_length > 0 else [])
+            ['Current Period Pct. of Avg.',
+             'Total up to Current Period Pct. of Avg.',
+             'Ensemble Med. Pct. of Avg.',
+             'Probability Below Normal',
+             'Probability of Normal',
+             'Probability Above Normal',
+             'Ensemble Med. Pctl.',
+             'Current Season Pctl.',
+             ]
+            + (['Forecast Pctl.',
+                'Total up to Forecast Pct. of Avg.',
+                'Ensemble Med. w Forecast Pct. of Avg.',
+                'Ensemble Med. Pctl. w. Forecast',
+                'Probability Below Normal w. Forecast',
+                'Probability of Normal w. Forecast',
+                'Probability Above Normal w. Forecast',
+                ]
+                if forecast_length > 0 else [])
             + (['Forecast 1st Period Pct. of Avg.'] if forecast_length >= 1 else [])
             + (['Forecast Accumulation Pct. of Avg.'] if forecast_length >= 2 else [])
             + (['Forecast 3rd Period Pct. of Avg.'] if forecast_length >= 3 else [])
-            + (['Start of Season', 'Start of Season Anomaly'] if sos else [])
-            + (['Forecast Start of Season', 'Forecast Start of Season Anomaly']
-               if sos and forecast_length > 0 else [])
+            + (['Start of Season',
+                'Start of Season Anomaly',
+                ]
+                if sos else [])
+            + (['Forecast Start of Season',
+                'Forecast Start of Season Anomaly',
+                ]
+                if sos and forecast_length > 0 else [])
         )
 
     def showEvent(self, a0):
