@@ -580,7 +580,8 @@ Github Project Page: {self.metadata["homepage"]}
         based on whether or not the user has selected to cross years.
         """
         
-        parameters = Parameters(
+        parameters = Parameters()
+        parameters.set_parameters(
             {
                 **self.get_parameters_from_widgets(),
                 'climatology_start': None,
