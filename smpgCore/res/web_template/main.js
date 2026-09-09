@@ -130,7 +130,7 @@ if (hasForecast) {
 }
 
 if (!hasMap) {
-    layout.gridstackWidgets.svgMap.smpgOpts.smpgCardType = "Disabled";
+    layout.gridstackWidgets.w1.smpgOpts.smpgCardType = "Empty Widget";
 }
 
 var gridstackItems = parseGridstackItems(layout);
