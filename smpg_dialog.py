@@ -423,17 +423,23 @@ Github Project Page: {self.metadata["homepage"]}
         valid_monitoring_start = self.dataset_properties.current_season_length + data_availability_shift - 1
         if valid_monitoring_start < 0: valid_monitoring_start += self.dataset_properties.period_length
         selected_monitoring_start = self.seasonStartComboBox.currentIndex()
+        current_season_monitoring_length = valid_monitoring_start - selected_monitoring_start + 1
         if selected_monitoring_start > valid_monitoring_start:
             QMessageBox.critical(self, "Error", 
-                                 f'There is no data available for the selected season monitoring start ({sub_season_ids[selected_monitoring_start]})\nThe start of the season monitoring must be before or equal to {sub_season_ids[valid_monitoring_start]}.', 
+                                   f'There is no data available for the selected season monitoring start ({sub_season_ids[selected_monitoring_start]})\n'
+                                 + f'The start of the season monitoring must be before or equal to {sub_season_ids[valid_monitoring_start]}.', 
                                  QMessageBox.Ok)
             return
         
-        if self.seasonStartComboBox.currentIndex() > self.seasonEndComboBox.currentIndex():
-            QMessageBox.critical(self, "Error", 
-                                 'The start of the season must be before the end of the season.', 
-                                 QMessageBox.Ok)
-            return
+        if current_season_monitoring_length < 4:
+            monitoring_season_dg = QMessageBox.warning(self, "Warning", 
+                                   'The data present in the selected season monitoring is too short.\n'
+                                 + 'Plot artifacts are likely to appear.\n'
+                                 + 'By selecting an earlier start of monitoring season, more data point will be included.\n'
+                                 + f'Currently, the monitoring season starts at {sub_season_ids[selected_monitoring_start]} with {current_season_monitoring_length} data points.\n'
+                                 + 'Do you want to continue?', 
+                                QMessageBox.Yes, QMessageBox.No)
+            if monitoring_season_dg == QMessageBox.No: return
         
         if self.selected_layer is not None and self.targetFieldComboBox.currentIndex() == -1:
             QMessageBox.critical(self, "Error", 
@@ -455,7 +461,8 @@ Github Project Page: {self.metadata["homepage"]}
             return
         
         new_directory_dialog_response = QMessageBox.information(self, "Create new folder?", 
-                            f'Do you want to create a folder for the report files?\nThe folder {self.dataset_filename} at the path {self.destination_path} will be created.', 
+                               'Do you want to create a folder for the report files?\n'
+                            + f'The folder {self.dataset_filename} at the path {self.destination_path} will be created.', 
                             QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
         if new_directory_dialog_response == QMessageBox.Yes:
             self.destination_path = os.path.join(self.destination_path, self.dataset_filename)
@@ -527,7 +534,7 @@ Github Project Page: {self.metadata["homepage"]}
         temp_parameters_source = QFileDialog.getOpenFileName(self, 'Open parameters file', None, "JSON files (*.json)")[0]
         if temp_parameters_source == "": 
             QMessageBox.warning(self, "Warning", 
-                                'No dataset was selected.', 
+                                'No parameters file was selected.', 
                                 QMessageBox.Ok)
             return
         self.parameters_source = temp_parameters_source
