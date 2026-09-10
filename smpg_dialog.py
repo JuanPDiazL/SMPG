@@ -399,7 +399,7 @@ Github Project Page: {self.metadata["homepage"]}
         )
         self.update_fields(default_parameters)
         self.year_selection_dialog.selected_years = self.dataset_properties.year_ids
-        self.update_dialog_info(self.dataset_properties)
+        print(self.update_dialog_info(self.dataset_properties))
 
     def process_btn_event(self):
         """Event handler for `processButton`, it outputs the processed data.
