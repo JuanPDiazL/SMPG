@@ -431,6 +431,13 @@ Github Project Page: {self.metadata["homepage"]}
                                  QMessageBox.Ok)
             return
         
+        if self.seasonStartComboBox.currentIndex() > self.seasonEndComboBox.currentIndex():
+            QMessageBox.critical(self, "Error", 
+                                       'The start of the season must be before the end of the season.'
+                                    + f'Currently, the start of the season monitoring is {sub_season_ids[selected_monitoring_start]} and the end is {sub_season_ids[self.seasonEndComboBox.currentIndex()]}.', 
+                                    QMessageBox.Ok)
+            return
+        
         if current_season_monitoring_length < 4:
             monitoring_season_dg = QMessageBox.warning(self, "Warning", 
                                    'The data present in the selected season monitoring is too short.\n'
