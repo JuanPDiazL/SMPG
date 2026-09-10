@@ -433,7 +433,7 @@ Github Project Page: {self.metadata["homepage"]}
         
         if self.seasonStartComboBox.currentIndex() > self.seasonEndComboBox.currentIndex():
             QMessageBox.critical(self, "Error", 
-                                       'The start of the season must be before the end of the season.'
+                                       'The start of the season must be before the end of the season.\n'
                                     + f'Currently, the start of the season monitoring is {sub_season_ids[selected_monitoring_start]} and the end is {sub_season_ids[self.seasonEndComboBox.currentIndex()]}.', 
                                     QMessageBox.Ok)
             return
