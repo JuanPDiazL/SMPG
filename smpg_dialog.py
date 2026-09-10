@@ -442,7 +442,7 @@ Github Project Page: {self.metadata["homepage"]}
             monitoring_season_dg = QMessageBox.warning(self, "Warning", 
                                    'The data present in the selected season monitoring is too short.\n'
                                  + 'Plot artifacts are likely to appear.\n'
-                                 + 'By selecting an earlier start of monitoring season, more data point will be included.\n'
+                                 + 'By selecting an earlier start of season monitoring, more data point will be included.\n'
                                  + f'Currently, the monitoring season starts at {sub_season_ids[selected_monitoring_start]} with {current_season_monitoring_length} data points.\n'
                                  + 'Do you want to continue?', 
                                 QMessageBox.Yes, QMessageBox.No)
