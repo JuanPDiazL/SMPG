@@ -238,7 +238,7 @@ class chartCard {
 
         this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
 
-        if (false ?? this.cardElements["table"]) {
+        if (this.cardElements["table"] ?? false) {
             this.toggleTableButton = this.cardButtonGroup.append("span").append("button")
                     .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
                     .attr("title", "Toggle display table")
@@ -247,7 +247,7 @@ class chartCard {
                         this.cardElements["table"].tableContainer.classed("w3-hide", !this.cardElements["table"].tableContainer.classed("w3-hide"));
                     });
         }
-        if (false ?? this.cardElements["controlPanel"]) {
+        if (this.cardElements["controlPanel"] ?? false) {
             this.openMapControlPanelButton = this.cardButtonGroup.append("span").append("button")
                     .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
                     .attr("title", "Open Control Panel")
