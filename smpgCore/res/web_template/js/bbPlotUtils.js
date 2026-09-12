@@ -41,7 +41,7 @@ function getLegend(title, color, data, chartTypes = {}, points = {}) {
             chartType = 'show_chart';
             break;
     }
-    if (datasetProperties.selected_years.length > 5 
+    if (datasetProperties.selected_years.length > 10 
         && datasetProperties.selected_years.includes(title)) {
         return "";
     }
