@@ -8,6 +8,52 @@
     height: 100vh;
 }
 
+/* Loading overlay */
+
+#loadingOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+    background-color: rgba(255, 255, 255, 0.9);
+    transition: opacity 0.4s ease;
+}
+
+.darkmode #loadingOverlay {
+    background-color: rgba(29, 42, 53, 0.9);
+}
+
+#loadingOverlay.loading-done {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#loadingOverlay .spinner {
+    width: 4em;
+    height: 4em;
+    border: 0.4em solid rgba(96, 125, 139, 0.25);
+    border-top-color: #607d8b;
+    border-radius: 50%;
+    animation: spinner-rotate 0.8s linear infinite;
+}
+
+#loadingOverlay .loading-text {
+    font-size: 1.25em;
+    color: #607d8b;
+}
+
+.darkmode #loadingOverlay .loading-text {
+    color: #ddd;
+}
+
+@keyframes spinner-rotate {
+    to { transform: rotate(360deg); }
+}
+
 /* Page elements */
 
 .darkmode, 

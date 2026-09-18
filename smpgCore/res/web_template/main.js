@@ -172,3 +172,10 @@ window.dispatchEvent(new HashChangeEvent('hashchange',
     }
 )); // initial update
 window.dispatchEvent(new Event('resize'));
+
+// Hide loading overlay now that the initial render is complete
+var loadingOverlay = document.getElementById('loadingOverlay');
+loadingOverlay.classList.add('loading-done');
+loadingOverlay.addEventListener('transitionend', function () {
+    loadingOverlay.remove();
+}, { once: true });
