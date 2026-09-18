@@ -20,6 +20,86 @@
     <link rel="stylesheet" href="./css/widgetCard.css">
     <link rel="stylesheet" href="./css/floatingWidget.css">
 
+    <!-- Load error handler (runs before the page scripts so it can catch their failures) -->
+    <script>
+        (function () {
+            "use strict";
+            var LOAD_TIMEOUT_MS = 20000; // watchdog: spinner still showing after this long
+            var failed = false;
+
+            function isStillLoading() {
+                var overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    return !overlay.classList.contains('loading-done');
+                }
+                return !document.body; // body not parsed yet -> a head script failed
+            }
+
+            function showError(titleText, detailsText) {
+                if (failed || !isStillLoading()) { return; }
+                failed = true;
+
+                var overlay = document.getElementById('loadingOverlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'loadingOverlay';
+                    (document.body || document.documentElement).appendChild(overlay);
+                }
+                overlay.classList.add('loading-error');
+                overlay.textContent = ''; // remove spinner
+
+                var icon = document.createElement('div');
+                icon.className = 'mi error-icon';
+                icon.textContent = 'error';
+
+                var title = document.createElement('div');
+                title.className = 'loading-text error-text';
+                title.textContent = titleText;
+
+                overlay.appendChild(icon);
+                overlay.appendChild(title);
+
+                if (detailsText) {
+                    var details = document.createElement('div');
+                    details.className = 'error-details';
+                    details.textContent = detailsText;
+                    overlay.appendChild(details);
+                }
+            }
+
+            // Uncaught exceptions and failed resource loads (capture phase)
+            window.addEventListener('error', function (event) {
+                var target = event.target;
+                if (target && target !== window) {
+                    // Only failed scripts break the page; ignore images/fonts/etc.
+                    if (target.tagName === 'SCRIPT' && target.src) {
+                        showError('Failed to load a required script', target.src);
+                    }
+                    return;
+                }
+                if (event.message) {
+                    var where = event.filename ? ' (' + event.filename + ':' + event.lineno + ')' : '';
+                    showError('An error occurred while loading the report', event.message + where);
+                }
+            }, true);
+
+            window.addEventListener('unhandledrejection', function (event) {
+                var reason = event.reason;
+                var message = (reason && reason.message) ? reason.message : String(reason);
+                showError('An error occurred while loading the report', message);
+            });
+
+            // Watchdog: if the spinner is still up, let the user know it's taking a while
+            setTimeout(function () {
+                if (!isStillLoading()) { return; }
+                var text = document.querySelector('#loadingOverlay .loading-text');
+                if (text) {
+                    text.textContent = 'Taking longer than expected...';
+                }
+            }, LOAD_TIMEOUT_MS);
+        })();
+    </script>
+
     <!-- Libraries -->
     <script type="text/javascript" src="./js/libraries/lodash-4.17.21.min.js"></script>
     <script type="text/javascript" src="./js/libraries/d3.v7.min.js"></script>
