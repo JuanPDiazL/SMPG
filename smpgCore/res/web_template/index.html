@@ -7,18 +7,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Report</title>
 
-    <!-- Library Styles -->
-    <link rel="stylesheet" href="./css/libraryStyles/w3.css">
-    <link rel="stylesheet" href="./css/libraryStyles/billboard_modern.min.css">
-    <link rel="stylesheet" href="./css/libraryStyles/gridstack.min.css">
+    <!-- Critical spinner styles (inlined so the spinner can paint before any external resource loads) -->
+    <style>
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1em;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: opacity 0.4s ease;
+        }
 
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="./css/style.css">
-    <link rel="stylesheet" href="./css/map.css">
-    <link rel="stylesheet" href="./css/icons.css">
-    <link rel="stylesheet" href="./css/plots.css">
-    <link rel="stylesheet" href="./css/widgetCard.css">
-    <link rel="stylesheet" href="./css/floatingWidget.css">
+        .darkmode #loadingOverlay {
+            background-color: rgba(29, 42, 53, 0.9);
+        }
+
+        #loadingOverlay.loading-done {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #loadingOverlay.loading-error {
+            background-color: rgba(255, 235, 238, 0.95);
+            padding: 1em;
+            box-sizing: border-box;
+        }
+
+        .darkmode #loadingOverlay.loading-error {
+            background-color: rgba(46, 33, 36, 0.95);
+        }
+
+        #loadingOverlay .error-icon {
+            font-size: 4em;
+            color: #f44336;
+        }
+
+        #loadingOverlay .loading-text.error-text {
+            font-size: 1.5em;
+            color: #d32f2f;
+        }
+
+        .darkmode #loadingOverlay .loading-text.error-text {
+            color: #ef9a9a;
+        }
+
+        #loadingOverlay .error-details {
+            max-width: 90%;
+            max-height: 50vh;
+            overflow: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #555;
+        }
+
+        .darkmode #loadingOverlay .error-details {
+            color: #ccc;
+        }
+
+        #loadingOverlay .spinner {
+            width: 4em;
+            height: 4em;
+            border: 0.4em solid rgba(96, 125, 139, 0.25);
+            border-top-color: #607d8b;
+            border-radius: 50%;
+            animation: spinner-rotate 0.8s linear infinite;
+        }
+
+        #loadingOverlay .loading-text {
+            font-size: 1.25em;
+            color: #607d8b;
+        }
+
+        .darkmode #loadingOverlay .loading-text {
+            color: #ddd;
+        }
+
+        @keyframes spinner-rotate {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 
     <!-- Load error handler (runs before the page scripts so it can catch their failures) -->
     <script>
@@ -99,23 +172,27 @@
             }, LOAD_TIMEOUT_MS);
         })();
     </script>
-
-    <!-- Libraries -->
-    <script type="text/javascript" src="./js/libraries/lodash-4.17.21.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/d3.v7.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/billboard.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/html2canvas.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/topojson.v3.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/pako.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/gridstack-all.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/interact.min.js"></script>
 </head>
 
 <body class="w3-white sidebar-closed">
+    <!-- Loading overlay: placed before the stylesheets/scripts below so it paints as early as possible -->
     <div id="loadingOverlay" class="capture-ignore">
         <div class="spinner"></div>
         <span class="loading-text">Loading report...</span>
     </div>
+
+    <!-- Library Styles -->
+    <link rel="stylesheet" href="./css/libraryStyles/w3.css">
+    <link rel="stylesheet" href="./css/libraryStyles/billboard_modern.min.css">
+    <link rel="stylesheet" href="./css/libraryStyles/gridstack.min.css">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/map.css">
+    <link rel="stylesheet" href="./css/icons.css">
+    <link rel="stylesheet" href="./css/plots.css">
+    <link rel="stylesheet" href="./css/widgetCard.css">
+    <link rel="stylesheet" href="./css/floatingWidget.css">
 
     <div id="documentRoot">
 
@@ -175,6 +252,16 @@
             }
         </script>
     </div>
+
+    <!-- Libraries -->
+    <script type="text/javascript" src="./js/libraries/lodash-4.17.21.min.js"></script>
+    <script type="text/javascript" src="./js/libraries/d3.v7.min.js"></script>
+    <script type="text/javascript" src="./js/libraries/billboard.min.js"></script>
+    <script type="text/javascript" src="./js/libraries/html2canvas.min.js"></script>
+    <script type="text/javascript" src="./js/libraries/topojson.v3.min.js"></script>
+    <script type="text/javascript" src="./js/libraries/pako.min.js"></script>
+    <script type="text/javascript" src="./js/libraries/gridstack-all.min.js"></script>
+    <script type="text/javascript" src="./js/libraries/interact.min.js"></script>
 
     <!-- Data -->
     <script src="./data/general_stats.js"></script>
