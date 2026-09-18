@@ -393,7 +393,7 @@ class d3Map {
             .selectAll(".country")
             .data(geoJsonReferenceMap.features)
             .enter().append("path")
-            .attr("class", d => `reference-polygon`)
+            .attr("class", "reference-polygon rescalable")
             .attr("d", d3.geoPath().projection(this.projection))
             .style("fill", "#ffff")
 
@@ -402,7 +402,7 @@ class d3Map {
             .selectAll(".country")
             .data(this.geoJsonMap.features)
             .enter().append("path")
-            .attr("class", d => `country country-${d.properties[idField]} w3-ripple`)
+            .attr("class", d => `country country-${d.properties[idField]} w3-ripple rescalable`)
             .attr("d", d3.geoPath().projection(this.projection))
             .on("mouseover", (event, d) => {
                 mapSelectorPath
@@ -422,11 +422,11 @@ class d3Map {
         this.mapPersistentSelectorPath = this.svg.append("g")
             .attr("class", "map-persistent-selector zoomable")
             .append("path")
-                .attr("class","persistent-selection-path")
+                .attr("class","persistent-selection-path rescalable")
         const mapSelectorPath = this.svg.append("g")
             .attr("class", "map-selector zoomable")
             .append("path")
-                .attr("class","selection-path")
+                .attr("class","selection-path rescalable")
 
         this.polygonTooltips = this.polygons.append("title")
             .attr("class", "country-polygon-tooltip")
@@ -439,7 +439,7 @@ class d3Map {
             .data(this.geoJsonMap.features)
             .enter().append("text")
             .text(d => d.properties[this.options.label_field])
-            .attr("class", "map-text-label svg-outline-text")
+            .attr("class", "map-text-label svg-outline-text rescalable")
             .attr("transform", d => `translate(${this.projection(d3.geoCentroid(d))})`)
             .attr("font-size", this.FONT_SIZE)
             .style("dominant-baseline", "middle")
@@ -453,6 +453,16 @@ class d3Map {
         this.legend = this.svg.append("g")
             .attr("class", "map-legend");
 
+        // Store initial properties for each element
+        this.svg.selectAll(".rescalable")
+            .each(function() {
+                d3.select(this).datum(d => ({
+                    ...d, 
+                    baseStrokeWidth: parseFloat(getComputedStyle(d3.select(this).node()).strokeWidth) || 1,
+                    baseFontSize: parseFloat(d3.select(this).attr("font-size")) || this.FONT_SIZE
+                }));
+            });
+            
         // Define the zoom behavior
         this.svgZoomHandler = d3.zoom()
         .filter((event) => {
@@ -467,8 +477,12 @@ class d3Map {
             [this.internal_width*1.1, this.internal_height*1.1]])
         .on('zoom', (event) => {
             this.svg.selectAll(".zoomable")
-            .attr("transform", event.transform)
-            .attr("stroke-width", 1 / event.transform.k);
+                .attr("transform", event.transform);
+            this.svg.selectAll(".rescalable")
+            .call(g => {
+                g.filter("text").attr("font-size", d => d.baseFontSize / event.transform.k);
+                g.style("stroke-width", d => d.baseStrokeWidth / event.transform.k);
+            })
         });
         this.svg.call(this.svgZoomHandler);
 
