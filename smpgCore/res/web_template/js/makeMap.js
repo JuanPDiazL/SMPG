@@ -391,7 +391,7 @@ class d3Map {
         const referencePolygons = this.svg.append("g")
             .attr("class", "reference-map-polygons zoomable")
             .selectAll(".country")
-            .data(geoJsonReferenceMap.features)
+            .data(this.geoJsonReferenceMap.features)
             .enter().append("path")
             .attr("class", "reference-polygon rescalable")
             .attr("d", d3.geoPath().projection(this.projection))
