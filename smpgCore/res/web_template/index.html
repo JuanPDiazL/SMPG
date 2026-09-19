@@ -140,6 +140,10 @@
                 }
             }
 
+            // Exposed so the resource loader at the bottom of the page can
+            // surface failures the capture-phase listener ignores (e.g. CSS)
+            window.smpgShowLoadError = showError;
+
             // Uncaught exceptions and failed resource loads (capture phase)
             window.addEventListener('error', function (event) {
                 var target = event.target;
@@ -184,18 +188,7 @@
         <span class="loading-text">Loading report...</span>
     </div>
 
-    <!-- Library Styles -->
-    <link rel="stylesheet" href="./css/libraryStyles/w3.css">
-    <link rel="stylesheet" href="./css/libraryStyles/billboard_modern.min.css">
-    <link rel="stylesheet" href="./css/libraryStyles/gridstack.min.css">
-
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="./css/style.css">
-    <link rel="stylesheet" href="./css/map.css">
-    <link rel="stylesheet" href="./css/icons.css">
-    <link rel="stylesheet" href="./css/plots.css">
-    <link rel="stylesheet" href="./css/widgetCard.css">
-    <link rel="stylesheet" href="./css/floatingWidget.css">
+    <!-- Stylesheets are loaded sequentially by the loader at the bottom of this page -->
 
     <div id="documentRoot">
 
@@ -257,14 +250,29 @@
     </div>
 
     <!--
-        Scripts are loaded one at a time, in the order listed below, to avoid
-        overwhelming servers with a limited number of concurrent connections. 
-        Keep the order: libraries -> data -> app -> main.
+        Stylesheets and scripts are loaded one at a time, in the order listed
+        below, to avoid overwhelming servers with a limited number of
+        concurrent connections (e.g. FTP). Keep the order: stylesheets first,
+        then libraries -> data -> app -> main.
         When bundling files later, just replace the entries here.
     -->
     <script>
         (function () {
             "use strict";
+            var stylesheetUrls = [
+                // Library styles
+                './css/libraryStyles/w3.css',
+                './css/libraryStyles/billboard_modern.min.css',
+                './css/libraryStyles/gridstack.min.css',
+                // Custom styles
+                './css/style.css',
+                './css/map.css',
+                './css/icons.css',
+                './css/plots.css',
+                './css/widgetCard.css',
+                './css/floatingWidget.css'
+            ];
+
             var scriptUrls = [
                 // Libraries
                 './js/libraries/lodash-4.17.21.min.js',
@@ -294,6 +302,27 @@
                 './main.js'
             ];
 
+            var styleIndex = 0;
+            function loadNextStylesheet() {
+                if (styleIndex >= stylesheetUrls.length) {
+                    loadNext(); // stylesheets done -> start the script chain
+                    return;
+                }
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = stylesheetUrls[styleIndex];
+                link.onload = function () {
+                    styleIndex += 1;
+                    loadNextStylesheet();
+                };
+                link.onerror = function () {
+                    // The <head> handler ignores non-script resource errors,
+                    // so a failed stylesheet in this queue is surfaced here.
+                    window.smpgShowLoadError('Failed to load a required stylesheet', link.href);
+                };
+                document.head.appendChild(link);
+            }
+
             var index = 0;
             function loadNext() {
                 if (index >= scriptUrls.length) { return; }
@@ -307,7 +336,7 @@
                 // <head> surfaces the failed script as a loading error.
                 document.body.appendChild(script);
             }
-            loadNext();
+            loadNextStylesheet();
         })();
     </script>
 </body>
