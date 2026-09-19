@@ -165,9 +165,12 @@
             // Watchdog: if the spinner is still up, let the user know it's taking a while
             setTimeout(function () {
                 if (!isStillLoading()) { return; }
-                var text = document.querySelector('#loadingOverlay .loading-text');
-                if (text) {
-                    text.textContent = 'Taking longer than expected...';
+                var overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    var warning = document.createElement('div');
+                    warning.className = 'loading-text';
+                    warning.textContent = 'Taking longer than expected...';
+                    overlay.appendChild(warning);
                 }
             }, LOAD_TIMEOUT_MS);
         })();
