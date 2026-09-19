@@ -256,35 +256,60 @@
         </script>
     </div>
 
-    <!-- Libraries -->
-    <script type="text/javascript" src="./js/libraries/lodash-4.17.21.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/d3.v7.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/billboard.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/html2canvas.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/topojson.v3.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/pako.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/gridstack-all.min.js"></script>
-    <script type="text/javascript" src="./js/libraries/interact.min.js"></script>
+    <!--
+        Scripts are loaded one at a time, in the order listed below, to avoid
+        overwhelming servers with a limited number of concurrent connections. 
+        Keep the order: libraries -> data -> app -> main.
+        When bundling files later, just replace the entries here.
+    -->
+    <script>
+        (function () {
+            "use strict";
+            var scriptUrls = [
+                // Libraries
+                './js/libraries/lodash-4.17.21.min.js',
+                './js/libraries/d3.v7.min.js',
+                './js/libraries/billboard.min.js',
+                './js/libraries/html2canvas.min.js',
+                './js/libraries/topojson.v3.min.js',
+                './js/libraries/pako.min.js',
+                './js/libraries/gridstack-all.min.js',
+                './js/libraries/interact.min.js',
+                // Data
+                './data/general_stats.js',
+                './data/properties.js',
+                './data/seasonal_stats.js',
+                './data/selected_seasons_stats.js',
+                './data/topojson_map.js',
+                './data/layout.js',
+                // SMPG scripts
+                './js/utils.js',
+                './js/bbPlotUtils.js',
+                './js/widgetClasses.js',
+                './js/makePlots.js',
+                './js/makeMap.js',
+                './js/htmlToCanvasExporter.js',
+                './js/layoutInit.js',
+                // Main
+                './main.js'
+            ];
 
-    <!-- Data -->
-    <script src="./data/general_stats.js"></script>
-    <script src="./data/properties.js"></script>
-    <script src="./data/seasonal_stats.js"></script>
-    <script src="./data/selected_seasons_stats.js"></script>
-    <script src="./data/topojson_map.js"></script>
-    <script src="./data/layout.js"></script>
-
-    <!-- SMPG Scripts -->
-    <script src="./js/utils.js"></script>
-    <script src="./js/bbPlotUtils.js"></script>
-    <script src="./js/widgetClasses.js"></script>
-    <script src="./js/makePlots.js"></script>
-    <script src="./js/makeMap.js"></script>
-    <script src="./js/htmlToCanvasExporter.js"></script>
-    <script src="./js/layoutInit.js"></script>
-
-    <!-- Main Script -->
-    <script src="./main.js"></script>
+            var index = 0;
+            function loadNext() {
+                if (index >= scriptUrls.length) { return; }
+                var script = document.createElement('script');
+                script.src = scriptUrls[index];
+                script.onload = function () {
+                    index += 1;
+                    loadNext();
+                };
+                // On failure the chain simply stops, and the error handler in
+                // <head> surfaces the failed script as a loading error.
+                document.body.appendChild(script);
+            }
+            loadNext();
+        })();
+    </script>
 </body>
 
 </html>
