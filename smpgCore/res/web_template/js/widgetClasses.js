@@ -72,8 +72,12 @@ class BBPlot {
 
     getProperties() {
         return {
-            
+
         }
+    }
+
+    setProperties(properties) {
+
     }
 }
 
@@ -125,6 +129,12 @@ class Table {
     getProperties() {
         return {
             tableShown: !this.tableContainer.classed("w3-hide"),
+        }
+    }
+
+    setProperties(properties) {
+        if ("tableShown" in properties) {
+            this.tableContainer.classed("w3-hide", !properties.tableShown);
         }
     }
 }
@@ -286,5 +296,27 @@ class chartCard {
             smpgCardType: this.cardType,
             ...cardElementsProps,
         };
+    }
+
+    /**
+     * Applies a patch of properties to this card, in the same shape returned by getProperties().
+     * If smpgCardType is included and differs from the current type, the card is switched first,
+     * then the remaining keys are forwarded to the matching cardElements' own setProperties().
+     * @param {Object} properties - Properties to apply, keyed like getProperties()'s output.
+     */
+    setProperties(properties) {
+        if (properties.smpgCardType && properties.smpgCardType !== this.cardType) {
+            this.changePlot(properties.smpgCardType);
+        }
+        for (const key in properties) {
+            if (key === "smpgCardType") { continue; }
+            const element = this.cardElements[key];
+            if (element && element.setProperties) {
+                element.setProperties(properties[key]);
+            }
+        }
+        if (this.cardElements["controlPanel"] && this.cardElements["controlPanel"].refresh) {
+            this.cardElements["controlPanel"].refresh();
+        }
     }
 }

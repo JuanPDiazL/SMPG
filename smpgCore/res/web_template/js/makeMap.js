@@ -615,6 +615,22 @@ class d3Map {
     getProperties() {
         return this.options;
     }
+
+    /**
+     * Applies a patch of options to the map, in the same shape returned by getProperties().
+     * @param {Object} properties - A subset of {label_field, legend_stat, show_legend}.
+     */
+    setProperties(properties) {
+        if ("label_field" in properties) {
+            this.changeLabels(properties.label_field);
+        }
+        if ("legend_stat" in properties) {
+            this.changeLegend(properties.legend_stat);
+        }
+        if ("show_legend" in properties) {
+            this.changeLegendDisplay(properties.show_legend);
+        }
+    }
 }
 
 function makeD3Map(containerElement) {
@@ -629,6 +645,8 @@ function makeD3Map(containerElement) {
 class mapControlPanel {
     constructor(containerElement, map, description) {
         this.containerElement = containerElement;
+        this.map = map;
+        this.description = description;
 
         this.controlPanelContainer = containerElement.append("div")
             .attr("class", "map-control-panel-container w3-card draggable capture-ignore");
@@ -725,6 +743,18 @@ class mapControlPanel {
     getProperties() {
         return {}
     }
+
+    /**
+     * Re-syncs the control panel's inputs to the map's and description's current option values.
+     * Called after the map/description are changed programmatically (e.g. via setProperties()),
+     * since their <select>/checkbox inputs are otherwise only set once, at construction time.
+     */
+    refresh() {
+        this.labelFieldSelect.property("value", this.map.options.label_field);
+        this.legendStatSelect.property("value", this.map.options.legend_stat);
+        this.showLegendCheckbox.property("checked", this.map.options.show_legend);
+        this.showDescriptionCheckbox.property("checked", this.description.options.show_description);
+    }
 }
 
 class mapDescription {
@@ -767,6 +797,16 @@ class mapDescription {
 
     getProperties() {
         return this.options;
+    }
+
+    /**
+     * Applies a patch of options to the description, in the same shape returned by getProperties().
+     * @param {Object} properties - A subset of {show_description}.
+     */
+    setProperties(properties) {
+        if ("show_description" in properties) {
+            this.changeVisibility(properties.show_description);
+        }
     }
 }
 
