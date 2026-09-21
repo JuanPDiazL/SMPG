@@ -55,3 +55,17 @@ function parseWidgets(layout) {
     }
     return parsedWidgets;
 }
+
+/**
+ * Applies a patch of widget property overrides to the currently loaded cards, in the same
+ * shape returned by chartCard.getProperties() for each widget (e.g. from the "modify_layout"
+ * URL hash parameter). Unknown widget ids are ignored.
+ * @param {Object} widgetPatches - Object keyed by widget id, each value passed to chartCard.setProperties().
+ */
+function applyLayoutModifications(widgetPatches) {
+    for (const widgetId in widgetPatches) {
+        if (cards[widgetId]) {
+            cards[widgetId].setProperties(widgetPatches[widgetId]);
+        }
+    }
+}

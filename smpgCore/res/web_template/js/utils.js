@@ -30,7 +30,9 @@ function navigateTo(queryParams={}, keepOlpParams=true) {
 /**
  * Handles navigation events triggered by URL hash changes.
  * Validates the selected place, updates the current data index, refreshes all cards,
- * and highlights the corresponding sidebar element. Shows a warning modal if the place is invalid.
+ * highlights the corresponding sidebar element, and applies (then removes) a "modify_layout"
+ * hash parameter if present. Shows a warning modal if the place is invalid or modify_layout
+ * is not valid JSON.
  * @param {Object} event - The navigation event containing the oldUrl property.
  */
 function handleNavigation(event) {
@@ -57,6 +59,17 @@ function handleNavigation(event) {
     sidebarElements[currentDataIndex].classList.add('selected');
 
     previousSelectionElement = sidebarElements[currentDataIndex];
+
+    const modifyLayoutParam = params['modify_layout'];
+    if (modifyLayoutParam) {
+        try {
+            const widgetPatches = JSON.parse(modifyLayoutParam);
+            applyLayoutModifications(widgetPatches);
+        } catch (e) {
+            showModal(`The "modify_layout" URL parameter could not be applied: invalid JSON.<br>${e.message}`);
+        }
+        removeHashParams('modify_layout');
+    }
 }
 
 /**
@@ -106,6 +119,18 @@ function getHashParams(param=null) {
 function getHashParamsObject() {
     const urlSearchParams = getHashParams();
     return Object.fromEntries(urlSearchParams.entries());
+}
+
+/**
+ * Removes one or more parameters from the URL hash, leaving all other parameters untouched.
+ * @param {...string} paramNames - Names of the hash parameters to remove.
+ */
+function removeHashParams(...paramNames) {
+    const hashParams = getHashParams();
+    for (const paramName of paramNames) {
+        hashParams.delete(paramName);
+    }
+    window.location.hash = hashParams.toString();
 }
 
 /**
