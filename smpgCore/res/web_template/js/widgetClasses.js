@@ -140,7 +140,13 @@ class Table {
 }
 
 class chartCard {
-    constructor(containerSelector, defaultCardType) {
+    /**
+     * @param {string} containerSelector - CSS selector for the element to build the card into.
+     * @param {Object} smpgOpts - Initial properties, in the same shape as getProperties()/setProperties()
+     *   (e.g. {smpgCardType: "Map", map: {legend_stat: "Average Total"}}). Only smpgCardType is
+     *   required; the rest is applied via setProperties() once the card is built.
+     */
+    constructor(containerSelector, smpgOpts = {}) {
         this.cardTypes = {
             "Empty Widget": {
                 "full title": "Empty Widget",
@@ -179,7 +185,7 @@ class chartCard {
                 "cardElementsBuilder": makeMapCard,
             };
         }
-        this.cardType = defaultCardType;
+        this.cardType = smpgOpts.smpgCardType;
 
         this.elementContainer = d3.select(containerSelector);
         this.cardContainer = this.elementContainer
@@ -223,7 +229,8 @@ class chartCard {
             .attr("class", "card-body w3-container w3-padding-small");
         
         this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
-        this.changePlot(defaultCardType);
+        this.changePlot(this.cardType);
+        this.setProperties(smpgOpts);
     }
 
     changePlot(cardType) {

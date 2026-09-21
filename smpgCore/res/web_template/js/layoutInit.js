@@ -50,7 +50,7 @@ function parseWidgets(layout) {
         let gridItem = layout.gridstackWidgets[gridItemId];
         parsedWidgets[gridItemId] = new chartCard(
             `[gs-id="${gridItemId}"] .grid-stack-item-content`,
-            gridItem.smpgOpts.smpgCardType
+            gridItem.smpgOpts
         );
     }
     return parsedWidgets;
