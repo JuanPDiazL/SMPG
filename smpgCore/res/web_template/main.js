@@ -119,6 +119,7 @@ const HEADER_MENU_ITEMS = {
     "Dark mode": { icon: "dark_mode", onclick: () => toggleDarkMode() },
     "Save screenshot": { icon: "save", onclick: () => save_reports() },
     "Help": { icon: "help", onclick: () => window.open('https://help.fews.net/en/tools/v3/smpg-tool', '_blank') },
+    "Export layout": { icon: "file_upload", onclick: () => export_layout() },
     "Edit layout": { icon: "edit", onclick: () => toggleLayoutEdit() },
     "Stop edit layout": { icon: "edit_off", onclick: () => toggleLayoutEdit(), hidden: true },
     "Sort layout": { icon: "swap_horiz", onclick: () => grid.compact(), hidden: true },

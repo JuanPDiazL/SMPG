@@ -546,3 +546,66 @@ function toggleLayoutEdit() {
     SORT_LAYOUT_BUTTON.classed("w3-hide", !editingLayout)
     grid.setStatic(!editingLayout);
 }
+
+/**
+ * Triggers a browser download of the given content as a file, with no server involved.
+ * Works from a file:// page since it only uses a Blob object URL and a hidden <a download>.
+ * @param {string} filename - The suggested file name for the download.
+ * @param {string|Blob} content - The file content, either as text or an already-built Blob.
+ * @param {string} [mimeType] - MIME type to use when content is a plain string. Ignored if
+ *   content is already a Blob.
+ */
+function downloadFile(filename, content, mimeType = "text/plain") {
+    const blob = content instanceof Blob ? content : new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+
+/**
+ * Builds a layout.js-shaped object from the currently loaded grid and widgets: each widget's
+ * live properties (from chartCard.getProperties()) plus its current gridstack position/size.
+ * @returns {Object} An object in the same shape as data/layout.js's `layout` variable.
+ */
+function buildLayoutExport() {
+    let toExport = {
+        general: layout.general,
+        gridstackWidgets: {}
+    };
+    let currentGridstackWidgets = Object.fromEntries(grid.save(false, false).map((value, index, array) => {
+            const {id, ...obj} = value; // remove the id property from the object
+        return [id, obj];
+    }));
+    for (const id in currentGridstackWidgets) {
+        toExport.gridstackWidgets[id] = {
+            smpgOpts: {
+                ...cards[id].getProperties()
+            },
+            gridstackOpts: {
+                ...currentGridstackWidgets[id]
+            },
+        }
+    }
+    return toExport;
+}
+
+/**
+ * Renders the current widget layout as the text content of a layout.js file.
+ * @returns {string} Source text in the same "var layout = {...};" form as data/layout.js.
+ */
+function buildLayoutJsContent() {
+    return `var layout = ${JSON.stringify(buildLayoutExport(), null, 4)};\n`;
+}
+
+/**
+ * Builds a layout.js file from the current widget layout and triggers its download, as a
+ * drop-in replacement for data/layout.js.
+ */
+function export_layout() {
+    downloadFile("layout.js", buildLayoutJsContent(), "text/javascript");
+}
