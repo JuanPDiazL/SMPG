@@ -400,6 +400,56 @@ function makeSelectionMenu(data) {
 }
 
 /**
+ * Builds an expandable accordion-style menu from a data object and appends it into the given
+ * container. Each entry is rendered as a button showing its icon and title; clicking the menu's
+ * trigger toggles the entry list open/closed, and clicking an entry closes the menu and runs
+ * its onclick. Element ids are derived from each title via lodash's snakeCase, e.g. "Add widget"
+ * becomes "add_widget_menu_item".
+ * @param {string} containerSelector - CSS selector for the element to build the menu into.
+ * @param {Object} items - Object keyed by entry title, each value {icon, onclick, hidden}.
+ *   `icon` is a Material Icons ligature name, `onclick` a no-argument callback, and `hidden`
+ *   (optional, default false) whether the entry starts out hidden.
+ * @returns {Object} A map of entry title to its <button> d3 selection, for later visibility toggling.
+ */
+function buildHeaderMenu(containerSelector, items) {
+    const menuContainer = d3.select(containerSelector)
+        .append("div")
+        .attr("class", "header-menu w3-dropdown-click capture-ignore");
+
+    const menuContent = menuContainer.append("div")
+        .attr("class", "w3-dropdown-content w3-bar-block w3-border header-menu-content");
+
+    menuContainer.append("span")
+        .attr("class", "mi w3-button w3-ripple header-menu-trigger")
+        .text("more_vert")
+        .on("click.toggleHeaderMenu", () => {
+            menuContent.classed("w3-show", !menuContent.classed("w3-show"));
+        });
+
+    let menuElements = {};
+    for (const title in items) {
+        const { icon, onclick, hidden = false } = items[title];
+        const menuItem = menuContent.append("button")
+            .attr("id", `${_.snakeCase(title)}_menu_item`)
+            .attr("class", "header-menu-item w3-bar-item w3-button w3-ripple")
+            .attr("title", title)
+            .classed("w3-hide", hidden)
+            .on("click", () => {
+                menuContent.classed("w3-show", false);
+                onclick();
+            });
+        menuItem.append("span")
+            .attr("class", "mi header-menu-item-icon")
+            .text(icon);
+        menuItem.append("span")
+            .attr("class", "header-menu-item-label")
+            .text(title);
+        menuElements[title] = menuItem;
+    }
+    return menuElements;
+}
+
+/**
  * Updates a D3-bound <select> element's options to match the given data array.
  * Uses D3's join pattern to enter new options, keep existing ones, and remove stale entries.
  * @param {d3.Selection} selectElement - The D3 selection of the <select> element.

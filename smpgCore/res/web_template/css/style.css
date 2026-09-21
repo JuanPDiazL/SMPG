@@ -89,6 +89,26 @@
     font-size: 1.75em;
 }
 
+.header-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.header-menu-content {
+    top: 100%;
+    right: 0;
+}
+
+.header-menu-content .header-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.darkmode .header-menu-content {
+    background-color: var(--dark-bg-color) !important;
+    color: #ddd !important;
+}
+
 #contentBody {
     flex-grow: 1; /* Takes remaining space */
     position: relative;

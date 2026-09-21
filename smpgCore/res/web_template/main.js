@@ -114,10 +114,21 @@ const MODAL = document.getElementById('modal');
 const MODAL_HEADER = document.getElementById('modalHeaderText');
 const MODAL_TEXT = document.getElementById('modalText');
 const GRIDSTACK_ROOT = d3.select('.gridstackRoot');
-const ADD_WIDGET_BUTTON = d3.select('#addWidgetButton');
-const EDIT_LAYOUT_BUTTON = d3.select('#editLayoutButton');
-const STOP_EDIT_LAYOUT_BUTTON = d3.select('#stopEditLayoutButton');
-const SORT_LAYOUT_BUTTON = d3.select('#sortLayoutButton');
+
+const HEADER_MENU_ITEMS = {
+    "Dark mode": { icon: "dark_mode", onclick: () => toggleDarkMode() },
+    "Save screenshot": { icon: "save", onclick: () => save_reports() },
+    "Help": { icon: "help", onclick: () => window.open('https://help.fews.net/en/tools/v3/smpg-tool', '_blank') },
+    "Edit layout": { icon: "edit", onclick: () => toggleLayoutEdit() },
+    "Stop edit layout": { icon: "edit_off", onclick: () => toggleLayoutEdit(), hidden: true },
+    "Sort layout": { icon: "swap_horiz", onclick: () => grid.compact(), hidden: true },
+    "Add widget": { icon: "add", onclick: () => add_widget(), hidden: true },
+};
+const HEADER_MENU_ELEMENTS = buildHeaderMenu('#contentHeaderMenu', HEADER_MENU_ITEMS);
+const EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Edit layout"];
+const STOP_EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Stop edit layout"];
+const SORT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Sort layout"];
+const ADD_WIDGET_BUTTON = HEADER_MENU_ELEMENTS["Add widget"];
 
 // set page state using cookies
 setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
