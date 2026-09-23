@@ -129,10 +129,10 @@ class Parameters:
         # analysis defaults
         self.forecast_length = 0
         # rainy season detection defaults
-        self.rainy_season_detection_enabled = False
-        self.rainy_season_detection_sos_method = "fixed"
-        self.rainy_season_detection_sos_first_threshold = 25
-        self.rainy_season_detection_sos_second_threshold = 20
+        self.rainy_season_detection_enabled = True
+        self.rainy_season_detection_sos_method = "pct_clim_avg"
+        self.rainy_season_detection_sos_first_threshold = 70
+        self.rainy_season_detection_sos_second_threshold = 50
         self.rainy_season_detection_sos_fixed_first_threshold = 20
         self.rainy_season_detection_sos_fixed_second_threshold = 50
         # output defaults
