@@ -40,3 +40,68 @@ p.card-title {
     display: flex;
     margin: 8px 8px;
 }
+
+/* Rich text editor cards */
+
+.text-editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    isolation: isolate; /* keeps the editors' own z-indexes (e.g. toolbars) inside the card */
+}
+
+.text-editor-host {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.text-editor-status {
+    margin: 1em;
+    font-style: italic;
+    color: #555;
+}.darkmode .text-editor-status {
+    color: #bbb;
+}
+
+.text-editor-status.text-editor-error {
+    color: #d32f2f;
+}.darkmode .text-editor-status.text-editor-error {
+    color: #ef9a9a;
+}
+
+/* Material Icons font icon used in the editors' toolbars, sized like their own SVG icons.
+   It takes the button's text color, so it follows dark mode like the surrounding icons. */
+.text-editor-button-icon {
+    font-size: 20px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+/* TinyMCE's skin resets the font of everything inside its UI (".tox *:not(svg):not(rect)"),
+   which overrides the .mi icon font; this more specific selector restores it. */
+.tox .mi.text-editor-button-icon {
+    font-family: 'Material Icons Filled';
+    font-size: 20px;
+    line-height: 1;
+    white-space: nowrap;
+    text-transform: none;
+    direction: ltr;
+}
+
+
+.text-editor-content-label {
+    display: block;
+    margin: 0.75em 0 0.25em;
+    font-weight: bold;
+}
+
+.text-editor-content-output {
+    min-height: 30vh;
+    font-family: monospace;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    resize: vertical;
+}
