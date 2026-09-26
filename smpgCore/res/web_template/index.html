@@ -342,7 +342,7 @@
                         var delay = BASE_DELAY_MS * Math.pow(2, attempt);
                         delay += Math.random() * delay * 0.25;
                         attempt += 1;
-                        showRetryStatus('Server busy, retrying (' + attempt + '/' + MAX_RETRIES + ')...');
+                        showRetryStatus('Server side problem. Retrying (' + attempt + '/' + MAX_RETRIES + ')...');
                         setTimeout(tryLoad, delay);
                     };
                     parent.appendChild(element);
