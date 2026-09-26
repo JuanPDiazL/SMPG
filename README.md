@@ -21,3 +21,6 @@ SMPG is a QGIS plugin programmed in Python 3, designed to generate statistics an
 ## More Information
 - [User Manual](https://help.fews.net/en/tools/v3/smpg-tool)
 - [Technical Documentation](./docs/index.md)
+
+## License
+SMPG is released under the [MIT License](./LICENSE). It includes third-party libraries that keep their own licenses: billboard.js, gridstack.js, lodash, html2canvas, interact.js and Showdown (MIT); D3 (ISC); TopoJSON (BSD-3-Clause); pako (MIT and Zlib); TinyMCE (GPL-2.0-or-later); Material Icons (Apache-2.0); W3.CSS by W3Schools; and pyTopoJSON (ISC). Their copyright notices and full license texts are in [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md).
