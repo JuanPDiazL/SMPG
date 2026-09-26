@@ -169,7 +169,7 @@
 
             // Watchdog: if the spinner is still up, let the user know it's taking a while
             setTimeout(function () {
-                if (!isStillLoading()) { return; }
+                if (failed || !isStillLoading()) { return; }
                 var overlay = document.getElementById('loadingOverlay');
                 if (overlay) {
                     var warning = document.createElement('div');
