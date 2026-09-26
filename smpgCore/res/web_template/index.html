@@ -149,7 +149,8 @@
                 var target = event.target;
                 if (target && target !== window) {
                     // Only failed scripts break the page; ignore images/fonts/etc.
-                    if (target.tagName === 'SCRIPT' && target.src) {
+                    // Loader-managed scripts are retried, and the loader reports their final failure.
+                    if (target.tagName === 'SCRIPT' && target.src && !target.hasAttribute('data-smpg-loader')) {
                         showError('Failed to load a required script', target.src);
                     }
                     return;
@@ -296,39 +297,91 @@
                 './main.js'
             ];
 
+            // Failed loads (e.g. HTTP 429 from rate-limited servers) are retried with
+            // exponential backoff: 0.5s, 1s, 2s, 4s, 8s (+ up to 25% jitter), which stays
+            // under the 20s "Taking longer than expected" watchdog.
+            // <link>/<script> errors don't expose the HTTP status, so every failure is retried.
+            var MAX_RETRIES = 5;
+            var BASE_DELAY_MS = 500;
+            var retryStatus = null;
+
+            function showRetryStatus(text) {
+                var overlay = document.getElementById('loadingOverlay');
+                if (!overlay || overlay.classList.contains('loading-error')) { return; }
+                if (!retryStatus) {
+                    retryStatus = document.createElement('div');
+                    retryStatus.className = 'loading-text';
+                    overlay.appendChild(retryStatus);
+                }
+                retryStatus.textContent = text;
+            }
+
+            function clearRetryStatus() {
+                if (retryStatus) {
+                    retryStatus.remove();
+                    retryStatus = null;
+                }
+            }
+
+            function loadWithRetry(parent, createElement, onLoad, onFinalError) {
+                var attempt = 0;
+                function tryLoad() {
+                    var element = createElement();
+                    element.setAttribute('data-smpg-loader', '');
+                    element.onload = function () {
+                        clearRetryStatus();
+                        onLoad();
+                    };
+                    element.onerror = function () {
+                        element.remove();
+                        if (attempt >= MAX_RETRIES) {
+                            clearRetryStatus();
+                            onFinalError(element);
+                            return;
+                        }
+                        var delay = BASE_DELAY_MS * Math.pow(2, attempt);
+                        delay += Math.random() * delay * 0.25;
+                        attempt += 1;
+                        showRetryStatus('Server busy, retrying (' + attempt + '/' + MAX_RETRIES + ')...');
+                        setTimeout(tryLoad, delay);
+                    };
+                    parent.appendChild(element);
+                }
+                tryLoad();
+            }
+
             var styleIndex = 0;
             function loadNextStylesheet() {
                 if (styleIndex >= stylesheetUrls.length) {
                     loadNext(); // stylesheets done -> start the script chain
                     return;
                 }
-                var link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = stylesheetUrls[styleIndex];
-                link.onload = function () {
+                loadWithRetry(document.head, function () {
+                    var link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = stylesheetUrls[styleIndex];
+                    return link;
+                }, function () {
                     styleIndex += 1;
                     loadNextStylesheet();
-                };
-                link.onerror = function () {
-                    // The <head> handler ignores non-script resource errors,
-                    // so a failed stylesheet in this queue is surfaced here.
+                }, function (link) {
                     window.smpgShowLoadError('Failed to load a required stylesheet', link.href);
-                };
-                document.head.appendChild(link);
+                });
             }
 
             var index = 0;
             function loadNext() {
                 if (index >= scriptUrls.length) { return; }
-                var script = document.createElement('script');
-                script.src = scriptUrls[index];
-                script.onload = function () {
+                loadWithRetry(document.body, function () {
+                    var script = document.createElement('script');
+                    script.src = scriptUrls[index];
+                    return script;
+                }, function () {
                     index += 1;
                     loadNext();
-                };
-                // On failure the chain simply stops, and the error handler in
-                // <head> surfaces the failed script as a loading error.
-                document.body.appendChild(script);
+                }, function (script) {
+                    window.smpgShowLoadError('Failed to load a required script', script.src);
+                });
             }
             loadNextStylesheet();
         })();
