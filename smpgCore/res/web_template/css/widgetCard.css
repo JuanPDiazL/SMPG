@@ -58,8 +58,16 @@ p.card-title {
     overflow: auto;
 }
 
-/* View mode: the read-only editor is shown without its toolbar or focus border */
-.text-editor-view .tox .tox-editor-header,
+/* View mode: the read-only editor is shown without its toolbar or focus border.
+   The toolbar is collapsed instead of display: none, so TinyMCE can still measure it and
+   move the buttons that don't fit into its "..." menu; it doesn't re-measure when shown again. */
+.text-editor-view .tox .tox-editor-header {
+    visibility: hidden;
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: none;
+}
 .text-editor-view .tox .tox-edit-area::before {
     display: none;
 }
