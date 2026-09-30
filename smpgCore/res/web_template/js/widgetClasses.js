@@ -232,7 +232,7 @@ class chartCard {
             .append("div")
             .attr("class", "card-body w3-container w3-padding-small");
         
-        this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
+        this.cardElements = {};
         this.changePlot(this.cardType);
         this.setProperties(smpgOpts);
     }
