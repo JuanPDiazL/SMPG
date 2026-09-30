@@ -58,8 +58,9 @@ p.card-title {
     overflow: auto;
 }
 
-/* View mode: the read-only editor is shown without its toolbar */
-.text-editor-view .tox .tox-editor-header {
+/* View mode: the read-only editor is shown without its toolbar or focus border */
+.text-editor-view .tox .tox-editor-header,
+.text-editor-view .tox .tox-edit-area::before {
     display: none;
 }
 

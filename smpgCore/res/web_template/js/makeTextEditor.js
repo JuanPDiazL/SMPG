@@ -11,6 +11,9 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         "./css/libraryStyles/tinymce/skins/ui/oxide/content.min.css",
         "./css/libraryStyles/tinymce/skins/content/default/content.min.css",
     ],
+    // Styles inside the editing iframe, which the page's stylesheets don't reach.
+    // Read-only mode keeps the body editable and only adds .mce-content-readonly, so the caret still shows.
+    content_style: "body.mce-content-readonly { caret-color: transparent; }",
     license_key: "gpl",
     plugins: "lists link table code",
     toolbar: "undo redo | blocks | bold italic underline | bullist numlist | link table | code",
@@ -18,6 +21,7 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     ui_mode: "split", // keeps menus and popups inside the card instead of on <body>
     promotion: false,
     branding: false,
+    statusbar: false,
     resize: false,
     height: "100%",
 };
