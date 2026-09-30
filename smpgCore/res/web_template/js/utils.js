@@ -64,6 +64,14 @@ function handleNavigation(event) {
     if (modifyLayoutParam) {
         try {
             const widgetPatches = JSON.parse(modifyLayoutParam);
+            // Text content can't be set from a URL for security purposes (malicious text injection).
+            for (const widgetId in widgetPatches) {
+                const editorPatch = widgetPatches[widgetId] && widgetPatches[widgetId].editor;
+                if (editorPatch && typeof editorPatch === "object" && "text" in editorPatch) {
+                    delete editorPatch.text;
+                    console.warn(`modify_layout: the text of widget "${widgetId}" can't be changed through the URL; it was ignored.`);
+                }
+            }
             applyLayoutModifications(widgetPatches);
         } catch (e) {
             showModal(`The "modify_layout" URL parameter could not be applied: invalid JSON.<br>${e.message}`);
