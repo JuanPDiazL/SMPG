@@ -14,6 +14,12 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     // Styles inside the editing iframe, which the page's stylesheets don't reach.
     // Read-only mode keeps the body editable and only adds .mce-content-readonly, so the caret still shows.
     content_style: "body.mce-content-readonly { caret-color: transparent; }",
+    // Elements that aren't text formatting are removed, from any source (typing, pasting,
+    // the code view, layout.js).
+    invalid_elements: "script,noscript,style,link,meta,base,template,"
+        + "form,input,button,select,option,optgroup,textarea,label,fieldset,"
+        + "legend,datalist,output,iframe,frame,frameset,object,embed,applet,"
+        + "param,video,audio,source,track,canvas,svg,math,dialog",
     license_key: "gpl",
     plugins: "lists link table code",
     toolbar: "undo redo | blocks | bold italic underline | bullist numlist | link table | code",
