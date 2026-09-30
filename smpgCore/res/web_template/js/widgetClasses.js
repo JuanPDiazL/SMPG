@@ -185,6 +185,10 @@ class chartCard {
                 "cardElementsBuilder": makeMapCard,
             };
         }
+        this.cardTypes["Rich Text"] = {
+            "full title": "Rich Text",
+            "cardElementsBuilder": makeTextEditorCard,
+        };
         this.cardType = smpgOpts.smpgCardType;
 
         this.elementContainer = d3.select(containerSelector);
@@ -236,6 +240,11 @@ class chartCard {
     changePlot(cardType) {
         this.cardType = cardType;
         this.graphTypeSelectOpenButton.text(this.cardTypes[this.cardType]["full title"]);
+        for (const elementKey in this.cardElements) {
+            if (this.cardElements[elementKey].destroy) {
+                this.cardElements[elementKey].destroy();
+            }
+        }
         this.cardBody.selectChildren().remove();
 
         
@@ -272,6 +281,16 @@ class chartCard {
                     .on("click", (event) => {
                         this.cardElements["controlPanel"].controlPanelContainer.classed("w3-hide", !this.cardElements["controlPanel"].controlPanelContainer.classed("w3-hide"));
                     });
+        }
+        if (this.cardElements["editor"]) {
+            this.editModeButton = this.cardButtonGroup.append("span").append("button")
+                    .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
+                    .on("click", (event) => {
+                        const editor = this.cardElements["editor"];
+                        editor.changeEditMode(!editor.options.editMode);
+                        this.refreshEditModeButton();
+                    });
+            this.refreshEditModeButton();
         }
 
         // Fills data in the card
@@ -325,5 +344,18 @@ class chartCard {
         if (this.cardElements["controlPanel"] && this.cardElements["controlPanel"].refresh) {
             this.cardElements["controlPanel"].refresh();
         }
+        if (this.cardElements["editor"]) {
+            this.refreshEditModeButton();
+        }
+    }
+
+    /**
+     * Sets the edit/view toggle button's icon and title from the editor's current mode.
+     */
+    refreshEditModeButton() {
+        const editMode = this.cardElements["editor"].options.editMode;
+        this.editModeButton
+            .attr("title", editMode ? "Switch to view mode" : "Switch to edit mode")
+            .text(editMode ? "visibility" : "edit");
     }
 }
