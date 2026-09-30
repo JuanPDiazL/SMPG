@@ -2,6 +2,7 @@
 // so besides the required smpgCardType it accepts the same shape as chartCard.getProperties()/
 // setProperties() and the "modify_layout" URL hash parameter (e.g. smpgOpts: {smpgCardType: "Map",
 // map: {legend_stat: "Average Total", show_legend: true}, mapDescription: {show_description: true}}).
+// All gridstack options are computed using layout.general.gridstack.* before passed to the widgets.
 var layout = {
     general: {
         gridstack: {

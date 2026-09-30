@@ -35,6 +35,8 @@ function parseGridstackItems(layout) {
             id: gridItemId,
             w: gridItem.gridstackOpts.width * GS_H_CELL_SIZE,
             h: gridItem.gridstackOpts.height * GS_V_CELL_SIZE,
+            x: gridItem.gridstackOpts.xPos * GS_H_CELL_SIZE,
+            y: gridItem.gridstackOpts.yPos * GS_V_CELL_SIZE,
         });
     }
     return parsedItems;
