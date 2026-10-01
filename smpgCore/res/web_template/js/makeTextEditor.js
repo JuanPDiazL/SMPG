@@ -14,7 +14,11 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     // Styles inside the editing iframe, which the page's stylesheets don't reach.
     // Read-only mode keeps the body editable and only adds .mce-content-readonly, so the caret still shows.
     // In edit mode, template variables are tinted, and the ones that don't resolve marked red.
+    // In edit mode, the body also fills the editor (minus its 1rem margins), so clicks and the
+    // context menu work in the blank space below the text.
     content_style: "body.mce-content-readonly { caret-color: transparent; }"
+        + " html { height: 100%; }"
+        + " body:not(.mce-content-readonly) { min-height: calc(100% - 2rem); }"
         + " body:not(.mce-content-readonly) .template-token {"
         + " background-color: rgba(0, 108, 231, 0.1); border-radius: 3px; padding: 0 2px; }"
         + " body:not(.mce-content-readonly) .template-token-invalid {"
