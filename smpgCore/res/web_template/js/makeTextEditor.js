@@ -36,9 +36,10 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
 // function from TEMPLATE_FUNCTIONS, and is never evaluated as code
 const TEMPLATE_VARIABLE_PATTERN = /\{\{\s*(.+?)\s*\}\}/g;
 const TEMPLATE_PATH_START_PATTERN = /^\s*([A-Za-z_$][\w$]*)/;
-// .name | ["key"] | ['key'] | [0] | [name]
+// ["key"] | ['key'] | [0] | [variable], where [variable] uses a context variable's value as
+// the key, e.g. [place]; literal keys must be quoted
 const TEMPLATE_PATH_SEGMENT_PATTERN =
-    /^\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*(?:"([^"]*)"|'([^']*)'|(\d+)|([A-Za-z_$][\w$]*))\s*\])/;
+    /^\s*\[\s*(?:"([^"]*)"|'([^']*)'|(\d+)|([A-Za-z_$][\w$]*))\s*\]/;
 const TEMPLATE_NUMBER_PATTERN = /^\s*(-?\d+(?:\.\d+)?)/;
 const TEMPLATE_STRING_PATTERN = /^\s*(?:"([^"]*)"|'([^']*)')/;
 const TEMPLATE_PUNCTUATION_PATTERN = /^\s*([(),])/;
@@ -193,10 +194,10 @@ function parseTemplateExpression(parser, context) {
 
     let segment;
     while ((segment = takeTemplatePattern(parser, TEMPLATE_PATH_SEGMENT_PATTERN))) {
-        let key = segment[1] ?? segment[2] ?? segment[3] ?? segment[4];
-        if (segment[5] !== undefined) { // [name]: the key is the context's value for name
-            if (!isOwnTemplateProperty(context, segment[5])) { throw new TemplateVariableError("unknown name"); }
-            key = context[segment[5]];
+        let key = segment[1] ?? segment[2] ?? segment[3];
+        if (segment[4] !== undefined) { // [variable]: the key is the context variable's value
+            if (!isOwnTemplateProperty(context, segment[4])) { throw new TemplateVariableError("unknown name"); }
+            key = context[segment[4]];
             if (typeof key !== "string" && typeof key !== "number") { throw new TemplateVariableError("invalid key"); }
         }
         if (!isOwnTemplateProperty(value, key)) { throw new TemplateVariableError("unknown key"); }
