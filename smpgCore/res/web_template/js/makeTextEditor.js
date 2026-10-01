@@ -42,6 +42,8 @@ const TEMPLATE_PATH_SEGMENT_PATTERN =
 const TEMPLATE_NUMBER_PATTERN = /^\s*(-?\d+(?:\.\d+)?)/;
 const TEMPLATE_STRING_PATTERN = /^\s*(?:"([^"]*)"|'([^']*)')/;
 const TEMPLATE_PUNCTUATION_PATTERN = /^\s*([(),])/;
+// Shorthand call: {{ name: some text }} is name(place, "some text"), with the text taken literally
+const TEMPLATE_SHORTHAND_PATTERN = /^\s*([A-Za-z_$][\w$]*)\s*:([^]*)$/;
 // Decodes HTML entities without running markup: a textarea's content is never parsed as HTML
 const templateTokenDecoder = document.createElement("textarea");
 
@@ -52,6 +54,8 @@ const TEMPLATE_FUNCTIONS = {
     fixed: (value, decimals = 0) => value.toFixed(decimals),
     // At most `decimals` decimals, e.g. round(83.7, 2) gives 83.7
     round: (value, decimals = 0) => Number(value.toFixed(decimals)),
+    // A place's general statistic, e.g. {{ stat: Current Season Pctl. }}
+    stat: (place, key) => getPlaceMapStats(place)[key],
 };
 
 /**
@@ -202,7 +206,8 @@ function parseTemplateExpression(parser, context) {
 }
 
 /**
- * Resolves a template expression, e.g. fixed(place_general_stats[place]["Current Season Pctl."], 1).
+ * Resolves a template expression, e.g. fixed(place_general_stats[place]["Current Season Pctl."], 1),
+ * or the shorthand call "name: some text", which is name(place, "some text").
  * @param {string} text - The expression inside a {{ }} token.
  * @param {Object} context - The template context, see getTextEditorTemplateContext().
  * @returns {string|number|boolean|undefined} The value, or undefined if the expression is invalid
@@ -211,8 +216,18 @@ function parseTemplateExpression(parser, context) {
 function resolveTemplateExpression(text, context) {
     const parser = { rest: text };
     try {
-        const value = parseTemplateExpression(parser, context);
-        if (parser.rest.trim() !== "") { throw new TemplateVariableError("unexpected text"); }
+        let value;
+        const shorthand = TEMPLATE_SHORTHAND_PATTERN.exec(text);
+        if (shorthand) {
+            const name = shorthand[1];
+            if (!isOwnTemplateProperty(context, name) || typeof context[name] !== "function") {
+                throw new TemplateVariableError(`${name} is not a function`);
+            }
+            value = callTemplateFunction(name, context[name], [context.place, shorthand[2].trim()]);
+        } else {
+            value = parseTemplateExpression(parser, context);
+            if (parser.rest.trim() !== "") { throw new TemplateVariableError("unexpected text"); }
+        }
         return ["string", "number", "boolean"].includes(typeof value) ? value : undefined;
     } catch (error) {
         if (!(error instanceof TemplateVariableError)) { throw error; }
