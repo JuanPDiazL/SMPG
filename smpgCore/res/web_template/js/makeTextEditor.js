@@ -21,8 +21,13 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         + "legend,datalist,output,iframe,frame,frameset,object,embed,applet,"
         + "param,video,audio,source,track,canvas,svg,math,dialog",
     license_key: "gpl",
-    plugins: "lists link table code",
-    toolbar: "undo redo | blocks | bold italic underline | bullist numlist | link table | code",
+    plugins: "lists link table code quickbars",
+    toolbar: "blocks | bold italic underline | bullist numlist | link table | code",
+    // Floating toolbar on selected text; the insert toolbar (whose image button inserts
+    // temporary blob: URLs) and the image toolbar are disabled
+    quickbars_selection_toolbar: "bold italic",
+    quickbars_insert_toolbar: false,
+    quickbars_image_toolbar: false,
     menubar: false,
     ui_mode: "split", // keeps menus and popups inside the card instead of on <body>
     promotion: false,

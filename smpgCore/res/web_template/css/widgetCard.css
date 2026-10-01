@@ -68,7 +68,8 @@ p.card-title {
     overflow: hidden;
     box-shadow: none;
 }
-.text-editor-view .tox .tox-edit-area::before {
+.text-editor-view .tox .tox-edit-area::before,
+.text-editor-view .tox-pop {
     display: none;
 }
 
