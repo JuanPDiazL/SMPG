@@ -22,7 +22,32 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         + "param,video,audio,source,track,canvas,svg,math,dialog",
     license_key: "gpl",
     plugins: "lists link table code quickbars",
-    toolbar: "blocks | bold italic underline | bullist numlist | link table | code",
+    toolbar: "fontformat alignment spacing insert | code",
+    // Group buttons, each opening a small floating toolbar with its buttons
+    toolbar_groups: {
+        fontformat: {
+            icon: "format",
+            tooltip: "Font",
+            items: "blocks fontfamily fontsize | forecolor backcolor | bold italic underline strikethrough"
+                + " | superscript subscript | removeformat",
+        },
+        alignment: {
+            icon: "align-left",
+            tooltip: "Alignment",
+            items: "alignleft aligncenter alignright alignjustify",
+        },
+        // Lists live with indent/outdent, which also nest and un-nest list items
+        spacing: {
+            icon: "line-height",
+            tooltip: "Lists and spacing",
+            items: "bullist numlist | outdent indent lineheight",
+        },
+        insert: {
+            icon: "plus",
+            tooltip: "Insert",
+            items: "link table hr",
+        },
+    },
     // Floating toolbar on selected text; the insert toolbar (whose image button inserts
     // temporary blob: URLs) and the image toolbar are disabled
     quickbars_selection_toolbar: "bold italic",
