@@ -225,6 +225,20 @@ function getLast(arr) {
 }
 
 /**
+ * Escapes the characters that have a special meaning in HTML (& < > " ').
+ * @param {*} value - The value to escape; it is converted to a string first.
+ * @returns {string} The escaped string, safe to insert into HTML text or attribute values.
+ */
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
+
+/**
  * Sets the sidebar menu open/closed state via cookie and toggles the 'sidebar-closed' class on <body>.
  * @param {string} value - "true" or falsy to close the sidebar, "false" to open it.
  */

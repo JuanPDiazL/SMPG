@@ -32,6 +32,222 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     height: "100%",
 };
 
+// Template variables: {{ expression }}, where the expression is a property lookup or a call to a
+// function from TEMPLATE_FUNCTIONS, and is never evaluated as code
+const TEMPLATE_VARIABLE_PATTERN = /\{\{\s*(.+?)\s*\}\}/g;
+const TEMPLATE_PATH_START_PATTERN = /^\s*([A-Za-z_$][\w$]*)/;
+// .name | ["key"] | ['key'] | [0] | [name]
+const TEMPLATE_PATH_SEGMENT_PATTERN =
+    /^\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*(?:"([^"]*)"|'([^']*)'|(\d+)|([A-Za-z_$][\w$]*))\s*\])/;
+const TEMPLATE_NUMBER_PATTERN = /^\s*(-?\d+(?:\.\d+)?)/;
+const TEMPLATE_STRING_PATTERN = /^\s*(?:"([^"]*)"|'([^']*)')/;
+const TEMPLATE_PUNCTUATION_PATTERN = /^\s*([(),])/;
+// Decodes HTML entities without running markup: a textarea's content is never parsed as HTML
+const templateTokenDecoder = document.createElement("textarea");
+
+// The only functions template variables can call. They must only read data and change nothing
+// (no DOM, no network). A function that throws or returns nothing leaves its token as typed.
+const TEMPLATE_FUNCTIONS = {
+    // Exactly `decimals` decimals, e.g. fixed(83.7, 2) gives "83.70"
+    fixed: (value, decimals = 0) => value.toFixed(decimals),
+    // At most `decimals` decimals, e.g. round(83.7, 2) gives 83.7
+    round: (value, decimals = 0) => Number(value.toFixed(decimals)),
+};
+
+/**
+ * Returns the only data template variables can read: the current place id, the report's data,
+ * and TEMPLATE_FUNCTIONS.
+ * @param {string} placeId - The currently selected place.
+ * @returns {Object} The template context.
+ */
+function getTextEditorTemplateContext(placeId) {
+    return {
+        place: placeId,
+        datasetProperties,
+        parameters,
+        place_general_stats,
+        place_long_term_stats,
+        seasonal_current_totals,
+        seasonal_forecast_totals,
+        seasonal_general_stats,
+        selected_seasons_general_stats,
+        seasonal_cumsum,
+        seasonal_ensemble,
+        seasonal_long_term_stats,
+        selected_seasons_cumsum,
+        selected_seasons_ensemble,
+        selected_seasons_ensemble_with_forecast,
+        selected_seasons_long_term_stats,
+        ...TEMPLATE_FUNCTIONS,
+    };
+}
+
+// Thrown while resolving a token, which is then left as typed; `warn` also logs the reason
+class TemplateVariableError extends Error {
+    constructor(message, warn = false) {
+        super(message);
+        this.warn = warn;
+    }
+}
+
+function isOwnTemplateProperty(object, key) {
+    return object !== null && typeof object === "object"
+        && Object.prototype.hasOwnProperty.call(object, key);
+}
+
+/**
+ * Consumes `pattern` from the start of the text left to parse.
+ * @param {Object} parser - The parser state, {rest}.
+ * @param {RegExp} pattern - A pattern anchored at the start (^).
+ * @returns {Array|null} The match, or null if the text doesn't start with the pattern.
+ */
+function takeTemplatePattern(parser, pattern) {
+    const match = pattern.exec(parser.rest);
+    if (match) {
+        parser.rest = parser.rest.slice(match[0].length);
+    }
+    return match;
+}
+
+/**
+ * Consumes one punctuation character, if it is the next one in the text left to parse.
+ * @param {Object} parser - The parser state, {rest}.
+ * @param {string} character - "(", ")" or ",".
+ * @returns {boolean} Whether it was consumed.
+ */
+function takeTemplatePunctuation(parser, character) {
+    const match = TEMPLATE_PUNCTUATION_PATTERN.exec(parser.rest);
+    if (!match || match[1] !== character) { return false; }
+    parser.rest = parser.rest.slice(match[0].length);
+    return true;
+}
+
+/**
+ * Calls a template function. A function that throws or returns nothing makes the token invalid.
+ * @param {string} name - The function's name, for the warning.
+ * @param {Function} templateFunction - The function, from the template context.
+ * @param {Array} args - The resolved arguments.
+ * @returns {*} The function's result.
+ */
+function callTemplateFunction(name, templateFunction, args) {
+    let result;
+    try {
+        result = templateFunction(...args);
+    } catch (error) {
+        throw new TemplateVariableError(`${name}() failed: ${error.message}`, true);
+    }
+    if (result === undefined) {
+        throw new TemplateVariableError(`${name}() returned nothing`, true);
+    }
+    return result;
+}
+
+/**
+ * Parses and resolves the arguments of a call, after its "(".
+ * @param {Object} parser - The parser state, {rest}.
+ * @param {Object} context - The template context.
+ * @returns {Array} The resolved arguments.
+ */
+function parseTemplateArguments(parser, context) {
+    const args = [];
+    if (takeTemplatePunctuation(parser, ")")) { return args; }
+    do {
+        let match;
+        if ((match = takeTemplatePattern(parser, TEMPLATE_NUMBER_PATTERN))) {
+            args.push(Number(match[1]));
+        } else if ((match = takeTemplatePattern(parser, TEMPLATE_STRING_PATTERN))) {
+            args.push(match[1] ?? match[2]);
+        } else {
+            const value = parseTemplateExpression(parser, context);
+            if (value === undefined) { throw new TemplateVariableError("an argument is undefined"); }
+            args.push(value);
+        }
+    } while (takeTemplatePunctuation(parser, ","));
+    if (!takeTemplatePunctuation(parser, ")")) { throw new TemplateVariableError("')' expected"); }
+    return args;
+}
+
+/**
+ * Parses and resolves one expression: a name, an optional call, then path segments. Names are
+ * looked up as the context's own properties; segments walk own properties only, so inherited
+ * members such as __proto__ or constructor never resolve. Only context functions can be called.
+ * @param {Object} parser - The parser state, {rest}.
+ * @param {Object} context - The template context.
+ * @returns {*} The expression's value.
+ */
+function parseTemplateExpression(parser, context) {
+    const start = takeTemplatePattern(parser, TEMPLATE_PATH_START_PATTERN);
+    if (!start || !isOwnTemplateProperty(context, start[1])) {
+        throw new TemplateVariableError("unknown name");
+    }
+    let value = context[start[1]];
+
+    if (takeTemplatePunctuation(parser, "(")) {
+        if (typeof value !== "function") { throw new TemplateVariableError(`${start[1]} is not a function`); }
+        value = callTemplateFunction(start[1], value, parseTemplateArguments(parser, context));
+    }
+
+    let segment;
+    while ((segment = takeTemplatePattern(parser, TEMPLATE_PATH_SEGMENT_PATTERN))) {
+        let key = segment[1] ?? segment[2] ?? segment[3] ?? segment[4];
+        if (segment[5] !== undefined) { // [name]: the key is the context's value for name
+            if (!isOwnTemplateProperty(context, segment[5])) { throw new TemplateVariableError("unknown name"); }
+            key = context[segment[5]];
+            if (typeof key !== "string" && typeof key !== "number") { throw new TemplateVariableError("invalid key"); }
+        }
+        if (!isOwnTemplateProperty(value, key)) { throw new TemplateVariableError("unknown key"); }
+        value = value[key];
+    }
+    return value;
+}
+
+/**
+ * Resolves a template expression, e.g. fixed(place_general_stats[place]["Current Season Pctl."], 1).
+ * @param {string} text - The expression inside a {{ }} token.
+ * @param {Object} context - The template context, see getTextEditorTemplateContext().
+ * @returns {string|number|boolean|undefined} The value, or undefined if the expression is invalid
+ *   or doesn't end at a string, number or boolean.
+ */
+function resolveTemplateExpression(text, context) {
+    const parser = { rest: text };
+    try {
+        const value = parseTemplateExpression(parser, context);
+        if (parser.rest.trim() !== "") { throw new TemplateVariableError("unexpected text"); }
+        return ["string", "number", "boolean"].includes(typeof value) ? value : undefined;
+    } catch (error) {
+        if (!(error instanceof TemplateVariableError)) { throw error; }
+        if (error.warn) {
+            console.warn(`Template variable "{{ ${text} }}": ${error.message}`);
+        }
+        return undefined;
+    }
+}
+
+/**
+ * Normalizes a token's path as TinyMCE may save it: HTML entities (e.g. &quot;, &nbsp;) are
+ * decoded and non-breaking spaces become normal spaces.
+ * @param {string} token - The path inside a {{ }} token, as found in the editor's HTML.
+ * @returns {string} The cleaned path.
+ */
+function cleanTemplateToken(token) {
+    templateTokenDecoder.innerHTML = token;
+    return templateTokenDecoder.value.replaceAll(String.fromCharCode(0xA0), " ");
+}
+
+/**
+ * Replaces every {{ expression }} token in the HTML with its HTML-escaped value from the context.
+ * Unresolved tokens are left exactly as typed, so typos stay visible.
+ * @param {string} html - The editor's HTML, with template variables.
+ * @param {Object} context - The template context, see getTextEditorTemplateContext().
+ * @returns {string} The HTML with the resolvable tokens filled in.
+ */
+function fillTemplateVariables(html, context) {
+    return html.replace(TEMPLATE_VARIABLE_PATTERN, (token, path) => {
+        const value = resolveTemplateExpression(cleanTemplateToken(path), context);
+        return value === undefined ? token : escapeHtml(value);
+    });
+}
+
 class RichTextEditor {
     /**
      * @param {d3.Selection} containerElement - The element to build the editor into.
@@ -70,8 +286,7 @@ class RichTextEditor {
                     return;
                 }
                 this.editor = editor;
-                this.editor.setContent(this.options.text);
-                this.changeEditMode(this.options.editMode);
+                this.render();
             })
             .catch((error) => {
                 console.error("The rich text editor could not be created.", error);
@@ -79,44 +294,72 @@ class RichTextEditor {
     }
 
     /**
+     * Saves the typed document into options.text. Only edit mode shows the template itself;
+     * view mode shows a filled-in copy, which must never replace it.
+     */
+    saveTemplate() {
+        if (this.editor && this.options.editMode) {
+            this.options.text = this.editor.getContent();
+        }
+    }
+
+    /**
+     * Loads the document for the current mode: the template in edit mode, and in view mode a
+     * read-only copy with the template variables filled in for the current place.
+     */
+    render() {
+        this.editorContainer.classed("text-editor-view", !this.options.editMode);
+        if (!this.editor) { return; }
+        const content = this.options.editMode ? this.options.text
+            : fillTemplateVariables(this.options.text, getTextEditorTemplateContext(this.placeId));
+        // content is loaded while editable, then set read-only in view mode
+        this.editor.mode.set("design");
+        this.editor.setContent(content);
+        // so undo can't bring back filled-in values in place of the template variables
+        this.editor.undoManager.clear();
+        if (!this.options.editMode) {
+            this.editor.mode.set("readonly");
+        }
+    }
+
+    /**
      * Switches between edit mode (editable, with toolbar) and view mode (read-only, no toolbar).
      * @param {boolean} state - True for edit mode, false for view mode.
      */
     changeEditMode(state) {
+        this.saveTemplate();
         this.options.editMode = state;
-        this.editorContainer.classed("text-editor-view", !state);
-        if (this.editor) {
-            this.editor.mode.set(state ? "design" : "readonly");
-        }
+        this.render();
     }
 
     update(index) {
         this.placeId = index;
+        if (!this.options.editMode) {
+            this.render();
+        }
     }
 
     resize(size) {}
 
     getProperties() {
-        if (this.editor) {
-            this.options.text = this.editor.getContent();
-        }
+        this.saveTemplate();
         return {...this.options};
     }
 
     /**
      * Applies a patch of options, in the same shape returned by getProperties().
-     * @param {Object} properties - A subset of {editMode, text}; text is the document's HTML.
+     * @param {Object} properties - A subset of {editMode, text}; text is the document's HTML,
+     *   with template variables.
      */
     setProperties(properties) {
+        this.saveTemplate();
         if ("text" in properties) {
             this.options.text = properties.text;
-            if (this.editor) {
-                // content is loaded while editable, then the mode is restored below
-                this.editor.mode.set("design");
-                this.editor.setContent(this.options.text);
-            }
         }
-        this.changeEditMode(properties.editMode ?? this.options.editMode);
+        if ("editMode" in properties) {
+            this.options.editMode = properties.editMode;
+        }
+        this.render();
     }
 
     /**
