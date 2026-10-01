@@ -64,6 +64,12 @@ p.card-title {
     border-radius: 0;
 }
 
+/* TinyMCE keeps a tooltip open while it is hovered; ignoring the mouse makes moving onto it
+   count as leaving the button, so it closes. Tooltips are drawn at page level, outside the card. */
+.tox .tox-tooltip {
+    pointer-events: none;
+}
+
 /* View mode: the read-only editor is shown without its toolbar or focus border.
    The toolbar is collapsed instead of display: none, so TinyMCE can still measure it and
    move the buttons that don't fit into its "..." menu; it doesn't re-measure when shown again. */
