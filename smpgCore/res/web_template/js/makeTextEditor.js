@@ -13,7 +13,14 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     ],
     // Styles inside the editing iframe, which the page's stylesheets don't reach.
     // Read-only mode keeps the body editable and only adds .mce-content-readonly, so the caret still shows.
-    content_style: "body.mce-content-readonly { caret-color: transparent; }",
+    // In edit mode, template variables are tinted, and the ones that don't resolve marked red.
+    content_style: "body.mce-content-readonly { caret-color: transparent; }"
+        + " body:not(.mce-content-readonly) .template-token {"
+        + " background-color: rgba(0, 108, 231, 0.1); border-radius: 3px; padding: 0 2px; }"
+        + " body:not(.mce-content-readonly) .template-token-invalid {"
+        + " background-color: rgba(211, 47, 47, 0.12); text-decoration: underline wavy #d32f2f; }",
+    // Template variables (matched by noneditable_regexp at init) become locked pieces with this class
+    noneditable_class: "template-token",
     // Elements that aren't text formatting are removed, from any source (typing, pasting,
     // the code view, layout.js).
     invalid_elements: "script,noscript,style,link,meta,base,template,"
@@ -241,10 +248,11 @@ function parseTemplateExpression(parser, context) {
  * or the shorthand call "name: some text", which is name(place, "some text").
  * @param {string} text - The expression inside a {{ }} token.
  * @param {Object} context - The template context, see getTextEditorTemplateContext().
+ * @param {boolean} warn - Whether to log failed function calls as console warnings.
  * @returns {string|number|boolean|undefined} The value, or undefined if the expression is invalid
  *   or doesn't end at a string, number or boolean.
  */
-function resolveTemplateExpression(text, context) {
+function resolveTemplateExpression(text, context, warn = true) {
     const parser = { rest: text };
     try {
         let value;
@@ -262,7 +270,7 @@ function resolveTemplateExpression(text, context) {
         return ["string", "number", "boolean"].includes(typeof value) ? value : undefined;
     } catch (error) {
         if (!(error instanceof TemplateVariableError)) { throw error; }
-        if (error.warn) {
+        if (error.warn && warn) {
             console.warn(`Template variable "{{ ${text} }}": ${error.message}`);
         }
         return undefined;
@@ -271,13 +279,16 @@ function resolveTemplateExpression(text, context) {
 
 /**
  * Normalizes a token's path as TinyMCE may save it: HTML entities (e.g. &quot;, &nbsp;) are
- * decoded and non-breaking spaces become normal spaces.
+ * decoded, non-breaking spaces become normal spaces, and invisible zero-width characters
+ * (e.g. the ones TinyMCE leaves around the caret) are removed.
  * @param {string} token - The path inside a {{ }} token, as found in the editor's HTML.
  * @returns {string} The cleaned path.
  */
 function cleanTemplateToken(token) {
     templateTokenDecoder.innerHTML = token;
-    return templateTokenDecoder.value.replaceAll(String.fromCharCode(0xA0), " ");
+    return templateTokenDecoder.value
+        .replaceAll(String.fromCharCode(0xA0), " ")
+        .replace(/[​-‍⁠﻿]/g, "");
 }
 
 /**
@@ -322,7 +333,13 @@ class RichTextEditor {
         tinymce.init({
             ...TEXT_EDITOR_TINYMCE_OPTIONS,
             target: textArea.node(),
-            setup: (editor) => { this.pendingEditor = editor; },
+            // Template variables become locked pieces. No capture group: TinyMCE would only
+            // show the group's text, hiding the braces.
+            noneditable_regexp: /\{\{.+?\}\}/g,
+            setup: (editor) => {
+                this.pendingEditor = editor;
+                editor.on("SetContent", () => this.highlightTemplateTokens());
+            },
         })
             .then((editors) => {
                 const editor = editors[0];
@@ -378,9 +395,27 @@ class RichTextEditor {
         this.render();
     }
 
+    /**
+     * In edit mode, marks the template variables that don't resolve for the current place.
+     */
+    highlightTemplateTokens() {
+        if (!this.editor || !this.options.editMode) { return; }
+        const context = getTextEditorTemplateContext(this.placeId);
+        for (const token of this.editor.getBody().querySelectorAll(".template-token")) {
+            // data-mce-content holds the token exactly as typed
+            const tokenText = token.getAttribute("data-mce-content") ?? token.textContent;
+            const match = new RegExp(TEMPLATE_VARIABLE_PATTERN.source).exec(tokenText);
+            const valid = match !== null
+                && resolveTemplateExpression(cleanTemplateToken(match[1]), context, false) !== undefined;
+            token.classList.toggle("template-token-invalid", !valid);
+        }
+    }
+
     update(index) {
         this.placeId = index;
-        if (!this.options.editMode) {
+        if (this.options.editMode) {
+            this.highlightTemplateTokens();
+        } else {
             this.render();
         }
     }
