@@ -56,7 +56,7 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         insert: {
             icon: "plus",
             tooltip: "Insert",
-            items: "link table hr",
+            items: "templatevariable link table hr",
         },
     },
     // Floating toolbar on selected text; the insert toolbar (whose image button inserts
@@ -91,11 +91,22 @@ const templateTokenDecoder = document.createElement("textarea");
 
 // The only functions template variables can call. They must only read data and change nothing
 // (no DOM, no network). A function that throws or returns nothing leaves its token as typed.
+// Functions applied to a variable declare, for the insert dialog, the `dataType` of the value
+// they take as first argument, a `description`, and their further `parameters`
+// ({label, type, default}). (Not `arguments`: setting that on a function throws in strict mode.)
 const TEMPLATE_FUNCTIONS = {
     // Exactly `decimals` decimals, e.g. fixed(83.7, 2) gives "83.70"
-    fixed: (value, decimals = 0) => value.toFixed(decimals),
+    fixed: Object.assign((value, decimals = 0) => value.toFixed(decimals), {
+        dataType: "number",
+        description: "exactly the decimals",
+        parameters: [{ label: "Decimals", type: "number", default: "1" }],
+    }),
     // At most `decimals` decimals, e.g. round(83.7, 2) gives 83.7
-    round: (value, decimals = 0) => Number(value.toFixed(decimals)),
+    round: Object.assign((value, decimals = 0) => Number(value.toFixed(decimals)), {
+        dataType: "number",
+        description: "at most the decimals",
+        parameters: [{ label: "Decimals", type: "number", default: "1" }],
+    }),
     // A place's general statistic, e.g. {{ stat: Current Season Pctl. }}
     stat: (place, key) => getPlaceMapStats(place)[key],
 };
@@ -309,6 +320,223 @@ function fillTemplateVariables(html, context) {
     });
 }
 
+/**
+ * Writes an object key as a quoted template path segment.
+ * @param {string} key - The key.
+ * @returns {string|null} "key" or 'key', or null if the key contains both kinds of quotes.
+ */
+function templateKeyLiteral(key) {
+    if (!key.includes('"')) { return `"${key}"`; }
+    if (!key.includes("'")) { return `'${key}'`; }
+    return null;
+}
+
+/**
+ * Returns the data type of the first string, number or boolean among the values.
+ * @param {Iterable} values - The values to look at; null and missing values are skipped.
+ * @returns {string|null} "string", "number" or "boolean", or null if there is none.
+ */
+function templateValueType(values) {
+    for (const value of values) {
+        if (["string", "number", "boolean"].includes(typeof value)) { return typeof value; }
+    }
+    return null;
+}
+
+/**
+ * Lists the template variables offered by the insert dialog, from the current place's context.
+ * Variables keyed by place ids are written with [place], so the tokens work for every place.
+ * @param {string} placeId - The currently selected place.
+ * @returns {Array<Object>} Items {group, label, expression, shorthand, length, dataType}:
+ *   `expression` can be used as a function argument, `shorthand` (optional) is the preferred form
+ *   without an applied function, `length` is set for lists, which need an index, and `dataType` is
+ *   the type of the variable's values ("string", "number", "boolean", or null if unknown), taken
+ *   from all places so that a value missing for the current place doesn't hide it.
+ */
+function getTemplateVariableCatalog(placeId) {
+    const context = getTextEditorTemplateContext(placeId);
+    const placeIds = datasetProperties["place_ids"].map(String);
+    const placeIdSet = new Set(placeIds);
+    const isValue = (value) => value === null || ["string", "number", "boolean"].includes(typeof value);
+    const items = [{ group: "Place", label: "Place id", expression: "place", dataType: "string" }];
+
+    const placeMapStats = placeIds.map((id) => getPlaceMapStats(id));
+    for (const key of Object.keys(getPlaceMapStats(placeId))) {
+        const keyText = templateKeyLiteral(key);
+        if (key === "None" || keyText === null) { continue; }
+        items.push({ group: "Map statistics", label: key,
+            expression: `stat(place, ${keyText})`, shorthand: `stat: ${key}`,
+            dataType: templateValueType(placeMapStats.map((stats) => stats[key])) });
+    }
+
+    for (const [name, value] of Object.entries(context)) {
+        if (name === "place" || value === null || typeof value !== "object") { continue; }
+        const keys = Object.keys(value);
+        const keyedByPlace = !Array.isArray(value) && keys.length > 0 && keys.every((key) => placeIdSet.has(key));
+        const base = keyedByPlace ? `${name}[place]` : name;
+        const entries = keyedByPlace ? value[placeId] : value;
+        // The variable's values for every place, for the data type
+        const allEntries = keyedByPlace ? placeIds.map((id) => value[id]) : [value];
+        if (entries === null || typeof entries !== "object") { continue; }
+        if (Array.isArray(entries)) {
+            items.push({ group: name, label: name, expression: base, length: entries.length,
+                dataType: templateValueType(allEntries.flat()) });
+            continue;
+        }
+        for (const [key, entry] of Object.entries(entries)) {
+            const keyText = templateKeyLiteral(key);
+            if (keyText === null) { continue; }
+            const expression = `${base}[${keyText}]`;
+            const allValues = allEntries.map((placeEntries) => placeEntries && placeEntries[key]);
+            if (Array.isArray(entry)) {
+                items.push({ group: name, label: key, expression, length: entry.length,
+                    dataType: templateValueType(allValues.flat()) });
+            } else if (isValue(entry)) {
+                items.push({ group: name, label: key, expression, dataType: templateValueType(allValues) });
+            }
+        }
+    }
+    return items;
+}
+
+/**
+ * Opens a dialog to pick a template variable by group, list or search, optionally with an
+ * index and an applied function for its data type, and inserts it as a {{ }} token at the cursor.
+ * @param {Object} editor - The TinyMCE editor.
+ * @param {string} placeId - The currently selected place, used for the item list and the preview.
+ */
+function openTemplateVariableDialog(editor, placeId) {
+    const catalog = getTemplateVariableCatalog(placeId);
+    const context = getTextEditorTemplateContext(placeId);
+    const groups = [...new Set(catalog.map((item) => item.group))];
+    // Context functions that can be applied to a variable, see TEMPLATE_FUNCTIONS
+    const appliedFunctions = Object.entries(context)
+        .filter(([name, value]) => typeof value === "function" && value.dataType);
+
+    const filterItems = (data) => {
+        const search = data.search.trim().toLowerCase();
+        return catalog
+            .map((item, index) => ({ item, value: String(index) }))
+            .filter(({ item }) => (data.group === "" || item.group === data.group)
+                && (search === "" || `${item.group} ${item.label} ${item.expression}`.toLowerCase().includes(search)));
+    };
+
+    // Index, function and argument fields only exist while needed, so missing values get defaults
+    const defaultData = { search: "", group: "", item: "", index: "0", applied: "" };
+
+    // Completes the dialog's data and keeps the selections valid for the current filters
+    const normalizeData = (dialogData) => {
+        const data = { ...defaultData, ...dialogData };
+        const filtered = filterItems(data);
+        if (!filtered.some(({ value }) => value === data.item)) {
+            data.item = filtered.length ? filtered[0].value : "";
+        }
+        const item = catalog[Number(data.item)];
+        const functions = item ? appliedFunctions.filter(([, value]) => value.dataType === item.dataType) : [];
+        if (!functions.some(([name]) => name === data.applied)) {
+            data.applied = "";
+        }
+        const applied = data.applied ? context[data.applied] : null;
+        (applied ? applied.parameters : []).forEach((argument, index) => {
+            if (data[`argument${index}`] === undefined) { data[`argument${index}`] = argument.default; }
+        });
+        return { data, filtered, item, functions, applied };
+    };
+
+    // The token's expression, or null if no variable is selected
+    const buildExpression = ({ data, item, applied }) => {
+        if (!item) { return null; }
+        let expression = item.expression;
+        if (item.length !== undefined) {
+            const index = Math.min(Math.max(parseInt(data.index, 10) || 0, 0), item.length - 1);
+            expression += `[${index}]`;
+        } else if (!applied && item.shorthand) {
+            return item.shorthand;
+        }
+        if (applied) {
+            const args = [expression];
+            // Arguments left empty, and the ones after them, use the function's own defaults
+            for (const [index, argument] of applied.parameters.entries()) {
+                const text = data[`argument${index}`].trim();
+                if (text === "") { break; }
+                if (argument.type === "number") {
+                    const number = Number(text);
+                    if (!Number.isFinite(number)) { break; }
+                    args.push(String(number));
+                } else {
+                    const literal = templateKeyLiteral(text);
+                    if (literal === null) { break; }
+                    args.push(literal);
+                }
+            }
+            expression = `${data.applied}(${args.join(", ")})`;
+        }
+        return expression;
+    };
+
+    const buildPreview = (expression) => {
+        if (expression === null) { return "<p>Select a variable.</p>"; }
+        const value = resolveTemplateExpression(expression, context, false);
+        const valueText = value === undefined ? "<em>no value for this place</em>"
+            : `<strong>${escapeHtml(value)}</strong>`;
+        return `<p><code>${escapeHtml(`{{ ${expression} }}`)}</code></p>`
+            + `<p>Value for place ${escapeHtml(placeId)}: ${valueText}</p>`;
+    };
+
+    const makeSpec = (dialogData) => {
+        const state = normalizeData(dialogData);
+        const { data, filtered, item, functions, applied } = state;
+        const expression = buildExpression(state);
+        return {
+            title: "Insert template variable",
+            body: {
+                type: "panel",
+                items: [
+                    { type: "input", name: "search", label: "Search", placeholder: "Search all variables" },
+                    { type: "listbox", name: "group", label: "Group",
+                        items: [{ text: "All", value: "" }, ...groups.map((group) => ({ text: group, value: group }))] },
+                    { type: "listbox", name: "item", label: "Variable",
+                        items: filtered.length
+                            ? filtered.map(({ item, value }) => ({
+                                text: data.group === "" ? `${item.group}: ${item.label}` : item.label, value }))
+                            : [{ text: "No matches", value: "" }] },
+                    ...(item && item.length !== undefined
+                        ? [{ type: "input", name: "index", label: `Index (0 to ${item.length - 1})`, inputMode: "numeric" }]
+                        : []),
+                    // Only functions for the variable's data type; disabled when there are none
+                    { type: "listbox", name: "applied", label: "Applied function", enabled: functions.length > 0,
+                        items: [{ text: "None", value: "" },
+                            ...functions.map(([name, value]) => ({ text: `${name}: ${value.description}`, value: name }))] },
+                    ...(applied ? applied.parameters.map((argument, index) => ({
+                        type: "input", name: `argument${index}`, label: argument.label,
+                        inputMode: argument.type === "number" ? "numeric" : "text" })) : []),
+                    { type: "htmlpanel", html: buildPreview(expression) },
+                ],
+            },
+            initialData: data,
+            buttons: [
+                { type: "cancel", text: "Cancel" },
+                { type: "submit", text: "Insert", primary: true, enabled: expression !== null },
+            ],
+            // Listboxes can't filter themselves, so the dialog is rebuilt on every change
+            onChange: (api, details) => {
+                api.redial(makeSpec(api.getData()));
+                api.focus(details.name);
+            },
+            onSubmit: (api) => {
+                const token = buildExpression(normalizeData(api.getData()));
+                if (token === null) { return; }
+                api.close();
+                // Quotes stay as typed: TinyMCE locks tokens on the raw HTML, keeping entities as text
+                editor.insertContent(`{{ ${token} }}`
+                    .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"));
+            },
+        };
+    };
+
+    editor.windowManager.open(makeSpec(defaultData));
+}
+
 class RichTextEditor {
     /**
      * @param {d3.Selection} containerElement - The element to build the editor into.
@@ -343,6 +571,11 @@ class RichTextEditor {
             setup: (editor) => {
                 this.pendingEditor = editor;
                 editor.on("SetContent", () => this.highlightTemplateTokens());
+                editor.ui.registry.addButton("templatevariable", {
+                    icon: "addtag",
+                    tooltip: "Template variable",
+                    onAction: () => openTemplateVariableDialog(editor, this.placeId),
+                });
             },
         })
             .then((editors) => {
