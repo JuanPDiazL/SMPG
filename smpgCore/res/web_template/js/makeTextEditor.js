@@ -206,62 +206,60 @@ function callTemplateFunction(name, templateFunction, args) {
 }
 
 /**
- * Parses and resolves the arguments of a call, after its "(".
- * @param {Object} parser - The parser state, {rest}.
- * @param {Object} context - The template context.
- * @returns {Array} The resolved arguments.
- */
-function parseTemplateArguments(parser, context) {
-    const args = [];
-    if (takeTemplatePunctuation(parser, ")")) { return args; }
-    do {
-        let match;
-        if ((match = takeTemplatePattern(parser, TEMPLATE_NUMBER_PATTERN))) {
-            args.push(Number(match[1]));
-        } else if ((match = takeTemplatePattern(parser, TEMPLATE_STRING_PATTERN))) {
-            args.push(match[1]);
-        } else {
-            const value = parseTemplateExpression(parser, context);
-            if (value === undefined) { throw new TemplateVariableError("an argument is undefined"); }
-            args.push(value);
-        }
-    } while (takeTemplatePunctuation(parser, ","));
-    if (!takeTemplatePunctuation(parser, ")")) { throw new TemplateVariableError("')' expected"); }
-    return args;
-}
-
-/**
- * Parses and resolves one expression: a name, an optional call, then path segments. Names are
+ * Evaluates one parsed expression: a name, an optional call, then path segments. Names are
  * looked up as the context's own properties; segments walk own properties only, so inherited
  * members such as __proto__ or constructor never resolve. Only context functions can be called.
- * @param {Object} parser - The parser state, {rest}.
+ * @param {Object} expression - A parsed expression, see parseTemplateStructureExpression().
  * @param {Object} context - The template context.
  * @returns {*} The expression's value.
  */
-function parseTemplateExpression(parser, context) {
-    const start = takeTemplatePattern(parser, TEMPLATE_PATH_START_PATTERN);
-    if (!start || !isOwnTemplateProperty(context, start[1])) {
+function evaluateTemplateStructureExpression(expression, context) {
+    if (!isOwnTemplateProperty(context, expression.name)) {
         throw new TemplateVariableError("unknown name");
     }
-    let value = context[start[1]];
+    let value = context[expression.name];
 
-    if (takeTemplatePunctuation(parser, "(")) {
-        if (typeof value !== "function") { throw new TemplateVariableError(`${start[1]} is not a function`); }
-        value = callTemplateFunction(start[1], value, parseTemplateArguments(parser, context));
+    if (expression.args !== null) {
+        if (typeof value !== "function") { throw new TemplateVariableError(`${expression.name} is not a function`); }
+        const args = expression.args.map((arg) => {
+            if (arg.number !== undefined) { return arg.number; }
+            if (arg.string !== undefined) { return arg.string; }
+            const argValue = evaluateTemplateStructureExpression(arg.expression, context);
+            if (argValue === undefined) { throw new TemplateVariableError("an argument is undefined"); }
+            return argValue;
+        });
+        value = callTemplateFunction(expression.name, value, args);
     }
 
-    let segment;
-    while ((segment = takeTemplatePattern(parser, TEMPLATE_PATH_SEGMENT_PATTERN))) {
-        let key = segment[1] ?? segment[2];
-        if (segment[3] !== undefined) { // [variable]: the key is the context variable's value
-            if (!isOwnTemplateProperty(context, segment[3])) { throw new TemplateVariableError("unknown name"); }
-            key = context[segment[3]];
+    for (const segment of expression.segments) {
+        let key = segment.key ?? segment.index;
+        if (segment.variable !== undefined) { // [variable]: the key is the context variable's value
+            if (!isOwnTemplateProperty(context, segment.variable)) { throw new TemplateVariableError("unknown name"); }
+            key = context[segment.variable];
             if (typeof key !== "string" && typeof key !== "number") { throw new TemplateVariableError("invalid key"); }
         }
         if (!isOwnTemplateProperty(value, key)) { throw new TemplateVariableError("unknown key"); }
         value = value[key];
     }
     return value;
+}
+
+/**
+ * Evaluates a parsed template expression, including the shorthand call "name: some text",
+ * which is name(place, "some text").
+ * @param {Object} structure - A parsed template expression, see parseTemplateStructure().
+ * @param {Object} context - The template context.
+ * @returns {*} The expression's value.
+ */
+function evaluateTemplateStructure(structure, context) {
+    if (structure.shorthand) {
+        const { name, text } = structure.shorthand;
+        if (!isOwnTemplateProperty(context, name) || typeof context[name] !== "function") {
+            throw new TemplateVariableError(`${name} is not a function`);
+        }
+        return callTemplateFunction(name, context[name], [context.place, text]);
+    }
+    return evaluateTemplateStructureExpression(structure.expression, context);
 }
 
 /**
@@ -274,20 +272,11 @@ function parseTemplateExpression(parser, context) {
  *   or doesn't end at a string, number or boolean.
  */
 function resolveTemplateExpression(text, context, warn = true) {
-    const parser = { rest: text };
+    // Invalid syntax is never evaluated, and isn't warned about
+    const structure = parseTemplateStructure(text);
+    if (structure === null) { return undefined; }
     try {
-        let value;
-        const shorthand = TEMPLATE_SHORTHAND_PATTERN.exec(text);
-        if (shorthand) {
-            const name = shorthand[1];
-            if (!isOwnTemplateProperty(context, name) || typeof context[name] !== "function") {
-                throw new TemplateVariableError(`${name} is not a function`);
-            }
-            value = callTemplateFunction(name, context[name], [context.place, shorthand[2].trim()]);
-        } else {
-            value = parseTemplateExpression(parser, context);
-            if (parser.rest.trim() !== "") { throw new TemplateVariableError("unexpected text"); }
-        }
+        const value = evaluateTemplateStructure(structure, context);
         return ["string", "number", "boolean"].includes(typeof value) ? value : undefined;
     } catch (error) {
         if (!(error instanceof TemplateVariableError)) { throw error; }
