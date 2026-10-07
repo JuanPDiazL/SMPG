@@ -114,31 +114,42 @@ const TEMPLATE_FUNCTIONS = {
 };
 
 /**
- * Returns the only data template variables can read: the current place id, the report's data,
- * and TEMPLATE_FUNCTIONS.
+ * Returns the only data template variables can read, grouped as the insert dialog shows them:
+ * the current place id, the report's data, and TEMPLATE_FUNCTIONS. Every item must be in exactly
+ * one group, and names must be unique across groups, because tokens use the bare names.
+ * @param {string} placeId - The currently selected place.
+ * @returns {Object} The context items, keyed by group name.
+ */
+function getTextEditorTemplateContextGroups(placeId) {
+    return {
+        "Place": { place: placeId },
+        "Map statistics": { stat: TEMPLATE_FUNCTIONS.stat },
+        "Functions": { fixed: TEMPLATE_FUNCTIONS.fixed, round: TEMPLATE_FUNCTIONS.round },
+        "datasetProperties": { datasetProperties },
+        "parameters": { parameters },
+        "place_general_stats": { place_general_stats },
+        "place_long_term_stats": { place_long_term_stats },
+        "seasonal_current_totals": { seasonal_current_totals },
+        "seasonal_forecast_totals": { seasonal_forecast_totals },
+        "seasonal_general_stats": { seasonal_general_stats },
+        "selected_seasons_general_stats": { selected_seasons_general_stats },
+        "seasonal_cumsum": { seasonal_cumsum },
+        "seasonal_ensemble": { seasonal_ensemble },
+        "seasonal_long_term_stats": { seasonal_long_term_stats },
+        "selected_seasons_cumsum": { selected_seasons_cumsum },
+        "selected_seasons_ensemble": { selected_seasons_ensemble },
+        "selected_seasons_ensemble_with_forecast": { selected_seasons_ensemble_with_forecast },
+        "selected_seasons_long_term_stats": { selected_seasons_long_term_stats },
+    };
+}
+
+/**
+ * Returns the template context: the items of getTextEditorTemplateContextGroups(), without groups.
  * @param {string} placeId - The currently selected place.
  * @returns {Object} The template context.
  */
 function getTextEditorTemplateContext(placeId) {
-    return {
-        place: placeId,
-        datasetProperties,
-        parameters,
-        place_general_stats,
-        place_long_term_stats,
-        seasonal_current_totals,
-        seasonal_forecast_totals,
-        seasonal_general_stats,
-        selected_seasons_general_stats,
-        seasonal_cumsum,
-        seasonal_ensemble,
-        seasonal_long_term_stats,
-        selected_seasons_cumsum,
-        selected_seasons_ensemble,
-        selected_seasons_ensemble_with_forecast,
-        selected_seasons_long_term_stats,
-        ...TEMPLATE_FUNCTIONS,
-    };
+    return Object.assign({}, ...Object.values(getTextEditorTemplateContextGroups(placeId)));
 }
 
 // Thrown while resolving a token, which is then left as typed; `warn` also logs the reason
@@ -423,8 +434,9 @@ function templateValueType(values) {
 }
 
 /**
- * Lists the template variables offered by the insert dialog, from the current place's context.
- * Variables keyed by place ids are written with [place], so the tokens work for every place.
+ * Lists the template variables offered by the insert dialog, from the current place's context,
+ * in the groups of getTextEditorTemplateContextGroups(). Variables keyed by place ids are written
+ * with [place], so the tokens work for every place.
  * @param {string} placeId - The currently selected place.
  * @returns {Array<Object>} Items {group, label, expression, shorthand, length, dataType}:
  *   `expression` can be used as a function argument, `shorthand` (optional) is the preferred form
@@ -433,46 +445,75 @@ function templateValueType(values) {
  *   from all places so that a value missing for the current place doesn't hide it.
  */
 function getTemplateVariableCatalog(placeId) {
-    const context = getTextEditorTemplateContext(placeId);
+    const groups = getTextEditorTemplateContextGroups(placeId);
     const placeIds = datasetProperties["place_ids"].map(String);
     const placeIdSet = new Set(placeIds);
     const isValue = (value) => value === null || ["string", "number", "boolean"].includes(typeof value);
-    const items = [{ group: "Place", label: "Place id", expression: "place", dataType: "string" }];
+    const items = [];
 
-    const placeMapStats = placeIds.map((id) => getPlaceMapStats(id));
-    for (const key of Object.keys(getPlaceMapStats(placeId))) {
-        const keyText = templateKeyLiteral(key);
-        if (key === "None" || keyText === null) { continue; }
-        items.push({ group: "Map statistics", label: key,
-            expression: `stat(place, ${keyText})`, shorthand: `stat: ${key}`,
-            dataType: templateValueType(placeMapStats.map((stats) => stats[key])) });
+    for (const [group, members] of Object.entries(groups)) {
+        for (const [name, value] of Object.entries(members)) {
+            items.push(...getTemplateVariableCatalogItems(group, name, value, placeId, placeIds, placeIdSet, isValue));
+        }
+    }
+    return items;
+}
+
+/**
+ * Lists the dialog items for one context item, see getTemplateVariableCatalog().
+ * @param {string} group - The context item's group.
+ * @param {string} name - The context item's name.
+ * @param {*} value - The context item.
+ * @param {string} placeId - The currently selected place.
+ * @param {Array<string>} placeIds - All place ids.
+ * @param {Set<string>} placeIdSet - All place ids, for lookups.
+ * @param {Function} isValue - Whether a value is null, a string, a number or a boolean.
+ * @returns {Array<Object>} The items.
+ */
+function getTemplateVariableCatalogItems(group, name, value, placeId, placeIds, placeIdSet, isValue) {
+    const items = [];
+    // A single value, like the place id
+    if (isValue(value)) {
+        return [{ group, label: name, expression: name, dataType: templateValueType([value]) }];
+    }
+    // stat(): one item per map statistic; other functions are applied to variables, not listed
+    if (typeof value === "function") {
+        if (value !== TEMPLATE_FUNCTIONS.stat) { return []; }
+        const placeMapStats = placeIds.map((id) => getPlaceMapStats(id));
+        for (const key of Object.keys(getPlaceMapStats(placeId))) {
+            const keyText = templateKeyLiteral(key);
+            if (key === "None" || keyText === null) { continue; }
+            items.push({ group, label: key,
+                expression: `${name}(place, ${keyText})`, shorthand: `${name}: ${key}`,
+                dataType: templateValueType(placeMapStats.map((stats) => stats[key])) });
+        }
+        return items;
     }
 
-    for (const [name, value] of Object.entries(context)) {
-        if (name === "place" || value === null || typeof value !== "object") { continue; }
-        const keys = Object.keys(value);
-        const keyedByPlace = !Array.isArray(value) && keys.length > 0 && keys.every((key) => placeIdSet.has(key));
-        const base = keyedByPlace ? `${name}[place]` : name;
-        const entries = keyedByPlace ? value[placeId] : value;
-        // The variable's values for every place, for the data type
-        const allEntries = keyedByPlace ? placeIds.map((id) => value[id]) : [value];
-        if (entries === null || typeof entries !== "object") { continue; }
-        if (Array.isArray(entries)) {
-            items.push({ group: name, label: name, expression: base, length: entries.length,
-                dataType: templateValueType(allEntries.flat()) });
-            continue;
-        }
-        for (const [key, entry] of Object.entries(entries)) {
-            const keyText = templateKeyLiteral(key);
-            if (keyText === null) { continue; }
-            const expression = `${base}[${keyText}]`;
-            const allValues = allEntries.map((placeEntries) => placeEntries && placeEntries[key]);
-            if (Array.isArray(entry)) {
-                items.push({ group: name, label: key, expression, length: entry.length,
-                    dataType: templateValueType(allValues.flat()) });
-            } else if (isValue(entry)) {
-                items.push({ group: name, label: key, expression, dataType: templateValueType(allValues) });
-            }
+    // Data: its values, written with [place] when the data is keyed by place ids
+    if (typeof value !== "object") { return items; }
+    const keys = Object.keys(value);
+    const keyedByPlace = !Array.isArray(value) && keys.length > 0 && keys.every((key) => placeIdSet.has(key));
+    const base = keyedByPlace ? `${name}[place]` : name;
+    const entries = keyedByPlace ? value[placeId] : value;
+    // The variable's values for every place, for the data type
+    const allEntries = keyedByPlace ? placeIds.map((id) => value[id]) : [value];
+    if (entries === null || typeof entries !== "object") { return items; }
+    if (Array.isArray(entries)) {
+        items.push({ group, label: name, expression: base, length: entries.length,
+            dataType: templateValueType(allEntries.flat()) });
+        return items;
+    }
+    for (const [key, entry] of Object.entries(entries)) {
+        const keyText = templateKeyLiteral(key);
+        if (keyText === null) { continue; }
+        const expression = `${base}[${keyText}]`;
+        const allValues = allEntries.map((placeEntries) => placeEntries && placeEntries[key]);
+        if (Array.isArray(entry)) {
+            items.push({ group, label: key, expression, length: entry.length,
+                dataType: templateValueType(allValues.flat()) });
+        } else if (isValue(entry)) {
+            items.push({ group, label: key, expression, dataType: templateValueType(allValues) });
         }
     }
     return items;
@@ -530,8 +571,10 @@ function getTemplateDialogDataForToken(text, catalog, context, defaultData) {
     }
     if (!item) {
         const name = structure.shorthand ? structure.shorthand.name : expression.name;
-        const group = name === "stat" ? "Map statistics" : name;
-        if (catalog.some((entry) => entry.group === group)) { data.group = group; }
+        // Keep the group that holds that name, if it still has variables
+        const group = Object.entries(getTextEditorTemplateContextGroups(context.place))
+            .find(([, members]) => isOwnTemplateProperty(members, name));
+        if (group && catalog.some((entry) => entry.group === group[0])) { data.group = group[0]; }
         return result("its variable isn't available");
     }
     data.group = item.group;
