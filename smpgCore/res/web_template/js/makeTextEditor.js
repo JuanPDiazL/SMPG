@@ -77,12 +77,12 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
 // function from TEMPLATE_FUNCTIONS, and is never evaluated as code
 const TEMPLATE_VARIABLE_PATTERN = /\{\{\s*(.+?)\s*\}\}/g;
 const TEMPLATE_PATH_START_PATTERN = /^\s*([A-Za-z_$][\w$]*)/;
-// ["key"] | ['key'] | [0] | [variable], where [variable] uses a context variable's value as
-// the key, e.g. [place]; literal keys must be quoted
+// ["key"] | [0] | [variable], where [variable] uses a context variable's value as the key,
+// e.g. [place]; literal keys and strings must use double quotes
 const TEMPLATE_PATH_SEGMENT_PATTERN =
-    /^\s*\[\s*(?:"([^"]*)"|'([^']*)'|(\d+)|([A-Za-z_$][\w$]*))\s*\]/;
+    /^\s*\[\s*(?:"([^"]*)"|(\d+)|([A-Za-z_$][\w$]*))\s*\]/;
 const TEMPLATE_NUMBER_PATTERN = /^\s*(-?\d+(?:\.\d+)?)/;
-const TEMPLATE_STRING_PATTERN = /^\s*(?:"([^"]*)"|'([^']*)')/;
+const TEMPLATE_STRING_PATTERN = /^\s*"([^"]*)"/;
 const TEMPLATE_PUNCTUATION_PATTERN = /^\s*([(),])/;
 // Shorthand call: {{ name: some text }} is name(place, "some text"), with the text taken literally
 const TEMPLATE_SHORTHAND_PATTERN = /^\s*([A-Za-z_$][\w$]*)\s*:([^]*)$/;
@@ -94,15 +94,16 @@ const templateTokenDecoder = document.createElement("textarea");
 // Functions applied to a variable declare, for the insert dialog, the `dataType` of the value
 // they take as first argument, a `description`, and their further `parameters`
 // ({label, type, default}). (Not `arguments`: setting that on a function throws in strict mode.)
+// Calls must pass exactly the function's parameters, so parameters have no default values.
 const TEMPLATE_FUNCTIONS = {
     // Exactly `decimals` decimals, e.g. fixed(83.7, 2) gives "83.70"
-    fixed: Object.assign((value, decimals = 0) => value.toFixed(decimals), {
+    fixed: Object.assign((value, decimals) => value.toFixed(decimals), {
         dataType: "number",
         description: "exactly the decimals",
         parameters: [{ label: "Decimals", type: "number", default: "1" }],
     }),
     // At most `decimals` decimals, e.g. round(83.7, 2) gives 83.7
-    round: Object.assign((value, decimals = 0) => Number(value.toFixed(decimals)), {
+    round: Object.assign((value, decimals) => Number(value.toFixed(decimals)), {
         dataType: "number",
         description: "at most the decimals",
         parameters: [{ label: "Decimals", type: "number", default: "1" }],
@@ -180,13 +181,18 @@ function takeTemplatePunctuation(parser, character) {
 }
 
 /**
- * Calls a template function. A function that throws or returns nothing makes the token invalid.
+ * Calls a template function. A call with a different number of arguments than the function's
+ * parameters, or a function that throws or returns nothing, makes the token invalid.
  * @param {string} name - The function's name, for the warning.
  * @param {Function} templateFunction - The function, from the template context.
  * @param {Array} args - The resolved arguments.
  * @returns {*} The function's result.
  */
 function callTemplateFunction(name, templateFunction, args) {
+    if (args.length !== templateFunction.length) {
+        throw new TemplateVariableError(
+            `${name}() takes ${templateFunction.length} arguments, but got ${args.length}`, true);
+    }
     let result;
     try {
         result = templateFunction(...args);
@@ -213,7 +219,7 @@ function parseTemplateArguments(parser, context) {
         if ((match = takeTemplatePattern(parser, TEMPLATE_NUMBER_PATTERN))) {
             args.push(Number(match[1]));
         } else if ((match = takeTemplatePattern(parser, TEMPLATE_STRING_PATTERN))) {
-            args.push(match[1] ?? match[2]);
+            args.push(match[1]);
         } else {
             const value = parseTemplateExpression(parser, context);
             if (value === undefined) { throw new TemplateVariableError("an argument is undefined"); }
@@ -246,10 +252,10 @@ function parseTemplateExpression(parser, context) {
 
     let segment;
     while ((segment = takeTemplatePattern(parser, TEMPLATE_PATH_SEGMENT_PATTERN))) {
-        let key = segment[1] ?? segment[2] ?? segment[3];
-        if (segment[4] !== undefined) { // [variable]: the key is the context variable's value
-            if (!isOwnTemplateProperty(context, segment[4])) { throw new TemplateVariableError("unknown name"); }
-            key = context[segment[4]];
+        let key = segment[1] ?? segment[2];
+        if (segment[3] !== undefined) { // [variable]: the key is the context variable's value
+            if (!isOwnTemplateProperty(context, segment[3])) { throw new TemplateVariableError("unknown name"); }
+            key = context[segment[3]];
             if (typeof key !== "string" && typeof key !== "number") { throw new TemplateVariableError("invalid key"); }
         }
         if (!isOwnTemplateProperty(value, key)) { throw new TemplateVariableError("unknown key"); }
@@ -303,7 +309,7 @@ function cleanTemplateToken(token) {
     templateTokenDecoder.innerHTML = token;
     return templateTokenDecoder.value
         .replaceAll(String.fromCharCode(0xA0), " ")
-        .replace(/[​-‍⁠﻿]/g, "");
+        .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "");
 }
 
 /**
@@ -321,14 +327,12 @@ function fillTemplateVariables(html, context) {
 }
 
 /**
- * Writes an object key as a quoted template path segment.
- * @param {string} key - The key.
- * @returns {string|null} "key" or 'key', or null if the key contains both kinds of quotes.
+ * Writes a key or string as a double-quoted template literal.
+ * @param {string} key - The key or string.
+ * @returns {string|null} "key", or null if it contains a double quote, which can't be written.
  */
 function templateKeyLiteral(key) {
-    if (!key.includes('"')) { return `"${key}"`; }
-    if (!key.includes("'")) { return `'${key}'`; }
-    return null;
+    return key.includes('"') ? null : `"${key}"`;
 }
 
 /**
@@ -400,12 +404,186 @@ function getTemplateVariableCatalog(placeId) {
 }
 
 /**
+ * Parses one expression into its parts without resolving it: a name, the call's arguments
+ * (null if it isn't a call), and the path segments.
+ * @param {Object} parser - The parser state, {rest}.
+ * @returns {Object} {name, args, segments}: args are {number}, {string} or {expression}, and
+ *   segments are {key}, {index} or {variable}.
+ */
+function parseTemplateStructureExpression(parser) {
+    const start = takeTemplatePattern(parser, TEMPLATE_PATH_START_PATTERN);
+    if (!start) { throw new TemplateVariableError("a name was expected"); }
+    let args = null;
+    if (takeTemplatePunctuation(parser, "(")) {
+        args = [];
+        if (!takeTemplatePunctuation(parser, ")")) {
+            do {
+                let match;
+                if ((match = takeTemplatePattern(parser, TEMPLATE_NUMBER_PATTERN))) {
+                    args.push({ number: Number(match[1]) });
+                } else if ((match = takeTemplatePattern(parser, TEMPLATE_STRING_PATTERN))) {
+                    args.push({ string: match[1] });
+                } else {
+                    args.push({ expression: parseTemplateStructureExpression(parser) });
+                }
+            } while (takeTemplatePunctuation(parser, ","));
+            if (!takeTemplatePunctuation(parser, ")")) { throw new TemplateVariableError("')' expected"); }
+        }
+    }
+    const segments = [];
+    let segment;
+    while ((segment = takeTemplatePattern(parser, TEMPLATE_PATH_SEGMENT_PATTERN))) {
+        if (segment[1] !== undefined) {
+            segments.push({ key: segment[1] });
+        } else if (segment[2] !== undefined) {
+            segments.push({ index: Number(segment[2]) });
+        } else {
+            segments.push({ variable: segment[3] });
+        }
+    }
+    return { name: start[1], args, segments };
+}
+
+/**
+ * Parses a template expression into its parts, with the same syntax as resolveTemplateExpression().
+ * @param {string} text - The expression inside a {{ }} token.
+ * @returns {Object|null} {shorthand: {name, text}} or {expression}, see
+ *   parseTemplateStructureExpression(), or null if the text isn't valid syntax.
+ */
+function parseTemplateStructure(text) {
+    const shorthand = TEMPLATE_SHORTHAND_PATTERN.exec(text);
+    if (shorthand) {
+        return { shorthand: { name: shorthand[1], text: shorthand[2].trim() } };
+    }
+    const parser = { rest: text };
+    try {
+        const expression = parseTemplateStructureExpression(parser);
+        return parser.rest.trim() === "" ? { expression } : null;
+    } catch (error) {
+        if (error instanceof TemplateVariableError) { return null; }
+        throw error;
+    }
+}
+
+/**
+ * Writes a parsed expression in the dialog's standard form: double quotes, ", " between arguments.
+ * @param {Object} expression - A parsed expression, see parseTemplateStructureExpression().
+ * @returns {string} The expression's text.
+ */
+function serializeTemplateStructure(expression) {
+    const args = expression.args === null ? "" : `(${expression.args.map((arg) => {
+        if (arg.number !== undefined) { return String(arg.number); }
+        if (arg.string !== undefined) { return `"${arg.string}"`; }
+        return serializeTemplateStructure(arg.expression);
+    }).join(", ")})`;
+    const segments = expression.segments.map((segment) => {
+        if (segment.key !== undefined) { return `["${segment.key}"]`; }
+        if (segment.index !== undefined) { return `[${segment.index}]`; }
+        return `[${segment.variable}]`;
+    }).join("");
+    return `${expression.name}${args}${segments}`;
+}
+
+/**
+ * Turns a token's expression into the dialog's data, filling its fields in order (group,
+ * variable, index, applied function, arguments). The first part that isn't valid, and every
+ * part after it, keep their defaults, and a note explains what was reset.
+ * @param {string} text - The token's expression.
+ * @param {Array<Object>} catalog - The dialog's variables, see getTemplateVariableCatalog().
+ * @param {Object} context - The template context.
+ * @param {Object} defaultData - The dialog's default data.
+ * @returns {Object} {data, note, statForm}: `note` is null if everything was recognized, and
+ *   `statForm` is "call" if a stat() variable was written as a call instead of as a shorthand.
+ */
+function getTemplateDialogDataForToken(text, catalog, context, defaultData) {
+    const data = { ...defaultData };
+    const result = (note, statForm = "shorthand") => ({ data, note, statForm });
+    const structure = parseTemplateStructure(text);
+    if (structure === null) { return result("it isn't a valid template expression"); }
+
+    // Group and variable
+    let item;
+    let expression = null;
+    let statForm = "shorthand";
+    let applied = null;
+    let appliedArgs = [];
+    let index = null;
+    if (structure.shorthand) {
+        item = catalog.find((entry) => entry.shorthand === `${structure.shorthand.name}: ${structure.shorthand.text}`);
+    } else {
+        expression = structure.expression;
+        const fn = isOwnTemplateProperty(context, expression.name) ? context[expression.name] : null;
+        // A function applied to a variable, which is its first argument
+        if (typeof fn === "function" && fn.dataType && expression.segments.length === 0
+                && expression.args && expression.args.length > 0 && expression.args[0].expression) {
+            applied = expression.name;
+            appliedArgs = expression.args.slice(1);
+            expression = expression.args[0].expression;
+        }
+        const written = serializeTemplateStructure(expression);
+        item = catalog.find((entry) => entry.length === undefined && entry.expression === written);
+        const last = expression.segments[expression.segments.length - 1];
+        if (!item && last && last.index !== undefined) {
+            const base = serializeTemplateStructure({ ...expression, segments: expression.segments.slice(0, -1) });
+            item = catalog.find((entry) => entry.length !== undefined && entry.expression === base);
+            index = last.index;
+        }
+        // A list written without its index: the variable is right, the index is missing
+        if (!item) {
+            item = catalog.find((entry) => entry.length !== undefined && entry.expression === written);
+        }
+        if (item && item.shorthand) { statForm = "call"; }
+    }
+    if (!item) {
+        const name = structure.shorthand ? structure.shorthand.name : expression.name;
+        const group = name === "stat" ? "Map statistics" : name;
+        if (catalog.some((entry) => entry.group === group)) { data.group = group; }
+        return result("its variable isn't available");
+    }
+    data.group = item.group;
+    data.item = String(catalog.indexOf(item));
+
+    // Index
+    if (item.length !== undefined) {
+        if (index === null) {
+            return result("its index is missing", statForm);
+        }
+        if (index >= item.length) {
+            return result(`its index is out of range (0 to ${item.length - 1})`, statForm);
+        }
+        data.index = String(index);
+    }
+
+    // Applied function and its arguments
+    if (applied === null) { return result(null, statForm); }
+    const fn = context[applied];
+    if (fn.dataType !== item.dataType) {
+        return result(`${applied}() doesn't apply to this variable's data type`, statForm);
+    }
+    data.applied = applied;
+    if (appliedArgs.length !== fn.parameters.length) {
+        return result(`${applied}() has the wrong number of arguments`, statForm);
+    }
+    for (const [position, parameter] of fn.parameters.entries()) {
+        const arg = appliedArgs[position];
+        const value = parameter.type === "number" ? arg.number : arg.string;
+        if (value === undefined) {
+            return result(`${applied}()'s ${parameter.label.toLowerCase()} isn't a ${parameter.type}`, statForm);
+        }
+        data[`argument${position}`] = String(value);
+    }
+    return result(null, statForm);
+}
+
+/**
  * Opens a dialog to pick a template variable by group, list or search, optionally with an
- * index and an applied function for its data type, and inserts it as a {{ }} token at the cursor.
+ * index and an applied function for its data type. Without a token, it inserts a new {{ }}
+ * token at the cursor; with a token, it is prefilled from it and replaces it.
  * @param {Object} editor - The TinyMCE editor.
  * @param {string} placeId - The currently selected place, used for the item list and the preview.
+ * @param {Element} tokenNode - Optional: the token element (span.template-token) to edit.
  */
-function openTemplateVariableDialog(editor, placeId) {
+function openTemplateVariableDialog(editor, placeId, tokenNode = null) {
     const catalog = getTemplateVariableCatalog(placeId);
     const context = getTextEditorTemplateContext(placeId);
     const groups = [...new Set(catalog.map((item) => item.group))];
@@ -424,6 +602,18 @@ function openTemplateVariableDialog(editor, placeId) {
     // Index, function and argument fields only exist while needed, so missing values get defaults
     const defaultData = { search: "", group: "", item: "", index: "0", applied: "" };
 
+    // When editing, the dialog starts from the token, and keeps the form its stat() was written in
+    let initialData = defaultData;
+    let note = null;
+    let statForm = "shorthand";
+    let originalText = null;
+    if (tokenNode) {
+        const tokenMatch = new RegExp(TEMPLATE_VARIABLE_PATTERN.source)
+            .exec(tokenNode.getAttribute("data-mce-content") ?? tokenNode.textContent);
+        originalText = tokenMatch ? cleanTemplateToken(tokenMatch[1]) : "";
+        ({ data: initialData, note, statForm } = getTemplateDialogDataForToken(originalText, catalog, context, defaultData));
+    }
+
     // Completes the dialog's data and keeps the selections valid for the current filters
     const normalizeData = (dialogData) => {
         const data = { ...defaultData, ...dialogData };
@@ -437,36 +627,32 @@ function openTemplateVariableDialog(editor, placeId) {
             data.applied = "";
         }
         const applied = data.applied ? context[data.applied] : null;
-        (applied ? applied.parameters : []).forEach((argument, index) => {
-            if (data[`argument${index}`] === undefined) { data[`argument${index}`] = argument.default; }
+        (applied ? applied.parameters : []).forEach((parameter, index) => {
+            if (data[`argument${index}`] === undefined) { data[`argument${index}`] = parameter.default; }
         });
         return { data, filtered, item, functions, applied };
     };
 
-    // The token's expression, or null if no variable is selected
+    // The token's expression, or null if no variable is selected. Calls always get every
+    // argument; an empty or invalid one is written as the parameter's default.
     const buildExpression = ({ data, item, applied }) => {
         if (!item) { return null; }
         let expression = item.expression;
         if (item.length !== undefined) {
             const index = Math.min(Math.max(parseInt(data.index, 10) || 0, 0), item.length - 1);
             expression += `[${index}]`;
-        } else if (!applied && item.shorthand) {
+        } else if (!applied && item.shorthand && statForm === "shorthand") {
             return item.shorthand;
         }
         if (applied) {
             const args = [expression];
-            // Arguments left empty, and the ones after them, use the function's own defaults
-            for (const [index, argument] of applied.parameters.entries()) {
+            for (const [index, parameter] of applied.parameters.entries()) {
                 const text = data[`argument${index}`].trim();
-                if (text === "") { break; }
-                if (argument.type === "number") {
+                if (parameter.type === "number") {
                     const number = Number(text);
-                    if (!Number.isFinite(number)) { break; }
-                    args.push(String(number));
+                    args.push(String(text !== "" && Number.isFinite(number) ? number : Number(parameter.default)));
                 } else {
-                    const literal = templateKeyLiteral(text);
-                    if (literal === null) { break; }
-                    args.push(literal);
+                    args.push(templateKeyLiteral(text) ?? `"${parameter.default}"`);
                 }
             }
             expression = `${data.applied}(${args.join(", ")})`;
@@ -483,15 +669,20 @@ function openTemplateVariableDialog(editor, placeId) {
             + `<p>Value for place ${escapeHtml(placeId)}: ${valueText}</p>`;
     };
 
+    const noteHtml = note === null ? null
+        : `<p><strong>${escapeHtml(`{{ ${originalText} }}`)}</strong> couldn't be fully recognized:`
+            + ` ${escapeHtml(note)}. That part and the ones after it were reset.</p>`;
+
     const makeSpec = (dialogData) => {
         const state = normalizeData(dialogData);
         const { data, filtered, item, functions, applied } = state;
         const expression = buildExpression(state);
         return {
-            title: "Insert template variable",
+            title: tokenNode ? "Edit template variable" : "Insert template variable",
             body: {
                 type: "panel",
                 items: [
+                    ...(noteHtml ? [{ type: "htmlpanel", html: noteHtml }] : []),
                     { type: "input", name: "search", label: "Search", placeholder: "Search all variables" },
                     { type: "listbox", name: "group", label: "Group",
                         items: [{ text: "All", value: "" }, ...groups.map((group) => ({ text: group, value: group }))] },
@@ -507,16 +698,16 @@ function openTemplateVariableDialog(editor, placeId) {
                     { type: "listbox", name: "applied", label: "Applied function", enabled: functions.length > 0,
                         items: [{ text: "None", value: "" },
                             ...functions.map(([name, value]) => ({ text: `${name}: ${value.description}`, value: name }))] },
-                    ...(applied ? applied.parameters.map((argument, index) => ({
-                        type: "input", name: `argument${index}`, label: argument.label,
-                        inputMode: argument.type === "number" ? "numeric" : "text" })) : []),
+                    ...(applied ? applied.parameters.map((parameter, index) => ({
+                        type: "input", name: `argument${index}`, label: parameter.label,
+                        inputMode: parameter.type === "number" ? "numeric" : "text" })) : []),
                     { type: "htmlpanel", html: buildPreview(expression) },
                 ],
             },
             initialData: data,
             buttons: [
                 { type: "cancel", text: "Cancel" },
-                { type: "submit", text: "Insert", primary: true, enabled: expression !== null },
+                { type: "submit", text: tokenNode ? "Save" : "Insert", primary: true, enabled: expression !== null },
             ],
             // Listboxes can't filter themselves, so the dialog is rebuilt on every change
             onChange: (api, details) => {
@@ -527,6 +718,10 @@ function openTemplateVariableDialog(editor, placeId) {
                 const token = buildExpression(normalizeData(api.getData()));
                 if (token === null) { return; }
                 api.close();
+                // Editing replaces the token, which insertContent() does for a selected node
+                if (tokenNode && tokenNode.isConnected) {
+                    editor.selection.select(tokenNode);
+                }
                 // Quotes stay as typed: TinyMCE locks tokens on the raw HTML, keeping entities as text
                 editor.insertContent(`{{ ${token} }}`
                     .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"));
@@ -534,7 +729,7 @@ function openTemplateVariableDialog(editor, placeId) {
         };
     };
 
-    editor.windowManager.open(makeSpec(defaultData));
+    editor.windowManager.open(makeSpec(initialData));
 }
 
 class RichTextEditor {
@@ -571,10 +766,22 @@ class RichTextEditor {
             setup: (editor) => {
                 this.pendingEditor = editor;
                 editor.on("SetContent", () => this.highlightTemplateTokens());
+                // Inserts a template variable, or edits the selected one
                 editor.ui.registry.addButton("templatevariable", {
                     icon: "addtag",
                     tooltip: "Template variable",
-                    onAction: () => openTemplateVariableDialog(editor, this.placeId),
+                    onAction: () => {
+                        const node = editor.selection.getNode();
+                        const token = node && node.closest ? node.closest(".template-token") : null;
+                        openTemplateVariableDialog(editor, this.placeId, token);
+                    },
+                });
+                // Small toolbar on a clicked template variable, to edit it
+                editor.ui.registry.addContextToolbar("templatetoken", {
+                    predicate: (node) => node.classList !== undefined && node.classList.contains("template-token"),
+                    items: "templatevariable",
+                    position: "node",
+                    scope: "node",
                 });
             },
         })
