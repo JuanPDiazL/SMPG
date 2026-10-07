@@ -77,10 +77,11 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
 // function from TEMPLATE_FUNCTIONS, and is never evaluated as code
 const TEMPLATE_VARIABLE_PATTERN = /\{\{\s*(.+?)\s*\}\}/g;
 const TEMPLATE_PATH_START_PATTERN = /^\s*([A-Za-z_$][\w$]*)/;
-// ["key"] | [0] | [variable], where [variable] uses a context variable's value as the key,
+// ["key"] | [0] | [-1] | [variable], where a negative index counts from the end of a list
+// (-1 is the last element) and [variable] uses a context variable's value as the key,
 // e.g. [place]; literal keys and strings must use double quotes
 const TEMPLATE_PATH_SEGMENT_PATTERN =
-    /^\s*\[\s*(?:"([^"]*)"|(\d+)|([A-Za-z_$][\w$]*))\s*\]/;
+    /^\s*\[\s*(?:"([^"]*)"|(-?\d+)|([A-Za-z_$][\w$]*))\s*\]/;
 const TEMPLATE_NUMBER_PATTERN = /^\s*(-?\d+(?:\.\d+)?)/;
 const TEMPLATE_STRING_PATTERN = /^\s*"([^"]*)"/;
 const TEMPLATE_PUNCTUATION_PATTERN = /^\s*([(),])/;
@@ -314,6 +315,10 @@ function evaluateTemplateStructureExpression(expression, context) {
 
     for (const segment of expression.segments) {
         let key = segment.key ?? segment.index;
+        if (segment.index !== undefined && segment.index < 0) { // [-n]: counts from the end of a list
+            if (!Array.isArray(value)) { throw new TemplateVariableError("negative index on a non-list"); }
+            key = value.length + segment.index;
+        }
         if (segment.variable !== undefined) { // [variable]: the key is the context variable's value
             if (!isOwnTemplateProperty(context, segment.variable)) { throw new TemplateVariableError("unknown name"); }
             key = context[segment.variable];
@@ -537,8 +542,8 @@ function getTemplateDialogDataForToken(text, catalog, context, defaultData) {
         if (index === null) {
             return result("its index is missing", statForm);
         }
-        if (index >= item.length) {
-            return result(`its index is out of range (0 to ${item.length - 1})`, statForm);
+        if (index >= item.length || index < -item.length) {
+            return result(`its index is out of range (0 to ${item.length - 1}, or -1 to -${item.length})`, statForm);
         }
         data.index = String(index);
     }
@@ -628,7 +633,7 @@ function openTemplateVariableDialog(editor, placeId, tokenNode = null) {
         if (!item) { return null; }
         let expression = item.expression;
         if (item.length !== undefined) {
-            const index = Math.min(Math.max(parseInt(data.index, 10) || 0, 0), item.length - 1);
+            const index = Math.min(Math.max(parseInt(data.index, 10) || 0, -item.length), item.length - 1);
             expression += `[${index}]`;
         } else if (!applied && item.shorthand && statForm === "shorthand") {
             return item.shorthand;
@@ -681,7 +686,7 @@ function openTemplateVariableDialog(editor, placeId, tokenNode = null) {
                                 text: data.group === "" ? `${item.group}: ${item.label}` : item.label, value }))
                             : [{ text: "No matches", value: "" }] },
                     ...(item && item.length !== undefined
-                        ? [{ type: "input", name: "index", label: `Index (0 to ${item.length - 1})`, inputMode: "numeric" }]
+                        ? [{ type: "input", name: "index", label: `Index (0 to ${item.length - 1}, or -1 to -${item.length} from the end)`, inputMode: "numeric" }]
                         : []),
                     // Only functions for the variable's data type; disabled when there are none
                     { type: "listbox", name: "applied", label: "Applied function", enabled: functions.length > 0,
