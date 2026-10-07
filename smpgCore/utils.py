@@ -612,7 +612,7 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
         return (dq[1] + dq[2] >= 20)
     
     for i in range(len(year_data)): # check year data for SoS or candidates
-        dq.append(year_data[i]); dq_c.append(clim_avg[i])
+        dq.append(year_data.iloc[i]); dq_c.append(clim_avg.iloc[i])
         if len(dq) < 3: continue # avoid out of bounds
         if candidate_condition(dq, dq_c):
             if last_candidate is None: last_candidate = i - 2 
