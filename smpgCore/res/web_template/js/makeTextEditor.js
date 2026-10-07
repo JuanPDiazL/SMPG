@@ -681,8 +681,9 @@ function openTemplateVariableDialog(editor, placeId, tokenNode = null) {
                 && (search === "" || `${item.group} ${item.label} ${item.expression}`.toLowerCase().includes(search)));
     };
 
-    // Index, function and argument fields only exist while needed, so missing values get defaults
-    const defaultData = { search: "", group: "", item: "", index: "0", applied: "" };
+    // Index, function and argument fields only exist while needed, so missing values get defaults;
+    // an empty index means the whole list
+    const defaultData = { search: "", group: "", item: "", index: "", applied: "" };
 
     // When editing, the dialog starts from the token, and keeps the form its stat() was written in
     let initialData = defaultData;
