@@ -93,8 +93,9 @@ const templateTokenDecoder = document.createElement("textarea");
 // The only functions template variables can call. They must only read data and change nothing
 // (no DOM, no network). A function that throws or returns nothing leaves its token as typed.
 // Functions applied to a variable declare, for the insert dialog, the `dataType` of the value
-// they take as first argument, a `description`, and their further `parameters`
-// ({label, type, default}). (Not `arguments`: setting that on a function throws in strict mode.)
+// they take as first argument ("number", "string", "boolean", or "array" for a whole list), a
+// `description`, and their further `parameters` ({label, type, default}). (Not `arguments`:
+// setting that on a function throws in strict mode.) Lists are passed whole, never element by element.
 // Calls must pass exactly the function's parameters, so parameters have no default values.
 const TEMPLATE_FUNCTIONS = {
     // Exactly `decimals` decimals, e.g. fixed(83.7, 2) gives "83.70"
@@ -108,6 +109,30 @@ const TEMPLATE_FUNCTIONS = {
         dataType: "number",
         description: "at most the decimals",
         parameters: [{ label: "Decimals", type: "number", default: "1" }],
+    }),
+    // A list's last non-empty element, e.g. the latest value of a current-season series, whose
+    // trailing periods are empty
+    last: Object.assign((series) => {
+        for (let index = series.length - 1; index >= 0; index--) {
+            if (series[index] !== null && series[index] !== undefined) { return series[index]; }
+        }
+    }, {
+        dataType: "array",
+        description: "last non-empty element",
+        parameters: [],
+    }),
+    // A list's first and last non-empty elements, as a list, e.g. range of a series gives "5, 807"
+    range: Object.assign((series) => {
+        const isEmpty = (element) => element === null || element === undefined;
+        let first = 0;
+        let last = series.length - 1;
+        while (first <= last && isEmpty(series[first])) { first++; }
+        while (last >= first && isEmpty(series[last])) { last--; }
+        if (first <= last) { return [series[first], series[last]]; }
+    }, {
+        dataType: "array",
+        description: "first and last non-empty elements",
+        parameters: [],
     }),
     // A place's general statistic, e.g. {{ stat: Current Season Pctl. }}
     stat: (place, key) => getPlaceMapStats(place)[key],
@@ -360,21 +385,41 @@ function evaluateTemplateStructure(structure, context) {
 }
 
 /**
+ * Turns an expression's final value into what a token shows: a string, number or boolean as is,
+ * and a list of them as text joined with ", ", without its trailing empty (null) elements, e.g. a
+ * current-season series up to its latest period. Empty elements in between stay as empty slots.
+ * @param {*} value - The expression's value.
+ * @returns {string|number|boolean|undefined} The value, or undefined for anything else, including a
+ *   list with nested lists or objects, or with no element that isn't empty.
+ */
+function formatTemplateValue(value) {
+    if (["string", "number", "boolean"].includes(typeof value)) { return value; }
+    if (!Array.isArray(value)) { return undefined; }
+    const isEmpty = (element) => element === null || element === undefined;
+    if (!value.every((element) => isEmpty(element) || ["string", "number", "boolean"].includes(typeof element))) {
+        return undefined;
+    }
+    let end = value.length;
+    while (end > 0 && isEmpty(value[end - 1])) { end--; }
+    if (end === 0) { return undefined; }
+    return value.slice(0, end).map((element) => (isEmpty(element) ? "" : String(element))).join(", ");
+}
+
+/**
  * Resolves a template expression, e.g. fixed(place_general_stats[place]["Current Season Pctl."], 1),
  * or the shorthand call "name: some text", which is name(place, "some text").
  * @param {string} text - The expression inside a {{ }} token.
  * @param {Object} context - The template context, see getTextEditorTemplateContext().
  * @param {boolean} warn - Whether to log failed function calls as console warnings.
- * @returns {string|number|boolean|undefined} The value, or undefined if the expression is invalid
- *   or doesn't end at a string, number or boolean.
+ * @returns {string|number|boolean|undefined} The value (a list as text, see formatTemplateValue()),
+ *   or undefined if the expression is invalid or doesn't end at a value or a list of values.
  */
 function resolveTemplateExpression(text, context, warn = true) {
     // Invalid syntax is never evaluated, and isn't warned about
     const structure = parseTemplateStructure(text);
     if (structure === null) { return undefined; }
     try {
-        const value = evaluateTemplateStructure(structure, context);
-        return ["string", "number", "boolean"].includes(typeof value) ? value : undefined;
+        return formatTemplateValue(evaluateTemplateStructure(structure, context));
     } catch (error) {
         if (!(error instanceof TemplateVariableError)) { throw error; }
         if (error.warn && warn) {
@@ -580,21 +625,21 @@ function getTemplateDialogDataForToken(text, catalog, context, defaultData) {
     data.group = item.group;
     data.item = String(catalog.indexOf(item));
 
-    // Index
+    // Index; a list without one is the whole list
     if (item.length !== undefined) {
         if (index === null) {
-            return result("its index is missing", statForm);
-        }
-        if (index >= item.length || index < -item.length) {
+            data.index = "";
+        } else if (index >= item.length || index < -item.length) {
             return result(`its index is out of range (0 to ${item.length - 1}, or -1 to -${item.length})`, statForm);
+        } else {
+            data.index = String(index);
         }
-        data.index = String(index);
     }
 
     // Applied function and its arguments
     if (applied === null) { return result(null, statForm); }
     const fn = context[applied];
-    if (fn.dataType !== item.dataType) {
+    if (fn.dataType !== (item.length !== undefined && index === null ? "array" : item.dataType)) {
         return result(`${applied}() doesn't apply to this variable's data type`, statForm);
     }
     data.applied = applied;
@@ -659,7 +704,10 @@ function openTemplateVariableDialog(editor, placeId, tokenNode = null) {
             data.item = filtered.length ? filtered[0].value : "";
         }
         const item = catalog[Number(data.item)];
-        const functions = item ? appliedFunctions.filter(([, value]) => value.dataType === item.dataType) : [];
+        // A list without an index is passed whole, as an "array"
+        const wholeList = item !== undefined && item.length !== undefined && data.index.trim() === "";
+        const dataType = item ? (wholeList ? "array" : item.dataType) : null;
+        const functions = item ? appliedFunctions.filter(([, value]) => value.dataType === dataType) : [];
         if (!functions.some(([name]) => name === data.applied)) {
             data.applied = "";
         }
@@ -676,8 +724,11 @@ function openTemplateVariableDialog(editor, placeId, tokenNode = null) {
         if (!item) { return null; }
         let expression = item.expression;
         if (item.length !== undefined) {
-            const index = Math.min(Math.max(parseInt(data.index, 10) || 0, -item.length), item.length - 1);
-            expression += `[${index}]`;
+            // An empty index means the whole list
+            if (data.index.trim() !== "") {
+                const index = Math.min(Math.max(parseInt(data.index, 10) || 0, -item.length), item.length - 1);
+                expression += `[${index}]`;
+            }
         } else if (!applied && item.shorthand && statForm === "shorthand") {
             return item.shorthand;
         }
@@ -729,7 +780,7 @@ function openTemplateVariableDialog(editor, placeId, tokenNode = null) {
                                 text: data.group === "" ? `${item.group}: ${item.label}` : item.label, value }))
                             : [{ text: "No matches", value: "" }] },
                     ...(item && item.length !== undefined
-                        ? [{ type: "input", name: "index", label: `Index (0 to ${item.length - 1}, or -1 to -${item.length} from the end)`, inputMode: "numeric" }]
+                        ? [{ type: "input", name: "index", label: `Index (0 to ${item.length - 1}, or -1 to -${item.length} from the end; empty for the whole list)`, inputMode: "numeric" }]
                         : []),
                     // Only functions for the variable's data type; disabled when there are none
                     { type: "listbox", name: "applied", label: "Applied function", enabled: functions.length > 0,
