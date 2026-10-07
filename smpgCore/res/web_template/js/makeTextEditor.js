@@ -206,6 +206,87 @@ function callTemplateFunction(name, templateFunction, args) {
 }
 
 /**
+ * Parses one expression into its parts without resolving it: a name, the call's arguments
+ * (null if it isn't a call), and the path segments.
+ * @param {Object} parser - The parser state, {rest}.
+ * @returns {Object} {name, args, segments}: args are {number}, {string} or {expression}, and
+ *   segments are {key}, {index} or {variable}.
+ */
+function parseTemplateStructureExpression(parser) {
+    const start = takeTemplatePattern(parser, TEMPLATE_PATH_START_PATTERN);
+    if (!start) { throw new TemplateVariableError("a name was expected"); }
+    let args = null;
+    if (takeTemplatePunctuation(parser, "(")) {
+        args = [];
+        if (!takeTemplatePunctuation(parser, ")")) {
+            do {
+                let match;
+                if ((match = takeTemplatePattern(parser, TEMPLATE_NUMBER_PATTERN))) {
+                    args.push({ number: Number(match[1]) });
+                } else if ((match = takeTemplatePattern(parser, TEMPLATE_STRING_PATTERN))) {
+                    args.push({ string: match[1] });
+                } else {
+                    args.push({ expression: parseTemplateStructureExpression(parser) });
+                }
+            } while (takeTemplatePunctuation(parser, ","));
+            if (!takeTemplatePunctuation(parser, ")")) { throw new TemplateVariableError("')' expected"); }
+        }
+    }
+    const segments = [];
+    let segment;
+    while ((segment = takeTemplatePattern(parser, TEMPLATE_PATH_SEGMENT_PATTERN))) {
+        if (segment[1] !== undefined) {
+            segments.push({ key: segment[1] });
+        } else if (segment[2] !== undefined) {
+            segments.push({ index: Number(segment[2]) });
+        } else {
+            segments.push({ variable: segment[3] });
+        }
+    }
+    return { name: start[1], args, segments };
+}
+
+/**
+ * Parses a template expression into its parts, with the same syntax as resolveTemplateExpression().
+ * @param {string} text - The expression inside a {{ }} token.
+ * @returns {Object|null} {shorthand: {name, text}} or {expression}, see
+ *   parseTemplateStructureExpression(), or null if the text isn't valid syntax.
+ */
+function parseTemplateStructure(text) {
+    const shorthand = TEMPLATE_SHORTHAND_PATTERN.exec(text);
+    if (shorthand) {
+        return { shorthand: { name: shorthand[1], text: shorthand[2].trim() } };
+    }
+    const parser = { rest: text };
+    try {
+        const expression = parseTemplateStructureExpression(parser);
+        return parser.rest.trim() === "" ? { expression } : null;
+    } catch (error) {
+        if (error instanceof TemplateVariableError) { return null; }
+        throw error;
+    }
+}
+
+/**
+ * Writes a parsed expression in the dialog's standard form: double quotes, ", " between arguments.
+ * @param {Object} expression - A parsed expression, see parseTemplateStructureExpression().
+ * @returns {string} The expression's text.
+ */
+function serializeTemplateStructure(expression) {
+    const args = expression.args === null ? "" : `(${expression.args.map((arg) => {
+        if (arg.number !== undefined) { return String(arg.number); }
+        if (arg.string !== undefined) { return `"${arg.string}"`; }
+        return serializeTemplateStructure(arg.expression);
+    }).join(", ")})`;
+    const segments = expression.segments.map((segment) => {
+        if (segment.key !== undefined) { return `["${segment.key}"]`; }
+        if (segment.index !== undefined) { return `[${segment.index}]`; }
+        return `[${segment.variable}]`;
+    }).join("");
+    return `${expression.name}${args}${segments}`;
+}
+
+/**
  * Evaluates one parsed expression: a name, an optional call, then path segments. Names are
  * looked up as the context's own properties; segments walk own properties only, so inherited
  * members such as __proto__ or constructor never resolve. Only context functions can be called.
@@ -390,87 +471,6 @@ function getTemplateVariableCatalog(placeId) {
         }
     }
     return items;
-}
-
-/**
- * Parses one expression into its parts without resolving it: a name, the call's arguments
- * (null if it isn't a call), and the path segments.
- * @param {Object} parser - The parser state, {rest}.
- * @returns {Object} {name, args, segments}: args are {number}, {string} or {expression}, and
- *   segments are {key}, {index} or {variable}.
- */
-function parseTemplateStructureExpression(parser) {
-    const start = takeTemplatePattern(parser, TEMPLATE_PATH_START_PATTERN);
-    if (!start) { throw new TemplateVariableError("a name was expected"); }
-    let args = null;
-    if (takeTemplatePunctuation(parser, "(")) {
-        args = [];
-        if (!takeTemplatePunctuation(parser, ")")) {
-            do {
-                let match;
-                if ((match = takeTemplatePattern(parser, TEMPLATE_NUMBER_PATTERN))) {
-                    args.push({ number: Number(match[1]) });
-                } else if ((match = takeTemplatePattern(parser, TEMPLATE_STRING_PATTERN))) {
-                    args.push({ string: match[1] });
-                } else {
-                    args.push({ expression: parseTemplateStructureExpression(parser) });
-                }
-            } while (takeTemplatePunctuation(parser, ","));
-            if (!takeTemplatePunctuation(parser, ")")) { throw new TemplateVariableError("')' expected"); }
-        }
-    }
-    const segments = [];
-    let segment;
-    while ((segment = takeTemplatePattern(parser, TEMPLATE_PATH_SEGMENT_PATTERN))) {
-        if (segment[1] !== undefined) {
-            segments.push({ key: segment[1] });
-        } else if (segment[2] !== undefined) {
-            segments.push({ index: Number(segment[2]) });
-        } else {
-            segments.push({ variable: segment[3] });
-        }
-    }
-    return { name: start[1], args, segments };
-}
-
-/**
- * Parses a template expression into its parts, with the same syntax as resolveTemplateExpression().
- * @param {string} text - The expression inside a {{ }} token.
- * @returns {Object|null} {shorthand: {name, text}} or {expression}, see
- *   parseTemplateStructureExpression(), or null if the text isn't valid syntax.
- */
-function parseTemplateStructure(text) {
-    const shorthand = TEMPLATE_SHORTHAND_PATTERN.exec(text);
-    if (shorthand) {
-        return { shorthand: { name: shorthand[1], text: shorthand[2].trim() } };
-    }
-    const parser = { rest: text };
-    try {
-        const expression = parseTemplateStructureExpression(parser);
-        return parser.rest.trim() === "" ? { expression } : null;
-    } catch (error) {
-        if (error instanceof TemplateVariableError) { return null; }
-        throw error;
-    }
-}
-
-/**
- * Writes a parsed expression in the dialog's standard form: double quotes, ", " between arguments.
- * @param {Object} expression - A parsed expression, see parseTemplateStructureExpression().
- * @returns {string} The expression's text.
- */
-function serializeTemplateStructure(expression) {
-    const args = expression.args === null ? "" : `(${expression.args.map((arg) => {
-        if (arg.number !== undefined) { return String(arg.number); }
-        if (arg.string !== undefined) { return `"${arg.string}"`; }
-        return serializeTemplateStructure(arg.expression);
-    }).join(", ")})`;
-    const segments = expression.segments.map((segment) => {
-        if (segment.key !== undefined) { return `["${segment.key}"]`; }
-        if (segment.index !== undefined) { return `[${segment.index}]`; }
-        return `[${segment.variable}]`;
-    }).join("");
-    return `${expression.name}${args}${segments}`;
 }
 
 /**
