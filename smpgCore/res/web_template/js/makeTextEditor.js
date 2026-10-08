@@ -942,6 +942,9 @@ class RichTextEditor {
         this.editor.undoManager.clear();
         if (!this.options.editMode) {
             this.editor.mode.set("readonly");
+            // A read-only body is still contenteditable, so the browser doesn't treat links as links
+            // (no address preview on hover)
+            this.editor.getBody().contentEditable = "false";
         }
     }
 
