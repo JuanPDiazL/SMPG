@@ -108,6 +108,14 @@
     background-color: var(--dark-bg-color) !important;
     color: #ddd !important;
 }
+.header-menu-content .header-menu-section-label {
+    font-size: 0.85em;
+    opacity: 0.7;
+    border-top: 1px solid #ccc;
+}
+.darkmode .header-menu-content .header-menu-section-label {
+    border-top-color: #555;
+}
 
 #contentBody {
     flex-grow: 1; /* Takes remaining space */

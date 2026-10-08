@@ -125,7 +125,7 @@ const HEADER_MENU_ITEMS = {
     "Sort layout": { icon: "swap_horiz", onclick: () => grid.compact(), hidden: true },
     "Add widget": { icon: "add", onclick: () => add_widget(), hidden: true },
 };
-const HEADER_MENU_ELEMENTS = buildHeaderMenu('#contentHeaderMenu', HEADER_MENU_ITEMS);
+const HEADER_MENU_ELEMENTS = buildHeaderMenu('#contentHeaderMenu', HEADER_MENU_ITEMS, refreshRestoreWidgetMenu);
 const EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Edit layout"];
 const STOP_EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Stop edit layout"];
 const SORT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Sort layout"];

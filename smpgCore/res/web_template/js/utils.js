@@ -431,9 +431,11 @@ function makeSelectionMenu(data) {
  * @param {Object} items - Object keyed by entry title, each value {icon, onclick, hidden}.
  *   `icon` is a Material Icons ligature name, `onclick` a no-argument callback, and `hidden`
  *   (optional, default false) whether the entry starts out hidden.
+ * @param {Function} [onOpen] - Optional callback, called with the menu's content d3 selection
+ *   each time the menu opens, for entries that depend on the report's current state.
  * @returns {Object} A map of entry title to its <button> d3 selection, for later visibility toggling.
  */
-function buildHeaderMenu(containerSelector, items) {
+function buildHeaderMenu(containerSelector, items, onOpen = null) {
     const menuContainer = d3.select(containerSelector)
         .append("div")
         .attr("class", "header-menu w3-dropdown-click capture-ignore");
@@ -445,7 +447,11 @@ function buildHeaderMenu(containerSelector, items) {
         .attr("class", "mi w3-button w3-ripple header-menu-trigger")
         .text("more_vert")
         .on("click.toggleHeaderMenu", () => {
-            menuContent.classed("w3-show", !menuContent.classed("w3-show"));
+            const opening = !menuContent.classed("w3-show");
+            if (opening && onOpen) {
+                onOpen(menuContent);
+            }
+            menuContent.classed("w3-show", opening);
         });
 
     let menuElements = {};
@@ -469,6 +475,42 @@ function buildHeaderMenu(containerSelector, items) {
         menuElements[title] = menuItem;
     }
     return menuElements;
+}
+
+/**
+ * Rebuilds the header menu's "Restore widget" section: one entry per unloaded widget in
+ * layout.gridstackWidgets, which loads it back. Shown only in layout-edit mode, and only when
+ * there are unloaded widgets.
+ * @param {d3.Selection} menuContent - The header menu's content element.
+ */
+function refreshRestoreWidgetMenu(menuContent) {
+    menuContent.select(".header-menu-restore").remove();
+    const unloadedIds = Object.keys(layout.gridstackWidgets)
+        .filter((id) => layout.gridstackWidgets[id].unloaded);
+    if (!editingLayout || unloadedIds.length === 0) { return; }
+
+    const section = menuContent.append("div")
+        .attr("class", "header-menu-restore");
+    section.append("div")
+        .attr("class", "header-menu-section-label w3-bar-item")
+        .text("Restore widget");
+    for (const id of unloadedIds) {
+        const label = `${layout.gridstackWidgets[id].smpgOpts.smpgCardType} (${id})`;
+        const menuItem = section.append("button")
+            .attr("id", `restore_${id}_menu_item`)
+            .attr("class", "header-menu-item w3-bar-item w3-button w3-ripple")
+            .attr("title", `Restore ${label}`)
+            .on("click", () => {
+                menuContent.classed("w3-show", false);
+                loadWidget(id);
+            });
+        menuItem.append("span")
+            .attr("class", "mi header-menu-item-icon")
+            .text("unarchive");
+        menuItem.append("span")
+            .attr("class", "header-menu-item-label")
+            .text(label);
+    }
 }
 
 /**

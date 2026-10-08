@@ -251,10 +251,17 @@ class chartCard {
         this.cardButtonGroup.selectChildren().remove();
         this.closeButton = this.cardButtonGroup.append("span").append("button")
             .attr("class", "card-button card-edit-button mi w3-button w3-ripple w3-right capture-ignore")
-            .attr("title", "Close Card")
+            .attr("title", "Close Card (discarded)")
             .text("close")
             .on("click", (event) => {
                 closeWidget(this.elementContainer.node().parentElement.getAttribute("gs-id"));
+            });
+        this.unloadButton = this.cardButtonGroup.append("span").append("button")
+            .attr("class", "card-button card-edit-button mi w3-button w3-ripple w3-right capture-ignore")
+            .attr("title", "Unload Card (saved in the layout)")
+            .text("archive")
+            .on("click", (event) => {
+                unloadWidget(this.elementContainer.node().parentElement.getAttribute("gs-id"));
             });
 
         if (this.cardType == "Disabled") {
