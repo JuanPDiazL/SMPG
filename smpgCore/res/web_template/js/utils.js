@@ -592,7 +592,8 @@ function downloadFile(filename, content, mimeType = "text/plain") {
 /**
  * Builds a layout.js-shaped object from the currently loaded grid and widgets: each widget's
  * live properties (from chartCard.getProperties()) plus its current gridstack position/size,
- * converted back to layout.js units (the inverse of parseGridstackItems()).
+ * converted back to layout.js units (the inverse of parseGridstackItems()), and the unloaded
+ * widgets with their saved state.
  * @returns {Object} An object in the same shape as data/layout.js's `layout` variable.
  */
 function buildLayoutExport() {
@@ -610,13 +611,13 @@ function buildLayoutExport() {
             smpgOpts: {
                 ...cards[id].getProperties()
             },
-            gridstackOpts: {
-                // grid.save() omits w/h when they equal 1 cell
-                width: (savedItem.w ?? 1) / GS_H_CELL_SIZE,
-                height: (savedItem.h ?? 1) / GS_V_CELL_SIZE,
-                xPos: savedItem.x / GS_H_CELL_SIZE,
-                yPos: savedItem.y / GS_V_CELL_SIZE,
-            },
+            gridstackOpts: gridstackItemToLayoutOpts(savedItem),
+        }
+    }
+    // Unloaded widgets keep their saved state
+    for (const [id, entry] of Object.entries(layout.gridstackWidgets)) {
+        if (entry.unloaded) {
+            toExport.gridstackWidgets[id] = entry;
         }
     }
     return toExport;

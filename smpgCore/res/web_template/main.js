@@ -146,7 +146,7 @@ if (!hasMap) {
 }
 
 var gridstackItems = parseGridstackItems(layout);
-var gridstackWidgetCount = gridstackItems.length;
+var gridstackWidgetCount = getHighestWidgetNumber(layout); // unloaded widgets' ids stay taken
 var grid = GridStack.init(gridstackBaseLayerOptions);
 grid.load(gridstackItems);
 

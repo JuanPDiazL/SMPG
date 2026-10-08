@@ -70,6 +70,10 @@ class BBPlot {
         this.plot.resize();
     }
 
+    destroy() {
+        this.plot.destroy();
+    }
+
     getProperties() {
         return {
 
@@ -240,11 +244,7 @@ class chartCard {
     changePlot(cardType) {
         this.cardType = cardType;
         this.graphTypeSelectOpenButton.text(this.cardTypes[this.cardType]["full title"]);
-        for (const elementKey in this.cardElements) {
-            if (this.cardElements[elementKey].destroy) {
-                this.cardElements[elementKey].destroy();
-            }
-        }
+        this.destroy();
         this.cardBody.selectChildren().remove();
 
         
@@ -254,7 +254,7 @@ class chartCard {
             .attr("title", "Close Card")
             .text("close")
             .on("click", (event) => {
-                grid.removeWidget(this.elementContainer.node().parentElement);
+                closeWidget(this.elementContainer.node().parentElement.getAttribute("gs-id"));
             });
 
         if (this.cardType == "Disabled") {
@@ -306,6 +306,18 @@ class chartCard {
     resize(size) {
         for (const elementKey of Object.keys(this.cardElements)) {
             this.cardElements[elementKey].resize(size);
+        }
+    }
+
+    /**
+     * Destroys the card's elements that need it (charts, editors); removing the card's DOM is up
+     * to the caller.
+     */
+    destroy() {
+        for (const elementKey in this.cardElements) {
+            if (this.cardElements[elementKey].destroy) {
+                this.cardElements[elementKey].destroy();
+            }
         }
     }
 

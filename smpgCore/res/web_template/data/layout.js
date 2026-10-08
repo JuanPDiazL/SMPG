@@ -11,6 +11,8 @@
 //     table: { tableShown: true }                         shows a chart card's data table
 //     editor: { editMode: true }                          opens a Rich Text card in edit mode
 //     editor: { text: "<p>Notes for {{place}}</p>" }      a Rich Text card's content
+// - unloaded (optional): true keeps the widget out of the report, with its smpgOpts and
+//   gridstackOpts saved here until it's loaded again (see modify_layout below).
 //
 // The same smpgOpts properties can change the widgets of an open report through the URL hash
 // parameter modify_layout: a JSON object keyed by widget id, URL-encoded with encodeURIComponent.
@@ -18,6 +20,10 @@
 //     #place=40782&modify_layout={"w1":{"map":{"legend_stat":"Average Total"}}}
 // A full example, setting every property modify_layout accepts:
 //     #place=40782&modify_layout={"w1":{"smpgCardType":"Map","map":{"legend_stat":"Average Total","label_field":"ADM2_CODE","show_legend":false},"mapDescription":{"show_description":true}},"w2":{"smpgCardType":"Seasonal Accumulations","table":{"tableShown":true}},"w3":{"smpgCardType":"Rich Text","editor":{"editMode":true}}}
+// A widget can also be unloaded (removed, with its state saved here) and loaded back:
+//     #place=40782&modify_layout={"w2":{"unloaded":true}}
+//     #place=40782&modify_layout={"w2":{"unloaded":false}}
+// Properties sent for a widget that stays unloaded are saved, and apply once it's loaded again.
 // It's applied once and then removed from the URL; the rest of the hash is kept. For security, a
 // Rich Text card's text can't be set this way: it's ignored, with a console warning.
 var layout = {
