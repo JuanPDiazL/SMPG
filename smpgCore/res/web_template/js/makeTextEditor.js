@@ -22,7 +22,17 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         + " body:not(.mce-content-readonly) .template-token {"
         + " background-color: rgba(0, 108, 231, 0.1); border-radius: 3px; padding: 0 2px; }"
         + " body:not(.mce-content-readonly) .template-token-invalid {"
-        + " background-color: rgba(211, 47, 47, 0.12); text-decoration: underline wavy #d32f2f; }",
+        + " background-color: rgba(211, 47, 47, 0.12); text-decoration: underline wavy #d32f2f; }"
+        // Website links (not report view or section links) end with an "open in new tab" icon,
+        // drawn in the link's color
+        + ' a[href]:not([href^="#"]):not([href^="./index.html#"])::after { content: "";'
+        + " display: inline-block; width: 0.8em; height: 0.8em; margin-left: 0.15em;"
+        + " vertical-align: -0.05em; background-color: currentColor;"
+        + " -webkit-mask: var(--external-link-icon) no-repeat center / contain;"
+        + " mask: var(--external-link-icon) no-repeat center / contain; }"
+        + " :root { --external-link-icon: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'"
+        + " viewBox='0 0 24 24'%3E%3Cpath d='M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0"
+        + " 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z'/%3E%3C/svg%3E\"); }",
     // Template variables (matched by noneditable_regexp at init) become locked pieces with this class
     noneditable_class: "template-token",
     // Elements that aren't text formatting are removed, from any source (typing, pasting,
@@ -31,6 +41,10 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         + "form,input,button,select,option,optgroup,textarea,label,fieldset,"
         + "legend,datalist,output,iframe,frame,frameset,object,embed,applet,"
         + "param,video,audio,source,track,canvas,svg,math,dialog",
+    // Links keep their address as written: report view links are relative (./index.html#...)
+    convert_urls: false,
+    // Website links open in a new tab by default
+    link_default_target: "_blank",
     license_key: "gpl",
     plugins: "lists link table code quickbars",
     toolbar: "fontformat alignment spacing insert | code",
@@ -56,7 +70,7 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         insert: {
             icon: "plus",
             tooltip: "Insert",
-            items: "templatevariable link table hr",
+            items: "templatevariable linkmenu table hr",
         },
     },
     // Floating toolbar on selected text; the insert toolbar (whose image button inserts
@@ -866,6 +880,8 @@ class RichTextEditor {
             setup: (editor) => {
                 this.pendingEditor = editor;
                 editor.on("SetContent", () => this.highlightTemplateTokens());
+                // Website, report view and section links
+                setupEditorLinks(editor, () => this.placeId);
                 // Inserts a template variable, or edits the selected one
                 editor.ui.registry.addButton("templatevariable", {
                     icon: "addtag",
