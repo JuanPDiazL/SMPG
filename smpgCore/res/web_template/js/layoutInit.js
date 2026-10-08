@@ -85,7 +85,27 @@ function parseWidgets(layout) {
             gridItem.smpgOpts
         );
     }
+    reportInvalidCardTypes(parsedWidgets);
     return parsedWidgets;
+}
+
+/**
+ * Reports the cards whose last setProperties() asked for a card type this report doesn't offer
+ * (they were made empty widgets): one console error each, and one warning listing them all.
+ * @param {Object} widgetCards - Object of widget id to its chartCard.
+ */
+function reportInvalidCardTypes(widgetCards) {
+    const invalidIds = Object.keys(widgetCards)
+        .filter((widgetId) => widgetCards[widgetId].invalidCardType !== null);
+    if (invalidIds.length === 0) { return; }
+    for (const widgetId of invalidIds) {
+        console.error(`Widget "${widgetId}": the card type "${widgetCards[widgetId].invalidCardType}" isn't available in this report; it was replaced with an empty widget.`);
+    }
+    // card types can come from the URL, so they're escaped
+    const widgetList = invalidIds
+        .map((widgetId) => `${widgetId} ("${escapeHtml(widgetCards[widgetId].invalidCardType)}")`)
+        .join("<br>");
+    showModal(`These widgets couldn't be loaded because their card type isn't available in this report, and were replaced with empty widgets:<br>${widgetList}`);
 }
 
 /**
@@ -147,6 +167,7 @@ function loadWidget(widgetId) {
     grid.addWidget(layoutOptsToGridstackItem(widgetId, entry.gridstackOpts));
     cards[widgetId] = new chartCard(`[gs-id="${widgetId}"] .grid-stack-item-content`, entry.smpgOpts);
     delete entry.unloaded;
+    reportInvalidCardTypes({ [widgetId]: cards[widgetId] });
 }
 
 /**
@@ -155,11 +176,12 @@ function loadWidget(widgetId) {
  * A patch may also have `unloaded`: true unloads a loaded widget (after applying the rest of the
  * patch), false loads an unloaded one back (before). The rest of a patch for a widget that stays
  * unloaded is merged into its saved properties. Unknown widget ids and patches that aren't
- * objects are ignored.
+ * objects are ignored. A card type this report doesn't offer makes the card empty, and is reported.
  * @param {Object} widgetPatches - Object keyed by widget id.
  */
 function applyLayoutModifications(widgetPatches) {
     const isOwn = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+    let patchedCards = {};
     for (const widgetId in widgetPatches) {
         const patch = widgetPatches[widgetId];
         if (patch === null || typeof patch !== "object" || Array.isArray(patch)) { continue; }
@@ -171,6 +193,7 @@ function applyLayoutModifications(widgetPatches) {
         }
         if (isOwn(cards, widgetId)) {
             cards[widgetId].setProperties(properties);
+            patchedCards[widgetId] = cards[widgetId];
             if (unloaded === true) {
                 unloadWidget(widgetId);
             }
@@ -178,4 +201,5 @@ function applyLayoutModifications(widgetPatches) {
             _.merge(entry.smpgOpts, properties);
         }
     }
+    reportInvalidCardTypes(patchedCards);
 }

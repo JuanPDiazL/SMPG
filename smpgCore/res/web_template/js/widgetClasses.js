@@ -148,7 +148,8 @@ class chartCard {
      * @param {string} containerSelector - CSS selector for the element to build the card into.
      * @param {Object} smpgOpts - Initial properties, in the same shape as getProperties()/setProperties()
      *   (e.g. {smpgCardType: "Map", map: {legend_stat: "Average Total"}}). Only smpgCardType is
-     *   required; the rest is applied via setProperties() once the card is built.
+     *   required; the rest is applied via setProperties() once the card is built. A type this
+     *   report doesn't offer builds an "Empty Widget", see invalidCardType.
      */
     constructor(containerSelector, smpgOpts = {}) {
         this.cardTypes = {
@@ -193,7 +194,9 @@ class chartCard {
             "full title": "Rich Text",
             "cardElementsBuilder": makeTextEditorCard,
         };
-        this.cardType = smpgOpts.smpgCardType;
+        // an unavailable type is recorded in invalidCardType by setProperties() below
+        this.cardType = this.isAvailableCardType(smpgOpts.smpgCardType) ? smpgOpts.smpgCardType : "Empty Widget";
+        this.invalidCardType = null;
 
         this.elementContainer = d3.select(containerSelector);
         this.cardContainer = this.elementContainer
@@ -344,14 +347,33 @@ class chartCard {
     }
 
     /**
+     * Whether this report offers a card type (the map and forecast types depend on the data).
+     * @param {string} cardType - The card type's name.
+     * @returns {boolean}
+     */
+    isAvailableCardType(cardType) {
+        return Object.prototype.hasOwnProperty.call(this.cardTypes, cardType);
+    }
+
+    /**
      * Applies a patch of properties to this card, in the same shape returned by getProperties().
      * If smpgCardType is included and differs from the current type, the card is switched first,
      * then the remaining keys are forwarded to the matching cardElements' own setProperties().
+     * A type this report doesn't offer makes the card an "Empty Widget", and is kept in
+     * invalidCardType until the next call, for the caller to report.
      * @param {Object} properties - Properties to apply, keyed like getProperties()'s output.
      */
     setProperties(properties) {
-        if (properties.smpgCardType && properties.smpgCardType !== this.cardType) {
-            this.changePlot(properties.smpgCardType);
+        this.invalidCardType = null;
+        if (properties.smpgCardType) {
+            let cardType = properties.smpgCardType;
+            if (!this.isAvailableCardType(cardType)) {
+                this.invalidCardType = cardType;
+                cardType = "Empty Widget";
+            }
+            if (cardType !== this.cardType) {
+                this.changePlot(cardType);
+            }
         }
         for (const key in properties) {
             if (key === "smpgCardType") { continue; }
