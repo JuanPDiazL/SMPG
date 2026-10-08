@@ -12,7 +12,7 @@ class BBPlot {
         this.xsDefinition = xsDefinition;
         this.xsDataRelation = xsDataRelation;
         this.chartTypes = chartTypes;
-        this.gridLinesGetter = () => [] ?? gridLinesGetter;
+        this.gridLinesGetter = gridLinesGetter ?? (() => []);
         this.customSettings = customSettings;
 
         this.allContainer = this.containerElement.append("div")
