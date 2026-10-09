@@ -35,6 +35,8 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         + " 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z'/%3E%3C/svg%3E\"); }",
     // Template variables (matched by noneditable_regexp at init) become locked pieces with this class
     noneditable_class: "template-token",
+    // Formatting covers template variables too, instead of stopping on each side of them
+    format_noneditable_selector: ".template-token",
     // Elements that aren't text formatting are removed, from any source (typing, pasting,
     // the code view, layout.js).
     invalid_elements: "script,noscript,style,link,meta,base,template,"
