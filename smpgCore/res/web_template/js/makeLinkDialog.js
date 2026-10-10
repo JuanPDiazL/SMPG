@@ -312,28 +312,30 @@ function openReportLinkDialog(editor, anchor = null) {
                     label: field.label, items: [{ text: "No change", value: "" }, ...options] });
             }
         }
-        return {
-            type: "label",
-            label: `Widget change ${index + 1}`,
-            items: [{
-                type: "grid",
-                columns: 2,
-                items: [
-                    { type: "listbox", name: `row${index}_widget`, label: "Widget",
-                        items: withValue([{ text: "Select a widget", value: "" },
-                            ...Object.entries(widgets).map(([widgetId, label]) => ({ text: label, value: widgetId }))],
-                            row.widget, "not in this report") },
-                    { type: "listbox", name: `row${index}_state`, label: "Load state",
-                        items: [{ text: "No change", value: "" }, { text: "Load", value: "load" }, { text: "Unload", value: "unload" }] },
-                    { type: "listbox", name: `row${index}_type`, label: "Card type",
-                        items: withValue([{ text: "No change", value: "" },
-                            ...cardTypes.map((cardType) => ({ text: cardType, value: cardType }))],
-                            row.type, "unavailable") },
-                    ...propertyItems,
-                    { type: "button", name: `row${index}_remove`, text: "Remove", buttonType: "secondary" },
-                ],
-            }],
-        };
+        return [{
+            // Title line: the row's title and its Remove button, styled in css/widgetCard.css
+            type: "bar",
+            items: [
+                { type: "htmlpanel", html: `<div class="report-link-row-title">Widget change ${index + 1}</div>` },
+                { type: "button", name: `row${index}_remove`, text: "Remove", buttonType: "secondary" },
+            ],
+        }, {
+            type: "grid",
+            columns: 2,
+            items: [
+                { type: "listbox", name: `row${index}_widget`, label: "Widget",
+                    items: withValue([{ text: "Select a widget", value: "" },
+                        ...Object.entries(widgets).map(([widgetId, label]) => ({ text: label, value: widgetId }))],
+                        row.widget, "not in this report") },
+                { type: "listbox", name: `row${index}_state`, label: "Load state",
+                    items: [{ text: "No change", value: "" }, { text: "Load", value: "load" }, { text: "Unload", value: "unload" }] },
+                { type: "listbox", name: `row${index}_type`, label: "Card type",
+                    items: withValue([{ text: "No change", value: "" },
+                        ...cardTypes.map((cardType) => ({ text: cardType, value: cardType }))],
+                        row.type, "unavailable") },
+                ...propertyItems,
+            ],
+        }];
     };
 
     const makeData = (base) => {
@@ -365,7 +367,7 @@ function openReportLinkDialog(editor, anchor = null) {
                         items: withValue([{ text: "No change", value: "" },
                             { text: `Current place (${currentPlace})`, value: REPORT_LINK_CURRENT_PLACE },
                             ...placeIds.map((id) => ({ text: id, value: id }))], place, "no data") },
-                    ...rows.map(makeRowItems),
+                    ...rows.flatMap(makeRowItems),
                     { type: "button", name: "add_row", text: "Add widget change", buttonType: "secondary" },
                     { type: "input", name: "href", label: "Link", enabled: false },
                 ],
