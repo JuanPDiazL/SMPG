@@ -26,7 +26,7 @@ function filterPlaceBlocks(html, placeId) {
 }
 
 /**
- * Returns the editor styles for place text blocks: in edit mode, a tinted block with a "Place N"
+ * Returns the editor styles for place text blocks: in edit mode, a tinted block with a "Dedicated place text block for [place name]"
  * label, red when this report has no such place. View mode shows them as plain text.
  * @returns {string} CSS for the editor's content_style.
  */
@@ -38,7 +38,7 @@ function getPlaceBlockContentStyle() {
     return ` ${block} { position: relative; margin: 0.5em 0; padding: 1.3em 0.6em 0.1em;`
         + " background-color: rgba(0, 137, 123, 0.07); border-left: 3px solid rgba(0, 137, 123, 0.7); }"
         // The label is drawn by CSS, so it's never part of the text
-        + ` ${block}::before { content: "Place " attr(data-place); position: absolute; top: 0.25em;`
+        + ` ${block}::before { content: "Dedicated place text block for " attr(data-place); position: absolute; top: 0.25em;`
         + " left: 0.6em; font-size: 0.75em; font-weight: bold; color: #00796b; }"
         + ` ${block}:not(${knownPlaces}) { background-color: rgba(211, 47, 47, 0.08);`
         + " border-left-color: #d32f2f; }"
