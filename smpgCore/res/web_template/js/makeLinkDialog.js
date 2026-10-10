@@ -6,6 +6,8 @@
 
 // Report view links are relative, so they work wherever the report is opened from
 const REPORT_LINK_PREFIX = "./index.html#";
+// The place field's value for the place selected when the dialog opened; the link stores its id
+const REPORT_LINK_CURRENT_PLACE = "current";
 
 // Widget properties a report view link can set, per card element, in the shape of
 // chartCard.getProperties(). Keep in step with the elements' setProperties(). A property is a
@@ -57,20 +59,24 @@ function getLinkType(href) {
 
 /**
  * Builds a report view link's address.
- * @param {string} place - The place id.
+ * @param {string} place - The place id; left out if empty, so the link keeps the current place.
  * @param {Object} widgetPatches - modify_layout's object, keyed by widget id; left out if empty.
  * @returns {string} ./index.html#place=...&modify_layout=...
  */
 function buildReportLinkHref(place, widgetPatches) {
-    let hash = `place=${encodeURIComponent(place)}`;
-    if (Object.keys(widgetPatches).length > 0) {
-        hash += `&modify_layout=${encodeURIComponent(JSON.stringify(widgetPatches))}`;
+    let params = [];
+    if (place !== "") {
+        params.push(`place=${encodeURIComponent(place)}`);
     }
-    return REPORT_LINK_PREFIX + hash;
+    if (Object.keys(widgetPatches).length > 0) {
+        params.push(`modify_layout=${encodeURIComponent(JSON.stringify(widgetPatches))}`);
+    }
+    return REPORT_LINK_PREFIX + params.join("&");
 }
 
 /**
- * Follows a link of a Rich Text card: report view links change this page's hash (the same tab),
+ * Follows a link of a Rich Text card: report view links set their parameters in this page's hash
+ * (the same tab),
  * section links scroll the card to their heading, and website links open in a new tab.
  * @param {Object} editor - The TinyMCE editor.
  * @param {HTMLAnchorElement} anchor - The link.
@@ -79,7 +85,8 @@ function followLink(editor, anchor) {
     const href = anchor.getAttribute("href") ?? "";
     const linkType = getLinkType(href);
     if (linkType === "report") {
-        window.location.hash = href.slice(REPORT_LINK_PREFIX.length);
+        // A link without a place keeps the current one
+        navigateTo(Object.fromEntries(new URLSearchParams(href.slice(REPORT_LINK_PREFIX.length))));
     } else if (linkType === "section") {
         const target = getSectionLinkTarget(editor, href);
         if (target) {
@@ -141,13 +148,12 @@ function getSelectedLink(editor) {
 /**
  * Opens the dialog matching a link's type: TinyMCE's own for website links.
  * @param {Object} editor - The TinyMCE editor.
- * @param {string} placeId - The card's current place.
  * @param {HTMLAnchorElement} anchor - The link to edit.
  */
-function openLinkDialogFor(editor, placeId, anchor) {
+function openLinkDialogFor(editor, anchor) {
     const linkType = getLinkType(anchor.getAttribute("href") ?? "");
     if (linkType === "report") {
-        openReportLinkDialog(editor, placeId, anchor);
+        openReportLinkDialog(editor, anchor);
     } else if (linkType === "section") {
         openSectionLinkDialog(editor, anchor);
     } else {
@@ -172,10 +178,9 @@ function getLinkDialogTextData(editor, anchor) {
  * Opens the dialog to insert a report view link (a place, and changes to widgets through
  * modify_layout), or to edit one.
  * @param {Object} editor - The TinyMCE editor.
- * @param {string} placeId - The card's current place, the default for new links.
  * @param {HTMLAnchorElement|null} anchor - The link to edit, or null to insert one.
  */
-function openReportLinkDialog(editor, placeId, anchor = null) {
+function openReportLinkDialog(editor, anchor = null) {
     const placeIds = datasetProperties["place_ids"].map(String);
     // Every card has the report's card types; this card exists, so there is one
     const cardTypes = Object.keys(Object.values(cards)[0].cardTypes);
@@ -198,13 +203,16 @@ function openReportLinkDialog(editor, placeId, anchor = null) {
     // the patch's parts the dialog doesn't know, kept as they are
     const emptyRow = () => ({ widget: "", state: "", type: "", props: {}, extra: {} });
     let rows = [];
-    let place = placeId;
+    // "" for a link without a place (it keeps the reader's), REPORT_LINK_CURRENT_PLACE, or a place id
+    let place = "";
+    const currentPlace = String(currentDataIndex);
+    const getLinkPlace = () => place === REPORT_LINK_CURRENT_PLACE ? currentPlace : place;
     let notes = [];
     const { text: originalText, title } = getLinkDialogTextData(editor, anchor);
 
     if (anchor) {
         const params = new URLSearchParams(anchor.getAttribute("href").slice(REPORT_LINK_PREFIX.length));
-        place = params.get("place") ?? placeId;
+        place = params.get("place") ?? "";
         const ignoredParams = [...params.keys()].filter((key) => key !== "place" && key !== "modify_layout");
         if (ignoredParams.length > 0) {
             notes.push(`The parameters ${ignoredParams.join(", ")} aren't supported and will be removed.`);
@@ -338,7 +346,7 @@ function openReportLinkDialog(editor, placeId, anchor = null) {
                 data[`row${index}_prop_${key}`] = value;
             }
         });
-        data.href = buildReportLinkHref(place, buildPatches());
+        data.href = buildReportLinkHref(getLinkPlace(), buildPatches());
         return data;
     };
 
@@ -354,7 +362,9 @@ function openReportLinkDialog(editor, placeId, anchor = null) {
                     { type: "input", name: "text", label: "Text to display" },
                     { type: "input", name: "title", label: "Title" },
                     { type: "listbox", name: "place", label: "Place",
-                        items: withValue(placeIds.map((id) => ({ text: id, value: id })), place, "no data") },
+                        items: withValue([{ text: "No change", value: "" },
+                            { text: `Current place (${currentPlace})`, value: REPORT_LINK_CURRENT_PLACE },
+                            ...placeIds.map((id) => ({ text: id, value: id }))], place, "no data") },
                     ...rows.map(makeRowItems),
                     { type: "button", name: "add_row", text: "Add widget change", buttonType: "secondary" },
                     { type: "input", name: "href", label: "Link", enabled: false },
@@ -385,9 +395,15 @@ function openReportLinkDialog(editor, placeId, anchor = null) {
             },
             onSubmit: (api) => {
                 const data = readData(api.getData());
+                const widgetPatches = buildPatches();
+                if (place === "" && Object.keys(widgetPatches).length === 0) {
+                    editor.windowManager.alert("Select a place or add a widget change.");
+                    return;
+                }
                 api.close();
-                const href = buildReportLinkHref(place, buildPatches());
-                applyLinkDialog(editor, anchor, href, data.text || `Place ${place}`, data.title, originalText);
+                const href = buildReportLinkHref(getLinkPlace(), widgetPatches);
+                applyLinkDialog(editor, anchor, href, data.text || (place === "" ? "Report view" : `Place ${getLinkPlace()}`),
+                    data.title, originalText);
             },
         };
     };
@@ -469,9 +485,8 @@ function openSectionLinkDialog(editor, anchor = null) {
  * Adds the link buttons to a Rich Text editor, and makes its link clicks follow followLink().
  * Called from the editor's setup.
  * @param {Object} editor - The TinyMCE editor.
- * @param {Function} getPlaceId - Returns the card's current place.
  */
-function setupEditorLinks(editor, getPlaceId) {
+function setupEditorLinks(editor) {
     // Replaces TinyMCE's link button; its dialog stays for website links
     editor.ui.registry.addMenuButton("linkmenu", {
         icon: "link",
@@ -480,7 +495,7 @@ function setupEditorLinks(editor, getPlaceId) {
             { type: "menuitem", text: "Website link...", icon: "link",
                 onAction: () => editor.execCommand("mceLink") },
             { type: "menuitem", text: "Report view link...", icon: "browse",
-                onAction: () => openReportLinkDialog(editor, getPlaceId()) },
+                onAction: () => openReportLinkDialog(editor) },
             { type: "menuitem", text: "Section link...", icon: "bookmark",
                 onAction: () => openSectionLinkDialog(editor) },
         ]),
@@ -490,7 +505,7 @@ function setupEditorLinks(editor, getPlaceId) {
         tooltip: "Edit link",
         onAction: () => {
             const anchor = getSelectedLink(editor);
-            if (anchor) { openLinkDialogFor(editor, getPlaceId(), anchor); }
+            if (anchor) { openLinkDialogFor(editor, anchor); }
         },
     });
     editor.ui.registry.addButton("linkopen", {

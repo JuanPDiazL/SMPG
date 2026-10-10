@@ -883,7 +883,7 @@ class RichTextEditor {
                 this.pendingEditor = editor;
                 editor.on("SetContent", () => this.highlightTemplateTokens());
                 // Website, report view and section links
-                setupEditorLinks(editor, () => this.placeId);
+                setupEditorLinks(editor);
                 // Inserts a template variable, or edits the selected one
                 editor.ui.registry.addButton("templatevariable", {
                     icon: "addtag",
