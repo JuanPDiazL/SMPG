@@ -43,6 +43,9 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         + "form,input,button,select,option,optgroup,textarea,label,fieldset,"
         + "legend,datalist,output,iframe,frame,frameset,object,embed,applet,"
         + "param,video,audio,source,track,canvas,svg,math,dialog",
+    // Enter on an empty last line leaves a blockquote or place text block (div: the editor's only
+    // divs are place text blocks, as new paragraphs are <p>)
+    end_container_on_empty_block: "blockquote,div",
     // Links keep their address as written: report view links are relative (./index.html#...)
     convert_urls: false,
     // Website links open in a new tab by default
@@ -72,7 +75,7 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         insert: {
             icon: "plus",
             tooltip: "Insert",
-            items: "templatevariable linkmenu table hr",
+            items: "templatevariable linkmenu placeblock table hr",
         },
     },
     // Floating toolbar on selected text; the insert toolbar (whose image button inserts
@@ -876,6 +879,8 @@ class RichTextEditor {
         tinymce.init({
             ...TEXT_EDITOR_TINYMCE_OPTIONS,
             target: textArea.node(),
+            // Place text blocks' styles depend on the report's places
+            content_style: TEXT_EDITOR_TINYMCE_OPTIONS.content_style + getPlaceBlockContentStyle(),
             // Template variables become locked pieces. No capture group: TinyMCE would only
             // show the group's text, hiding the braces.
             noneditable_regexp: /\{\{.+?\}\}/g,
@@ -884,6 +889,8 @@ class RichTextEditor {
                 editor.on("SetContent", () => this.highlightTemplateTokens());
                 // Website, report view and section links
                 setupEditorLinks(editor);
+                // Text shown in view mode only for one place
+                setupPlaceBlocks(editor);
                 // Inserts a template variable, or edits the selected one
                 editor.ui.registry.addButton("templatevariable", {
                     icon: "addtag",
@@ -930,13 +937,15 @@ class RichTextEditor {
 
     /**
      * Loads the document for the current mode: the template in edit mode, and in view mode a
-     * read-only copy with the template variables filled in for the current place.
+     * read-only copy for the current place, without other places' text blocks and with the
+     * template variables filled in.
      */
     render() {
         this.editorContainer.classed("text-editor-view", !this.options.editMode);
         if (!this.editor) { return; }
         const content = this.options.editMode ? this.options.text
-            : fillTemplateVariables(this.options.text, getTextEditorTemplateContext(this.placeId));
+            : fillTemplateVariables(filterPlaceBlocks(this.options.text, this.placeId),
+                getTextEditorTemplateContext(this.placeId));
         // content is loaded while editable, then set read-only in view mode
         this.editor.mode.set("design");
         this.editor.setContent(content);
