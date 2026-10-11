@@ -9,6 +9,28 @@
     height: fit-content;
 }
 
+/* The title and the buttons are centered vertically, also when a long title wraps. The title
+   comes first and takes the remaining width; the buttons (floated right in their group, so in
+   their creation order from the right) keep their size. */
+.card-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.card-header > .card-title-select {
+    order: -1;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.card-header > div:not(.card-title-select) {
+    flex-shrink: 0;
+}
+/* The widget type list opens right below the header */
+.card-header > .w3-dropdown-content {
+    top: 100%;
+    left: 0;
+}
+
 p.card-title {
     margin: 1em;
 }
@@ -41,11 +63,13 @@ body.report-reader-mode .plot-card.header-hidden {
     position: relative;
     display: flex;
 }
-/* Card headers are 36px tall: a 24px title line with 6px padding, and 28px buttons with 4px
-   margins */
-.card-title-select-button {
+/* Card headers are at least 36px tall: a 24px title line with 6px padding, and 28px buttons with
+   4px margins. Only the title: the widget type list's items share its class. */
+.card-title-select > .card-title-select-button {
     padding: 6px 12px;
     line-height: 24px;
+}
+.card-title-select-button {
     max-width: 100%;
     text-align: left;
     white-space: normal;
