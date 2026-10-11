@@ -47,35 +47,42 @@
     background-color: var(--dark-bg-color);
 }
 
+/* Map lines keep their width and dashes on screen at any zoom, and follow the map's size through
+   --map-scale (set by d3Map.updateMapScale()): sizes are written as calc(Npx * var(--map-scale)),
+   where N is in the map's 800-unit viewBox. */
+.fixed-stroke {
+    vector-effect: non-scaling-stroke;
+}
+
 /* Outlines of the hovered and selected places: a 2px line on a 4px white halo (.selector-halo),
    for 4px in all. The halo stays white in dark mode. */
 .selector-halo {
     fill: none;
     stroke: white;
-    stroke-width: 4px;
+    stroke-width: calc(4px * var(--map-scale, 1));
     stroke-linejoin: round;
     pointer-events: none;
 }
 .selection-path {
     fill: none;
     stroke: red;
-    stroke-width: 2px;
+    stroke-width: calc(2px * var(--map-scale, 1));
     stroke-linejoin: round;
     pointer-events: none;
 }
 .persistent-selection-path {
     fill: none;
     stroke: black;
-    stroke-width: 2px;
+    stroke-width: calc(2px * var(--map-scale, 1));
     stroke-linejoin: round;
     pointer-events: none;
-    stroke-dasharray: 8, 4;
+    stroke-dasharray: calc(8px * var(--map-scale, 1)), calc(4px * var(--map-scale, 1));
 }
 
 .country {
     /* fill: white; */
     stroke: black;
-    stroke-width: .75px;
+    stroke-width: calc(.75px * var(--map-scale, 1));
     stroke-linecap: round;
     /* stroke-dasharray: 8, 4; */
 }.darkmode .country {
@@ -85,9 +92,9 @@
 .reference-polygon {
     fill: none;
     stroke: black;
-    stroke-width: .5px;
+    stroke-width: calc(.5px * var(--map-scale, 1));
     stroke-linecap: round;
-    stroke-dasharray: 8, 4;
+    stroke-dasharray: calc(8px * var(--map-scale, 1)), calc(4px * var(--map-scale, 1));
 }
 
 

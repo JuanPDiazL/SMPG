@@ -400,7 +400,7 @@ class d3Map {
             .selectAll(".country")
             .data(this.geoJsonReferenceMap.features)
             .enter().append("path")
-            .attr("class", "reference-polygon rescalable")
+            .attr("class", "reference-polygon fixed-stroke")
             .attr("d", d3.geoPath().projection(this.projection))
             .style("fill", "#ffff")
 
@@ -409,7 +409,7 @@ class d3Map {
             .selectAll(".country")
             .data(this.geoJsonMap.features)
             .enter().append("path")
-            .attr("class", d => `country country-${d.properties[idField]} w3-ripple rescalable`)
+            .attr("class", d => `country country-${d.properties[idField]} w3-ripple fixed-stroke`)
             .attr("d", d3.geoPath().projection(this.projection))
             .on("mouseover", (event, d) => {
                 mapSelectorPath
@@ -429,13 +429,13 @@ class d3Map {
         // any fill color; each variable holds both paths, which take the same shape
         const persistentSelector = this.svg.append("g")
             .attr("class", "map-persistent-selector zoomable");
-        persistentSelector.append("path").attr("class", "selector-halo rescalable");
-        persistentSelector.append("path").attr("class", "persistent-selection-path rescalable");
+        persistentSelector.append("path").attr("class", "selector-halo fixed-stroke");
+        persistentSelector.append("path").attr("class", "persistent-selection-path fixed-stroke");
         this.mapPersistentSelectorPath = persistentSelector.selectAll("path");
         const selector = this.svg.append("g")
             .attr("class", "map-selector zoomable");
-        selector.append("path").attr("class", "selector-halo rescalable");
-        selector.append("path").attr("class", "selection-path rescalable");
+        selector.append("path").attr("class", "selector-halo fixed-stroke");
+        selector.append("path").attr("class", "selection-path fixed-stroke");
         const mapSelectorPath = selector.selectAll("path");
 
         this.polygonTooltips = this.polygons.append("title")
@@ -458,23 +458,24 @@ class d3Map {
         this.legend = this.svg.append("g")
             .attr("class", "map-legend");
 
-        // Store initial properties for each element
+        // Lines (.fixed-stroke) keep their size on screen through CSS (see map.css), scaled with the
+        // map's size by --map-scale, kept current here
+        this.resizeObserver = new ResizeObserver(() => this.updateMapScale());
+        this.resizeObserver.observe(this.svg.node());
+
+        // Labels keep their size on screen through updates on zoom (see applyZoom()); their
+        // initial properties are stored here
         this.svg.selectAll(".rescalable")
             .each(function() {
                 d3.select(this).datum(d => ({
                     ...d, 
                     baseStrokeWidth: parseFloat(getComputedStyle(d3.select(this).node()).strokeWidth) || 1,
-                    baseFontSize: parseFloat(d3.select(this).attr("font-size")) || this.FONT_SIZE,
-                    // e.g. [8, 4] from "8px, 4px"; null for solid lines
-                    baseDashArray: getComputedStyle(this).strokeDasharray === "none" ? null
-                        : getComputedStyle(this).strokeDasharray.split(",").map(parseFloat),
+                    baseFontSize: parseFloat(d3.select(this).attr("font-size")) || this.FONT_SIZE
                 }));
             });
             
         // Looked up once, as the zoom handler runs on every frame
         this.zoomables = this.svg.selectAll(".zoomable");
-        this.rescalablePaths = this.svg.selectAll("path.rescalable");
-        this.dashedPaths = this.rescalablePaths.filter(d => d.baseDashArray !== null);
         this.rescalableTexts = this.svg.selectAll("text.rescalable");
 
         // Each label's polygon size on the map, at zoom 1, for updateLabelVisibility()
@@ -515,15 +516,14 @@ class d3Map {
     }
 
     /**
-     * Applies a zoom transform: moves the map, and keeps lines (dashes included) and labels the
-     * same size on screen.
-     * While focusPlace() animates, labels are hidden and left as they are, to save work per frame.
+     * Applies a zoom transform: moves the map, and keeps labels the same size on screen (lines
+     * do through CSS, see updateMapScale()).
+     * While focusPlace() animates, labels are hidden and left as they are, so nothing is updated
+     * per frame but the map's position.
      * @param {Object} transform - A d3 zoom transform.
      */
     applyZoom(transform) {
         this.zoomables.attr("transform", transform);
-        this.rescalablePaths.style("stroke-width", d => d.baseStrokeWidth / transform.k);
-        this.dashedPaths.style("stroke-dasharray", d => d.baseDashArray.map(v => v / transform.k).join(" "));
         if (!this.svg.classed("map-moving")) {
             this.rescalableTexts
                 .attr("font-size", d => d.baseFontSize / transform.k)
@@ -566,6 +566,27 @@ class d3Map {
                 this.style.display = display;
             }
         });
+    }
+
+    /**
+     * Sets --map-scale, the map's drawing scale (screen pixels per viewBox unit), on the SVG. Line
+     * widths and dashes are screen sizes (vector-effect: non-scaling-stroke) multiplied by it, so
+     * they ignore the zoom but follow the map's size. Called when the map's size changes; a hidden
+     * map keeps its last value.
+     */
+    updateMapScale() {
+        const box = this.svg.node().getBoundingClientRect();
+        if (box.width === 0 || box.height === 0) { return; }
+        // The viewBox is scaled to fit (xMidYMid meet)
+        const scale = Math.min(box.width / this.internal_width, box.height / this.internal_height);
+        this.svg.style("--map-scale", scale);
+    }
+
+    /**
+     * Stops watching the map's size. Called when the card is emptied.
+     */
+    destroy() {
+        this.resizeObserver.disconnect();
     }
 
     /**
