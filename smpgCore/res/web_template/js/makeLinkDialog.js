@@ -414,6 +414,21 @@ function openReportLinkDialog(editor, anchor = null) {
 }
 
 /**
+ * Returns an id for a heading, from its text, that no element of the document uses yet.
+ * @param {Element} heading - The heading.
+ * @param {Element} root - The document's body.
+ * @returns {string} section-<heading-text>, followed by -2, -3... when taken.
+ */
+function getUniqueHeadingId(heading, root) {
+    const base = `section-${_.kebabCase(heading.textContent) || "heading"}`;
+    let id = base;
+    for (let n = 2; root.querySelector(`[id="${CSS.escape(id)}"]`); n++) {
+        id = `${base}-${n}`;
+    }
+    return id;
+}
+
+/**
  * Opens the dialog to insert a section link (to a heading of the same card), or to edit one.
  * The heading gets an id if it has none.
  * @param {Object} editor - The TinyMCE editor.
@@ -468,13 +483,7 @@ function openSectionLinkDialog(editor, anchor = null) {
             api.close();
             editor.undoManager.transact(() => {
                 if (!target.id) {
-                    // A unique id from the heading's text
-                    const base = `section-${_.kebabCase(target.textContent) || "heading"}`;
-                    let id = base;
-                    for (let n = 2; editor.getBody().querySelector(`[id="${CSS.escape(id)}"]`); n++) {
-                        id = `${base}-${n}`;
-                    }
-                    editor.dom.setAttrib(target, "id", id);
+                    editor.dom.setAttrib(target, "id", getUniqueHeadingId(target, editor.getBody()));
                 }
                 applyLinkDialog(editor, anchor, `#${target.id}`,
                     data.text || target.textContent.trim(), data.title, originalText);

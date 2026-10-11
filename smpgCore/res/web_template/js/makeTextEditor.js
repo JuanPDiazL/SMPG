@@ -75,7 +75,7 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         insert: {
             icon: "plus",
             tooltip: "Insert",
-            items: "templatevariable linkmenu placeblock table hr",
+            items: "templatevariable linkmenu tableofcontents placeblock table hr",
         },
     },
     // Floating toolbar on selected text; the insert toolbar (whose image button inserts
@@ -880,7 +880,8 @@ class RichTextEditor {
             ...TEXT_EDITOR_TINYMCE_OPTIONS,
             target: textArea.node(),
             // Place text blocks' styles depend on the report's places
-            content_style: TEXT_EDITOR_TINYMCE_OPTIONS.content_style + getPlaceBlockContentStyle(),
+            content_style: TEXT_EDITOR_TINYMCE_OPTIONS.content_style + getPlaceBlockContentStyle()
+                + getTableOfContentsContentStyle(),
             // Template variables become locked pieces. No capture group: TinyMCE would only
             // show the group's text, hiding the braces.
             noneditable_regexp: /\{\{.+?\}\}/g,
@@ -891,6 +892,8 @@ class RichTextEditor {
                 setupEditorLinks(editor);
                 // Text shown in view mode only for one place
                 setupPlaceBlocks(editor);
+                // Lists of the headings, shown in view mode
+                setupTableOfContents(editor);
                 // Inserts a template variable, or edits the selected one
                 editor.ui.registry.addButton("templatevariable", {
                     icon: "addtag",
@@ -937,14 +940,15 @@ class RichTextEditor {
 
     /**
      * Loads the document for the current mode: the template in edit mode, and in view mode a
-     * read-only copy for the current place, without other places' text blocks and with the
-     * template variables filled in.
+     * read-only copy for the current place, without other places' text blocks, with the tables of
+     * contents filled and the template variables filled in.
      */
     render() {
         this.editorContainer.classed("text-editor-view", !this.options.editMode);
         if (!this.editor) { return; }
         const content = this.options.editMode ? this.options.text
-            : fillTemplateVariables(filterPlaceBlocks(this.options.text, this.placeId),
+            : fillTemplateVariables(
+                buildTablesOfContents(filterPlaceBlocks(this.options.text, this.placeId)),
                 getTextEditorTemplateContext(this.placeId));
         // content is loaded while editable, then set read-only in view mode
         this.editor.mode.set("design");
