@@ -371,8 +371,40 @@ const FOCUS_MIN_SCALE = 0.9;
 const LABEL_PADDING = 3;
 const LABEL_MAX_AREA_SHARE = 0.4;
 
+/**
+ * Splits a TopoJSON layer's borders among its polygons: each border goes to the first polygon
+ * that uses it, so a border shared by two polygons is drawn once. Small paths, one per polygon,
+ * draw faster than one path for the whole layer, which the browser redraws whole on every frame.
+ * @param {Object} topology - The TopoJSON topology.
+ * @param {Object} object - The layer's GeometryCollection in the topology.
+ * @returns {Array<Object>} One GeoJSON MultiLineString feature per geometry, in the same order as
+ *   topojson.feature() returns the polygons.
+ */
+function getPolygonBorders(topology, object) {
+    const ownedArcs = object.geometries.map(() => []);
+    const ownedArcIndexes = new Set();
+    object.geometries.forEach((geometry, index) => {
+        // Arcs are listed by ring; a negative index (~i) is arc i reversed
+        for (const arc of (geometry.arcs ?? []).flat(Infinity)) {
+            const arcIndex = arc < 0 ? ~arc : arc;
+            if (!ownedArcIndexes.has(arcIndex)) {
+                ownedArcIndexes.add(arcIndex);
+                ownedArcs[index].push([arcIndex]);
+            }
+        }
+    });
+    return ownedArcs.map((arcs) => topojson.feature(topology, { type: "MultiLineString", arcs }));
+}
+
 class d3Map {
-    constructor(containerElement, geoJsonMap, geoJsonReferenceMap, options={}) {
+    /**
+     * @param {d3.Selection} containerElement - The element the map is drawn in.
+     * @param {Object} geoJsonMap - The places' GeoJSON features.
+     * @param {Object} geoJsonReferenceMap - The reference layer's GeoJSON features.
+     * @param {Object} borders - Each layer's borders, {map, reference}, from getPolygonBorders().
+     * @param {Object} [options] - {label_field, legend_stat, show_legend}.
+     */
+    constructor(containerElement, geoJsonMap, geoJsonReferenceMap, borders, options={}) {
         this.options = {
             label_field: options.label_field ?? idField,
             legend_stat: options.legend_stat ?? "None",
@@ -394,22 +426,29 @@ class d3Map {
         this.projection = d3.geoMercator()
         .fitSize([this.internal_width, this.internal_height], geoJsonReferenceMap); // Fit the map to the SVG viewport size
 
-        // Draw the map
-        const referencePolygons = this.svg.append("g")
-            .attr("class", "reference-map-polygons zoomable")
+        // Draw the map: each layer's polygons are fills only, under their borders, each drawn once
+        const referenceLayer = this.svg.append("g")
+            .attr("class", "reference-map-polygons zoomable");
+        const referencePolygons = referenceLayer
             .selectAll(".country")
             .data(this.geoJsonReferenceMap.features)
             .enter().append("path")
-            .attr("class", "reference-polygon fixed-stroke")
+            .attr("class", "reference-polygon")
             .attr("d", d3.geoPath().projection(this.projection))
             .style("fill", "#ffff")
+        referenceLayer.selectAll(".reference-map-borders")
+            .data(borders.reference)
+            .enter().append("path")
+            .attr("class", "reference-map-borders fixed-stroke")
+            .attr("d", d3.geoPath().projection(this.projection));
 
-        this.polygons = this.svg.append("g")
-            .attr("class", "map-polygons zoomable")
+        const placesLayer = this.svg.append("g")
+            .attr("class", "map-polygons zoomable");
+        this.polygons = placesLayer
             .selectAll(".country")
             .data(this.geoJsonMap.features)
             .enter().append("path")
-            .attr("class", d => `country country-${d.properties[idField]} w3-ripple fixed-stroke`)
+            .attr("class", d => `country country-${d.properties[idField]} w3-ripple`)
             .attr("d", d3.geoPath().projection(this.projection))
             .on("mouseover", (event, d) => {
                 mapSelectorPath
@@ -424,6 +463,11 @@ class d3Map {
             .on("click", (event, d) => {
                 navigateTo({"place": d.properties[idField]});
             })
+        placesLayer.selectAll(".map-borders")
+            .data(borders.map)
+            .enter().append("path")
+            .attr("class", "map-borders fixed-stroke")
+            .attr("d", d3.geoPath().projection(this.projection));
 
         // draw the selected and hovered place outlines, each on a white halo path so it shows on
         // any fill color; each variable holds both paths, which take the same shape
@@ -834,7 +878,8 @@ function makeD3Map(containerElement) {
     mapStatsCategories["Start of Season"] = getSosCategories(); 
     mapStatsCategories["Forecast Start of Season"] = getSosCategories();
 
-    const map = new d3Map(containerElement, mapJson, referenceMapJson);
+    const map = new d3Map(containerElement, mapJson, referenceMapJson,
+        { map: mapBorders, reference: referenceMapBorders });
     return map;
 }
 

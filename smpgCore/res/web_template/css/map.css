@@ -79,22 +79,28 @@
     stroke-dasharray: calc(8px * var(--map-scale, 1)), calc(4px * var(--map-scale, 1));
 }
 
-.country {
-    /* fill: white; */
+/* Polygons are fills only; their borders are drawn over the fills (.map-borders,
+   .reference-map-borders), split so a border shared by two polygons is drawn once */
+.map-borders {
+    fill: none;
     stroke: black;
     stroke-width: calc(.75px * var(--map-scale, 1));
     stroke-linecap: round;
-    /* stroke-dasharray: 8, 4; */
-}.darkmode .country {
+    pointer-events: none;
+}.darkmode .map-borders {
     stroke: var(--dark-bg-color);
 }
 
 .reference-polygon {
     fill: none;
+}
+.reference-map-borders {
+    fill: none;
     stroke: black;
     stroke-width: calc(.5px * var(--map-scale, 1));
     stroke-linecap: round;
     stroke-dasharray: calc(8px * var(--map-scale, 1)), calc(4px * var(--map-scale, 1));
+    pointer-events: none;
 }
 
 

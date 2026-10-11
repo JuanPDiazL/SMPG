@@ -92,6 +92,9 @@ if(hasMap) {
 
     var mapJson = topojson.feature(topoJsonObjectMap, topoJsonObjectMap.objects.map);
     var referenceMapJson = topojson.feature(referenceTopoJsonObjectMap, referenceTopoJsonObjectMap.objects.map);
+    // Each layer's borders, split among its polygons so a border between two places is drawn once
+    var mapBorders = getPolygonBorders(topoJsonObjectMap, topoJsonObjectMap.objects.map);
+    var referenceMapBorders = getPolygonBorders(referenceTopoJsonObjectMap, referenceTopoJsonObjectMap.objects.map);
 
     // Populate stat selects
     var property_ids = Object.keys(Object.values(mapJson["features"])[0]["properties"]);
