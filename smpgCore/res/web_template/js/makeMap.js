@@ -366,6 +366,10 @@ let getPlaceMapStats = (place) => {
 const FOCUS_FILL = 0.6;
 const FOCUS_DURATION = 750;
 const FOCUS_MIN_SCALE = 0.9;
+// Map labels show when they fit in their polygon (see d3Map.updateLabelVisibility()): the room
+// around the text, in viewBox units, and the largest share of the polygon's area they can cover
+const LABEL_PADDING = 3;
+const LABEL_MAX_AREA_SHARE = 0.4;
 
 class d3Map {
     constructor(containerElement, geoJsonMap, geoJsonReferenceMap, options={}) {
@@ -376,9 +380,6 @@ class d3Map {
         };
         this.geoJsonMap = geoJsonMap;
         this.geoJsonReferenceMap = geoJsonReferenceMap;
-
-        const layerArea = d3.geoArea(geoJsonReferenceMap);
-        const layerBounds = d3.geoBounds(geoJsonReferenceMap);
 
         this.FONT_SIZE = 13;
         this.internal_width = 800;
@@ -450,11 +451,6 @@ class d3Map {
             .attr("font-size", this.FONT_SIZE)
             .style("dominant-baseline", "middle")
             // .style("text-anchor", "middle")
-            .style("display", d => {
-                const areaRatio = d3.geoArea(d) / layerArea;
-                const xRatio = (d.bbox[2] - d.bbox[0]) / (layerBounds[1][0] - layerBounds[0][0]);
-                return areaRatio > 0.004 && xRatio > 0.08 ? null : "none"
-            })
 
         this.legend = this.svg.append("g")
             .attr("class", "map-legend");
@@ -473,6 +469,15 @@ class d3Map {
         this.zoomables = this.svg.selectAll(".zoomable");
         this.rescalablePaths = this.svg.selectAll("path.rescalable");
         this.rescalableTexts = this.svg.selectAll("text.rescalable");
+
+        // Each label's polygon size on the map, at zoom 1, for updateLabelVisibility()
+        const path = d3.geoPath().projection(this.projection);
+        this.labels.each(d => {
+            const [[x0, y0], [x1, y1]] = path.bounds(d);
+            d.labelSpace = { width: x1 - x0, height: y1 - y0, area: path.area(d) };
+        });
+        this.measureLabels();
+        this.updateLabelVisibility(1);
 
         // The place last shown, so the map only moves when the place changes (see update())
         this.lastPlace = null;
@@ -514,7 +519,44 @@ class d3Map {
             this.rescalableTexts
                 .attr("font-size", d => d.baseFontSize / transform.k)
                 .style("stroke-width", d => d.baseStrokeWidth / transform.k);
+            this.updateLabelVisibility(transform.k);
         }
+    }
+
+    /**
+     * Measures each label's text width at FONT_SIZE, for updateLabelVisibility(). A canvas
+     * measures hidden labels too.
+     */
+    measureLabels() {
+        this.labelCanvas = this.labelCanvas ?? document.createElement("canvas").getContext("2d");
+        // As .map-text-label in map.css
+        this.labelCanvas.font = `${this.FONT_SIZE}px Arial, Helvetica, sans-serif`;
+        this.labels.each(d => {
+            d.labelWidth = this.labelCanvas.measureText(String(d.properties[this.options.label_field] ?? "")).width;
+        });
+    }
+
+    /**
+     * Shows the labels that fit in their polygon at a zoom level: the label's box (with room for
+     * its outline) must fit in the polygon's bounding box, and cover at most LABEL_MAX_AREA_SHARE
+     * of the polygon's area, which keeps labels out of thin or irregular polygons. Labels keep
+     * their size on screen, so only the polygons grow with the zoom.
+     * @param {number} k - The zoom level.
+     */
+    updateLabelVisibility(k) {
+        const height = this.FONT_SIZE + 2 * LABEL_PADDING;
+        this.labels.each(function(d) {
+            const width = d.labelWidth + 2 * LABEL_PADDING;
+            const fits = d.labelWidth > 0
+                && width <= k * d.labelSpace.width
+                && height <= k * d.labelSpace.height
+                && width * height <= LABEL_MAX_AREA_SHARE * k * k * d.labelSpace.area;
+            // Only labels that change are touched
+            const display = fits ? "" : "none";
+            if (this.style.display !== display) {
+                this.style.display = display;
+            }
+        });
     }
 
     /**
@@ -624,6 +666,8 @@ class d3Map {
         this.options.label_field = fieldId;
         this.labels.text(d => d.properties[this.options.label_field]);
         this.polygonTooltips.text(d => d.properties[this.options.label_field]);
+        this.measureLabels();
+        this.updateLabelVisibility(d3.zoomTransform(this.svg.node()).k);
     }
 
     changeLegend(statId) {
