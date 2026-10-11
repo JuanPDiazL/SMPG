@@ -369,6 +369,11 @@ function makeAccumulationPercentilesPlot(containerElement) {
     let xNames = [...datasetProperties['year_ids']];
     xNames.push(datasetProperties['current_season_id']);
     
+    const customSettings = {
+        bar: {
+            zerobased: false,
+        }
+    };
     const xsDefinition = {
         'default_xs': ascendingArray(xNames.length),
         'end_xs': [xNames.length - 1],
@@ -402,7 +407,7 @@ function makeAccumulationPercentilesPlot(containerElement) {
         }
     };
     const plot = new BBPlot(containerElement, getAccumulationsCurrentPlotData, xNames, 
-        xsDefinition, xsDataRelation, plotTypes);
+        xsDefinition, xsDataRelation, plotTypes, null, customSettings);
     return plot;
 }
 
@@ -439,6 +444,7 @@ function makeForecastAccumulationPercentilesPlot(containerElement) {
 
     const customSettings = {
         bar: {
+            zerobased: false,
             overlap: true,
             padding: 0,
             width: {
