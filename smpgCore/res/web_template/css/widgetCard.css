@@ -13,6 +13,20 @@ p.card-title {
     margin: 1em;
 }
 
+/* Hidden header (showHeader: false): reader mode shows no header, but a left border in the
+   header's color; edit mode shows the header, striped. The header's color is the same in dark
+   mode, so these are too. Only the card's own header (the map's control panel has one too). */
+body.report-reader-mode .plot-card.header-hidden > .card-header {
+    display: none;
+}
+body.report-reader-mode .plot-card.header-hidden {
+    border-left: 4px solid #607d8b;
+}
+.plot-card.header-hidden > .card-header {
+    background-image: repeating-linear-gradient(-45deg,
+        rgba(255, 255, 255, 0.25) 0 8px, transparent 8px 16px);
+}
+
 .card-body {
     flex-grow: 1; /* Takes remaining space */
     position: relative;

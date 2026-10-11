@@ -148,7 +148,8 @@ class chartCard {
      * @param {string} containerSelector - CSS selector for the element to build the card into.
      * @param {Object} smpgOpts - Initial properties, in the same shape as getProperties()/setProperties()
      *   (e.g. {smpgCardType: "Map", map: {legend_stat: "Average Total"}}). Only smpgCardType is
-     *   required; the rest is applied via setProperties() once the card is built. A type this
+     *   required; the rest is applied via setProperties() once the card is built. showHeader
+     *   (default true) false hides the header in reader mode. A type this
      *   report doesn't offer builds an "Empty Widget", see invalidCardType.
      */
     constructor(containerSelector, smpgOpts = {}) {
@@ -197,6 +198,8 @@ class chartCard {
         // an unavailable type is recorded in invalidCardType by setProperties() below
         this.cardType = this.isAvailableCardType(smpgOpts.smpgCardType) ? smpgOpts.smpgCardType : "Empty Widget";
         this.invalidCardType = null;
+        // false: no header in reader mode (a left border instead), a striped header in edit mode
+        this.showHeader = smpgOpts.showHeader !== false;
 
         this.elementContainer = d3.select(containerSelector);
         this.cardContainer = this.elementContainer
@@ -244,6 +247,7 @@ class chartCard {
         this.cardElements = {};
         this.changePlot(this.cardType);
         this.setProperties(smpgOpts);
+        this.refreshHeaderDisplay();
     }
 
     changePlot(cardType) {
@@ -268,6 +272,13 @@ class chartCard {
             .on("click", (event) => {
                 unloadWidget(this.elementContainer.node().parentElement.getAttribute("gs-id"));
             });
+
+        this.headerDisplayButton = this.cardButtonGroup.append("span").append("button")
+            .attr("class", `card-button mi w3-button w3-ripple w3-right capture-ignore ${REPORT_EDIT_ONLY_CLASS}`)
+            .on("click", (event) => {
+                this.changeHeaderDisplay(!this.showHeader);
+            });
+        this.refreshHeaderDisplay();
 
         if (this.cardType == "Disabled") {
             this.cardElements = {}
@@ -344,6 +355,7 @@ class chartCard {
 
         return {
             smpgCardType: this.cardType,
+            showHeader: this.showHeader,
             ...cardElementsProps,
         };
     }
@@ -377,8 +389,11 @@ class chartCard {
                 this.changePlot(cardType);
             }
         }
+        if ("showHeader" in properties) {
+            this.changeHeaderDisplay(properties.showHeader !== false);
+        }
         for (const key in properties) {
-            if (key === "smpgCardType") { continue; }
+            if (key === "smpgCardType" || key === "showHeader") { continue; }
             const element = this.cardElements[key];
             if (element && element.setProperties) {
                 element.setProperties(properties[key]);
@@ -390,6 +405,28 @@ class chartCard {
         if (this.cardElements["editor"]) {
             this.refreshEditModeButton();
         }
+    }
+
+    /**
+     * Shows or hides the card's header in reader mode (edit mode shows it striped when hidden).
+     * @param {boolean} state - True to show the header.
+     */
+    changeHeaderDisplay(state) {
+        if (state === this.showHeader) { return; }
+        this.showHeader = state;
+        this.refreshHeaderDisplay();
+        // The body's height changes in reader mode
+        handleResize();
+    }
+
+    /**
+     * Sets the card's hidden-header class, and the header toggle button's icon and title.
+     */
+    refreshHeaderDisplay() {
+        this.cardContainer.classed("header-hidden", !this.showHeader);
+        this.headerDisplayButton
+            .attr("title", this.showHeader ? "Hide header (in reader mode)" : "Show header")
+            .text(this.showHeader ? "web_asset_off" : "web_asset");
     }
 
     /**

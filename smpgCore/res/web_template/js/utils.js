@@ -644,6 +644,8 @@ function setReportEditMode(state) {
     for (const editor of editors) {
         editor.render();
     }
+    // Cards with a hidden header change height
+    handleResize();
 }
 
 /**
