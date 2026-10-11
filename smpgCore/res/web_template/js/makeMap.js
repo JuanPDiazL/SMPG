@@ -645,6 +645,15 @@ class d3Map {
         this.focusing = this.zoomTo(transform, () => { this.focusing = false; });
     }
 
+    /**
+     * Returns whether the map shows the whole region: zoom 1, not panned.
+     * @returns {boolean}
+     */
+    isViewReset() {
+        const { k, x, y } = d3.zoomTransform(this.svg.node());
+        return Math.abs(k - 1) < 1e-6 && Math.abs(x) < 1e-6 && Math.abs(y) < 1e-6;
+    }
+
     update(index) {
         // find geojson entry
         const feature = this.geoJsonMap.features.find(f => f.properties[idField] == index);
@@ -678,8 +687,9 @@ class d3Map {
     }
 
     changeLegend(statId) {
-        // A new statistic shows the whole region, unless a link is zooming to its place
-        if (statId !== this.options.legend_stat && !this.focusing) {
+        // A new statistic shows the whole region, unless a link is zooming to its place or the
+        // map already shows it
+        if (statId !== this.options.legend_stat && !this.focusing && !this.isViewReset()) {
             this.zoomTo(d3.zoomIdentity);
         }
         this.options.legend_stat = statId;
