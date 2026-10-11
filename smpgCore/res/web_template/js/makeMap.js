@@ -464,13 +464,17 @@ class d3Map {
                 d3.select(this).datum(d => ({
                     ...d, 
                     baseStrokeWidth: parseFloat(getComputedStyle(d3.select(this).node()).strokeWidth) || 1,
-                    baseFontSize: parseFloat(d3.select(this).attr("font-size")) || this.FONT_SIZE
+                    baseFontSize: parseFloat(d3.select(this).attr("font-size")) || this.FONT_SIZE,
+                    // e.g. [8, 4] from "8px, 4px"; null for solid lines
+                    baseDashArray: getComputedStyle(this).strokeDasharray === "none" ? null
+                        : getComputedStyle(this).strokeDasharray.split(",").map(parseFloat),
                 }));
             });
             
         // Looked up once, as the zoom handler runs on every frame
         this.zoomables = this.svg.selectAll(".zoomable");
         this.rescalablePaths = this.svg.selectAll("path.rescalable");
+        this.dashedPaths = this.rescalablePaths.filter(d => d.baseDashArray !== null);
         this.rescalableTexts = this.svg.selectAll("text.rescalable");
 
         // Each label's polygon size on the map, at zoom 1, for updateLabelVisibility()
@@ -511,13 +515,15 @@ class d3Map {
     }
 
     /**
-     * Applies a zoom transform: moves the map, and keeps lines and labels the same size on screen.
+     * Applies a zoom transform: moves the map, and keeps lines (dashes included) and labels the
+     * same size on screen.
      * While focusPlace() animates, labels are hidden and left as they are, to save work per frame.
      * @param {Object} transform - A d3 zoom transform.
      */
     applyZoom(transform) {
         this.zoomables.attr("transform", transform);
         this.rescalablePaths.style("stroke-width", d => d.baseStrokeWidth / transform.k);
+        this.dashedPaths.style("stroke-dasharray", d => d.baseDashArray.map(v => v / transform.k).join(" "));
         if (!this.svg.classed("map-moving")) {
             this.rescalableTexts
                 .attr("font-size", d => d.baseFontSize / transform.k)
