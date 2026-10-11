@@ -154,6 +154,8 @@
     overflow: auto;
     height: 100%;
     background-color: inherit;
+    /* With the widgets' own 4px gridstack margin, 8px at the edges, as between widgets */
+    padding: 4px;
 }
 
 .selected {

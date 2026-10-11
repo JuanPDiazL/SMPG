@@ -93,7 +93,11 @@ function handleNavigation(event) {
 function handleResize(event) {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
-        contentHeight = Math.max(900, window.innerHeight - d3.select("#contentHeader").node().getBoundingClientRect().height);
+        // The grid fills the window below the header, inside the content's padding
+        const headerHeight = d3.select("#contentHeader").node().getBoundingClientRect().height;
+        const body = getComputedStyle(document.getElementById("contentBody"));
+        const bodyPadding = parseFloat(body.paddingTop) + parseFloat(body.paddingBottom);
+        contentHeight = Math.max(900, window.innerHeight - headerHeight - bodyPadding);
         grid.cellHeight(contentHeight/GS_V_RES);
         for (const card of Object.values(cards)) {
             for (const elementKey of Object.keys(card.cardElements)) {

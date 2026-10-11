@@ -6,6 +6,7 @@ const GS_V_CELL_SIZE = Math.round(layout.general.gridstack.yResolution * layout.
 var gridstackBaseLayerOptions = {
     animate: false,
     float: true,
+    margin: 4, // around each widget, inside its cells: 8px between widgets
     // row: 6,
     column: GS_H_RES,
     // handle: ".card-header",
