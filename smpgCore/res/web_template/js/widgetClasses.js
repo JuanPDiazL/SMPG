@@ -62,6 +62,8 @@ class BBPlot {
             types: this.chartTypes,
             colors: chartColors,
             unload: true,
+            // The legend is drawn with the data, so the chart is sized again once it's there
+            resizeAfter: true,
         });
         this.plot.xgrids(this.gridLinesGetter(index));
     }
