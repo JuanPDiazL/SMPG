@@ -3,9 +3,36 @@
 
 "use strict";
 
-// A block is <div class="place-block" data-place="40782">...</div>, holding any text
+// A block is <div class="place-block" data-places='["40782","40783"]'>...</div>, holding any
+// text. Place ids are free text, so the list is JSON. Older blocks have one place, in data-place.
 const PLACE_BLOCK_CLASS = "place-block";
 const PLACE_BLOCK_SELECTOR = `div.${PLACE_BLOCK_CLASS}`;
+
+/**
+ * Returns the places of a place text block.
+ * @param {Element} block - The block.
+ * @returns {Array<string>|null} The place ids, or null when data-places isn't a list of strings.
+ */
+function getBlockPlaces(block) {
+    if (!block.hasAttribute("data-places")) {
+        return block.hasAttribute("data-place") ? [block.getAttribute("data-place")] : [];
+    }
+    try {
+        const places = JSON.parse(block.getAttribute("data-places"));
+        return Array.isArray(places) && places.every((place) => typeof place === "string") ? places : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+/**
+ * Returns the value of a block's data-places attribute.
+ * @param {Array<string>} places - The place ids.
+ * @returns {string}
+ */
+function formatBlockPlaces(places) {
+    return JSON.stringify(places);
+}
 
 /**
  * Removes the place text blocks of other places from a document, for view mode.
@@ -18,7 +45,7 @@ function filterPlaceBlocks(html, placeId) {
     // A DOMParser document is inert: nothing in it runs or loads
     const body = new DOMParser().parseFromString(html, "text/html").body;
     for (const block of body.querySelectorAll(PLACE_BLOCK_SELECTOR)) {
-        if (block.getAttribute("data-place") !== String(placeId)) {
+        if (!(getBlockPlaces(block) ?? []).includes(String(placeId))) {
             block.remove();
         }
     }
@@ -26,24 +53,51 @@ function filterPlaceBlocks(html, placeId) {
 }
 
 /**
- * Returns the editor styles for place text blocks: in edit mode, a tinted block with a "Dedicated place text block for [place name]"
- * label, red when this report has no such place. View mode shows them as plain text.
+ * Returns the editor styles for place text blocks: in edit mode, a tinted block with a label
+ * naming its places, red when one of them has no data in this report. View mode shows them as
+ * plain text.
  * @returns {string} CSS for the editor's content_style.
  */
 function getPlaceBlockContentStyle() {
     const block = `body:not(.mce-content-readonly) ${PLACE_BLOCK_SELECTOR}`;
-    const knownPlaces = datasetProperties["place_ids"]
-        .map((id) => `[data-place="${String(id).replace(/[\\"]/g, "\\$&")}"]`)
-        .join(",");
     return ` ${block} { position: relative; margin: 0.5em 0; padding: 1.3em 0.6em 0.1em;`
         + " background-color: rgba(0, 137, 123, 0.07); border-left: 3px solid rgba(0, 137, 123, 0.7); }"
-        // The label is drawn by CSS, so it's never part of the text
-        + ` ${block}::before { content: "Dedicated place text block for " attr(data-place); position: absolute; top: 0.25em;`
+        // The label is drawn by CSS, from attributes that are never saved (see updatePlaceBlockLabels())
+        + ` ${block}::before { content: attr(data-mce-label); position: absolute; top: 0.25em;`
         + " left: 0.6em; font-size: 0.75em; font-weight: bold; color: #00796b; }"
-        + ` ${block}:not(${knownPlaces}) { background-color: rgba(211, 47, 47, 0.08);`
+        + ` ${block}[data-mce-warning] { background-color: rgba(211, 47, 47, 0.08);`
         + " border-left-color: #d32f2f; }"
-        + ` ${block}:not(${knownPlaces})::before { content: "Place " attr(data-place) " (no data)";`
-        + " color: #d32f2f; }";
+        + ` ${block}[data-mce-warning]::before { color: #d32f2f; }`;
+}
+
+/**
+ * Sets the edit-mode labels of the editor's place text blocks, which name their places and the
+ * ones with no data in this report. The label attributes are temporary: never saved.
+ * @param {Object} editor - The TinyMCE editor.
+ */
+function updatePlaceBlockLabels(editor) {
+    const knownPlaces = new Set(datasetProperties["place_ids"].map(String));
+    for (const block of editor.getBody().querySelectorAll(PLACE_BLOCK_SELECTOR)) {
+        const places = getBlockPlaces(block);
+        let label;
+        let warning = true;
+        if (places === null) {
+            label = "Dedicated place text block with an invalid place list";
+        } else if (places.length === 0) {
+            label = "Dedicated place text block without places";
+        } else {
+            const unknown = places.filter((place) => !knownPlaces.has(place));
+            label = `Dedicated place text block for ${places.join(", ")}`
+                + (unknown.length > 0 ? ` (no data: ${unknown.join(", ")})` : "");
+            warning = unknown.length > 0;
+        }
+        if (block.getAttribute("data-mce-label") !== label) {
+            block.setAttribute("data-mce-label", label);
+        }
+        if (block.hasAttribute("data-mce-warning") !== warning) {
+            block.toggleAttribute("data-mce-warning", warning);
+        }
+    }
 }
 
 /**
@@ -58,51 +112,63 @@ function getPlaceBlock(editor, node) {
 
 /**
  * Opens the dialog to insert a place text block around the selected paragraphs (or the caret's
- * paragraph), or to change a block's place.
+ * paragraph), or to change a block's places.
  * @param {Object} editor - The TinyMCE editor.
  * @param {HTMLElement|null} block - The block to change, or null to insert one.
  */
 function openPlaceBlockDialog(editor, block = null) {
     const placeIds = datasetProperties["place_ids"].map(String);
-    const place = block ? (block.getAttribute("data-place") ?? "") : String(currentDataIndex);
-    const items = placeIds.map((id) => ({ text: id, value: id }));
-    if (!placeIds.includes(place)) {
-        items.unshift({ text: `${place} (no data)`, value: place });
-    }
+    const selected = block ? (getBlockPlaces(block) ?? []) : [String(currentDataIndex)];
+    // Places without data in this report come first, so they can be unticked
+    const unknown = selected.filter((place) => !placeIds.includes(place));
+    const choices = [...unknown.map((place) => ({ place, text: `${place} (no data)` })),
+        ...placeIds.map((place) => ({ place, text: place }))];
+    // Checkbox names are indexes, as place ids are free text
+    const initialData = Object.fromEntries(choices.map((choice, index) =>
+        [`place${index}`, selected.includes(choice.place)]));
 
     editor.windowManager.open({
         title: block ? "Change place text" : "Insert place text",
         body: {
             type: "panel",
             items: [
-                { type: "htmlpanel", html: "<p>The text in this block is only shown in view mode while its"
-                    + " place is selected.</p>" },
-                { type: "listbox", name: "place", label: "Place", items },
+                { type: "htmlpanel", html: "<p>The text in this block is only shown in view mode while one"
+                    + " of its places is selected.</p>" },
+                { type: "grid", columns: 4, items: choices.map((choice, index) =>
+                    ({ type: "checkbox", name: `place${index}`, label: choice.text })) },
             ],
         },
-        initialData: { place },
+        initialData,
         buttons: [
             { type: "cancel", text: "Cancel" },
             { type: "submit", text: block ? "Save" : "Insert", primary: true },
         ],
         onSubmit: (api) => {
-            const selectedPlace = api.getData().place;
+            const data = api.getData();
+            const places = choices.filter((choice, index) => data[`place${index}`])
+                .map((choice) => choice.place);
+            if (places.length === 0) {
+                editor.windowManager.alert("Select at least one place.");
+                return;
+            }
             api.close();
             editor.undoManager.transact(() => {
                 if (block) {
-                    editor.dom.setAttrib(block, "data-place", selectedPlace);
+                    // Older blocks move to data-places
+                    editor.dom.setAttribs(block, { "data-places": formatBlockPlaces(places), "data-place": null });
                 } else {
-                    editor.formatter.apply("placeblock", { place: selectedPlace });
+                    editor.formatter.apply("placeblock", { places: formatBlockPlaces(places) });
                 }
             });
+            updatePlaceBlockLabels(editor);
             editor.nodeChanged();
         },
     });
 }
 
 /**
- * Adds place text blocks to a Rich Text editor: the insert button, the block format, and the
- * small toolbar on a clicked block. Called from the editor's setup.
+ * Adds place text blocks to a Rich Text editor: the insert button, the block format, the
+ * small toolbar on a clicked block, and the edit-mode labels. Called from the editor's setup.
  * @param {Object} editor - The TinyMCE editor.
  */
 function setupPlaceBlocks(editor) {
@@ -112,11 +178,16 @@ function setupPlaceBlocks(editor) {
             block: "div",
             wrapper: true,
             classes: PLACE_BLOCK_CLASS,
-            attributes: { "data-place": "%place" },
+            // Filled in once, as is: the list's own % signs are kept
+            attributes: { "data-places": "%places" },
             merge_siblings: false,
         });
+        editor.serializer.addTempAttr("data-mce-label");
+        editor.serializer.addTempAttr("data-mce-warning");
     });
-    // Inserts a block, or changes the place of the block at the selection, so blocks never nest
+    // Labels follow loaded, pasted, undone and redone content
+    editor.on("SetContent Undo Redo", () => updatePlaceBlockLabels(editor));
+    // Inserts a block, or changes the places of the block at the selection, so blocks never nest
     editor.ui.registry.addButton("placeblock", {
         icon: "visualblocks",
         tooltip: "Place text",
