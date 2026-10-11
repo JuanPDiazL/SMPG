@@ -14,6 +14,8 @@ class BBPlot {
         this.chartTypes = chartTypes;
         this.gridLinesGetter = gridLinesGetter ?? (() => []);
         this.customSettings = customSettings;
+        // Called when the plot area may have moved, see onChartAreaChange()
+        this.chartAreaListener = null;
 
         this.allContainer = this.containerElement.append("div")
             .attr("class", "plot-context-container");
@@ -31,6 +33,8 @@ class BBPlot {
                     bindto: legendContainer.node(),
                 },
             },
+            // New data can change the axes' widths, so where the plot area starts
+            onrendered: () => this.chartAreaListener?.(),
         };
         this.plot = bb.generate(
             _.merge(
@@ -43,6 +47,29 @@ class BBPlot {
                 this.customSettings,
             )
         );
+        // The chart is resized by scaling its viewBox, without rendering again
+        this.resizeObserver = new ResizeObserver(() => this.chartAreaListener?.());
+        this.resizeObserver.observe(chartContainer.node());
+    }
+
+    /**
+     * Returns the plot area's top-left corner (the origin of its g.bb-chart; its bounding box only
+     * covers what is drawn) in the window.
+     * @returns {DOMPoint|null} null while the chart isn't shown.
+     */
+    getChartAreaOrigin() {
+        const chartArea = this.allContainer.node().querySelector(".bb-chart");
+        const matrix = chartArea?.getScreenCTM();
+        return matrix ? new DOMPoint(0, 0).matrixTransform(matrix) : null;
+    }
+
+    /**
+     * Sets the function called when the plot area may have moved: after rendering, and when the
+     * chart's size changes.
+     * @param {Function} listener
+     */
+    onChartAreaChange(listener) {
+        this.chartAreaListener = listener;
     }
 
     update(index) {
@@ -73,6 +100,7 @@ class BBPlot {
     }
 
     destroy() {
+        this.resizeObserver.disconnect();
         this.plot.destroy();
     }
 
@@ -96,6 +124,20 @@ class Table {
             .append("div")
             .attr("class", "chart-table-container w3-hide");
         this.tableCollection = null;
+    }
+
+    /**
+     * Places the table's top-left corner at a point, e.g. its plot's top-left corner.
+     * @param {DOMPoint|null} point - The point in the window; null leaves the table where it is.
+     */
+    alignTo(point) {
+        if (!point) { return; }
+        // The table is placed against the card body (also while it's hidden)
+        const body = this.containerElement.node();
+        const box = body.getBoundingClientRect();
+        this.tableContainer
+            .style("left", `${point.x - box.left - body.clientLeft + body.scrollLeft}px`)
+            .style("top", `${point.y - box.top - body.clientTop + body.scrollTop}px`);
     }
 
     update(index) {
@@ -288,6 +330,11 @@ class chartCard {
         }
 
         this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
+        // A chart's table follows its plot area
+        if (this.cardElements["plot"] && this.cardElements["table"]) {
+            const { plot, table } = this.cardElements;
+            plot.onChartAreaChange(() => table.alignTo(plot.getChartAreaOrigin()));
+        }
 
         if (this.cardElements["table"]) {
             this.toggleTableButton = this.cardButtonGroup.append("span").append("button")
