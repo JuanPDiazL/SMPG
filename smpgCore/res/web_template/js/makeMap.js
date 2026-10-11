@@ -425,15 +425,18 @@ class d3Map {
                 navigateTo({"place": d.properties[idField]});
             })
 
-        // draw selection bounding box rectangle
-        this.mapPersistentSelectorPath = this.svg.append("g")
-            .attr("class", "map-persistent-selector zoomable")
-            .append("path")
-                .attr("class","persistent-selection-path rescalable")
-        const mapSelectorPath = this.svg.append("g")
-            .attr("class", "map-selector zoomable")
-            .append("path")
-                .attr("class","selection-path rescalable")
+        // draw the selected and hovered place outlines, each on a white halo path so it shows on
+        // any fill color; each variable holds both paths, which take the same shape
+        const persistentSelector = this.svg.append("g")
+            .attr("class", "map-persistent-selector zoomable");
+        persistentSelector.append("path").attr("class", "selector-halo rescalable");
+        persistentSelector.append("path").attr("class", "persistent-selection-path rescalable");
+        this.mapPersistentSelectorPath = persistentSelector.selectAll("path");
+        const selector = this.svg.append("g")
+            .attr("class", "map-selector zoomable");
+        selector.append("path").attr("class", "selector-halo rescalable");
+        selector.append("path").attr("class", "selection-path rescalable");
+        const mapSelectorPath = selector.selectAll("path");
 
         this.polygonTooltips = this.polygons.append("title")
             .attr("class", "country-polygon-tooltip")

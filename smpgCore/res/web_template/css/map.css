@@ -47,17 +47,26 @@
     background-color: var(--dark-bg-color);
 }
 
+/* Outlines of the hovered and selected places: a 2px line on a 4px white halo (.selector-halo),
+   for 4px in all. The halo stays white in dark mode. */
+.selector-halo {
+    fill: none;
+    stroke: white;
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
 .selection-path {
     fill: none;
     stroke: red;
-    stroke-width: 4px;
+    stroke-width: 2px;
     stroke-linejoin: round;
     pointer-events: none;
 }
 .persistent-selection-path {
     fill: none;
     stroke: black;
-    stroke-width: 4px;
+    stroke-width: 2px;
     stroke-linejoin: round;
     pointer-events: none;
     stroke-dasharray: 8, 4;
