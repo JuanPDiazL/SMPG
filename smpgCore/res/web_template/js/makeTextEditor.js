@@ -16,7 +16,9 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     // In edit mode, template variables are tinted, and the ones that don't resolve marked red.
     // In edit mode, the body also fills the editor (minus its 1rem margins), so clicks and the
     // context menu work in the blank space below the text.
+    // Links are a lighter blue than the browser's, also once visited (the content has no dark mode).
     content_style: "body.mce-content-readonly { caret-color: transparent; }"
+        + " a, a:visited { color: #1a73e8; }"
         + " html { height: 100%; }"
         + " body:not(.mce-content-readonly) { min-height: calc(100% - 2rem); }"
         + " body:not(.mce-content-readonly) .template-token {"
