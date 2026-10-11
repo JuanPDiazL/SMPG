@@ -121,6 +121,11 @@
 .header-menu-content {
     top: 100%;
     right: 0;
+    /* As wide as the longest item, so labels don't wrap (the menu is placed against the small
+       trigger, which would only give it w3.css's min-width), but never wider than the window
+       (less the page's scrollbar and the header's padding) */
+    width: max-content;
+    max-width: calc(100vw - 32px);
 }
 
 .header-menu-content .header-menu-item {
