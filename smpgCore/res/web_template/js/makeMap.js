@@ -420,9 +420,9 @@ class d3Map {
                 mapSelectorPath
                 .style("display", "none")
             })
+            // The address change updates the cards, this map included
             .on("click", (event, d) => {
-                const placeIndex = d.properties[idField];
-                this.update(placeIndex);
+                navigateTo({"place": d.properties[idField]});
             })
 
         // draw selection bounding box rectangle
@@ -651,8 +651,6 @@ class d3Map {
             this.mapPersistentSelectorPath
                 .attr("d", d3.geoPath().projection(this.projection)(feature))
                 .style("display", null)
-            
-            navigateTo({"place": index});
         }
     }
 

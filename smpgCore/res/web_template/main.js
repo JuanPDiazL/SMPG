@@ -76,7 +76,10 @@ const mapFields = [
         'Forecast Start of Season Anomaly'] : []),
 ];
 
-var currentDataIndex = firstPlaceKey;
+// The place in the address when there is data for it, so the cards are built for it (see
+// handleNavigation() for the message about a place without data)
+var currentDataIndex = datasetProperties['place_ids'].includes(getHashParamsObject()['place'])
+    ? getHashParamsObject()['place'] : firstPlaceKey;
 
 // Initialize map data
 if(hasMap) {
