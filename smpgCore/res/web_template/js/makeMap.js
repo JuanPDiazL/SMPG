@@ -476,6 +476,8 @@ class d3Map {
 
         // The place last shown, so the map only moves when the place changes (see update())
         this.lastPlace = null;
+        // Whether a zoom to a place is running (see focusPlace())
+        this.focusing = false;
 
         // Define the zoom behavior
         this.svgZoomHandler = d3.zoom()
@@ -551,8 +553,35 @@ class d3Map {
     }
 
     /**
-     * Zooms smoothly to a place (instantly when the reader prefers reduced motion, or when the map
-     * isn't shown). A zoom or pan by the reader stops the animation where it is.
+     * Zooms smoothly to a transform (instantly when the reader prefers reduced motion, or when the
+     * map isn't shown). A zoom or pan by the reader stops the animation where it is.
+     * @param {Object} transform - A d3 zoom transform.
+     * @param {Function} [onStop] - Called when the animation ends or is stopped.
+     * @returns {boolean} True when it animates, false when it jumped.
+     */
+    zoomTo(transform, onStop = () => {}) {
+        const box = this.svg.node().getBoundingClientRect();
+        if (box.width === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            this.svg.call(this.svgZoomHandler.transform, transform);
+            return false;
+        }
+        // Cheaper drawing while moving (see .map-moving in map.css); labels are redone at the end
+        const stopMoving = () => {
+            this.svg.classed("map-moving", false);
+            this.applyZoom(d3.zoomTransform(this.svg.node()));
+            onStop();
+        };
+        this.svg.transition()
+            .duration(FOCUS_DURATION)
+            .on("start", () => this.svg.classed("map-moving", true))
+            .on("end interrupt", stopMoving)
+            .call(this.svgZoomHandler.transform, transform);
+        return true;
+    }
+
+    /**
+     * Zooms to a place, see zoomTo(). Until the zoom ends, changing the statistic doesn't reset
+     * the view (see changeLegend()).
      * @param {Array<Object>} features - The place's GeoJSON features.
      */
     focusPlace(features) {
@@ -562,21 +591,7 @@ class d3Map {
         if (transform.k > maxScale) {
             this.svgZoomHandler.scaleExtent([minScale, transform.k]);
         }
-        const box = this.svg.node().getBoundingClientRect();
-        if (box.width === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-            this.svg.call(this.svgZoomHandler.transform, transform);
-            return;
-        }
-        // Cheaper drawing while moving (see .map-moving in map.css); labels are redone at the end
-        const stopMoving = () => {
-            this.svg.classed("map-moving", false);
-            this.applyZoom(d3.zoomTransform(this.svg.node()));
-        };
-        this.svg.transition()
-            .duration(FOCUS_DURATION)
-            .on("start", () => this.svg.classed("map-moving", true))
-            .on("end interrupt", stopMoving)
-            .call(this.svgZoomHandler.transform, transform);
+        this.focusing = this.zoomTo(transform, () => { this.focusing = false; });
     }
 
     update(index) {
@@ -612,6 +627,10 @@ class d3Map {
     }
 
     changeLegend(statId) {
+        // A new statistic shows the whole region, unless a link is zooming to its place
+        if (statId !== this.options.legend_stat && !this.focusing) {
+            this.zoomTo(d3.zoomIdentity);
+        }
         this.options.legend_stat = statId;
         const selectedBins = mapStatsCategories[statId];
         // Update legend based on the selected property
