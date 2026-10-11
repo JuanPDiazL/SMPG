@@ -89,6 +89,20 @@
     font-size: 1.75em;
 }
 
+/* The main and places headers: the title and the buttons are centered vertically, also when the
+   title wraps; the main title takes the space between its buttons */
+#contentHeader, #leftSidebarHeader, #contentHeaderMenu {
+    display: flex;
+    align-items: center;
+}
+#contentHeader > *, #leftSidebarHeader > * {
+    flex-shrink: 0;
+}
+#contentHeader > #contentHeaderText {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
 /* Compact buttons: list items (the places list, the header menu, the card type list) and the
    message window's close button get less padding than w3.css gives them; text sizes are kept.
    Icon buttons are in icons.css, card header buttons in widgetCard.css. */
