@@ -361,6 +361,12 @@ let getPlaceMapStats = (place) => {
     };
 };
 
+// Zooming to a place: the share of the visible map the place fills, the animation's length in
+// milliseconds, and the smallest zoom (also the reader's)
+const FOCUS_FILL = 0.6;
+const FOCUS_DURATION = 750;
+const FOCUS_MIN_SCALE = 0.9;
+
 class d3Map {
     constructor(containerElement, geoJsonMap, geoJsonReferenceMap, options={}) {
         this.options = {
@@ -463,6 +469,14 @@ class d3Map {
                 }));
             });
             
+        // Looked up once, as the zoom handler runs on every frame
+        this.zoomables = this.svg.selectAll(".zoomable");
+        this.rescalablePaths = this.svg.selectAll("path.rescalable");
+        this.rescalableTexts = this.svg.selectAll("text.rescalable");
+
+        // The place last shown, so the map only moves when the place changes (see update())
+        this.lastPlace = null;
+
         // Define the zoom behavior
         this.svgZoomHandler = d3.zoom()
         .filter((event) => {
@@ -472,22 +486,97 @@ class d3Map {
             }
             return true;
         })
-        .scaleExtent([0.9, 8])
+        // Zooming in goes at least as far as focusPlace() goes for the smallest place
+        .scaleExtent([FOCUS_MIN_SCALE, Math.max(8,
+            // on the viewBox alone: the SVG's size isn't final yet
+            ...Array.from(d3.group(this.geoJsonMap.features, f => f.properties[idField]).values(),
+                features => this.getFocusTransform(features, [this.internal_width, this.internal_height]).k))])
         .translateExtent([[this.internal_width*-0.1, this.internal_height*-0.1],
             [this.internal_width*1.1, this.internal_height*1.1]])
-        .on('zoom', (event) => {
-            this.svg.selectAll(".zoomable")
-                .attr("transform", event.transform);
-            this.svg.selectAll(".rescalable")
-            .call(g => {
-                g.filter("text").attr("font-size", d => d.baseFontSize / event.transform.k);
-                g.style("stroke-width", d => d.baseStrokeWidth / event.transform.k);
-            })
-        });
+        .on('zoom', (event) => this.applyZoom(event.transform));
         this.svg.call(this.svgZoomHandler);
 
         this.changeLegend(this.options.legend_stat);
         this.changeLegendDisplay(this.options.show_legend);
+    }
+
+    /**
+     * Applies a zoom transform: moves the map, and keeps lines and labels the same size on screen.
+     * While focusPlace() animates, labels are hidden and left as they are, to save work per frame.
+     * @param {Object} transform - A d3 zoom transform.
+     */
+    applyZoom(transform) {
+        this.zoomables.attr("transform", transform);
+        this.rescalablePaths.style("stroke-width", d => d.baseStrokeWidth / transform.k);
+        if (!this.svg.classed("map-moving")) {
+            this.rescalableTexts
+                .attr("font-size", d => d.baseFontSize / transform.k)
+                .style("stroke-width", d => d.baseStrokeWidth / transform.k);
+        }
+    }
+
+    /**
+     * Returns the visible map's size in viewBox units: the viewBox's, or larger when the map is
+     * letterboxed. The viewBox's while the map isn't shown.
+     * @returns {Array<number>} [width, height]
+     */
+    getVisibleSize() {
+        const box = this.svg.node().getBoundingClientRect();
+        if (box.width === 0 || box.height === 0) {
+            return [this.internal_width, this.internal_height];
+        }
+        // The viewBox is scaled to fit (xMidYMid meet)
+        const scale = Math.min(box.width / this.internal_width, box.height / this.internal_height);
+        return [box.width / scale, box.height / scale];
+    }
+
+    /**
+     * Returns the zoom transform that centers a place, filling FOCUS_FILL of the visible map
+     * along its limiting dimension.
+     * @param {Array<Object>} features - The place's GeoJSON features (a place can have several).
+     * @param {Array<number>} [visibleSize] - The visible map's [width, height] in viewBox units,
+     *   by default getVisibleSize().
+     * @returns {Object} A d3 zoom transform.
+     */
+    getFocusTransform(features, visibleSize = this.getVisibleSize()) {
+        const [visibleWidth, visibleHeight] = visibleSize;
+        const [[x0, y0], [x1, y1]] = d3.geoPath().projection(this.projection)
+            .bounds({ type: "FeatureCollection", features });
+        const k = Math.max(FOCUS_MIN_SCALE, FOCUS_FILL
+            * Math.min(visibleWidth / Math.max(x1 - x0, 1e-6), visibleHeight / Math.max(y1 - y0, 1e-6)));
+        return d3.zoomIdentity
+            .translate(this.internal_width / 2, this.internal_height / 2)
+            .scale(k)
+            .translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
+    }
+
+    /**
+     * Zooms smoothly to a place (instantly when the reader prefers reduced motion, or when the map
+     * isn't shown). A zoom or pan by the reader stops the animation where it is.
+     * @param {Array<Object>} features - The place's GeoJSON features.
+     */
+    focusPlace(features) {
+        const transform = this.getFocusTransform(features);
+        // A letterboxed map can need more zoom than the extent computed at construction
+        const [minScale, maxScale] = this.svgZoomHandler.scaleExtent();
+        if (transform.k > maxScale) {
+            this.svgZoomHandler.scaleExtent([minScale, transform.k]);
+        }
+        const box = this.svg.node().getBoundingClientRect();
+        if (box.width === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            this.svg.call(this.svgZoomHandler.transform, transform);
+            return;
+        }
+        // Cheaper drawing while moving (see .map-moving in map.css); labels are redone at the end
+        const stopMoving = () => {
+            this.svg.classed("map-moving", false);
+            this.applyZoom(d3.zoomTransform(this.svg.node()));
+        };
+        this.svg.transition()
+            .duration(FOCUS_DURATION)
+            .on("start", () => this.svg.classed("map-moving", true))
+            .on("end interrupt", stopMoving)
+            .call(this.svgZoomHandler.transform, transform);
     }
 
     update(index) {
@@ -495,6 +584,12 @@ class d3Map {
         const feature = this.geoJsonMap.features.find(f => f.properties[idField] == index);
         
         if (feature) {
+            // Zooms to the place when it changes, but not on the map's first update, so the
+            // report opens showing the whole region
+            if (this.lastPlace !== null && String(this.lastPlace) !== String(index)) {
+                this.focusPlace(this.geoJsonMap.features.filter(f => f.properties[idField] == index));
+            }
+            this.lastPlace = index;
             // Mark current entry on map
             this.mapPersistentSelectorPath
                 .attr("d", d3.geoPath().projection(this.projection)(feature))

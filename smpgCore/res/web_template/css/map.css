@@ -82,6 +82,16 @@
 }
 
 
+/* While the map zooms to a place: no antialiasing (overriding plots.css), and no labels or hover
+   outline, which are the costliest to draw. Rendering only, so no dark mode counterpart. */
+.map-svg.map-moving path {
+    shape-rendering: optimizeSpeed;
+}
+.map-svg.map-moving .map-labels,
+.map-svg.map-moving .map-selector {
+    display: none;
+}
+
 .map-text-label {
     pointer-events: none;
     text-anchor: middle;
