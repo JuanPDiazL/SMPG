@@ -12,7 +12,9 @@
     background-color: var(--dark-bg-color) !important;
 }
 
+/* Fills the card both ways; the square viewBox is centered in it (xMidYMid meet) */
 .map-svg {
+    width: 100%;
     max-width: 100%;
     height: 100%;
     border: 1px solid #ccc;
