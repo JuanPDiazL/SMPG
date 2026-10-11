@@ -111,20 +111,25 @@ const globalBBChartDefaultOptions = {
             // use d3 to get properties of root svg
             svg = d3.select(svg);
             const viewBox = svg.attr('viewBox').split(' ').map(Number);
-            const svgWidth = svg.node().getBoundingClientRect().width;
-            const svgHeight  = svg.node().getBoundingClientRect().height;
-            // calculate final coordinates
-            const scaleX = svgWidth / viewBox[2];
-            const scaleY  = svgHeight / viewBox[3];
-            let transformedX = pos.xAxis * scaleX;
-            let transformedY = pos.y * scaleY;
-            // avoid out of bounds
-            if(transformedX + width > svgWidth) {transformedX -= width;}
-            if (transformedY + height > svgHeight) {transformedY -= height;}
+            const svgRect = svg.node().getBoundingClientRect();
+            // calculate final coordinates, in the window: the tooltip is fixed (see plots.css), so
+            // it isn't cut off by its card
+            const scaleX = svgRect.width / viewBox[2];
+            const scaleY  = svgRect.height / viewBox[3];
+            let left = svgRect.left + pos.xAxis * scaleX;
+            let top = svgRect.top + pos.y * scaleY;
+            // avoid out of bounds: flip to the other side of the pointer, then keep it in the window
+            const margin = 4;
+            const maxLeft = window.innerWidth - width - margin;
+            const maxTop = window.innerHeight - height - margin;
+            if (left > maxLeft) { left -= width; }
+            if (top > maxTop) { top -= height; }
+            left = Math.max(margin, Math.min(left, maxLeft));
+            top = Math.max(margin, Math.min(top, maxTop));
 
             return {
-                top: transformedY,
-                left: transformedX
+                top: top,
+                left: left
             };
         },
     },

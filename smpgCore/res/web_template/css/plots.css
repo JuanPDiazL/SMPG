@@ -23,6 +23,12 @@
     width: 100%;
 }
 
+/* Chart tooltips are placed in the window (see the tooltip position in bbPlotUtils.js), so the
+   card doesn't cut them off. billboard.js sets position: absolute inline. */
+.bb-tooltip-container {
+    position: fixed !important;
+}
+
 .plot-legend-container {
     padding-top: 0 !important;
     height: fit-content;
