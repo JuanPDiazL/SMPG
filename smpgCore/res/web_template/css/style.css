@@ -89,6 +89,16 @@
     font-size: 1.75em;
 }
 
+/* Compact buttons: list items (the places list, the header menu, the card type list) and the
+   message window's close button get less padding than w3.css gives them; text sizes are kept.
+   Icon buttons are in icons.css, card header buttons in widgetCard.css. */
+.w3-bar-block .w3-bar-item.w3-button {
+    padding: 4px 12px;
+}
+.w3-modal .w3-button.w3-display-topright {
+    padding: 4px 12px;
+}
+
 .header-menu {
     position: relative;
     display: inline-block;

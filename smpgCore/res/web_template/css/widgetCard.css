@@ -41,8 +41,11 @@ body.report-reader-mode .plot-card.header-hidden {
     position: relative;
     display: flex;
 }
+/* Card headers are 36px tall: a 24px title line with 6px padding, and 28px buttons with 4px
+   margins */
 .card-title-select-button {
-    padding: 15px 16px;
+    padding: 6px 12px;
+    line-height: 24px;
     max-width: 100%;
     text-align: left;
     white-space: normal;
@@ -52,7 +55,11 @@ body.report-reader-mode .plot-card.header-hidden {
 
 .card-button {
     display: flex;
-    margin: 8px 8px;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 28px;
+    margin: 4px;
 }
 
 /* Rich text editor cards */

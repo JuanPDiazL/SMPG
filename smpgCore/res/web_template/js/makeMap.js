@@ -972,7 +972,7 @@ class mapControlPanel {
 
         // Reset viewport button
         this.resetViewportButton = this.controlPanelBody.append("button")
-            .attr("class", "w3-button w3-input w3-ripple w3-border w3-section w3-light-gray w3-hover-blue-grey")
+            .attr("class", "map-reset-button w3-button w3-input w3-ripple w3-border w3-light-gray w3-hover-blue-grey")
             .text("Reset Map Viewport")
             .on("click", (event) => {
                 map.svg.call(map.svgZoomHandler.transform, d3.zoomIdentity);
