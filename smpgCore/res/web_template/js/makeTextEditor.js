@@ -933,7 +933,7 @@ class RichTextEditor {
      * view mode shows a filled-in copy, which must never replace it.
      */
     saveTemplate() {
-        if (this.editor && this.options.editMode) {
+        if (this.editor && this.isEditing()) {
             this.options.text = this.editor.getContent();
         }
     }
@@ -944,9 +944,9 @@ class RichTextEditor {
      * contents filled and the template variables filled in.
      */
     render() {
-        this.editorContainer.classed("text-editor-view", !this.options.editMode);
+        this.editorContainer.classed("text-editor-view", !this.isEditing());
         if (!this.editor) { return; }
-        const content = this.options.editMode ? this.options.text
+        const content = this.isEditing() ? this.options.text
             : fillTemplateVariables(
                 buildTablesOfContents(filterPlaceBlocks(this.options.text, this.placeId)),
                 getTextEditorTemplateContext(this.placeId));
@@ -955,12 +955,21 @@ class RichTextEditor {
         this.editor.setContent(content);
         // so undo can't bring back filled-in values in place of the template variables
         this.editor.undoManager.clear();
-        if (!this.options.editMode) {
+        if (!this.isEditing()) {
             this.editor.mode.set("readonly");
             // A read-only body is still contenteditable, so the browser doesn't treat links as links
             // (no address preview on hover)
             this.editor.getBody().contentEditable = "false";
         }
+    }
+
+    /**
+     * Returns whether the editor shows edit mode: its own mode, while the report is in edit mode.
+     * In reader mode, texts always show in view mode.
+     * @returns {boolean}
+     */
+    isEditing() {
+        return this.options.editMode && reportEditMode;
     }
 
     /**
@@ -977,7 +986,7 @@ class RichTextEditor {
      * In edit mode, marks the template variables that don't resolve for the current place.
      */
     highlightTemplateTokens() {
-        if (!this.editor || !this.options.editMode) { return; }
+        if (!this.editor || !this.isEditing()) { return; }
         const context = getTextEditorTemplateContext(this.placeId);
         for (const token of this.editor.getBody().querySelectorAll(".template-token")) {
             // data-mce-content holds the token exactly as typed
@@ -991,7 +1000,7 @@ class RichTextEditor {
 
     update(index) {
         this.placeId = index;
-        if (this.options.editMode) {
+        if (this.isEditing()) {
             this.highlightTemplateTokens();
         } else {
             this.render();

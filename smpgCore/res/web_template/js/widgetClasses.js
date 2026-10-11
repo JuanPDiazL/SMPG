@@ -212,6 +212,8 @@ class chartCard {
             .append("div")
             .attr("class", "card-title-select w3-dropdown-click")
             .on("click.openDropDownMenu", (event) => {
+                // Widget types are only changed in edit mode
+                if (!reportEditMode) { return; }
                 const graphTypeSelectContent = this.graphTypeSelectContent;
                 graphTypeSelectContent
                     .classed("w3-show", !graphTypeSelectContent.classed("w3-show"));
@@ -285,7 +287,7 @@ class chartCard {
         }
         if (this.cardElements["controlPanel"]) {
             this.openMapControlPanelButton = this.cardButtonGroup.append("span").append("button")
-                    .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
+                    .attr("class", `card-button mi w3-button w3-ripple w3-right capture-ignore ${REPORT_EDIT_ONLY_CLASS}`)
                     .attr("title", "Open Control Panel")
                     .text("settings")
                     .on("click", (event) => {
@@ -294,7 +296,7 @@ class chartCard {
         }
         if (this.cardElements["editor"]) {
             this.editModeButton = this.cardButtonGroup.append("span").append("button")
-                    .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
+                    .attr("class", `card-button mi w3-button w3-ripple w3-right capture-ignore ${REPORT_EDIT_ONLY_CLASS}`)
                     .on("click", (event) => {
                         const editor = this.cardElements["editor"];
                         editor.changeEditMode(!editor.options.editMode);

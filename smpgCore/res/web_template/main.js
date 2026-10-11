@@ -8,6 +8,11 @@ var resizeTimeout = false; // holder for timeout
 var resizeDelay = 300; // debounce delay
 var contentHeight = null;
 var editingLayout = false;
+// Edit mode (#edit_mode=true) shows the controls that change the report; reader mode, the
+// default, hides them (see setReportEditMode()). Once edit mode was on, reader mode offers to
+// switch back.
+var reportEditMode = getHashParamsObject()["edit_mode"] === "true";
+var reportEditModeUsed = reportEditMode;
 
 // Decompress and parse data
 var datasetProperties = JSON.parse(decompress(dataset_properties_json));
@@ -114,22 +119,30 @@ const MODAL = document.getElementById('modal');
 const MODAL_HEADER = document.getElementById('modalHeaderText');
 const MODAL_TEXT = document.getElementById('modalText');
 const GRIDSTACK_ROOT = d3.select('.gridstackRoot');
+BODY.classList.toggle(REPORT_READER_MODE_CLASS, !reportEditMode);
 
 const HEADER_MENU_ITEMS = {
     "Dark mode": { icon: "dark_mode", onclick: () => toggleDarkMode() },
     "Save screenshot": { icon: "save", onclick: () => save_reports() },
     "Help": { icon: "help", onclick: () => window.open('https://help.fews.net/en/tools/v3/smpg-tool', '_blank') },
-    "Export layout": { icon: "file_upload", onclick: () => export_layout() },
-    "Edit layout": { icon: "edit", onclick: () => toggleLayoutEdit() },
-    "Stop edit layout": { icon: "edit_off", onclick: () => toggleLayoutEdit(), hidden: true },
-    "Sort layout": { icon: "swap_horiz", onclick: () => grid.compact(), hidden: true },
-    "Add widget": { icon: "add", onclick: () => add_widget(), hidden: true },
+    "Switch to reader mode": { icon: "chrome_reader_mode", onclick: () => navigateTo({ edit_mode: "false" }),
+        className: REPORT_EDIT_ONLY_CLASS },
+    "Switch to edit mode": { icon: "edit_note", onclick: () => navigateTo({ edit_mode: "true" }),
+        hidden: reportEditMode || !reportEditModeUsed },
+    "Export layout": { icon: "file_upload", onclick: () => export_layout(), className: REPORT_EDIT_ONLY_CLASS },
+    "Edit layout": { icon: "edit", onclick: () => toggleLayoutEdit(), className: REPORT_EDIT_ONLY_CLASS },
+    "Stop edit layout": { icon: "edit_off", onclick: () => toggleLayoutEdit(), hidden: true,
+        className: REPORT_EDIT_ONLY_CLASS },
+    "Sort layout": { icon: "swap_horiz", onclick: () => grid.compact(), hidden: true,
+        className: REPORT_EDIT_ONLY_CLASS },
+    "Add widget": { icon: "add", onclick: () => add_widget(), hidden: true, className: REPORT_EDIT_ONLY_CLASS },
 };
 const HEADER_MENU_ELEMENTS = buildHeaderMenu('#contentHeaderMenu', HEADER_MENU_ITEMS, refreshRestoreWidgetMenu);
 const EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Edit layout"];
 const STOP_EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Stop edit layout"];
 const SORT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Sort layout"];
 const ADD_WIDGET_BUTTON = HEADER_MENU_ELEMENTS["Add widget"];
+const SWITCH_TO_EDIT_MODE_BUTTON = HEADER_MENU_ELEMENTS["Switch to edit mode"];
 
 // set page state using cookies
 setDarkMode(getCookie(DARKMODE_COOKIE_NAME));

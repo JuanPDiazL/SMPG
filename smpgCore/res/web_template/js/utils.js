@@ -14,6 +14,10 @@ const SHORT_NAMES = {
 };
 
 const HIDE_CLASS = 'w3-hide';
+// Reader mode: <body> gets REPORT_READER_MODE_CLASS, which hides the elements with
+// REPORT_EDIT_ONLY_CLASS (see css/style.css)
+const REPORT_READER_MODE_CLASS = "report-reader-mode";
+const REPORT_EDIT_ONLY_CLASS = "report-edit-only";
 
 /**
  * Navigates to a new URL hash.
@@ -39,6 +43,7 @@ function handleNavigation(event) {
     const oldUrl = event.oldUrl;
     const params = getHashParamsObject();
     const place = params['place'];
+    setReportEditMode(params["edit_mode"] === "true");
 
     if (Object.values(datasetProperties["place_ids"]).includes(place)){
         currentDataIndex = place;
@@ -456,10 +461,10 @@ function buildHeaderMenu(containerSelector, items, onOpen = null) {
 
     let menuElements = {};
     for (const title in items) {
-        const { icon, onclick, hidden = false } = items[title];
+        const { icon, onclick, hidden = false, className = "" } = items[title];
         const menuItem = menuContent.append("button")
             .attr("id", `${_.snakeCase(title)}_menu_item`)
-            .attr("class", "header-menu-item w3-bar-item w3-button w3-ripple")
+            .attr("class", `header-menu-item w3-bar-item w3-button w3-ripple ${className}`)
             .attr("title", title)
             .classed("w3-hide", hidden)
             .on("click", () => {
@@ -603,12 +608,42 @@ function add_widget(options={}) {
  * Shows/hides the relevant toolbar buttons and updates grid interactivity accordingly.
  */
 function toggleLayoutEdit() {
+    // The layout is only edited in edit mode
+    if (!editingLayout && !reportEditMode) { return; }
     editingLayout = !editingLayout;
     EDIT_LAYOUT_BUTTON.classed("w3-hide", editingLayout);
     STOP_EDIT_LAYOUT_BUTTON.classed("w3-hide", !editingLayout);
     ADD_WIDGET_BUTTON.classed("w3-hide", !editingLayout);
     SORT_LAYOUT_BUTTON.classed("w3-hide", !editingLayout)
     grid.setStatic(!editingLayout);
+}
+
+/**
+ * Switches between edit mode, which shows the controls that change the report, and reader mode,
+ * which hides them: widget type selection, layout export and editing, the map's control panel,
+ * and Rich Text editing (texts show in view mode, keeping their own mode for edit mode).
+ * @param {boolean} state - True for edit mode, false for reader mode.
+ */
+function setReportEditMode(state) {
+    if (state === reportEditMode) { return; }
+    if (!state && editingLayout) {
+        toggleLayoutEdit();
+    }
+    const editors = Object.values(cards).map((card) => card.cardElements["editor"]).filter(Boolean);
+    // Typed text is kept before the editors leave edit mode
+    for (const editor of editors) {
+        editor.saveTemplate();
+    }
+    reportEditMode = state;
+    reportEditModeUsed = reportEditModeUsed || state;
+    BODY.classList.toggle(REPORT_READER_MODE_CLASS, !state);
+    SWITCH_TO_EDIT_MODE_BUTTON.classed(HIDE_CLASS, state || !reportEditModeUsed);
+    for (const card of Object.values(cards)) {
+        card.graphTypeSelectContent.classed("w3-show", false);
+    }
+    for (const editor of editors) {
+        editor.render();
+    }
 }
 
 /**

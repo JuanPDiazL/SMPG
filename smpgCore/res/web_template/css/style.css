@@ -130,6 +130,15 @@
     background-color: #9e9e9e !important;
 }
 
+/* Reader mode (no #edit_mode=true): the controls that change the report are hidden, and widget
+   titles are plain text */
+body.report-reader-mode .report-edit-only {
+    display: none !important;
+}
+body.report-reader-mode .card-title-select {
+    cursor: default;
+}
+
 /*  Gridstack */
 
 /* Freeze contents when editing*/

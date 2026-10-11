@@ -807,7 +807,7 @@ class mapControlPanel {
         this.description = description;
 
         this.controlPanelContainer = containerElement.append("div")
-            .attr("class", "map-control-panel-container w3-card draggable capture-ignore");
+            .attr("class", `map-control-panel-container w3-card draggable capture-ignore ${REPORT_EDIT_ONLY_CLASS}`);
         
         // Header
         this.controlPanelHeader = this.controlPanelContainer.append("header")
