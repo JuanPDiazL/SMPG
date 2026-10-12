@@ -393,6 +393,36 @@
                 }
             }
 
+            // Over http, a failed load is followed by a HEAD request for its status, which the
+            // <link>/<script> error doesn't give: a missing file (404, 410) isn't retried, and the
+            // messages name the status. Pages opened from disk (file://) can't fetch: null.
+            function probeStatus(url, callback) {
+                if (!/^https?:$/.test(location.protocol) || !window.fetch) {
+                    callback(null);
+                    return;
+                }
+                fetch(url, { method: 'HEAD', cache: 'no-store' }).then(function (response) {
+                    callback(response.status);
+                }, function () {
+                    callback(null);
+                });
+            }
+
+            // The retry message's start, from the probe's status
+            function describeRetry(status) {
+                if (status === 429) { return 'Too many requests (HTTP 429).'; }
+                if (status >= 500 && status !== 501) { return 'Server error (HTTP ' + status + ').'; }
+                return 'Server side problem.';
+            }
+
+            // Added to the error's title, from the probe's status: nothing when it says nothing
+            // (no status, the file is there, or HEAD isn't allowed)
+            function describeFailure(status) {
+                if (status === 404 || status === 410) { return ': not found (HTTP ' + status + ')'; }
+                if (status === null || status < 400 || status === 405 || status === 501) { return ''; }
+                return ' (HTTP ' + status + ')';
+            }
+
             function loadWithRetry(insert, createElement, onLoad, onFinalError) {
                 var attempt = 0;
                 function tryLoad() {
@@ -404,16 +434,19 @@
                     };
                     element.onerror = function () {
                         element.remove();
-                        if (attempt >= MAX_RETRIES) {
-                            clearRetryStatus();
-                            onFinalError(element);
-                            return;
-                        }
-                        var delay = BASE_DELAY_MS * Math.pow(2, attempt);
-                        delay += Math.random() * delay * 0.25;
-                        attempt += 1;
-                        showRetryStatus('Server side problem. Retrying (' + attempt + '/' + MAX_RETRIES + ')...');
-                        setTimeout(tryLoad, delay);
+                        probeStatus(element.href || element.src, function (status) {
+                            // A missing file won't appear on a retry
+                            if (status === 404 || status === 410 || attempt >= MAX_RETRIES) {
+                                clearRetryStatus();
+                                onFinalError(element, describeFailure(status));
+                                return;
+                            }
+                            var delay = BASE_DELAY_MS * Math.pow(2, attempt);
+                            delay += Math.random() * delay * 0.25;
+                            attempt += 1;
+                            showRetryStatus(describeRetry(status) + ' Retrying (' + attempt + '/' + MAX_RETRIES + ')...');
+                            setTimeout(tryLoad, delay);
+                        });
                     };
                     insert(element);
                 }
@@ -482,9 +515,9 @@
                     if (file.isStyle) { stylesheetsLoaded += 1; }
                     startDownloads();
                     runNextScript();
-                }, function (link) {
-                    window.smpgShowLoadError(file.isStyle ? 'Failed to load a required stylesheet'
-                        : 'Failed to load a required script', link.href);
+                }, function (link, failure) {
+                    window.smpgShowLoadError((file.isStyle ? 'Failed to load a required stylesheet'
+                        : 'Failed to load a required script') + failure, link.href);
                 });
             }
 
@@ -505,8 +538,8 @@
                     scriptRunning = false;
                     nextScript += 1;
                     runNextScript();
-                }, function (script) {
-                    window.smpgShowLoadError('Failed to load a required script', script.src);
+                }, function (script, failure) {
+                    window.smpgShowLoadError('Failed to load a required script' + failure, script.src);
                 });
             }
 
