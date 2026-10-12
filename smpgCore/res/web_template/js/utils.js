@@ -52,7 +52,10 @@ function handleNavigation(event) {
         showModal(`There is no data for ${place}.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Selected Region ID: ${place}<br>Target Field: ${parameters.target_id_field}`);
         return;
     }
-    HEADER.text(`Region ID: ${place}. Current Year: ${datasetProperties.current_season_id}. Monitoring Season: [${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}], Dataset: ${datasetProperties.dataset_name}`);
+    // The rest of the report's details are in the About this data window
+    const monitoringIds = datasetProperties.sub_season_monitoring_ids;
+    HEADER.text(`Region ID: ${place} · Monitoring season: [${monitoringIds[0]},`
+        + ` ${getLast(monitoringIds)}] ${datasetProperties.current_season_id} · Current ${period_unit.toLowerCase()}: ${getCurrentPeriodId()}`);
 
     for (const card of Object.values(cards)) {
         card.update(currentDataIndex);
