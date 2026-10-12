@@ -148,6 +148,43 @@
     border-top-color: #555;
 }
 
+/* Save layout window. Its buttons and header are blue-grey in both modes, like the widget headers. */
+.save-layout-body {
+    padding-bottom: 8px;
+}
+.save-layout-path {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.save-layout-path code {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 4px 8px;
+    overflow-wrap: anywhere;
+    background-color: #f1f1f1;
+}
+.save-layout-status {
+    font-style: italic;
+}
+.save-layout-fallback {
+    display: block;
+    width: 100%;
+    height: 8em;
+    box-sizing: border-box;
+    font-family: monospace;
+    white-space: pre;
+}
+.darkmode .save-layout-modal .w3-modal-content {
+    background-color: var(--dark-bg-color);
+    color: #ddd;
+}
+.darkmode .save-layout-path code,
+.darkmode .save-layout-fallback {
+    background-color: var(--dark-stroke-color);
+    color: #ddd;
+}
+
 #contentBody {
     flex-grow: 1; /* Takes remaining space */
     position: relative;

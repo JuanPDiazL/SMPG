@@ -715,9 +715,91 @@ function buildLayoutJsContent() {
 }
 
 /**
- * Builds a layout.js file from the current widget layout and triggers its download, as a
- * drop-in replacement for data/layout.js.
+ * Returns the full path of this report's data/layout.js on the reader's computer, from the page's
+ * address: "/home/me/r27/data/layout.js", "C:\Users\me\r27\data\layout.js", or
+ * "\\server\share\r27\data\layout.js" for a network share.
+ * @param {Location|URL} [location] - The page's address.
+ * @returns {string|null} null when the page isn't a local file (e.g. served over http).
  */
-function export_layout() {
-    downloadFile("layout.js", buildLayoutJsContent(), "text/javascript");
+function getLayoutFilePath(location = window.location) {
+    if (location.protocol !== "file:") { return null; }
+    // The page's folder, with its trailing slash
+    const path = decodeURIComponent(location.pathname).replace(/[^/]*$/, "") + "data/layout.js";
+    if (location.host) {
+        return `\\\\${location.host}${path.replace(/\//g, "\\")}`;
+    }
+    if (/^\/[A-Za-z]:\//.test(path)) {
+        return path.slice(1).replace(/\//g, "\\");
+    }
+    return path;
+}
+
+// The layout.js text built when the Save layout window opened
+let saveLayoutContent = "";
+
+/**
+ * Copies text to the clipboard for the Save layout window, and says so. Without clipboard access,
+ * the text is selected in a box instead, for the reader to copy.
+ * @param {string} text - The text to copy.
+ * @param {string} what - What it is, for the message ("Path", "Layout").
+ */
+async function copySaveLayoutText(text, what) {
+    const status = document.getElementById("saveLayoutStatus");
+    const fallback = document.getElementById("saveLayoutFallbackText");
+    try {
+        await navigator.clipboard.writeText(text);
+        fallback.classList.add(HIDE_CLASS);
+        status.textContent = `${what} copied.`;
+    } catch (error) {
+        fallback.value = text;
+        fallback.classList.remove(HIDE_CLASS);
+        fallback.focus();
+        fallback.select();
+        status.textContent = `${what} couldn't be copied automatically: it's selected below, press`
+            + " Ctrl+C (Cmd+C on a Mac) to copy it.";
+    }
+}
+
+/**
+ * Opens the Save layout window: the path of this report's layout.js, and the current layout to
+ * download or copy into it. Browsers can't write the file themselves.
+ */
+function openSaveLayoutDialog() {
+    saveLayoutContent = buildLayoutJsContent();
+    const path = getLayoutFilePath();
+    document.getElementById("saveLayoutPath").textContent = path ?? "";
+    document.getElementById("saveLayoutPathRow").classList.toggle(HIDE_CLASS, path === null);
+    document.getElementById("saveLayoutNoPath").classList.toggle(HIDE_CLASS, path !== null);
+    document.getElementById("saveLayoutStatus").textContent = "";
+    document.getElementById("saveLayoutFallbackText").classList.add(HIDE_CLASS);
+    document.getElementById("saveLayoutModal").style.display = "block";
+}
+
+/**
+ * Closes the Save layout window.
+ */
+function closeSaveLayoutDialog() {
+    document.getElementById("saveLayoutModal").style.display = "none";
+}
+
+/**
+ * Connects the Save layout window's buttons, and closes it with Esc or a click outside it.
+ */
+function setupSaveLayoutDialog() {
+    const modal = document.getElementById("saveLayoutModal");
+    document.getElementById("saveLayoutCopyPathButton").addEventListener("click",
+        () => copySaveLayoutText(getLayoutFilePath(), "Path"));
+    document.getElementById("saveLayoutDownloadButton").addEventListener("click", () => {
+        downloadFile("layout.js", saveLayoutContent, "text/javascript");
+        document.getElementById("saveLayoutFallbackText").classList.add(HIDE_CLASS);
+        document.getElementById("saveLayoutStatus").textContent = "layout.js downloaded.";
+    });
+    document.getElementById("saveLayoutCopyLayoutButton").addEventListener("click",
+        () => copySaveLayoutText(saveLayoutContent, "Layout"));
+    modal.addEventListener("click", (event) => {
+        if (event.target === modal) { closeSaveLayoutDialog(); }
+    });
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && modal.style.display === "block") { closeSaveLayoutDialog(); }
+    });
 }

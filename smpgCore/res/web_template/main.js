@@ -135,7 +135,7 @@ const HEADER_MENU_ITEMS = {
         className: REPORT_EDIT_ONLY_CLASS },
     "Switch to edit mode": { icon: "edit_note", onclick: () => navigateTo({ edit_mode: "true" }),
         hidden: reportEditMode || !reportEditModeUsed },
-    "Export layout": { icon: "file_upload", onclick: () => export_layout(), className: REPORT_EDIT_ONLY_CLASS },
+    "Save layout": { icon: "file_upload", onclick: () => openSaveLayoutDialog(), className: REPORT_EDIT_ONLY_CLASS },
     "Edit layout": { icon: "edit", onclick: () => toggleLayoutEdit(), className: REPORT_EDIT_ONLY_CLASS },
     "Stop edit layout": { icon: "edit_off", onclick: () => toggleLayoutEdit(), hidden: true,
         className: REPORT_EDIT_ONLY_CLASS },
@@ -144,6 +144,7 @@ const HEADER_MENU_ITEMS = {
     "Add widget": { icon: "add", onclick: () => add_widget(), hidden: true, className: REPORT_EDIT_ONLY_CLASS },
 };
 const HEADER_MENU_ELEMENTS = buildHeaderMenu('#contentHeaderMenu', HEADER_MENU_ITEMS, refreshRestoreWidgetMenu);
+setupSaveLayoutDialog();
 const EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Edit layout"];
 const STOP_EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Stop edit layout"];
 const SORT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Sort layout"];
