@@ -186,10 +186,10 @@
     <!-- Loading overlay: placed before the stylesheets/scripts below so it paints as early as possible -->
     <div id="loadingOverlay" class="capture-ignore">
         <div class="spinner"></div>
-        <span class="loading-text">Loading report...</span>
+        <span id="loadingProgress" class="loading-text">Loading report...</span>
     </div>
 
-    <!-- Stylesheets are loaded sequentially by the loader at the bottom of this page -->
+    <!-- Stylesheets are loaded by the loader at the bottom of this page -->
 
     <div id="documentRoot">
 
@@ -374,6 +374,7 @@
             var MAX_RETRIES = 5;
             var BASE_DELAY_MS = 500;
             var retryStatus = null;
+            var filesRetrying = 0; // the retry message stays until they've all loaded
 
             function showRetryStatus(text) {
                 var overlay = document.getElementById('loadingOverlay');
@@ -429,7 +430,10 @@
                     var element = createElement(attempt);
                     element.setAttribute('data-smpg-loader', '');
                     element.onload = function () {
-                        clearRetryStatus();
+                        if (attempt > 0) {
+                            filesRetrying -= 1;
+                            if (filesRetrying === 0) { clearRetryStatus(); }
+                        }
                         onLoad(element);
                     };
                     element.onerror = function () {
@@ -443,6 +447,7 @@
                             }
                             var delay = BASE_DELAY_MS * Math.pow(2, attempt);
                             delay += Math.random() * delay * 0.25;
+                            if (attempt === 0) { filesRetrying += 1; }
                             attempt += 1;
                             showRetryStatus(describeRetry(status) + ' Retrying (' + attempt + '/' + MAX_RETRIES + ')...');
                             setTimeout(tryLoad, delay);
@@ -482,6 +487,14 @@
             var downloadsInFlight = 0;
             var stylesheetsLoaded = 0;
 
+            // "Loading report... (N/M)": the stylesheets applied and the scripts run, of all files
+            var progressText = document.getElementById('loadingProgress');
+            function showProgress() {
+                if (!progressText) { return; }
+                progressText.textContent = 'Loading report... (' + (stylesheetsLoaded + nextScript) + '/'
+                    + (styleFiles.length + scriptFiles.length) + ')';
+            }
+
             function startDownloads() {
                 while (downloadsInFlight < MAX_CONCURRENT_REQUESTS && nextDownload < downloads.length) {
                     download(downloads[nextDownload]);
@@ -512,7 +525,10 @@
                     file.downloaded = true;
                     // The script runs from the address that was downloaded
                     file.url = link.getAttribute('href');
-                    if (file.isStyle) { stylesheetsLoaded += 1; }
+                    if (file.isStyle) {
+                        stylesheetsLoaded += 1;
+                        showProgress();
+                    }
                     startDownloads();
                     runNextScript();
                 }, function (link, failure) {
@@ -537,12 +553,14 @@
                 }, function () {
                     scriptRunning = false;
                     nextScript += 1;
+                    showProgress();
                     runNextScript();
                 }, function (script, failure) {
                     window.smpgShowLoadError('Failed to load a required script' + failure, script.src);
                 });
             }
 
+            showProgress();
             startDownloads();
         })();
     </script>
