@@ -189,6 +189,20 @@
         white-space: normal;
     }
 }
+/* Rename window: the title's text box, then its buttons */
+.rename-dialog-body {
+    padding-bottom: 16px;
+}
+.rename-dialog-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+.darkmode .rename-dialog .w3-input {
+    background-color: var(--dark-stroke-color);
+    color: #ddd;
+    border-color: #555 !important;
+}
 /* Every window (see getDialog()) */
 .darkmode .report-dialog .w3-modal-content {
     background-color: var(--dark-bg-color);

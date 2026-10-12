@@ -1,5 +1,5 @@
 // This file contains the report's windows (w3-modal dialogs): the warning window, About this data,
-// and Save layout. Each is built the first time it opens, then reused.
+// Save layout, and Rename window. Each is built the first time it opens, then reused.
 
 "use strict";
 
@@ -293,4 +293,64 @@ function openSaveLayoutDialog() {
  */
 function closeSaveLayoutDialog() {
     dialogs["saveLayoutModal"]?.close();
+}
+
+// Rename window
+
+// The card being renamed
+let renameDialogCard = null;
+
+/**
+ * Saves the rename window's title on its card, and closes it.
+ */
+function saveRenameDialog() {
+    renameDialogCard.setCustomTitle(document.getElementById("renameInput").value);
+    dialogs["renameModal"].close();
+}
+
+/**
+ * Opens the rename window for a card: its custom title, or none to use its type's title.
+ * @param {chartCard} card - The card.
+ */
+function openRenameDialog(card) {
+    const dialog = getDialog("renameModal", {
+        title: "Rename window",
+        className: "rename-dialog",
+        bodyClass: "rename-dialog-body",
+        build: (body) => {
+            body.append("p").text("The window's title. Without one, it shows its type's title,"
+                + " which it also goes back to when its type changes.");
+            body.append("input")
+                .attr("id", "renameInput")
+                .attr("class", "w3-input w3-border")
+                .attr("type", "text")
+                .on("keydown", (event) => {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        saveRenameDialog();
+                    }
+                });
+            const buttons = body.append("div").attr("class", "rename-dialog-buttons");
+            buttons.append("button")
+                .attr("id", "renameSaveButton")
+                .attr("class", "w3-button w3-blue-grey w3-ripple")
+                .text("Save")
+                .on("click", saveRenameDialog);
+            buttons.append("button")
+                .attr("id", "renameDefaultButton")
+                .attr("class", "w3-button w3-blue-grey w3-ripple")
+                .text("Use default title")
+                .on("click", () => {
+                    renameDialogCard.setCustomTitle(null);
+                    dialogs["renameModal"].close();
+                });
+        },
+    });
+    renameDialogCard = card;
+    const input = document.getElementById("renameInput");
+    input.value = card.customTitle ?? "";
+    input.placeholder = card.getTypeTitle();
+    dialog.open();
+    input.focus();
+    input.select();
 }

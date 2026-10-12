@@ -244,6 +244,9 @@ class chartCard {
         this.invalidCardType = null;
         // false: no header in reader mode (a left border instead), a striped header in edit mode
         this.showHeader = smpgOpts.showHeader !== false;
+        // The header's title instead of the type's, while the card keeps its type (smpgOpts.title,
+        // applied by setProperties())
+        this.customTitle = null;
 
         this.elementContainer = d3.select(containerSelector);
         this.cardContainer = this.elementContainer
@@ -294,6 +297,10 @@ class chartCard {
     }
 
     changePlot(cardType) {
+        // A custom title belongs to the type it was given for
+        if (cardType !== this.cardType) {
+            this.customTitle = null;
+        }
         this.cardType = cardType;
         this.destroy();
         this.cardBody.selectChildren().remove();
@@ -327,6 +334,12 @@ class chartCard {
                 this.changeHeaderDisplay(!this.showHeader);
             });
         this.refreshHeaderDisplay();
+
+        this.renameButton = this.cardButtonGroup.append("span").append("button")
+            .attr("class", `card-button mi w3-button w3-ripple w3-right capture-ignore ${REPORT_EDIT_ONLY_CLASS}`)
+            .attr("title", "Rename window")
+            .text("drive_file_rename_outline")
+            .on("click", () => openRenameDialog(this));
 
         if (this.cardType == "Disabled") {
             this.cardElements = {}
@@ -413,6 +426,7 @@ class chartCard {
 
         return {
             smpgCardType: this.cardType,
+            ...(this.customTitle ? { title: this.customTitle } : {}),
             showHeader: this.showHeader,
             ...cardElementsProps,
         };
@@ -447,11 +461,15 @@ class chartCard {
                 this.changePlot(cardType);
             }
         }
+        // Not for the empty widget replacing a type this report doesn't offer
+        if ("title" in properties && !this.invalidCardType) {
+            this.setCustomTitle(properties.title);
+        }
         if ("showHeader" in properties) {
             this.changeHeaderDisplay(properties.showHeader !== false);
         }
         for (const key in properties) {
-            if (key === "smpgCardType" || key === "showHeader") { continue; }
+            if (key === "smpgCardType" || key === "title" || key === "showHeader") { continue; }
             const element = this.cardElements[key];
             if (element && element.setProperties) {
                 element.setProperties(properties[key]);
@@ -488,12 +506,30 @@ class chartCard {
     }
 
     /**
-     * Sets the card's title: its type's, and a map's statistic ("Map: Average Total").
+     * Sets the card's title: its custom title or its type's, and a map's statistic ("Map: Average
+     * Total").
      */
     refreshTitle() {
         const statId = this.cardElements["map"]?.options.legend_stat;
-        const title = this.cardTypes[this.cardType]["full title"];
+        const title = this.customTitle ?? this.getTypeTitle();
         this.graphTypeSelectOpenButton.text(statId && statId !== "None" ? `${title}: ${statId}` : title);
+    }
+
+    /**
+     * Returns the card type's own title, shown without a custom title.
+     * @returns {string}
+     */
+    getTypeTitle() {
+        return this.cardTypes[this.cardType]["full title"];
+    }
+
+    /**
+     * Sets the card's custom title, shown instead of its type's while it keeps its type.
+     * @param {string|null} title - The title; empty or null for the type's own.
+     */
+    setCustomTitle(title) {
+        this.customTitle = String(title ?? "").trim() || null;
+        this.refreshTitle();
     }
 
     /**
