@@ -95,6 +95,7 @@ function handleNavigation(event) {
  */
 function handleResize(event) {
     clearTimeout(resizeTimeout);
+    updateMaximizedWidget();
     resizeTimeout = setTimeout(() => {
         // The grid fills the window below the header, inside the content's padding
         const headerHeight = d3.select("#contentHeader").node().getBoundingClientRect().height;
@@ -617,6 +618,10 @@ function add_widget(options={}) {
 function toggleLayoutEdit() {
     // The layout is only edited in edit mode
     if (!editingLayout && !reportEditMode) { return; }
+    // Widgets are moved and resized in their places
+    if (!editingLayout) {
+        setMaximizedCard(null);
+    }
     editingLayout = !editingLayout;
     EDIT_LAYOUT_BUTTON.classed("w3-hide", editingLayout);
     STOP_EDIT_LAYOUT_BUTTON.classed("w3-hide", !editingLayout);
@@ -812,7 +817,59 @@ function closeDialogOnEscOrOutsideClick(modal, close) {
         if (event.target === modal) { close(); }
     });
     document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && modal.style.display === "block") { close(); }
+        if (event.key === "Escape" && modal.style.display === "block") {
+            close();
+            // So the same Esc doesn't also restore a maximized widget
+            event.preventDefault();
+        }
+    });
+}
+
+/**
+ * Maximizes a card to fill the report's content area, or restores the maximized one. The card
+ * stays where it is in the page (moving it would reload a Rich Text editor): only its gridstack
+ * item is placed over the content area (see .widget-maximized in style.css).
+ * @param {chartCard|null} card - The card to maximize, or null to restore.
+ */
+function setMaximizedCard(card) {
+    const previous = maximizedCard;
+    if (card === previous) { return; }
+    maximizedCard = card;
+    for (const changed of [previous, card]) {
+        if (!changed) { continue; }
+        changed.elementContainer.node().parentElement.classList.toggle("widget-maximized", changed === card);
+        changed.refreshMaximizeButton();
+    }
+    BODY.classList.toggle("widget-maximized-shown", card !== null);
+    // Also places the maximized card, then resizes the charts and maps
+    handleResize();
+}
+
+/**
+ * Sets the maximized card's place: the content area, inside its padding.
+ */
+function updateMaximizedWidget() {
+    if (!maximizedCard) { return; }
+    const body = document.getElementById("contentBody");
+    const box = body.getBoundingClientRect();
+    const style = getComputedStyle(body);
+    const [top, right, bottom, left] = ["Top", "Right", "Bottom", "Left"]
+        .map((side) => parseFloat(style[`padding${side}`]));
+    const item = maximizedCard.elementContainer.node().parentElement;
+    item.style.setProperty("--maximized-top", `${box.top + body.clientTop + top}px`);
+    item.style.setProperty("--maximized-left", `${box.left + body.clientLeft + left}px`);
+    item.style.setProperty("--maximized-width", `${body.clientWidth - left - right}px`);
+    item.style.setProperty("--maximized-height", `${body.clientHeight - top - bottom}px`);
+}
+
+/**
+ * Restores the maximized card with Esc.
+ */
+function setupMaximizedCardEscape() {
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !event.defaultPrevented && maximizedCard) {
+            setMaximizedCard(null);
+        }
     });
 }
 

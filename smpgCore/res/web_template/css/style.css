@@ -226,6 +226,31 @@ body.report-reader-mode .card-title-select {
 
 /*  Gridstack */
 
+/* A maximized widget fills the content area (see updateMaximizedWidget()), over the others;
+   gridstack places widgets with inline styles. Its gaps (its margin, and the content area's
+   padding, covered by the shadow) are in the page's color, so the widgets under it don't show.
+   The main header stays above it, for its menu. */
+.grid-stack > .grid-stack-item.widget-maximized {
+    position: fixed !important;
+    top: var(--maximized-top) !important;
+    left: var(--maximized-left) !important;
+    width: var(--maximized-width) !important;
+    height: var(--maximized-height) !important;
+    z-index: 1;
+    background-color: white;
+    box-shadow: 0 0 0 4px white;
+}.darkmode .grid-stack > .grid-stack-item.widget-maximized {
+    background-color: var(--dark-bg-color);
+    box-shadow: 0 0 0 4px var(--dark-bg-color);
+}
+body.widget-maximized-shown #contentBody {
+    overflow: hidden;
+}
+#contentHeader {
+    position: relative;
+    z-index: 2;
+}
+
 /* Freeze contents when editing*/
 .grid-stack-item:not(.ui-draggable-disabled) .card-body {
     pointer-events: none;

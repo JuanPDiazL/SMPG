@@ -317,6 +317,12 @@ class chartCard {
                 unloadWidget(this.elementContainer.node().parentElement.getAttribute("gs-id"));
             });
 
+        // Rightmost of the buttons shown outside layout editing
+        this.maximizeButton = this.cardButtonGroup.append("span").append("button")
+            .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
+            .on("click", () => this.toggleMaximize());
+        this.refreshMaximizeButton();
+
         this.headerDisplayButton = this.cardButtonGroup.append("span").append("button")
             .attr("class", `card-button mi w3-button w3-ripple w3-right capture-ignore ${REPORT_EDIT_ONLY_CLASS}`)
             .on("click", (event) => {
@@ -476,6 +482,23 @@ class chartCard {
         this.headerDisplayButton
             .attr("title", this.showHeader ? "Hide header (in reader mode)" : "Show header")
             .text(this.showHeader ? "web_asset_off" : "web_asset");
+    }
+
+    /**
+     * Maximizes the card to fill the report, or restores it (see setMaximizedCard()).
+     */
+    toggleMaximize() {
+        setMaximizedCard(maximizedCard === this ? null : this);
+    }
+
+    /**
+     * Sets the maximize button's icon and title from whether the card is maximized.
+     */
+    refreshMaximizeButton() {
+        const maximized = maximizedCard === this;
+        this.maximizeButton
+            .attr("title", maximized ? "Restore window" : "Maximize window")
+            .text(maximized ? "close_fullscreen" : "open_in_full");
     }
 
     /**

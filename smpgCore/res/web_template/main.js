@@ -8,6 +8,7 @@ var resizeTimeout = false; // holder for timeout
 var resizeDelay = 300; // debounce delay
 var contentHeight = null;
 var editingLayout = false;
+var maximizedCard = null; // the card filling the report, see setMaximizedCard()
 // Edit mode (#edit_mode=true) shows the controls that change the report; reader mode, the
 // default, hides them (see setReportEditMode()). Once edit mode was on, reader mode offers to
 // switch back.
@@ -147,6 +148,7 @@ const HEADER_MENU_ITEMS = {
 const HEADER_MENU_ELEMENTS = buildHeaderMenu('#contentHeaderMenu', HEADER_MENU_ITEMS, refreshRestoreWidgetMenu);
 setupSaveLayoutDialog();
 setupAboutDataDialog();
+setupMaximizedCardEscape();
 const EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Edit layout"];
 const STOP_EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Stop edit layout"];
 const SORT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Sort layout"];
