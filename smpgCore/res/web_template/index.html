@@ -220,83 +220,6 @@
         </div>
     </div>
 
-    <div id="modal" class="w3-modal">
-        <div class="w3-modal-content w3-card-4">
-
-            <header class="w3-container w3-red">
-              <span onclick="closeModal()"
-              class="w3-button w3-display-topright w3-ripple w3-hover-pale-red">&times;</span>
-              <h2 id="modalHeaderText"></h2>
-            </header>
-        
-            <div class="w3-container">
-              <p id="modalText"></p>
-            </div>
-        </div>
-
-        <script>
-            var modal = document.getElementById('modal');
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            }
-        </script>
-    </div>
-
-    <!-- About this data: the report's data and settings (see openAboutDataDialog()) -->
-    <div id="aboutDataModal" class="w3-modal about-data-modal">
-        <div class="w3-modal-content w3-card-4">
-            <header class="w3-container w3-blue-grey">
-                <button class="mi w3-button w3-ripple w3-display-topright" title="Close" onclick="closeAboutDataDialog()">close</button>
-                <h3>About this data</h3>
-            </header>
-            <div class="w3-container about-data-body">
-                <table id="aboutDataTable" class="w3-table about-data-table"></table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Save layout: where this report's layout.js is, and two ways to replace it (see openSaveLayoutDialog()) -->
-    <div id="saveLayoutModal" class="w3-modal save-layout-modal">
-        <div class="w3-modal-content w3-card-4">
-            <header class="w3-container w3-blue-grey">
-                <button class="mi w3-button w3-ripple w3-display-topright" title="Close" onclick="closeSaveLayoutDialog()">close</button>
-                <h3>Save layout</h3>
-            </header>
-            <div class="w3-container save-layout-body">
-                <p>The layout (the widgets, their settings and texts) is saved in this report's
-                    <code>layout.js</code> file. Replace it with the current layout:</p>
-                <div id="saveLayoutPathRow" class="save-layout-path">
-                    <code id="saveLayoutPath"></code>
-                    <button id="saveLayoutCopyPathButton" class="w3-button w3-blue-grey w3-ripple">Copy path</button>
-                </div>
-                <p id="saveLayoutNoPath" class="w3-hide">The file is <code>layout.js</code>, in the
-                    <code>data</code> folder next to the report's <code>index.html</code>.</p>
-
-                <h4>Option A: download</h4>
-                <button id="saveLayoutDownloadButton" class="w3-button w3-blue-grey w3-ripple">Download layout.js</button>
-                <ol>
-                    <li>If the browser asks where to save it, paste the copied path into the file name box.</li>
-                    <li>Otherwise, move <code>layout.js</code> from your Downloads folder into the report's
-                        <code>data</code> folder, replacing the old file.</li>
-                </ol>
-
-                <h4>Option B: copy</h4>
-                <button id="saveLayoutCopyLayoutButton" class="w3-button w3-blue-grey w3-ripple">Copy layout</button>
-                <ol>
-                    <li>Open the report's <code>data/layout.js</code> in a text editor (e.g. Notepad).</li>
-                    <li>Select everything, paste, and save.</li>
-                </ol>
-
-                <p id="saveLayoutStatus" class="save-layout-status" aria-live="polite"></p>
-                <textarea id="saveLayoutFallbackText" class="save-layout-fallback w3-hide" readonly></textarea>
-
-                <p><b>Then reload this page</b> to check the saved layout.</p>
-            </div>
-        </div>
-    </div>
-
     <!--
         Stylesheets and scripts are downloaded a few at a time (MAX_CONCURRENT_REQUESTS),
         to stay under the limit of servers with a limited number of concurrent
@@ -352,6 +275,7 @@
                 './data/layout.js',
                 // SMPG scripts
                 './js/utils.js',
+                './js/makeDialogs.js',
                 './js/bbPlotUtils.js',
                 './js/widgetClasses.js',
                 './js/makePlots.js',

@@ -122,9 +122,6 @@ console.log('selected_seasons_long_term_stats', selected_seasons_long_term_stats
 // HTML Elements
 const BODY = document.body;
 const HEADER = d3.select('#contentHeaderText');
-const MODAL = document.getElementById('modal');
-const MODAL_HEADER = document.getElementById('modalHeaderText');
-const MODAL_TEXT = document.getElementById('modalText');
 const GRIDSTACK_ROOT = d3.select('.gridstackRoot');
 BODY.classList.toggle(REPORT_READER_MODE_CLASS, !reportEditMode);
 
@@ -146,8 +143,6 @@ const HEADER_MENU_ITEMS = {
     "Add widget": { icon: "add", onclick: () => add_widget(), hidden: true, className: REPORT_EDIT_ONLY_CLASS },
 };
 const HEADER_MENU_ELEMENTS = buildHeaderMenu('#contentHeaderMenu', HEADER_MENU_ITEMS, refreshRestoreWidgetMenu);
-setupSaveLayoutDialog();
-setupAboutDataDialog();
 setupMaximizedCardEscape();
 const EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Edit layout"];
 const STOP_EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Stop edit layout"];
