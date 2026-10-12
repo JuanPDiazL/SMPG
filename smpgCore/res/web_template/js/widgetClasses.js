@@ -267,8 +267,7 @@ class chartCard {
             });
         this.graphTypeSelectOpenButton = this.graphTypeSelectContainer
             .append("span")
-            .attr("class", "card-title-select-button")
-            .text(this.cardTypes[this.cardType]["full title"]);
+            .attr("class", "card-title-select-button");
         this.graphTypeSelectContent = this.cardHeader
             .append("div")
             .attr("class", "w3-dropdown-content w3-bar-block w3-border");
@@ -296,7 +295,6 @@ class chartCard {
 
     changePlot(cardType) {
         this.cardType = cardType;
-        this.graphTypeSelectOpenButton.text(this.cardTypes[this.cardType]["full title"]);
         this.destroy();
         this.cardBody.selectChildren().remove();
 
@@ -336,6 +334,11 @@ class chartCard {
         }
 
         this.cardElements = this.cardTypes[this.cardType]["cardElementsBuilder"](this.cardBody);
+        // A map's title names its statistic
+        if (this.cardElements["map"]) {
+            this.cardElements["map"].onLegendChange(() => this.refreshTitle());
+        }
+        this.refreshTitle();
         // A chart's table follows its plot area
         if (this.cardElements["plot"] && this.cardElements["table"]) {
             const { plot, table } = this.cardElements;
@@ -482,6 +485,15 @@ class chartCard {
         this.headerDisplayButton
             .attr("title", this.showHeader ? "Hide header (in reader mode)" : "Show header")
             .text(this.showHeader ? "web_asset_off" : "web_asset");
+    }
+
+    /**
+     * Sets the card's title: its type's, and a map's statistic ("Map: Average Total").
+     */
+    refreshTitle() {
+        const statId = this.cardElements["map"]?.options.legend_stat;
+        const title = this.cardTypes[this.cardType]["full title"];
+        this.graphTypeSelectOpenButton.text(statId && statId !== "None" ? `${title}: ${statId}` : title);
     }
 
     /**

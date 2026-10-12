@@ -412,6 +412,8 @@ class d3Map {
         };
         this.geoJsonMap = geoJsonMap;
         this.geoJsonReferenceMap = geoJsonReferenceMap;
+        // Called when the statistic changes, see onLegendChange()
+        this.legendListener = null;
 
         this.FONT_SIZE = 13;
         this.internal_width = 800;
@@ -844,6 +846,15 @@ class d3Map {
                     // console.log(nodes[i].getBoundingClientRect().width);
                 })
         }
+        this.legendListener?.();
+    }
+
+    /**
+     * Sets the function called when the statistic shown changes.
+     * @param {Function} listener
+     */
+    onLegendChange(listener) {
+        this.legendListener = listener;
     }
 
     resize(size=null) {
