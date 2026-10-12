@@ -29,7 +29,7 @@ function getDialog(id, {
     if (dialogs[id]) { return dialogs[id]; }
     const modal = d3.select("body").append("div")
         .attr("id", id)
-        .attr("class", `w3-modal ${className}`);
+        .attr("class", `w3-modal report-dialog ${className}`);
     const content = modal.append("div")
         .attr("class", "w3-modal-content w3-card-4");
     const header = content.append("header")

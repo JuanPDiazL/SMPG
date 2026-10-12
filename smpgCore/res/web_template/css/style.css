@@ -189,8 +189,8 @@
         white-space: normal;
     }
 }
-.darkmode .about-data-modal .w3-modal-content,
-.darkmode .save-layout-modal .w3-modal-content {
+/* Every window (see getDialog()) */
+.darkmode .report-dialog .w3-modal-content {
     background-color: var(--dark-bg-color);
     color: #ddd;
 }
