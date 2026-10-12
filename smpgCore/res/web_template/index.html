@@ -244,6 +244,19 @@
         </script>
     </div>
 
+    <!-- About this data: the report's data and settings (see openAboutDataDialog()) -->
+    <div id="aboutDataModal" class="w3-modal about-data-modal">
+        <div class="w3-modal-content w3-card-4">
+            <header class="w3-container w3-blue-grey">
+                <button class="mi w3-button w3-ripple w3-display-topright" title="Close" onclick="closeAboutDataDialog()">close</button>
+                <h3>About this data</h3>
+            </header>
+            <div class="w3-container about-data-body">
+                <table id="aboutDataTable" class="w3-table about-data-table"></table>
+            </div>
+        </div>
+    </div>
+
     <!-- Save layout: where this report's layout.js is, and two ways to replace it (see openSaveLayoutDialog()) -->
     <div id="saveLayoutModal" class="w3-modal save-layout-modal">
         <div class="w3-modal-content w3-card-4">

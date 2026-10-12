@@ -130,6 +130,7 @@ BODY.classList.toggle(REPORT_READER_MODE_CLASS, !reportEditMode);
 const HEADER_MENU_ITEMS = {
     "Dark mode": { icon: "dark_mode", onclick: () => toggleDarkMode() },
     "Save screenshot": { icon: "save", onclick: () => save_reports() },
+    "About this data": { icon: "info", onclick: () => openAboutDataDialog() },
     "Help": { icon: "help", onclick: () => window.open('https://help.fews.net/en/tools/v3/smpg-tool', '_blank') },
     "Switch to reader mode": { icon: "chrome_reader_mode", onclick: () => navigateTo({ edit_mode: "false" }),
         className: REPORT_EDIT_ONLY_CLASS },
@@ -145,6 +146,7 @@ const HEADER_MENU_ITEMS = {
 };
 const HEADER_MENU_ELEMENTS = buildHeaderMenu('#contentHeaderMenu', HEADER_MENU_ITEMS, refreshRestoreWidgetMenu);
 setupSaveLayoutDialog();
+setupAboutDataDialog();
 const EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Edit layout"];
 const STOP_EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Stop edit layout"];
 const SORT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Sort layout"];

@@ -796,10 +796,82 @@ function setupSaveLayoutDialog() {
     });
     document.getElementById("saveLayoutCopyLayoutButton").addEventListener("click",
         () => copySaveLayoutText(saveLayoutContent, "Layout"));
+    closeDialogOnEscOrOutsideClick(modal, closeSaveLayoutDialog);
+}
+
+/**
+ * Closes a window (a w3-modal) with Esc, or with a click outside its content.
+ * @param {HTMLElement} modal - The w3-modal element.
+ * @param {Function} close - Closes it.
+ */
+function closeDialogOnEscOrOutsideClick(modal, close) {
     modal.addEventListener("click", (event) => {
-        if (event.target === modal) { closeSaveLayoutDialog(); }
+        if (event.target === modal) { close(); }
     });
     document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && modal.style.display === "block") { closeSaveLayoutDialog(); }
+        if (event.key === "Escape" && modal.style.display === "block") { close(); }
     });
+}
+
+/**
+ * Returns the current period: the last one with data in the current season (forecast periods
+ * excluded), e.g. "Mar-2".
+ * @returns {string}
+ */
+function getCurrentPeriodId() {
+    // currentLength is -1 when the whole year has data
+    const length = currentLength >= 0 ? currentLength : datasetProperties.sub_season_ids.length;
+    return datasetProperties.sub_season_ids[Math.max(length, 1) - 1];
+}
+
+/**
+ * Returns the rows of the About this data window, from the report's data.
+ * @returns {Array<Array<string>>} [label, value] pairs.
+ */
+function getAboutDataRows() {
+    const yearRange = (years) => years.length > 0 ? `${years[0]}–${getLast(years)}` : "None";
+    // The analog years are a list, or a number: each place's most similar years
+    const selectedYears = datasetProperties.selected_years ?? [];
+    const analogYears = Array.isArray(selectedYears) ? selectedYears : null;
+    const forecastLength = parameters.forecast_length;
+    const unit = period_unit.toLowerCase();
+    return [
+        ["Dataset", datasetProperties.dataset_name],
+        ["Climatology average (LTA) period", yearRange(datasetProperties.climatology_year_ids)],
+        ["Historical distribution (for percentiles)", yearRange(datasetProperties.year_ids)],
+        analogYears
+            ? [`Analog years (${analogYears.length})`, analogYears.length > 0 ? analogYears.join(", ") : "None"]
+            : [`Analog years (${selectedYears})`, "The most similar years for each place"],
+        ["Forecast", forecastLength > 0
+            ? `Yes (${forecastLength} ${unit}${forecastLength === 1 ? "" : "s"})` : "No"],
+        ["Start of Season detection", parameters.rainy_season_detection_enabled ? "Enabled" : "Disabled"],
+    ];
+}
+
+/**
+ * Opens the About this data window: the details of the report's data and settings.
+ */
+function openAboutDataDialog() {
+    d3.select("#aboutDataTable").selectAll("tr")
+        .data(getAboutDataRows())
+        .join("tr")
+        .selectAll("td")
+            .data(row => row)
+            .join("td")
+            .text(d => d);
+    document.getElementById("aboutDataModal").style.display = "block";
+}
+
+/**
+ * Closes the About this data window.
+ */
+function closeAboutDataDialog() {
+    document.getElementById("aboutDataModal").style.display = "none";
+}
+
+/**
+ * Closes the About this data window with Esc or a click outside it.
+ */
+function setupAboutDataDialog() {
+    closeDialogOnEscOrOutsideClick(document.getElementById("aboutDataModal"), closeAboutDataDialog);
 }

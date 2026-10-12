@@ -175,6 +175,21 @@
     font-family: monospace;
     white-space: pre;
 }
+/* About this data window: labels in bold, values next to them */
+.about-data-body {
+    padding-bottom: 16px;
+}
+.about-data-table td:first-child {
+    width: 1%;
+    white-space: nowrap;
+    font-weight: bold;
+}
+@media (max-width: 600px) {
+    .about-data-table td:first-child {
+        white-space: normal;
+    }
+}
+.darkmode .about-data-modal .w3-modal-content,
 .darkmode .save-layout-modal .w3-modal-content {
     background-color: var(--dark-bg-color);
     color: #ddd;
