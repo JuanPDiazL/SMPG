@@ -298,10 +298,10 @@
     </div>
 
     <!--
-        Stylesheets and scripts are loaded one at a time, in the order listed
-        below, to avoid overwhelming servers with a limited number of
-        concurrent connections (e.g. FTP). Keep the order: stylesheets first,
-        then libraries -> data -> app -> main.
+        Stylesheets and scripts are downloaded a few at a time (MAX_CONCURRENT_REQUESTS),
+        to stay under the limit of servers with a limited number of concurrent
+        connections, and applied and run in the order listed below. Keep the order:
+        stylesheets first, then libraries -> data -> app -> main.
         When bundling files later, just replace the entries here.
     -->
     <script>
@@ -370,6 +370,7 @@
             // exponential backoff: 0.5s, 1s, 2s, 4s, 8s (+ up to 25% jitter), which stays
             // under the 20s "Taking longer than expected" watchdog.
             // <link>/<script> errors don't expose the HTTP status, so every failure is retried.
+            // Retries ask for "file?retry=N": the browser reuses a failed preload for the same address.
             var MAX_RETRIES = 5;
             var BASE_DELAY_MS = 500;
             var retryStatus = null;
@@ -392,14 +393,14 @@
                 }
             }
 
-            function loadWithRetry(parent, createElement, onLoad, onFinalError) {
+            function loadWithRetry(insert, createElement, onLoad, onFinalError) {
                 var attempt = 0;
                 function tryLoad() {
-                    var element = createElement();
+                    var element = createElement(attempt);
                     element.setAttribute('data-smpg-loader', '');
                     element.onload = function () {
                         clearRetryStatus();
-                        onLoad();
+                        onLoad(element);
                     };
                     element.onerror = function () {
                         element.remove();
@@ -414,45 +415,102 @@
                         showRetryStatus('Server side problem. Retrying (' + attempt + '/' + MAX_RETRIES + ')...');
                         setTimeout(tryLoad, delay);
                     };
-                    parent.appendChild(element);
+                    insert(element);
                 }
                 tryLoad();
             }
 
-            var styleIndex = 0;
-            function loadNextStylesheet() {
-                if (styleIndex >= stylesheetUrls.length) {
-                    loadNext(); // stylesheets done -> start the script chain
-                    return;
+            // Files are downloaded MAX_CONCURRENT_REQUESTS at a time, stylesheets first, each with the
+            // retry above. Stylesheets apply as they arrive, each in its own place in <head>, so the
+            // cascade keeps the listed order. Scripts are downloaded ahead with <link rel="preload">
+            // and run one at a time in the listed order, once every stylesheet is in (the report's
+            // code measures the styled page): each <script> tag reuses its preloaded copy. Without
+            // preload support, scripts are only downloaded when their turn comes.
+            var MAX_CONCURRENT_REQUESTS = 6; // keep it under the server's limit (20)
+            var probe = document.createElement('link');
+            var canPreload = !!(probe.relList && probe.relList.supports && probe.relList.supports('preload'));
+
+            var styleFiles = stylesheetUrls.map(function (url) {
+                // Keeps the stylesheet's place in <head>, also while it's retried
+                var placeholder = document.createComment(' ' + url + ' ');
+                document.head.appendChild(placeholder);
+                return { url: url, isStyle: true, placeholder: placeholder, downloaded: false };
+            });
+            var scriptFiles = scriptUrls.map(function (url) {
+                return { url: url, isStyle: false, downloaded: !canPreload };
+            });
+
+            function retryUrl(url, attempt) {
+                return attempt > 0 ? url + '?retry=' + attempt : url;
+            }
+            var downloads = canPreload ? styleFiles.concat(scriptFiles) : styleFiles;
+
+            var nextDownload = 0;
+            var downloadsInFlight = 0;
+            var stylesheetsLoaded = 0;
+
+            function startDownloads() {
+                while (downloadsInFlight < MAX_CONCURRENT_REQUESTS && nextDownload < downloads.length) {
+                    download(downloads[nextDownload]);
+                    nextDownload += 1;
                 }
-                loadWithRetry(document.head, function () {
+            }
+
+            function download(file) {
+                downloadsInFlight += 1;
+                loadWithRetry(function (element) {
+                    if (file.isStyle) {
+                        file.placeholder.parentNode.insertBefore(element, file.placeholder);
+                    } else {
+                        document.head.appendChild(element);
+                    }
+                }, function (attempt) {
                     var link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = stylesheetUrls[styleIndex];
+                    if (file.isStyle) {
+                        link.rel = 'stylesheet';
+                    } else {
+                        link.rel = 'preload';
+                        link.as = 'script';
+                    }
+                    link.href = retryUrl(file.url, attempt);
                     return link;
-                }, function () {
-                    styleIndex += 1;
-                    loadNextStylesheet();
                 }, function (link) {
-                    window.smpgShowLoadError('Failed to load a required stylesheet', link.href);
+                    downloadsInFlight -= 1;
+                    file.downloaded = true;
+                    // The script runs from the address that was downloaded
+                    file.url = link.getAttribute('href');
+                    if (file.isStyle) { stylesheetsLoaded += 1; }
+                    startDownloads();
+                    runNextScript();
+                }, function (link) {
+                    window.smpgShowLoadError(file.isStyle ? 'Failed to load a required stylesheet'
+                        : 'Failed to load a required script', link.href);
                 });
             }
 
-            var index = 0;
-            function loadNext() {
-                if (index >= scriptUrls.length) { return; }
-                loadWithRetry(document.body, function () {
+            var nextScript = 0;
+            var scriptRunning = false;
+            function runNextScript() {
+                if (scriptRunning || stylesheetsLoaded < styleFiles.length) { return; }
+                var file = scriptFiles[nextScript];
+                if (!file || !file.downloaded) { return; }
+                scriptRunning = true;
+                loadWithRetry(function (element) {
+                    document.body.appendChild(element);
+                }, function (attempt) {
                     var script = document.createElement('script');
-                    script.src = scriptUrls[index];
+                    script.src = retryUrl(file.url, attempt);
                     return script;
                 }, function () {
-                    index += 1;
-                    loadNext();
+                    scriptRunning = false;
+                    nextScript += 1;
+                    runNextScript();
                 }, function (script) {
                     window.smpgShowLoadError('Failed to load a required script', script.src);
                 });
             }
-            loadNextStylesheet();
+
+            startDownloads();
         })();
     </script>
 </body>
