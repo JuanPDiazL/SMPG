@@ -173,7 +173,7 @@ function getTextEditorTemplateContextGroups(placeId) {
             year: datasetProperties.current_season_id,
             season: `[${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}]`,
             climatology: `[${datasetProperties.climatology_year_ids[0]}, ${getLast(datasetProperties.climatology_year_ids)}]`,
-            analog_years: datasetProperties.climatology_year_ids,
+            analog_years: datasetProperties.selected_years,
         },
         "Map statistics": { stat: TEMPLATE_FUNCTIONS.stat },
         "Functions": {
