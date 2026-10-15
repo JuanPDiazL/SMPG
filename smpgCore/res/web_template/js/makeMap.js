@@ -986,7 +986,7 @@ class mapControlPanel {
             .attr("class", "map-reset-button w3-button w3-input w3-ripple w3-border w3-light-gray w3-hover-blue-grey")
             .text("Reset Map Viewport")
             .on("click", (event) => {
-                map.svg.call(map.svgZoomHandler.transform, d3.zoomIdentity);
+                map.zoomTo(d3.zoomIdentity);
             });
     }
 
