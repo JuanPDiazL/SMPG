@@ -167,21 +167,18 @@ const TEMPLATE_FUNCTIONS = {
  * @returns {Object} The context items, keyed by group name.
  */
 function getTextEditorTemplateContextGroups(placeId) {
+    // stat() lists the map statistics; the other functions are applied to variables
+    const { stat, ...functions } = TEMPLATE_FUNCTIONS;
     return {
         "Contextual": {
             place: placeId,
             year: datasetProperties.current_season_id,
-            season: `[${datasetProperties.sub_season_monitoring_ids[0]}, ${getLast(datasetProperties.sub_season_monitoring_ids)}]`,
-            climatology: `[${datasetProperties.climatology_year_ids[0]}, ${getLast(datasetProperties.climatology_year_ids)}]`,
+            season: TEMPLATE_FUNCTIONS.range(datasetProperties.sub_season_monitoring_ids),
+            climatology: TEMPLATE_FUNCTIONS.range(datasetProperties.climatology_year_ids),
             analog_years: datasetProperties.selected_years,
         },
-        "Map statistics": { stat: TEMPLATE_FUNCTIONS.stat },
-        "Functions": {
-            fixed: TEMPLATE_FUNCTIONS.fixed,
-            round: TEMPLATE_FUNCTIONS.round,
-            last: TEMPLATE_FUNCTIONS.last,
-            range: TEMPLATE_FUNCTIONS.range,
-        },
+        "Map statistics": { stat },
+        "Functions": functions,
         // "datasetProperties": { datasetProperties },
         // "parameters": { parameters },
         // "place_general_stats": { place_general_stats },
