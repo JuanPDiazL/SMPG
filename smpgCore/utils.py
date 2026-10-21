@@ -96,6 +96,8 @@ class Parameters:
         use_pearson (bool): A boolean indicating whether to use Pearson's 
             correlation coefficient for selecting similar years.
         forecast_length (int): The length of the forecast period.
+        ignore_current_season (bool): A boolean indicating whether to leave 
+            the current season empty, even when there is data for it.
         output_stats (bool): A boolean indicating whether to output the 
             statistical results as CSV.
         output_parameters (bool): A boolean indicating whether to output the 
@@ -128,6 +130,7 @@ class Parameters:
         self.use_pearson = False
         # analysis defaults
         self.forecast_length = 0
+        self.ignore_current_season = False
         # rainy season detection defaults
         self.rainy_season_detection_enabled = True
         self.rainy_season_detection_sos_method = "pct_clim_avg"
@@ -380,9 +383,33 @@ def percentiles_to_values(data: np.ndarray, percentiles=(3, 6, 11, 21, 31)) -> n
 
     Returns:
         np.ndarray: An array containing the corresponding values in `data` for 
-            the specified percentiles.
+            the specified percentiles. NaN values when `data` is empty.
     """
+    if len(data) == 0:
+        return np.full(len(percentiles), np.nan)
     return np.percentile(data, percentiles)
+
+def get_category_probabilities(totals: np.ndarray, terciles) -> list:
+    """
+    Calculate the share of `totals` below normal, normal and above normal.
+
+    Parameters:
+        totals (np.ndarray): The season totals to classify.
+        terciles: The 33rd and 67th percentile values that delimit the 
+            normal category.
+
+    Returns:
+        list: The shares below normal, of normal and above normal, or NaN 
+            values when `totals` is empty.
+    """
+    if len(totals) == 0:
+        return [np.nan, np.nan, np.nan]
+    return [
+        np.count_nonzero(totals < terciles[0]) / len(totals),
+        np.count_nonzero((totals >= terciles[0]) & 
+                         (totals < terciles[1])) / len(totals),
+        np.count_nonzero(totals >= terciles[1]) / len(totals),
+    ]
 
 def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFrame:
     """
@@ -399,6 +426,9 @@ def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFram
         DataFrame: A DataFrame containing the cumulative sum of the elements of 
             `fixed_data` and `post_data`.
     """
+    if len(fixed_data) == 0:
+        # nothing observed: each row is a scenario by itself
+        return post_data.cumsum(axis=1)
     fixed_series_indexes = post_data.columns[:len(fixed_data)]
     fixed_series = pd.Series(fixed_data, index=fixed_series_indexes, name='Current Season')
     fixed_series_cumsum = fixed_series.cumsum()
@@ -756,4 +786,8 @@ def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: 
             'Start of Season Anomaly Raw': sos_anomaly,
             'Start of Season Anomaly': sos_anomaly_class,
     }
+    if len(data) == 0:
+        # without current season data only the start of season of the average is defined
+        result.update({key: np.nan for key in ['Start of Season Raw', 'Start of Season', 
+                                               'Start of Season Anomaly Raw', 'Start of Season Anomaly']})
     return result
