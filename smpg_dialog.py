@@ -115,6 +115,7 @@ class SMPGDialog(QDialog, FORM_CLASS):
     selectYearsButton: QPushButton
 
     # analysis group
+    ignoreCurrentSeasonCheckBox: QCheckBox
     forecastLabel: QLabel
     forecastLengthSpinBox: QSpinBox
     rainySeasonDetectionButton: QPushButton
@@ -190,6 +191,7 @@ Github Project Page: {self.metadata["homepage"]}
         self.similarYearsRadioButton.toggled.connect(self.year_selection_rb_event)
         self.selectYearsButton.clicked.connect(self.select_years_btn_event)
         self.forecastLengthSpinBox.valueChanged.connect(self.update_map_stats_list)
+        self.ignoreCurrentSeasonCheckBox.stateChanged.connect(self.ignore_current_season_cb_changed_event)
 
         self.loadFileButton.clicked.connect(self.load_file_btn_event)
         self.importParametersButton.clicked.connect(self.import_parameters_btn_event)
@@ -233,6 +235,7 @@ Github Project Page: {self.metadata["homepage"]}
             "selected_years": selected_years,
             "forecast_length": self.forecastLengthSpinBox.value(),
             "use_pearson": self.usePearsonCheckBox.isChecked(),
+            "ignore_current_season": self.ignoreCurrentSeasonCheckBox.isChecked(),
             "rainy_season_detection_enabled": self.rainy_season_detection_dialog.sosEnabled,
             "rainy_season_detection_sos_method": self.rainy_season_detection_dialog.sosDetectionMethod,
             "rainy_season_detection_sos_first_threshold": self.rainy_season_detection_dialog.sosFirstThreshold,
@@ -339,6 +342,10 @@ Github Project Page: {self.metadata["homepage"]}
         self.rainy_season_detection_dialog.sosFixedFirstThreshold = parameters.rainy_season_detection_sos_fixed_first_threshold
         self.rainy_season_detection_dialog.sosFixedSecondThreshold = parameters.rainy_season_detection_sos_fixed_second_threshold
 
+        self.ignoreCurrentSeasonCheckBox.setEnabled(True)
+        self.ignoreCurrentSeasonCheckBox.setChecked(parameters.ignore_current_season)
+        self.ignore_current_season_cb_changed_event()
+
         # update outputs
         self.exportStatsCheckBox.setEnabled(True)
         self.exportStatsCheckBox.setChecked(parameters.output_stats)
@@ -424,7 +431,9 @@ Github Project Page: {self.metadata["homepage"]}
         if valid_monitoring_start < 0: valid_monitoring_start += self.dataset_properties.period_length
         selected_monitoring_start = self.seasonStartComboBox.currentIndex()
         current_season_monitoring_length = valid_monitoring_start - selected_monitoring_start + 1
-        if selected_monitoring_start > valid_monitoring_start:
+        # an ignored current season needs no observed data
+        ignore_current_season = self.ignoreCurrentSeasonCheckBox.isChecked()
+        if selected_monitoring_start > valid_monitoring_start and not ignore_current_season:
             QMessageBox.critical(self, "Error", 
                                    f'There is no data available for the selected season monitoring start ({sub_season_ids[selected_monitoring_start]})\n'
                                  + f'The start of the season monitoring must be before or equal to {sub_season_ids[valid_monitoring_start]}.', 
@@ -438,7 +447,7 @@ Github Project Page: {self.metadata["homepage"]}
                                     QMessageBox.Ok)
             return
         
-        if current_season_monitoring_length < 4:
+        if current_season_monitoring_length < 4 and not ignore_current_season:
             monitoring_season_dg = QMessageBox.warning(self, "Warning", 
                                    'The data present in the selected season monitoring is too short.\n'
                                  + 'Plot artifacts are likely to appear.\n'
@@ -447,6 +456,25 @@ Github Project Page: {self.metadata["homepage"]}
                                  + 'Do you want to continue?', 
                                 QMessageBox.Yes, QMessageBox.No)
             if monitoring_season_dg == QMessageBox.No: return
+
+        if ignore_current_season:
+            # the selected years are the only scenarios of the season
+            selected_years_count = len(self.year_selection_dialog.selected_years or [])
+            min_selected_years = 5
+            if selected_years_count == 0:
+                QMessageBox.critical(self, "Error", 
+                                     'At least one year must be selected.\n'
+                                   + 'When the current season is ignored, the selected years are the only scenarios of the season.', 
+                                     QMessageBox.Ok)
+                return
+            if selected_years_count < min_selected_years:
+                few_years_dg = QMessageBox.warning(self, "Warning", 
+                                       f'Only {selected_years_count} year{"s are" if selected_years_count > 1 else " is"} selected.\n'
+                                     + 'When the current season is ignored, the probabilities are calculated from the selected years only, '
+                                     + f'so with fewer than {min_selected_years} years they are not reliable.\n'
+                                     + 'Do you want to continue?', 
+                                    QMessageBox.Yes, QMessageBox.No)
+                if few_years_dg == QMessageBox.No: return
         
         if self.selected_layer is not None and self.targetFieldComboBox.currentIndex() == -1:
             QMessageBox.critical(self, "Error", 
@@ -624,6 +652,25 @@ Github Project Page: {self.metadata["homepage"]}
             self.usePearsonCheckBox.setEnabled(True)
             self.selectYearsButton.setEnabled(False)
 
+    def ignore_current_season_cb_changed_event(self):
+        """Event handler for `ignoreCurrentSeasonCheckBox`.
+
+        Without a current season there is nothing to compare the similar 
+        seasons with and nothing for a forecast to continue, so only custom 
+        years can be selected, the forecast is disabled and the map 
+        statistics that need a current season are removed.
+        """
+        ignore_current_season = self.ignoreCurrentSeasonCheckBox.isChecked()
+        if ignore_current_season:
+            self.customYearsRadioButton.setChecked(True)
+        self.similarYearsRadioButton.setEnabled(not ignore_current_season)
+        self.forecastLengthSpinBox.setEnabled(not ignore_current_season)
+        self.update_map_stats_list()
+        self.map_settings_dialog.settings['selected_fields'] = [
+            field for field in self.map_settings_dialog.settings['selected_fields'] 
+            if field in self.maps_stats_list
+        ]
+
     def export_stats_cb_changed_event(self):
         """Event handler for `exportStatsCheckBox`.
         
@@ -725,6 +772,17 @@ Current {dataset_properties.period_unit_id}: {sub_season_ids[dataset_properties.
 
     def update_map_stats_list(self):
         """Function to update the map stat fields based on the current form state."""
+        if self.ignoreCurrentSeasonCheckBox.isChecked():
+            # the statistics that don't need a current season
+            self.maps_stats_list = [
+                'Average Total',
+                'Ensemble Med. Pct. of Avg.',
+                'Probability Below Normal',
+                'Probability of Normal',
+                'Probability Above Normal',
+                'Ensemble Med. Pctl.',
+            ]
+            return
         forecast_length = self.forecastLengthSpinBox.value()
         sos = self.rainy_season_detection_dialog.sosEnabled
         self.maps_stats_list = (
