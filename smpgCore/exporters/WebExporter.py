@@ -107,7 +107,6 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
         topojson_dict['topojson_map'] = layer_to_topojson(map_layer)
     if reference_layer is not None:
         topojson_dict['reference_topojson_map'] = layer_to_topojson(reference_layer)
-    data_py_to_js(topojson_dict, data_destination_path, 'topojson_map')
     
     # outputs all the required data for the web report
     places = structured_dataset.places
@@ -116,7 +115,6 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
         'dataset_properties_json': structured_dataset.properties.__dict__,
         'parameters_json': structured_dataset.parameters.__dict__,
     }
-    data_py_to_js(properties, data_destination_path, 'properties')
 
     general_stats = {
         'place_general_stats_csv': pd.DataFrame(
@@ -131,14 +129,12 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
         'selected_seasons_general_stats_csv': pd.DataFrame(
         [p.selected_seasons_general_stats for p in places.values()]),
     }
-    data_py_to_js(general_stats, data_destination_path, 'general_stats')
 
     seasonal_stats = {
         'seasonal_cumsum_csv_obj': {k:v.seasonal_cumsum for k, v in places.items()},
         'seasonal_ensemble_csv_obj': {k:v.seasons_ensemble for k, v in places.items()},
         'seasonal_long_term_stats_csv_obj': {k:v.seasonal_long_term_stats for k, v in places.items()},
     }
-    data_py_to_js(seasonal_stats, data_destination_path, 'seasonal_stats')
 
     selected_seasons_stats = {
         'selected_seasons_cumsum_csv_obj': {k:v.selected_seasons_cumsum for k, v in places.items()},
@@ -146,4 +142,7 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
         'selected_seasons_ensemble_with_forecast_csv_obj': {k:v.selected_seasons_ensemble_with_forecast for k, v in places.items()},
         'selected_seasons_long_term_stats_csv_obj': {k:v.selected_seasons_long_term_stats for k, v in places.items()},
     }
-    data_py_to_js(selected_seasons_stats, data_destination_path, 'selected_seasons_stats')
+
+    # all the report's data in one file (the layout stays in its own, layout.js)
+    data_py_to_js({**topojson_dict, **properties, **general_stats, **seasonal_stats, **selected_seasons_stats},
+                  data_destination_path, 'data')
