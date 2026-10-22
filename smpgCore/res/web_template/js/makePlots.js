@@ -50,6 +50,15 @@ function makeAccumulationsPlot(containerElement) {
 
 function makeAccumulationsTable(containerElement) {
     const getAccumulationsTableData = (index) => {
+        if (ignoreCurrentSeason) {
+            // without a current season, the assessment is at the end of the season
+            return {
+                "Assessment at EoS": [
+                    [null, 'Sel. Yrs.', 'Clim.'],
+                    ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
+                ],
+            };
+        }
         let data = {};
         const assesmentTitle = `Assessment at Current ${period_unit}`;
         data[assesmentTitle] = [
@@ -162,7 +171,12 @@ function makeCurrentYearTable(containerElement) {
                 ['St. Dev.', selected_seasons_general_stats[index]['St. Dev.'], seasonal_general_stats[index]['St. Dev.']],
             ],
         }
-        if (hasSos) {
+        if (hasSos && ignoreCurrentSeason) {
+            // only the historical start of season is defined without a current season
+            data["Rainy Season Status"] = [
+                ['SoS of Historical Avg.', place_general_stats[index]['Start of Season of Avg.']],
+            ];
+        } else if (hasSos) {
             data["Rainy Season Status"] = [
                 ['SoS', place_general_stats[index]['Start of Season']],
                 ['SoS Anomaly', place_general_stats[index]['Start of Season Anomaly']],
@@ -367,7 +381,10 @@ function makeEnsembleWithForecastCard(containerElement) {
 
 function makeAccumulationPercentilesPlot(containerElement) {
     let xNames = [...datasetProperties['year_ids']];
-    xNames.push(datasetProperties['current_season_id']);
+    // without a current season the bars are the past seasons' totals only
+    if (!ignoreCurrentSeason) {
+        xNames.push(datasetProperties['current_season_id']);
+    }
     
     const customSettings = {
         bar: {
@@ -393,7 +410,7 @@ function makeAccumulationPercentilesPlot(containerElement) {
         '67 Pctl.': 'line',
     };
     const getAccumulationsCurrentPlotData = (index) => {
-        const xLength = seasonal_current_totals[index].length + 1;
+        const xLength = seasonal_current_totals[index].length + ignoreCurrentSeason;
         return {
             'Seasonal Accumulation': seasonal_current_totals[index],
             'Current Accumulation to Present': [place_general_stats[index]['Current Accumulation to Present']],
@@ -419,9 +436,11 @@ function makeAccumulationPercentilesTable(containerElement) {
                 ['33 Percentile', place_general_stats[index]['Seasonal 33 Pctl.'], null],
                 ['11 Percentile', place_general_stats[index]['Seasonal 11 Pctl.'], null],
             ],
-            "Current Season Statistics": [
-                ['Current Season Pctl.', place_general_stats[index]['Current Season Pctl.']],
-            ]
+            ...(ignoreCurrentSeason ? {} : {
+                "Current Season Statistics": [
+                    ['Current Season Pctl.', place_general_stats[index]['Current Season Pctl.']],
+                ],
+            }),
         }
     };
 

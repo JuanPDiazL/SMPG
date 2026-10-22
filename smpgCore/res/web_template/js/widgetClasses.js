@@ -74,13 +74,24 @@ class BBPlot {
 
     update(index) {
         const data = this.dataGetter(index);
+        // NaN/null only series are removed from the data
+        for (const id of Object.keys(data)) {
+            if (Array.isArray(data[id]) && data[id].every(value => value === null || Number.isNaN(value))) {
+                delete data[id];
+            }
+        }
         const dataIds = Object.keys(data);
+        // Add xs entries per series
         const xs = Object.fromEntries(dataIds.map(id => {
-                return [id, (id in this.xsDataRelation) 
+                return [id, (id in this.xsDataRelation)
                     ? this.xsDataRelation[id] : "default_xs"];
             }));
+        const usedXs = new Set(Object.values(xs));
+        // filter out unused xs entries
+        const xsDefinition = Object.fromEntries(
+            Object.entries(this.xsDefinition).filter(([name]) => usedXs.has(name)));
         const jsonData = {
-            ...this.xsDefinition,
+            ...xsDefinition,
             ...data,
         };
         this.plot.load({
@@ -207,7 +218,7 @@ class chartCard {
                 "cardElementsBuilder": makeAccumulationsCard,
             }, 
             "Current Year Status": {
-                "full title": `Current Year Status: ${datasetProperties.current_season_id}. Climatology: [${datasetProperties.climatology_year_ids[0]}, ${getLast(datasetProperties.climatology_year_ids)}]`,
+                "full title": `${ignoreCurrentSeason ? "" : `Current Year Status: ${datasetProperties.current_season_id}.`} Climatology: [${datasetProperties.climatology_year_ids[0]}, ${getLast(datasetProperties.climatology_year_ids)}]`,
                 "cardElementsBuilder": makeCurrentYearCard,
             }, 
             "Ensemble": {

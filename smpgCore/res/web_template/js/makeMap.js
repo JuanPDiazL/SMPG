@@ -754,6 +754,10 @@ class d3Map {
     }
 
     changeLegend(statId) {
+        // Without a current season, the statistics that need one have no values
+        if (ignoreCurrentSeason && !mapFields.includes(statId)) {
+            statId = IGNORED_CURRENT_SEASON_DEFAULT_MAP_FIELD;
+        }
         // A new statistic shows the whole region, unless a link is zooming to its place or the
         // map already shows it
         if (statId !== this.options.legend_stat && !this.focusing && !this.isViewReset()) {

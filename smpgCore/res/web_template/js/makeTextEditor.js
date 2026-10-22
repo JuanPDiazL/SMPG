@@ -172,7 +172,8 @@ function getTextEditorTemplateContextGroups(placeId) {
     return {
         "Contextual": {
             place: placeId,
-            year: datasetProperties.current_season_id,
+            // without a current season, {{ year }} stays as typed
+            ...(ignoreCurrentSeason ? {} : { year: datasetProperties.current_season_id }),
             season: TEMPLATE_FUNCTIONS.range(datasetProperties.sub_season_monitoring_ids),
             climatology: TEMPLATE_FUNCTIONS.range(datasetProperties.climatology_year_ids),
             analog_years: datasetProperties.selected_years,

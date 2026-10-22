@@ -41,11 +41,26 @@ const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Se
 const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null);
 const hasForecast = parameters['forecast_length'];
 const hasSos = parameters['rainy_season_detection_enabled'];
+// The current season was left empty: each selected year is one scenario of the season
+const ignoreCurrentSeason = parameters['ignore_current_season'] === true;
 
 const hasMap = isDeclared("topojson_map") && topojson_map !== null;
 const hasReferenceMap = isDeclared("reference_topojson_map") && reference_topojson_map !== null;
 
-const mapFields = [
+// The map statistics that don't need a current season
+const IGNORED_CURRENT_SEASON_MAP_FIELDS = [
+    'None',
+    'Average Total',
+    'Ensemble Med. Pct. of Avg.',
+    'Probability Below Normal',
+    'Probability of Normal',
+    'Probability Above Normal',
+    'Ensemble Med. Pctl.',
+];
+// A map showing another statistic shows this one instead, see d3Map.changeLegend()
+const IGNORED_CURRENT_SEASON_DEFAULT_MAP_FIELD = 'Ensemble Med. Pct. of Avg.';
+
+const mapFields = ignoreCurrentSeason ? IGNORED_CURRENT_SEASON_MAP_FIELDS : [
     'None',
     'Current Accumulation to Present',
     'Average Total',

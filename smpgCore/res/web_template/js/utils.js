@@ -54,8 +54,14 @@ function handleNavigation(event) {
     }
     // The rest of the report's details are in the About this data window
     const monitoringIds = datasetProperties.sub_season_monitoring_ids;
-    HEADER.text(`Region ID: ${place} · Monitoring season: [${monitoringIds[0]},`
-        + ` ${getLast(monitoringIds)}] ${datasetProperties.current_season_id} · Current ${period_unit.toLowerCase()}: ${getCurrentPeriodId()}`);
+    if (ignoreCurrentSeason) {
+        const yearCount = datasetProperties.selected_years.length;
+        HEADER.text(`Region ID: ${place} · Monitoring season: [${monitoringIds[0]},`
+            + ` ${getLast(monitoringIds)}] · Current season ignored, ${yearCount} selected year${yearCount === 1 ? "" : "s"}`);
+    } else {
+        HEADER.text(`Region ID: ${place} · Monitoring season: [${monitoringIds[0]},`
+            + ` ${getLast(monitoringIds)}] ${datasetProperties.current_season_id} · Current ${period_unit.toLowerCase()}: ${getCurrentPeriodId()}`);
+    }
 
     for (const card of Object.values(cards)) {
         card.update(currentDataIndex);
