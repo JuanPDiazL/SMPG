@@ -170,13 +170,22 @@ setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
 setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
 
-if (hasForecast) {
-    layout.gridstackWidgets.w4.smpgOpts.smpgCardType  = "Ensemble with Forecast";
-    layout.gridstackWidgets.w5.smpgOpts.smpgCardType  = "Seasonal Accumulation Percentiles with Forecast";
-}
+// Each forecast card's regular variant
+const FORECAST_CARD_REGULAR_TYPES = {
+    "Ensemble with Forecast": "Ensemble",
+    "Seasonal Accumulation Percentiles with Forecast": "Seasonal Accumulation Percentiles",
+};
 
-if (!hasMap) {
-    layout.gridstackWidgets.w1.smpgOpts.smpgCardType = "Empty Widget";
+// The layout's cards fit this report: without a forecast, the forecast cards show their regular
+// variant; without a map, the maps are empty widgets
+for (const widget of Object.values(layout.gridstackWidgets)) {
+    const smpgOpts = widget.smpgOpts;
+    if (!hasForecast && smpgOpts.smpgCardType in FORECAST_CARD_REGULAR_TYPES) {
+        smpgOpts.smpgCardType = FORECAST_CARD_REGULAR_TYPES[smpgOpts.smpgCardType];
+    }
+    if (!hasMap && smpgOpts.smpgCardType === "Map") {
+        smpgOpts.smpgCardType = "Empty Widget";
+    }
 }
 
 var gridstackItems = parseGridstackItems(layout);
