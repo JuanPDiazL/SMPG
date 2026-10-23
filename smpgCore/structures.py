@@ -113,6 +113,8 @@ class Place:
         timeseries_reshaped = past_seasons.values.reshape(len(indexes), len(columns))
         seasons_df = pd.DataFrame(timeseries_reshaped, index=indexes, 
                                   columns=columns)
+        # every past year over the whole year, period by period (the report's year in view)
+        self.season_df = seasons_df
 
         # forecast case
         if parent.parameters.forecast_length > 0:

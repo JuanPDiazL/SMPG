@@ -137,6 +137,7 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
         'seasonal_cumsum_csv_obj': {k:v.seasonal_cumsum for k, v in places.items()},
         'seasonal_ensemble_csv_obj': {k:v.seasons_ensemble for k, v in places.items()},
         'seasonal_long_term_stats_csv_obj': {k:v.seasonal_long_term_stats for k, v in places.items()},
+        'seasonal_series_csv_obj': {k:v.season_df for k, v in places.items()},
     }
 
     selected_seasons_stats = {

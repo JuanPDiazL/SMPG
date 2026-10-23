@@ -26,6 +26,7 @@ var selected_seasons_general_stats = csvParse(decompress(selected_seasons_genera
 var seasonal_cumsum = parseRowsObjectCsv(decompress(seasonal_cumsum_csv_obj));
 var seasonal_ensemble = parseRowsObjectCsv(decompress(seasonal_ensemble_csv_obj));
 var seasonal_long_term_stats  = parseRowsObjectCsv(decompress(seasonal_long_term_stats_csv_obj));
+var seasonal_series = parseRowsObjectCsv(decompress(seasonal_series_csv_obj));
 var selected_seasons_cumsum = parseRowsObjectCsv(decompress(selected_seasons_cumsum_csv_obj));
 var selected_seasons_ensemble = parseRowsObjectCsv(decompress(selected_seasons_ensemble_csv_obj));
 var selected_seasons_ensemble_with_forecast = parseRowsObjectCsv(decompress(selected_seasons_ensemble_with_forecast_csv_obj));
@@ -131,6 +132,7 @@ console.log('selected_seasons_general_stats', selected_seasons_general_stats);
 console.log('seasonal_cumsum', seasonal_cumsum);
 console.log('seasonal_ensemble', seasonal_ensemble);
 console.log('seasonal_long_term_stats', seasonal_long_term_stats);
+console.log('seasonal_series', seasonal_series);
 console.log('selected_seasons_cumsum', selected_seasons_cumsum);
 console.log('selected_seasons_ensemble', selected_seasons_ensemble);
 console.log('selected_seasons_ensemble_with_forecast', selected_seasons_ensemble_with_forecast);
