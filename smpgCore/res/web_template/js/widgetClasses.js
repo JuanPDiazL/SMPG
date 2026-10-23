@@ -299,7 +299,7 @@ class chartCard {
 
         this.cardBody = this.cardContainer
             .append("div")
-            .attr("class", "card-body w3-container w3-padding-small");
+            .attr("class", "card-body w3-container");
         
         this.cardElements = {};
         this.changePlot(this.cardType);

@@ -57,6 +57,7 @@ body.report-reader-mode .plot-card.header-hidden {
     position: relative;
     overflow: auto;
     width: 100%;
+    padding: 4px; /* spacing only, the same in dark mode */
     background-color: white;
 }.darkmode .card-body {
     background-color: var(--dark-bg-color);
