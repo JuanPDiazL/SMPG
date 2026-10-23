@@ -10,10 +10,9 @@ var contentHeight = null;
 var editingLayout = false;
 var maximizedCard = null; // the card filling the report, see setMaximizedCard()
 // Edit mode (#edit_mode=true) shows the controls that change the report; reader mode, the
-// default, hides them (see setReportEditMode()). Once edit mode was on, reader mode offers to
-// switch back.
+// default, hides them (see setReportEditMode()). Reader mode offers to switch to edit mode when
+// the address has an edit_mode parameter, whatever its value (see handleNavigation()).
 var reportEditMode = getHashParamsObject()["edit_mode"] === "true";
-var reportEditModeUsed = reportEditMode;
 
 // Decompress and parse data
 var datasetProperties = JSON.parse(decompress(dataset_properties_json));
@@ -151,7 +150,7 @@ const HEADER_MENU_ITEMS = {
     "Switch to reader mode": { icon: "chrome_reader_mode", onclick: () => navigateTo({ edit_mode: "false" }),
         className: REPORT_EDIT_ONLY_CLASS },
     "Switch to edit mode": { icon: "edit_note", onclick: () => navigateTo({ edit_mode: "true" }),
-        hidden: reportEditMode || !reportEditModeUsed },
+        hidden: reportEditMode || !("edit_mode" in getHashParamsObject()) },
     "Save layout": { icon: "file_upload", onclick: () => openSaveLayoutDialog(), className: REPORT_EDIT_ONLY_CLASS },
     "Edit layout": { icon: "edit", onclick: () => toggleLayoutEdit(), className: REPORT_EDIT_ONLY_CLASS },
     "Stop edit layout": { icon: "edit_off", onclick: () => toggleLayoutEdit(), hidden: true,

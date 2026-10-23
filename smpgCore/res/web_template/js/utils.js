@@ -44,6 +44,8 @@ function handleNavigation(event) {
     const params = getHashParamsObject();
     const place = params['place'];
     setReportEditMode(params["edit_mode"] === "true");
+    // Reader mode offers edit mode when the address has edit_mode, even "false"
+    SWITCH_TO_EDIT_MODE_BUTTON.classed(HIDE_CLASS, reportEditMode || !("edit_mode" in params));
 
     if (Object.values(datasetProperties["place_ids"]).includes(place)){
         currentDataIndex = place;
@@ -634,9 +636,7 @@ function setReportEditMode(state) {
         editor.saveTemplate();
     }
     reportEditMode = state;
-    reportEditModeUsed = reportEditModeUsed || state;
     BODY.classList.toggle(REPORT_READER_MODE_CLASS, !state);
-    SWITCH_TO_EDIT_MODE_BUTTON.classed(HIDE_CLASS, state || !reportEditModeUsed);
     for (const card of Object.values(cards)) {
         card.graphTypeSelectContent.classed("w3-show", false);
     }
