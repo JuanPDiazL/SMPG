@@ -17,6 +17,7 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     // Styles inside the editing iframe, which the page's stylesheets don't reach.
     // Read-only mode keeps the body editable and only adds .mce-content-readonly, so the caret still shows.
     // In edit mode, template variables are tinted, and the ones that don't resolve marked red.
+    // Text without a font of its own uses the report's (Verdana, as in w3.css), not TinyMCE's.
     // The text has TEXT_EDITOR_CONTENT_MARGIN margins, and its first and last blocks' own margins
     // are dropped, which would otherwise add to the top and bottom ones.
     // In edit mode, the body also fills the editor (minus its margins), so clicks and the
@@ -25,6 +26,7 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     content_style: "body.mce-content-readonly { caret-color: transparent; }"
         + " a, a:visited { color: #1a73e8; }"
         + " html { height: 100%; }"
+        + " body { font-family: Verdana, sans-serif; }"
         + ` body { margin: ${TEXT_EDITOR_CONTENT_MARGIN}; }`
         + " body > :first-child { margin-top: 0; }"
         + " body > :last-child { margin-bottom: 0; }"
