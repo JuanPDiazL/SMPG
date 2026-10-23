@@ -61,7 +61,7 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     // Website links open in a new tab by default
     link_default_target: "_blank",
     license_key: "gpl",
-    plugins: "lists link table code quickbars",
+    plugins: "lists link table code quickbars image",
     toolbar: "fontformat alignment spacing insert | code",
     // Group buttons, each opening a small floating toolbar with its buttons
     toolbar_groups: {
@@ -85,14 +85,21 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
         insert: {
             icon: "plus",
             tooltip: "Insert",
-            items: "templatevariable linkmenu tableofcontents placeblock table hr",
+            items: "templatevariable linkmenu image tableofcontents placeblock table hr",
         },
     },
-    // Floating toolbar on selected text; the insert toolbar (whose image button inserts
-    // temporary blob: URLs) and the image toolbar are disabled
+    // Images: a web address stays as typed (the image loads from the web); a file chosen with the
+    // dialog's browse button is embedded as a data: address, saved with the text. The Upload tab,
+    // which needs an upload handler, is off. (Pasted and dropped images show as blob: addresses
+    // while editing and are saved as data: addresses by TinyMCE.)
+    image_uploadtab: false,
+    file_picker_types: "image",
+    file_picker_callback: pickTextEditorImageFile,
+    // Floating toolbars: on selected text, and on a selected image (its alignment and properties);
+    // the insert toolbar (whose image button inserts temporary blob: URLs) is disabled
     quickbars_selection_toolbar: "bold italic",
     quickbars_insert_toolbar: false,
-    quickbars_image_toolbar: false,
+    quickbars_image_toolbar: "alignleft aligncenter alignright | image",
     menubar: false,
     ui_mode: "split", // keeps menus and popups inside the card instead of on <body>
     promotion: false,
@@ -101,6 +108,25 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     resize: false,
     height: "100%",
 };
+
+/**
+ * The image dialog's browse button: asks for an image file and fills the dialog with it as a
+ * data: address, so the image is saved with the text and needs no file or network to show.
+ * @param {Function} callback - TinyMCE's callback, taking the image's address.
+ */
+function pickTextEditorImageFile(callback) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.addEventListener("change", () => {
+        const file = input.files[0];
+        if (!file) { return; }
+        const reader = new FileReader();
+        reader.addEventListener("load", () => callback(reader.result));
+        reader.readAsDataURL(file);
+    });
+    input.click();
+}
 
 // Template variables: {{ expression }}, where the expression is a property lookup or a call to a
 // function from TEMPLATE_FUNCTIONS, and is never evaluated as code
