@@ -106,7 +106,10 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
     if map_layer is not None:
         topojson_dict['topojson_map'] = layer_to_topojson(map_layer)
     if reference_layer is not None:
-        topojson_dict['reference_topojson_map'] = layer_to_topojson(reference_layer)
+        reference_topojson = layer_to_topojson(reference_layer)
+        # a reference identical to the map isn't exported: the report then draws the map's
+        if reference_topojson != topojson_dict['topojson_map']:
+            topojson_dict['reference_topojson_map'] = reference_topojson
     
     # outputs all the required data for the web report
     places = structured_dataset.places
