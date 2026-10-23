@@ -31,6 +31,8 @@ class BBPlot {
             legend: {
                 contents: {
                     bindto: legendContainer.node(),
+                    // Each series' symbol (a bar for a bar series), from this plot's series types
+                    template: (title, color, data) => getLegend(title, color, data, this.chartTypes),
                 },
             },
             // New data can change the axes' widths, so where the plot area starts

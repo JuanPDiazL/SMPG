@@ -93,11 +93,6 @@ const globalBBChartDefaultOptions = {
             show: true,
         },
     },
-    legend: {
-        contents: {
-            template: (title, color, data) => getLegend(title, color, data, this.chartTypes),
-        },
-    },
     tooltip: {
         order: 'desc',
         grouped: true,
