@@ -183,3 +183,36 @@ const chartColors = {
     'E. (33, 67) Pctl.': '#0000FF',
     'E. w. Forecast (33, 67) Pctl.': '#0000FF',
 }
+
+// Year series' colors, in the order the years get them. Each has at least 3:1 contrast on the
+// light and the dark-mode chart backgrounds and stays clear of the fixed colors above; the most
+// similar ones are 6 places apart.
+const YEAR_COLORS = [
+    '#00897B', '#EC407A', '#5C6BC0', '#827717', '#AB47BC', '#8D6E63',
+    '#00838F', '#F06292', '#9575CD', '#78909C', '#BA68C8', '#A1887F',
+];
+const plotColorCache = new Map();
+
+/**
+ * Returns a series' color, the same in every chart: its fixed color from chartColors, a year's
+ * color from YEAR_COLORS (the selected years first, then the rest, in year order), or for any
+ * other name a YEAR_COLORS color chosen from the name itself.
+ * @param {string} name - The series' name, e.g. "LTA" or "1994-1995".
+ * @returns {string} The color.
+ */
+function getPlotColor(name) {
+    if (name in chartColors) { return chartColors[name]; }
+    if (!plotColorCache.has(name)) {
+        // the selected years are a list, or a number of similar years that differ per place
+        const selected = Array.isArray(datasetProperties.selected_years) ? datasetProperties.selected_years : [];
+        const years = [...selected, ...datasetProperties.year_ids.filter((year) => !selected.includes(year))];
+        let index = years.indexOf(name);
+        if (index < 0) {
+            // not a year: a stable hash of the name
+            index = 0;
+            for (const char of name) { index = (index * 31 + char.codePointAt(0)) >>> 0; }
+        }
+        plotColorCache.set(name, YEAR_COLORS[index % YEAR_COLORS.length]);
+    }
+    return plotColorCache.get(name);
+}

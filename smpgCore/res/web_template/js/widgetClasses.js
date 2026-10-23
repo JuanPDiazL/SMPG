@@ -106,7 +106,8 @@ class BBPlot {
             json: jsonData,
             xs: xs,
             types: this.chartTypes,
-            colors: chartColors,
+            // each series' color is the same in every chart (see getPlotColor())
+            colors: Object.fromEntries(dataIds.map((id) => [id, getPlotColor(id)])),
             unload: true,
             // The legend is drawn with the data, so the chart is sized again once it's there
             resizeAfter: true,
