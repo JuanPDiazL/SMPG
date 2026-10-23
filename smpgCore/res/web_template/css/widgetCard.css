@@ -133,6 +133,11 @@ body.report-reader-mode .plot-card.header-hidden {
 .text-editor-view .tox-pop {
     display: none;
 }
+/* The editor's frame is hidden, not removed, so the text stays in place when the mode changes
+   (transparent, so the same in dark mode) */
+.text-editor-view .tox-tinymce {
+    border-color: transparent;
+}
 
 .text-editor-status {
     margin: 1em;
