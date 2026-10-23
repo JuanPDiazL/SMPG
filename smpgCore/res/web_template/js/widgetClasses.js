@@ -27,7 +27,13 @@ class BBPlot {
         
         
         const chartOptions = {
-            axis: { x: { tick: { format: (index) => this.xNames[index] }, }, },
+            axis: {
+                x: {
+                    tick: {
+                        format: (index) => this.xNames[index]
+                    },
+                },
+            },
             legend: {
                 contents: {
                     bindto: legendContainer.node(),
