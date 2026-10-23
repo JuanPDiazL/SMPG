@@ -63,6 +63,7 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     // Website links open in a new tab by default
     link_default_target: "_blank",
     license_key: "gpl",
+    font_size_formats: '8pt 9pt 10pt 11pt 12pt 13pt 14pt 16pt 18pt 24pt 36pt',
     plugins: "lists link table code quickbars image",
     toolbar: "fontformat alignment spacing insert | code",
     // Group buttons, each opening a small floating toolbar with its buttons
@@ -99,7 +100,7 @@ const TEXT_EDITOR_TINYMCE_OPTIONS = {
     file_picker_callback: pickTextEditorImageFile,
     // Floating toolbars: on selected text, and on a selected image (its alignment and properties);
     // the insert toolbar (whose image button inserts temporary blob: URLs) is disabled
-    quickbars_selection_toolbar: "bold italic",
+    quickbars_selection_toolbar: "fontsizeinput bold italic",
     quickbars_insert_toolbar: false,
     quickbars_image_toolbar: "alignleft aligncenter alignright | image",
     menubar: false,
