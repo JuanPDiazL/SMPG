@@ -96,6 +96,17 @@ def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_l
     # copy web template 
     source_folder = os.path.join(os.path.dirname(__file__), '..', 'res', 'web_template')
     sh.copytree(source_folder, web_subfolder_path, dirs_exist_ok=True)
+    # the template is made for a report without a forecast; otherwise some of its files (its
+    # layout) are replaced by the ones made for the report's case. Without a current season there
+    # is no forecast either.
+    override = None
+    if structured_dataset.parameters.ignore_current_season:
+        override = 'ignoreCurrentSeason'
+    elif structured_dataset.parameters.forecast_length > 0:
+        override = 'hasForecast'
+    if override is not None:
+        override_folder = os.path.join(os.path.dirname(__file__), '..', 'res', 'web_template_overrides', override)
+        sh.copytree(override_folder, web_subfolder_path, dirs_exist_ok=True)
 
     # makes subfolder for data
     data_destination_path = os.path.join(web_subfolder_path, 'data')
