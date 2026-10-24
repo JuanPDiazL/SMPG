@@ -166,6 +166,7 @@ const chartColors = {
     'Current Accumulation to Forecast': '#FF00FF',
     'Forecast': '#FF00FF',
     'Forecast Accumulation': '#FF00FF',
+    'Seasonal Accumulation to Present': '#7EA9FA',
     'Seasonal Accumulation to Forecast': '#2A7E41',
     
 
@@ -182,6 +183,19 @@ const chartColors = {
     'E. LTA w. Forecast±St. Dev.': '#FFA500',
     'E. (33, 67) Pctl.': '#0000FF',
     'E. w. Forecast (33, 67) Pctl.': '#0000FF',
+}
+
+// Each series' line styles (see plots.css): a series given a class has bb-target-<class> on its
+// group (see BBPlot.update())
+const chartClasses = {
+    'LTA': ['line-thick'],
+    'Climatology Average': ['line-thick'],
+    'Ensemble Med.': ['line-thick', 'line-dashed'],
+    'Ensemble Med. w. Forecast': ['line-thick', 'line-dashed'],
+    'Current Season Accumulation': ['line-thick'],
+    'Current Season Accumulation with Forecast': ['line-thick'],
+    'Forecast': ['line-thick'],
+    'Forecast Accumulation': ['line-thick'],
 }
 
 // billboard.js's colors from billboard_modern.min.css

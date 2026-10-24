@@ -79,23 +79,15 @@
     stroke-dashoffset: 10;
 }
 
-/* Custom line styles */
+/* Custom line styles, given to series by their classes (see chartClasses in bbPlotUtils.js).
+   Thick lines stay thick when billboard.js focuses a series (its .bb-focused rule). */
 
-.bb-line-LTA, .bb-line-Climatology-Average, 
-.bb-line-Ensemble-Med-, .bb-line-Ensemble-Med--w--Forecast,
-.bb-line-Current-Season-Accumulation, 
-.bb-line-Current-Season-Accumulation-with-Forecast, .bb-line-Forecast, 
-.bb-line-Forecast-Accumulation {
+.bb-target-line-thick .bb-line {
     stroke-width: 4px !important;
 }
 
-.bb-line-Ensemble-Med-, .bb-line-Ensemble-Med--w--Forecast {
+.bb-target-line-dashed .bb-line {
     stroke-dasharray: 10 2;
-}
-
-/* The year in view (see seriesClassesGetter in makeCurrentYearPlot()), as thick as the average */
-.bb-target-year-in-view .bb-line {
-    stroke-width: 4px !important;
 }
 
 .bb-areas {

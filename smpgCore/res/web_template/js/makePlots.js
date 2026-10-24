@@ -164,8 +164,8 @@ function makeCurrentYearPlot(containerElement) {
         }
     const plot = new BBPlot(containerElement, makeCurrentYearPlotData, xNames, 
         xsDefinition, xsDataRelation, plotTypes, makeCurrentYearPlotGridLines, options);
-    // The year in view's line is as thick as the average's (see plots.css)
-    plot.seriesClassesGetter = () => (yearInView ? { [yearInView]: "year-in-view" } : {});
+    // The year in view's line is as thick as the average's (see chartClasses)
+    plot.seriesClassesGetter = () => (yearInView ? { [yearInView]: ["line-thick"] } : {});
     return plot;
 }
 

@@ -16,8 +16,8 @@ class BBPlot {
         this.customSettings = customSettings;
         // Called when the plot area may have moved, see onChartAreaChange()
         this.chartAreaListener = null;
-        // Optional: returns {seriesName: className} for the data of a place; a series given a
-        // class has bb-target-<className> on its group, for CSS
+        // Optional: returns {seriesName: [className, ...]} for the data of a place, added to the
+        // series' classes from chartClasses (see update())
         this.seriesClassesGetter = null;
 
         this.allContainer = this.containerElement.append("div")
@@ -109,7 +109,7 @@ class BBPlot {
             json: jsonData,
             xs: xs,
             types: this.chartTypes,
-            classes: this.seriesClassesGetter?.(index) ?? {},
+            classes: this.getSeriesClasses(index, dataIds),
             // each series' color is the same in every chart (see getPlotColor())
             colors: Object.fromEntries(dataIds.map((id) => [id, getPlotColor(id)])),
             unload: true,
@@ -117,6 +117,26 @@ class BBPlot {
             resizeAfter: true,
         });
         this.plot.xgrids(this.gridLinesGetter(index));
+    }
+
+    /**
+     * Returns the loaded series' classes for billboard.js: their classes from chartClasses and
+     * from seriesClassesGetter. billboard.js prefixes a series' class with bb-target- and takes
+     * one, so several are joined with that prefix ("line-thick bb-target-line-dashed").
+     * @param {string} index - The place.
+     * @param {string[]} dataIds - The loaded series' names.
+     * @returns {Object} {seriesName: classes}.
+     */
+    getSeriesClasses(index, dataIds) {
+        const extraClasses = this.seriesClassesGetter?.(index) ?? {};
+        const classes = {};
+        for (const id of dataIds) {
+            const list = [...(chartClasses[id] ?? []), ...(extraClasses[id] ?? [])];
+            if (list.length > 0) {
+                classes[id] = [...new Set(list)].join(" bb-target-");
+            }
+        }
+        return classes;
     }
 
     resize(size) {
