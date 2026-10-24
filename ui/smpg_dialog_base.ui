@@ -359,7 +359,7 @@
             <string>Leave the current season empty, even when there is data for it. Each selected year is one scenario of the season.</string>
            </property>
            <property name="text">
-            <string>Selected Years Only</string>
+            <string>Use Only Selected Years</string>
            </property>
           </widget>
          </item>

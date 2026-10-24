@@ -96,8 +96,9 @@ class Parameters:
         use_pearson (bool): A boolean indicating whether to use Pearson's 
             correlation coefficient for selecting similar years.
         forecast_length (int): The length of the forecast period.
-        ignore_current_season (bool): A boolean indicating whether to leave 
-            the current season empty, even when there is data for it.
+        ignore_current_season (bool): A boolean indicating whether to use 
+            only the selected years, leaving the current season empty even 
+            when there is data for it.
         output_stats (bool): A boolean indicating whether to output the 
             statistical results as CSV.
         output_parameters (bool): A boolean indicating whether to output the 

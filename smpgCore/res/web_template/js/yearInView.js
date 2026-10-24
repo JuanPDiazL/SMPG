@@ -43,8 +43,8 @@ function readYearInView(params) {
 
 /**
  * Returns the year in view's accumulation from the start of the season monitoring up to the
- * current period, as a percent of the LTA at the same period (at the season's end when the
- * current season is ignored). The plugin computes it from the exact values, as it does
+ * current period, as a percent of the LTA at the same period (at the season's end when only
+ * the selected years are used). The plugin computes it from the exact values, as it does
  * 'Total up to Current Period Pct. of Avg.' for the current season.
  * @param {string} place - The place.
  * @returns {number|null} The percent, or null without a year in view or its data.

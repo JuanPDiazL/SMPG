@@ -152,7 +152,7 @@ class Place:
         current_cumsum_mon_with_forecast = current_season_monitoring_with_forecast.cumsum()
 
         # an empty current season leaves the values that need a current period as NaN,
-        # except when the current season is ignored: then the current period is the end of the season
+        # except when only the selected years are used: then the current period is the end of the season
         has_current = len(current_season_monitoring) > 0
         current_total = current_cumsum_mon.iloc[-1] if has_current else np.nan
         if parent.parameters.ignore_current_season:

@@ -19,7 +19,7 @@ def export_to_csv_files(destination_path, dataset: Dataset, subFolderName='Stati
     """
     filename_suffix = f' [{dataset.name}] [dek{dataset.properties.current_season_id}{dataset.properties.current_season_length}]'
     if dataset.parameters.ignore_current_season:
-        filename_suffix = f' [{dataset.name}] [ignored current season]'
+        filename_suffix = f' [{dataset.name}] [only selected years]'
     stats_subfolder_path = os.path.join(destination_path, subFolderName)
     os.makedirs(stats_subfolder_path, exist_ok=True)
     climatology_stats = []

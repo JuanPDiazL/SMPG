@@ -431,7 +431,7 @@ Github Project Page: {self.metadata["homepage"]}
         if valid_monitoring_start < 0: valid_monitoring_start += self.dataset_properties.period_length
         selected_monitoring_start = self.seasonStartComboBox.currentIndex()
         current_season_monitoring_length = valid_monitoring_start - selected_monitoring_start + 1
-        # an ignored current season needs no observed data
+        # using only the selected years needs no observed data
         ignore_current_season = self.ignoreCurrentSeasonCheckBox.isChecked()
         if selected_monitoring_start > valid_monitoring_start and not ignore_current_season:
             QMessageBox.critical(self, "Error", 
@@ -464,13 +464,13 @@ Github Project Page: {self.metadata["homepage"]}
             if selected_years_count == 0:
                 QMessageBox.critical(self, "Error", 
                                      'At least one year must be selected.\n'
-                                   + 'When the current season is ignored, the selected years are the only scenarios of the season.', 
+                                   + 'When only the selected years are used, they are the only scenarios of the season.', 
                                      QMessageBox.Ok)
                 return
             if selected_years_count < min_selected_years:
                 few_years_dg = QMessageBox.warning(self, "Warning", 
                                        f'Only {selected_years_count} year{"s are" if selected_years_count > 1 else " is"} selected.\n'
-                                     + 'When the current season is ignored, the probabilities are calculated from the selected years only, '
+                                     + 'When only the selected years are used, the probabilities are calculated from them alone, '
                                      + f'so with fewer than {min_selected_years} years they are not reliable.\n'
                                      + 'Do you want to continue?', 
                                     QMessageBox.Yes, QMessageBox.No)

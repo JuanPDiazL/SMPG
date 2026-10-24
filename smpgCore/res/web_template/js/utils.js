@@ -60,7 +60,7 @@ function handleNavigation(event) {
     if (ignoreCurrentSeason) {
         const yearCount = datasetProperties.selected_years.length;
         HEADER.text(`Region ID: ${place} · Monitoring season: [${monitoringIds[0]},`
-            + ` ${getLast(monitoringIds)}] · Current season ignored, ${yearCount} selected year${yearCount === 1 ? "" : "s"}`);
+            + ` ${getLast(monitoringIds)}] · Only selected years (${yearCount})`);
     } else {
         HEADER.text(`Region ID: ${place} · Monitoring season: [${monitoringIds[0]},`
             + ` ${getLast(monitoringIds)}] ${datasetProperties.current_season_id} · Current ${period_unit.toLowerCase()}: ${getCurrentPeriodId()}`);
