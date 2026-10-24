@@ -184,19 +184,17 @@ const chartColors = {
     'E. w. Forecast (33, 67) Pctl.': '#0000FF',
 }
 
-// Year series' colors, in the order the years get them. Each has at least 3:1 contrast on the
-// light and the dark-mode chart backgrounds and stays clear of the fixed colors above; the most
-// similar ones are 6 places apart.
-const YEAR_COLORS = [
-    '#00897B', '#EC407A', '#5C6BC0', '#827717', '#AB47BC', '#8D6E63',
-    '#00838F', '#F06292', '#9575CD', '#78909C', '#BA68C8', '#A1887F',
+// billboard.js's colors from billboard_modern.min.css
+const BILLBOARD_DEFAULT_COLORS = [
+    "#7ea9fa", "#ffcd1e", "#d33043", "#41c464", "#c86b74",
+    "#006bc2", "#2a7e41", "#f27c00", "#c159ff", "#bed017"
 ];
 const plotColorCache = new Map();
 
 /**
  * Returns a series' color, the same in every chart: its fixed color from chartColors, a year's
- * color from YEAR_COLORS (the selected years first, then the rest, in year order), or for any
- * other name a YEAR_COLORS color chosen from the name itself.
+ * color from BILLBOARD_DEFAULT_COLORS (the selected years first, then the rest, in year order), or for any
+ * other name a BILLBOARD_DEFAULT_COLORS color chosen from the name itself.
  * @param {string} name - The series' name, e.g. "LTA" or "1994-1995".
  * @returns {string} The color.
  */
@@ -212,7 +210,7 @@ function getPlotColor(name) {
             index = 0;
             for (const char of name) { index = (index * 31 + char.codePointAt(0)) >>> 0; }
         }
-        plotColorCache.set(name, YEAR_COLORS[index % YEAR_COLORS.length]);
+        plotColorCache.set(name, BILLBOARD_DEFAULT_COLORS[index % BILLBOARD_DEFAULT_COLORS.length]);
     }
     return plotColorCache.get(name);
 }
