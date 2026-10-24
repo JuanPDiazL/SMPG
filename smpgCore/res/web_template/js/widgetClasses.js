@@ -16,6 +16,9 @@ class BBPlot {
         this.customSettings = customSettings;
         // Called when the plot area may have moved, see onChartAreaChange()
         this.chartAreaListener = null;
+        // Optional: returns {seriesName: className} for the data of a place; a series given a
+        // class has bb-target-<className> on its group, for CSS
+        this.seriesClassesGetter = null;
 
         this.allContainer = this.containerElement.append("div")
             .attr("class", "plot-context-container");
@@ -106,6 +109,7 @@ class BBPlot {
             json: jsonData,
             xs: xs,
             types: this.chartTypes,
+            classes: this.seriesClassesGetter?.(index) ?? {},
             // each series' color is the same in every chart (see getPlotColor())
             colors: Object.fromEntries(dataIds.map((id) => [id, getPlotColor(id)])),
             unload: true,

@@ -113,6 +113,11 @@ function makeCurrentYearPlot(containerElement) {
             'Forecast': place_long_term_stats[index]['Forecast']
             .slice(currentLength),
         }
+        // The year in view over the whole year, next to the current season
+        const yearValues = yearInView && seasonal_series[index]?.[yearInView];
+        if (yearValues) {
+            data[yearInView] = yearValues;
+        }
         return data;
     };
     const makeCurrentYearPlotGridLines = (index) => {
@@ -159,6 +164,8 @@ function makeCurrentYearPlot(containerElement) {
         }
     const plot = new BBPlot(containerElement, makeCurrentYearPlotData, xNames, 
         xsDefinition, xsDataRelation, plotTypes, makeCurrentYearPlotGridLines, options);
+    // The year in view's line is as thick as the average's (see plots.css)
+    plot.seriesClassesGetter = () => (yearInView ? { [yearInView]: "year-in-view" } : {});
     return plot;
 }
 

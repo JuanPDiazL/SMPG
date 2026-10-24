@@ -93,6 +93,11 @@
     stroke-dasharray: 10 2;
 }
 
+/* The year in view (see seriesClassesGetter in makeCurrentYearPlot()), as thick as the average */
+.bb-target-year-in-view .bb-line {
+    stroke-width: 4px !important;
+}
+
 .bb-areas {
     opacity: .5;
 }
