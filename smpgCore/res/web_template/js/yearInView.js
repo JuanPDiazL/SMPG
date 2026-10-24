@@ -110,7 +110,8 @@ function refreshYearInViewSelector() {
 
 /**
  * Opens the year in view window: a button for each past year, in its color in the charts (see
- * getPlotColor()), and one to have no year in view.
+ * getPlotColor()), and one to have no year in view. Only the selected years are listed by
+ * default (see refreshYearInViewYears()).
  */
 function openYearInViewDialog() {
     const dialog = getDialog("yearInViewModal", {
@@ -122,12 +123,35 @@ function openYearInViewDialog() {
                 .attr("class", "w3-button w3-border year-in-view-none")
                 .text("No year in view")
                 .on("click", () => chooseYearInView(null));
+            const filter = body.append("label").attr("class", "year-in-view-filter");
+            filter.append("input")
+                .attr("type", "checkbox")
+                .attr("class", "w3-check year-in-view-only-selected")
+                .property("checked", true)
+                .on("change", refreshYearInViewYears);
+            filter.append("span").text("Only selected years");
             body.append("div").attr("class", "year-in-view-years");
         },
     });
     dialog.body.select(".year-in-view-none").property("disabled", yearInView === null);
-    dialog.body.select(".year-in-view-years").selectAll("button")
-        .data(datasetProperties.year_ids)
+    refreshYearInViewYears();
+    dialog.open();
+}
+
+/**
+ * Lists the year in view window's years: all past years, or only the selected ones (the years
+ * the current season is compared with, which can differ per place). The year in view is
+ * always listed.
+ */
+function refreshYearInViewYears() {
+    const body = dialogs["yearInViewModal"].body;
+    let years = datasetProperties.year_ids;
+    if (body.select(".year-in-view-only-selected").property("checked")) {
+        const selected = Object.keys(selected_seasons_cumsum[currentDataIndex] ?? {});
+        years = years.filter((year) => selected.includes(year) || year === yearInView);
+    }
+    body.select(".year-in-view-years").selectAll("button")
+        .data(years)
         .join((enter) => {
             const yearButton = enter.append("button")
                 .attr("class", "w3-button w3-border year-in-view-year")
@@ -142,7 +166,6 @@ function openYearInViewDialog() {
             yearButton.select(".year-in-view-swatch").style("background-color", (year) => getPlotColor(year));
             yearButton.select(".year-in-view-year-label").text((year) => year);
         });
-    dialog.open();
 }
 
 /**

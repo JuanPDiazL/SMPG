@@ -217,6 +217,17 @@
 .year-in-view-none {
     margin: 12px 0;
 }
+/* The "Only selected years" checkbox; its text takes the window's color, also in dark mode */
+.year-in-view-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+.year-in-view-filter .w3-check {
+    top: 0;
+}
 .year-in-view-years {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
