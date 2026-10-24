@@ -203,6 +203,46 @@
     color: #ddd;
     border-color: #555 !important;
 }
+/* Year in view: the header's selector, and its window's buttons, one per year with a swatch of
+   its color in the charts */
+.year-in-view-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.year-in-view-body {
+    padding-bottom: 16px;
+}
+.year-in-view-none {
+    margin: 12px 0;
+}
+.year-in-view-years {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+}
+.year-in-view-year {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.year-in-view-swatch {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+.year-in-view-selected {
+    font-weight: bold;
+    background-color: #e0e0e0;
+}
+.darkmode .year-in-view-modal .w3-border {
+    border-color: #555 !important;
+}
+.darkmode .year-in-view-selected {
+    background-color: var(--dark-stroke-color);
+}
 /* Every window (see getDialog()) */
 .darkmode .report-dialog .w3-modal-content {
     background-color: var(--dark-bg-color);
