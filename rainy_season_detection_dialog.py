@@ -74,8 +74,8 @@ class RainySeasonDetectionDialog(QDialog, SOS_DIALOG_CLASS):
         elif method == 'pct_clim_avg':
             self.sos1stThresholdSpinBox.setValue(70)
             self.sos2ndThresholdSpinBox.setValue(50)
-            self.sosFixed1stThresholdSpinBox.setValue(20)
-            self.sosFixed2ndThresholdSpinBox.setValue(50)
+            self.sosFixed1stThresholdSpinBox.setValue(25)
+            self.sosFixed2ndThresholdSpinBox.setValue(20)
             self.pctAvgWidgetGroup.setHidden(False)
 
 
@@ -87,6 +87,8 @@ class RainySeasonDetectionDialog(QDialog, SOS_DIALOG_CLASS):
         self.sosDetectionMethodComboBox.setCurrentText(method_cb_element)
         self.sos1stThresholdSpinBox.setValue(self.sosFirstThreshold)
         self.sos2ndThresholdSpinBox.setValue(self.sosSecondThreshold)
+        self.sosFixed1stThresholdSpinBox.setValue(self.sosFixedFirstThreshold)
+        self.sosFixed2ndThresholdSpinBox.setValue(self.sosFixedSecondThreshold)
         return super().showEvent(a0)
     
     def accept(self) -> None:

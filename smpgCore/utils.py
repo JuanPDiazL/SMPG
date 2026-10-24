@@ -136,8 +136,8 @@ class Parameters:
         self.rainy_season_detection_sos_method = "pct_clim_avg"
         self.rainy_season_detection_sos_first_threshold = 70
         self.rainy_season_detection_sos_second_threshold = 50
-        self.rainy_season_detection_sos_fixed_first_threshold = 20
-        self.rainy_season_detection_sos_fixed_second_threshold = 50
+        self.rainy_season_detection_sos_fixed_first_threshold = 25
+        self.rainy_season_detection_sos_fixed_second_threshold = 20
         # output defaults
         self.output_stats = True
         self.output_parameters = False
@@ -603,7 +603,8 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
         dq.popleft()
     return np.nan, False, NO_START_STR
 
-def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value, second_value):
+def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value, second_value,
+                         fixed_first_value=25, fixed_second_value=20):
     """
     Determines the index at which a rainy season have started based on the 
     given data of a year, using proportions between the current year and 
@@ -615,6 +616,10 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
         first_value (int, optional): Percentage of climatology average period.
         second_value (int, optional): Percentage of climatology average's 
             second subsequent period.
+        fixed_first_value (int, optional): The fallback's first threshold 
+            value, as in get_sos_fixed().
+        fixed_second_value (int, optional): The fallback's second threshold 
+            value, as in get_sos_fixed().
     
     Returns:
         tuple: A tuple containing three elements:
@@ -636,10 +641,10 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
     def confirming_condition(dq, dq_c): 
         return (((dq[1] + dq[2])/dq_c[2])*100 >= second_value)
     def fallback_candidate_condition(dq):
-        return ((len(dq) > 1 and dq[0] >= 25 and round(dq[1]) > 0) 
-                or (len(dq) == 1 and dq[0] >= 25))
+        return ((len(dq) > 1 and dq[0] >= fixed_first_value and round(dq[1]) > 0) 
+                or (len(dq) == 1 and dq[0] >= fixed_first_value))
     def fallback_confirming_condition(dq):
-        return (dq[1] + dq[2] >= 20)
+        return (dq[1] + dq[2] >= fixed_second_value)
     
     for i in range(len(year_data)): # check year data for SoS or candidates
         dq.append(year_data.iloc[i]); dq_c.append(clim_avg.iloc[i])
@@ -650,7 +655,7 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
                 return i - 2, True, STARTED_STR
         elif fallback_candidate_condition(dq):
             if last_candidate is None: last_candidate = i - 2 
-            if fallback_confirming_condition(dq_c):
+            if fallback_confirming_condition(dq):
                 return i - 2, True, STARTED_STR
 
     if last_candidate is not None: 
@@ -725,25 +730,20 @@ def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: 
         elif sos_index >= indexof_sos_axis_end:
             return f'≥{properties.sub_season_ids[indexof_sos_axis_end]}'
 
-    # compute by method
+    # detect by method, with the same thresholds for the current season and the past years
     if sos_parameters["method"] is None:
         raise ValueError("SOS method not specified")
     elif sos_parameters["method"] == "fixed":
-        current_sos = get_sos_fixed(data, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
-        historical_sos = historical_years.apply(
-            get_sos_fixed,
-            args=(sos_parameters['first_threshold'], sos_parameters['second_threshold']),
-            axis=1, result_type='expand',
-            )
+        def detect(series):
+            return get_sos_fixed(series, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
     elif sos_parameters["method"] == "pct_clim_avg":
-        current_sos = get_sos_pct_clim_avg(data, clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold'])
-        historical_sos = historical_years.apply(
-            get_sos_pct_clim_avg,
-            args=(clim_avg, sos_parameters['fixed_first_threshold'], sos_parameters['fixed_second_threshold']),
-            axis=1, result_type='expand',
-            )
+        def detect(series):
+            return get_sos_pct_clim_avg(series, clim_avg, sos_parameters['first_threshold'], sos_parameters['second_threshold'],
+                                        sos_parameters['fixed_first_threshold'], sos_parameters['fixed_second_threshold'])
     else:
         raise ValueError(f"Unknown SOS method: {sos_parameters['method']}")
+    current_sos = detect(data)
+    historical_sos = historical_years.apply(detect, axis=1, result_type='expand')
     
     historical_sos.columns = ['index', 'has_started', 'start_class']
     historical_sos_started = historical_sos[historical_sos['has_started']]['index']
@@ -752,9 +752,10 @@ def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: 
     sos_index_current, started_current, sos_class_current = current_sos
     sos_index_current += properties.season_start_index
 
-    historical_sos_mean = historical_sos_started.mean()
-    if not np.isnan(historical_sos_mean):
-        sos = round(historical_sos_mean) + properties.season_start_index
+    # the median of the years that started; the lower middle one, so it's an actual period
+    historical_sos_median = historical_sos_started.astype(float).quantile(0.5, interpolation='lower')
+    if not np.isnan(historical_sos_median):
+        sos = int(historical_sos_median) + properties.season_start_index
     else:
         sos = np.nan
 
