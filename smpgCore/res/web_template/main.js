@@ -20,6 +20,8 @@ var parameters = JSON.parse(decompress(parameters_json));
 var place_general_stats = csvParse(decompress(place_general_stats_csv));
 var place_long_term_stats = parseRowsObjectCsv(decompress(place_long_term_stats_csv_obj));
 var seasonal_current_totals = csvParseRows(decompress(seasonal_current_totals_csv));
+// Each past year's total up to the current period as a percent of the LTA up to it
+var seasonal_pct_of_avg = csvParse(decompress(seasonal_pct_of_avg_csv));
 var seasonal_forecast_totals = csvParseRows(decompress(seasonal_forecast_totals_csv));
 var seasonal_general_stats = csvParse(decompress(seasonal_general_stats_csv));
 var selected_seasons_general_stats = csvParse(decompress(selected_seasons_general_stats_csv));
@@ -127,6 +129,7 @@ console.log('parameters', parameters);
 console.log('place_general_stats', place_general_stats);
 console.log('place_long_term_stats', place_long_term_stats);
 console.log('seasonal_current_totals', seasonal_current_totals);
+console.log('seasonal_pct_of_avg', seasonal_pct_of_avg);
 console.log('seasonal_general_stats', seasonal_general_stats);
 console.log('selected_seasons_general_stats', selected_seasons_general_stats);
 console.log('seasonal_cumsum', seasonal_cumsum);

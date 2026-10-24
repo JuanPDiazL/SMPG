@@ -641,7 +641,7 @@ class chartCard {
     refreshTitle() {
         const statId = this.cardElements["map"]?.options.legend_stat;
         const title = this.customTitle ?? this.getTypeTitle();
-        this.graphTypeSelectOpenButton.text(statId && statId !== "None" ? `${title}: ${statId}` : title);
+        this.graphTypeSelectOpenButton.text(statId && statId !== "None" ? `${title}: ${getMapStatLabel(statId)}` : title);
     }
 
     /**

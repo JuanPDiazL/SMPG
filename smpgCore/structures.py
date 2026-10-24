@@ -247,6 +247,10 @@ class Place:
         else:
             clim_avg_upto_forecast = np.nan
 
+        # every past year's total up to the current period as a percent of the LTA up to it, as
+        # 'Total up to Current Period Pct. of Avg.' is for the current season (the report's year in view)
+        self.seasonal_pct_of_avg_upto_current = (self.seasonal_sums_upto_current / clim_avg_upto_current) * 100
+
         self.seasonal_long_term_stats = pd.DataFrame.from_dict({
             'LTA': clim_avg,
             'Median': clim_med,

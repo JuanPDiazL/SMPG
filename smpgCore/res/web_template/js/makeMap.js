@@ -274,8 +274,11 @@ let mapStatsCategories = {
         '≥4 Dk. Late': { 'color': '#BA0070', 'function': (x) => x === '≥4 Dekads Late' },
     },
 };
+// The year in view's percent of average uses the classes of the ensemble median's
+mapStatsCategories[YEAR_IN_VIEW_MAP_STAT] = mapStatsCategories['Ensemble Med. Pct. of Avg.'];
 
 const mapDescriptions = {
+    [YEAR_IN_VIEW_MAP_STAT]: "Depicts the percent of the long-term average (LTA) for the accumulated precipitation of the year in view, from the start of the season monitoring up to the current period (or the season's end without one), compared with the LTA at the same period.",
     "Total up to Current Period Pct. of Avg.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period.",
     "C.Dk./LTA PC.Dk. + Forecast Pct. of Avg.": "Depicts the percent of average for the accumulated precipitation from the Start of Season (SOS) up to the current period, including the forecast.",
     "Current Season Pctl.": "Shows the percentile rank of the accumulated precipitation from the SOS up to the current period, based on historical data.",
@@ -358,6 +361,7 @@ let getPlaceMapStats = (place) => {
         'Start of Season Anomaly': place_general_stats[place]['Start of Season Anomaly'],
         'Forecast Start of Season': place_general_stats[place]['Forecast Start of Season'],
         'Forecast Start of Season Anomaly': place_general_stats[place]['Forecast Start of Season Anomaly'],
+        [YEAR_IN_VIEW_MAP_STAT]: getYearInViewPctOfAverage(place),
     };
 };
 
@@ -754,8 +758,9 @@ class d3Map {
     }
 
     changeLegend(statId) {
-        // Without a current season, the statistics that need one have no values
-        if (ignoreCurrentSeason && !mapFields.includes(statId)) {
+        // Without a current season, the statistics that need one have no values (the year in
+        // view's doesn't need one)
+        if (ignoreCurrentSeason && !mapFields.includes(statId) && statId !== YEAR_IN_VIEW_MAP_STAT) {
             statId = IGNORED_CURRENT_SEASON_DEFAULT_MAP_FIELD;
         }
         // A new statistic shows the whole region, unless a link is zooming to its place or the
@@ -836,7 +841,7 @@ class d3Map {
                     const offset = g.size() - 1;
                     const coordY = startY - (offset * (legendElementHeight + legendElementGap));
                     this.legend.append("text")
-                        .text(statId)
+                        .text(getMapStatLabel(statId))
                         .attr("class", "legend-title svg-outline-text")
                         .attr("x", 20)
                         .attr("y", -9)
@@ -868,6 +873,10 @@ class d3Map {
     }
 
     getProperties() {
+        // The year in view's statistic is temporary: a saved layout keeps the one it replaced
+        if (this.options.legend_stat === YEAR_IN_VIEW_MAP_STAT) {
+            return { ...this.options, legend_stat: this.statBeforeYearInView ?? "None" };
+        }
         return this.options;
     }
 
@@ -956,8 +965,7 @@ class mapControlPanel {
                 map.changeLegend(selectedStatId);
                 description.changeStat(selectedStatId);
             });
-        updateSelect(this.legendStatSelect, mapFields);
-        this.legendStatSelect.property("value", map.options.legend_stat);
+        this.refreshStatOptions();
 
         // Show legend checkbox
         this.showLegendCheckbox = this.controlPanelBody.append("input")
@@ -1005,6 +1013,14 @@ class mapControlPanel {
      * Called after the map/description are changed programmatically (e.g. via setProperties()),
      * since their <select>/checkbox inputs are otherwise only set once, at construction time.
      */
+    /**
+     * Lists the statistics in the control panel's menu: the year in view's too while there is one.
+     */
+    refreshStatOptions() {
+        updateSelect(this.legendStatSelect, yearInView ? [...mapFields, YEAR_IN_VIEW_MAP_STAT] : mapFields);
+        this.legendStatSelect.property("value", this.map.options.legend_stat);
+    }
+
     refresh() {
         this.labelFieldSelect.property("value", this.map.options.label_field);
         this.legendStatSelect.property("value", this.map.options.legend_stat);

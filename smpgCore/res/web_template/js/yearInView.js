@@ -8,6 +8,10 @@
 // it (see readYearInView()).
 var yearInView = null;
 
+// The maps' statistic for the year in view: its accumulation up to the current period, as a
+// percent of the LTA at that period (see getYearInViewPctOfAverage())
+const YEAR_IN_VIEW_MAP_STAT = "Year in View: % of Average";
+
 /**
  * Selects the year in view, or none, by changing the address.
  * @param {string|null} year - One of datasetProperties.year_ids, or null for none.
@@ -25,6 +29,7 @@ function setYearInView(year) {
  * @param {Object} params - The address's hash parameters, see getHashParamsObject().
  */
 function readYearInView(params) {
+    const previousYear = yearInView;
     const year = params["year_in_view"] ?? null;
     if (year !== null && !datasetProperties.year_ids.includes(year)) {
         console.warn(`year_in_view: this report has no year "${year}"; no year is in view.`);
@@ -33,6 +38,54 @@ function readYearInView(params) {
         yearInView = year;
     }
     refreshYearInViewSelector();
+    applyYearInViewToMaps(previousYear);
+}
+
+/**
+ * Returns the year in view's accumulation from the start of the season monitoring up to the
+ * current period, as a percent of the LTA at the same period (at the season's end when the
+ * current season is ignored). The plugin computes it from the exact values, as it does
+ * 'Total up to Current Period Pct. of Avg.' for the current season.
+ * @param {string} place - The place.
+ * @returns {number|null} The percent, or null without a year in view or its data.
+ */
+function getYearInViewPctOfAverage(place) {
+    return yearInView ? (seasonal_pct_of_avg[place]?.[yearInView] ?? null) : null;
+}
+
+/**
+ * Returns how the maps name a statistic: the year in view's says which year it is.
+ * @param {string} statId - A map statistic.
+ * @returns {string} E.g. "1994-1995, % of Average".
+ */
+function getMapStatLabel(statId) {
+    return statId === YEAR_IN_VIEW_MAP_STAT && yearInView ? `${yearInView}, % of Average` : statId;
+}
+
+/**
+ * Shows a change of year in view on the maps. Selecting a year makes every map show it, keeping
+ * the map's statistic to go back to; another year redraws the maps showing it; no year puts
+ * them back on their kept statistic (a statistic picked meanwhile stays).
+ * @param {string|null} previousYear - The year in view before the change.
+ */
+function applyYearInViewToMaps(previousYear) {
+    if (yearInView === previousYear) { return; }
+    for (const card of Object.values(cards)) {
+        const { map, controlPanel, mapDescription } = card.cardElements;
+        if (!map) { continue; }
+        const showsYear = map.options.legend_stat === YEAR_IN_VIEW_MAP_STAT;
+        if (previousYear === null) {
+            map.statBeforeYearInView = map.options.legend_stat;
+            map.changeLegend(YEAR_IN_VIEW_MAP_STAT);
+        } else if (yearInView === null) {
+            if (showsYear) { map.changeLegend(map.statBeforeYearInView ?? "None"); }
+            map.statBeforeYearInView = null;
+        } else if (showsYear) {
+            map.changeLegend(YEAR_IN_VIEW_MAP_STAT);
+        }
+        controlPanel?.refreshStatOptions();
+        mapDescription?.changeStat(map.options.legend_stat);
+    }
 }
 
 /**
