@@ -79,6 +79,12 @@
     stroke-dashoffset: 10;
 }
 
+/* Over a year's line or bar, which a click makes the year in view (see BBPlot.getYearAtPointer()) */
+.plot-year-hover,
+.plot-year-hover .bb-event-rect {
+    cursor: pointer;
+}
+
 /* Custom line styles, given to series by their classes (see chartClasses in bbPlotUtils.js).
    Thick lines stay thick when billboard.js focuses a series (its .bb-focused rule). */
 
@@ -88,6 +94,11 @@
 
 .bb-target-line-dashed .bb-line {
     stroke-dasharray: 10 2;
+}
+
+/* The year in view, in every chart (see BBPlot.getSeriesClasses()) */
+.bb-target-year-in-view .bb-line {
+    stroke-width: 3px !important;
 }
 
 .bb-areas {

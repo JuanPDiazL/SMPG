@@ -61,6 +61,86 @@ class BBPlot {
         // The chart is resized by scaling its viewBox, without rendering again
         this.resizeObserver = new ResizeObserver(() => this.chartAreaListener?.());
         this.resizeObserver.observe(chartContainer.node());
+
+        // A click on a year's line or bar makes it the year in view, or none if it already is
+        // (see getYearAtPointer()); the pointer is a hand over them
+        this.lineSamples = new WeakMap();
+        chartContainer.on("click.yearInView", (event) => {
+            const year = this.getYearAtPointer(event);
+            if (year !== null) {
+                setYearInView(year === yearInView ? null : year);
+            }
+        });
+        chartContainer.on("mousemove.yearInView", (event) => {
+            chartContainer.classed("plot-year-hover", this.getYearAtPointer(event) !== null);
+        });
+        chartContainer.on("mouseleave.yearInView", () => chartContainer.classed("plot-year-hover", false));
+    }
+
+    /**
+     * Returns the year under the pointer: a bar whose x label is a year (e.g. a percentiles bar),
+     * or the nearest line of a series named after a year, within 12 screen pixels. Series hidden
+     * from the legend don't count. It works from the drawn shapes, so it doesn't need the lines'
+     * points to be shown.
+     * @param {MouseEvent} event - A pointer event on the chart.
+     * @returns {string|null} One of datasetProperties.year_ids, or null.
+     */
+    getYearAtPointer(event) {
+        const years = datasetProperties.year_ids;
+        const shown = new Set(this.plot.data.shown().map((series) => series.id));
+        const chart = this.allContainer.node();
+        // the pointer in an element's own coordinates
+        const toLocal = (element) => new DOMPoint(event.clientX, event.clientY)
+            .matrixTransform(element.getScreenCTM().inverse());
+
+        for (const bar of chart.querySelectorAll("path.bb-bar")) {
+            const datum = d3.select(bar).datum();
+            const year = this.xNames[datum?.x];
+            if (datum && shown.has(datum.id) && years.includes(year) && bar.isPointInFill(toLocal(bar))) {
+                return year;
+            }
+        }
+
+        let nearestYear = null;
+        let nearestDistance = Infinity;
+        for (const line of chart.querySelectorAll("path.bb-line")) {
+            const id = d3.select(line).datum()?.id;
+            if (!years.includes(id) || !shown.has(id)) { continue; }
+            // 12 screen pixels in the line's own units (the chart is scaled with its viewBox)
+            const matrix = line.getScreenCTM();
+            const scale = Math.sqrt(Math.abs(matrix.a * matrix.d - matrix.b * matrix.c));
+            const pointer = toLocal(line);
+            const points = this.getLineSamples(line, 4 / scale);
+            // distance to the segments between the samples, so the samples' spacing doesn't count
+            for (let i = 1; i < points.length; i++) {
+                const distance = distanceToSegment(pointer, points[i - 1], points[i]) * scale;
+                if (distance <= 12 && distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestYear = id;
+                }
+            }
+        }
+        return nearestYear;
+    }
+
+    /**
+     * Returns points along a drawn line, kept until the line changes shape.
+     * @param {SVGPathElement} line - A series' line.
+     * @param {number} step - The distance between points, in the line's own units.
+     * @returns {DOMPoint[]} The points.
+     */
+    getLineSamples(line, step) {
+        const shape = line.getAttribute("d");
+        const cached = this.lineSamples.get(line);
+        if (cached && cached.shape === shape && cached.step === step) { return cached.points; }
+        const length = line.getTotalLength();
+        const points = [];
+        for (let distance = 0; distance < length; distance += step) {
+            points.push(line.getPointAtLength(distance));
+        }
+        points.push(line.getPointAtLength(length));
+        this.lineSamples.set(line, { shape, step, points });
+        return points;
     }
 
     /**
@@ -121,7 +201,8 @@ class BBPlot {
 
     /**
      * Returns the loaded series' classes for billboard.js: their classes from chartClasses and
-     * from seriesClassesGetter. billboard.js prefixes a series' class with bb-target- and takes
+     * from seriesClassesGetter, and year-in-view for the year in view. billboard.js prefixes a
+     * series' class with bb-target- and takes
      * one, so several are joined with that prefix ("line-thick bb-target-line-dashed").
      * @param {string} index - The place.
      * @param {string[]} dataIds - The loaded series' names.
@@ -132,9 +213,13 @@ class BBPlot {
         const classes = {};
         for (const id of dataIds) {
             const list = [...(chartClasses[id] ?? []), ...(extraClasses[id] ?? [])];
-            if (list.length > 0) {
-                classes[id] = [...new Set(list)].join(" bb-target-");
+            // the year in view is highlighted in every chart (see plots.css)
+            if (id === yearInView) {
+                list.push("year-in-view");
             }
+            // every series gets a value, "" for none: billboard.js keeps a series' classes from
+            // one load to the next, e.g. the previous year in view's
+            classes[id] = [...new Set(list)].join(" bb-target-");
         }
         return classes;
     }

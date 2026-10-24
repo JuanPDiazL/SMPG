@@ -228,3 +228,20 @@ function getPlotColor(name) {
     }
     return plotColorCache.get(name);
 }
+
+/**
+ * Returns the distance from a point to a line segment.
+ * @param {{x: number, y: number}} point - The point.
+ * @param {{x: number, y: number}} start - The segment's start.
+ * @param {{x: number, y: number}} end - The segment's end.
+ * @returns {number} The distance, in the points' units.
+ */
+function distanceToSegment(point, start, end) {
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const lengthSquared = dx * dx + dy * dy;
+    // where the nearest point is along the segment, from 0 (start) to 1 (end)
+    const t = lengthSquared === 0 ? 0
+        : Math.max(0, Math.min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared));
+    return Math.hypot(point.x - (start.x + t * dx), point.y - (start.y + t * dy));
+}
