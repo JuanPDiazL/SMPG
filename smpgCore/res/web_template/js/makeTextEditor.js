@@ -218,7 +218,8 @@ function getTextEditorTemplateContextGroups(placeId) {
             climatology: TEMPLATE_FUNCTIONS.range(datasetProperties.climatology_year_ids),
             analog_years: datasetProperties.selected_years,
             monitoring_start: datasetProperties.sub_season_ids[datasetProperties.season_start_index],
-            monitoring_end: datasetProperties.sub_season_ids[datasetProperties.season_end_index],
+            // season_end_index is the position after the season's last period
+            monitoring_end: datasetProperties.sub_season_ids[datasetProperties.season_end_index - 1],
             
         },
         "Map statistics": { stat },
