@@ -418,8 +418,8 @@ def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFram
     elements.
 
     Parameters:
-        fixed_data (ndarray): The array to be used in the 
-            calculation of the ensemble.
+        fixed_data (Series | ndarray): The observed values, from the first 
+            column of `post_data`.
         post_data (DataFrame): A DataFrame to be used in the calculation 
             of the ensemble.
 
@@ -430,16 +430,15 @@ def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFram
     if len(fixed_data) == 0:
         # nothing observed: each row is a scenario by itself
         return post_data.cumsum(axis=1)
-    fixed_series_indexes = post_data.columns[:len(fixed_data)]
-    fixed_series = pd.Series(fixed_data, index=fixed_series_indexes, name='Current Season')
-    fixed_series_cumsum = fixed_series.cumsum()
-    post_data_slice = post_data.iloc[:, len(fixed_data):]
-
-    if post_data_slice.empty:
-        return post_data.apply(lambda _: fixed_series_cumsum, axis=1)
-    return post_data_slice.apply(lambda row: pd.concat(
-        [fixed_series_cumsum, (fixed_series_cumsum.iloc[-1] + row.cumsum())]), 
-        axis=1)
+    # every row starts with the observed accumulation, then continues with its own values
+    fixed_cumsum = np.cumsum(np.asarray(fixed_data))
+    post_values = post_data.to_numpy()[:, len(fixed_data):]
+    ensemble = np.hstack([np.tile(fixed_cumsum, (len(post_data), 1)), 
+                          fixed_cumsum[-1] + np.cumsum(post_values, axis=1)])
+    # in row order and not copied, so the rows stay contiguous as before and the means and
+    # medians taken over it sum in the same order (identical results)
+    return pd.DataFrame(np.ascontiguousarray(ensemble), index=post_data.index, 
+                        columns=post_data.columns, copy=False)
 
 
 def slice_by_element(_list: list, start, end=None) -> list:
