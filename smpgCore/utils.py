@@ -553,8 +553,7 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
     given data of a year and fixed threshold values.
     
     Args:
-        year_data (pd.Series): A pandas Series containing numerical data of the 
-            year.
+        year_data (pd.Series | np.ndarray): The numerical data of the year.
         first_value (int, optional): The first threshold value for determining 
             the possible start of a season.
         second_value (int, optional): The second threshold value for confirming 
@@ -603,8 +602,7 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
     the climatology average.
     
     Args:
-        year_data (pd.Series): A pandas Series containing numerical data of the 
-            year.
+        year_data (pd.Series | np.ndarray): The numerical data of the year.
         first_value (int, optional): Percentage of climatology average period.
         second_value (int, optional): Percentage of climatology average's 
             second subsequent period.
@@ -638,8 +636,9 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
     def fallback_confirming_condition(dq):
         return (dq[1] + dq[2] >= fixed_second_value)
     
+    year_data, clim_avg = np.asarray(year_data), np.asarray(clim_avg) # plain arrays read faster in the loop
     for i in range(len(year_data)): # check year data for SOS or candidates
-        dq.append(year_data.iloc[i]); dq_c.append(clim_avg.iloc[i])
+        dq.append(year_data[i]); dq_c.append(clim_avg[i])
         if len(dq) < 3: continue # avoid out of bounds
         if candidate_condition(dq, dq_c):
             if last_candidate is None: last_candidate = i - 2 
@@ -735,10 +734,9 @@ def get_start_of_season(data: pd.Series, clim_avg: pd.Series, historical_years: 
     else:
         raise ValueError(f"Unknown SOS method: {sos_parameters['method']}")
     current_sos = detect(data)
-    historical_sos = historical_years.apply(detect, axis=1, result_type='expand')
-    
-    historical_sos.columns = ['index', 'has_started', 'start_class']
-    historical_sos_started = historical_sos[historical_sos['has_started']]['index']
+    historical_sos = pd.DataFrame([detect(year) for year in historical_years.to_numpy()], 
+                                  index=historical_years.index, columns=['index', 'has_started', 'start_class'])
+    historical_sos_started = historical_sos[historical_sos['has_started'].astype(bool)]['index'] # bool even without years
 
     # get sos individual variables
     sos_index_current, started_current, sos_class_current = current_sos
