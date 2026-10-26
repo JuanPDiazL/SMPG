@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>616</width>
-    <height>733</height>
+    <height>761</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -108,6 +108,23 @@
            </property>
           </widget>
          </item>
+         <item row="4" column="0" colspan="2">
+          <widget class="QPushButton" name="selectYearsButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Select Years</string>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="0" colspan="2">
           <widget class="QRadioButton" name="similarYearsRadioButton">
            <property name="enabled">
@@ -145,6 +162,20 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="similarYearsComboBox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+          </widget>
+         </item>
          <item row="3" column="0" colspan="2">
           <widget class="QRadioButton" name="customYearsRadioButton">
            <property name="enabled">
@@ -165,34 +196,16 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="similarYearsComboBox">
+         <item row="5" column="0" colspan="2">
+          <widget class="QCheckBox" name="ignoreCurrentSeasonCheckBox">
            <property name="enabled">
             <bool>false</bool>
            </property>
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0" colspan="2">
-          <widget class="QPushButton" name="selectYearsButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
+           <property name="toolTip">
+            <string>Leave the current season empty, even when there is data for it. Each selected year is one scenario of the season.</string>
            </property>
            <property name="text">
-            <string>Select Years</string>
+            <string>Use Only Selected Years</string>
            </property>
           </widget>
          </item>
@@ -347,19 +360,6 @@
           <widget class="Line" name="line_2">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="QCheckBox" name="ignoreCurrentSeasonCheckBox">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>Leave the current season empty, even when there is data for it. Each selected year is one scenario of the season.</string>
-           </property>
-           <property name="text">
-            <string>Use Only Selected Years</string>
            </property>
           </widget>
          </item>
