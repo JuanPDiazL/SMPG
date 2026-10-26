@@ -959,7 +959,7 @@ class mapControlPanel {
 
         // Stat select
         this.controlPanelBody.append("label")
-            .text("Legend Stat");
+            .text("Selected Map Stat");
         this.legendStatSelect = this.controlPanelBody.append("select")
             .attr("class", "w3-block w3-border")
             .on("change", (event) => {
