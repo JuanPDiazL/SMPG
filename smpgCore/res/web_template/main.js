@@ -44,6 +44,8 @@ const firstPlaceKey = datasetProperties['place_ids'][0];
 const monitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
 const currentMonitoringLength = place_long_term_stats[firstPlaceKey]['Current Season Accumulation'].slice(monitoringOffset).indexOf(null) 
 const currentLength = place_long_term_stats[firstPlaceKey]['Current Season'].indexOf(null);
+// The place the report opens on, chosen by the plugin (data exported before it has none)
+const defaultPlaceKey = datasetProperties['default_place_id'] ?? firstPlaceKey;
 const hasForecast = parameters['forecast_length'];
 const hasSos = parameters['rainy_season_detection_enabled'];
 // The current season was left empty: each selected year is one scenario of the season
@@ -100,7 +102,7 @@ const mapFields = ignoreCurrentSeason ? IGNORED_CURRENT_SEASON_MAP_FIELDS : [
 // The place in the address when there is data for it, so the cards are built for it (see
 // handleNavigation() for the message about a place without data)
 var currentDataIndex = datasetProperties['place_ids'].includes(getHashParamsObject()['place'])
-    ? getHashParamsObject()['place'] : firstPlaceKey;
+    ? getHashParamsObject()['place'] : defaultPlaceKey;
 
 // Initialize map data
 if(hasMap) {
@@ -230,7 +232,7 @@ window.addEventListener("hashchange", handleNavigation); // update everything wh
 window.addEventListener("resize", handleResize);
 grid.on("resize resizestop", handleResize);
 
-navigateTo({"place": getHashParamsObject()['place'] || firstPlaceKey});
+navigateTo({"place": getHashParamsObject()['place'] || defaultPlaceKey});
 window.dispatchEvent(new HashChangeEvent('hashchange',
     {
         oldURL: location.href,

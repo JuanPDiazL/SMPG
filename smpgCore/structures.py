@@ -92,6 +92,20 @@ class Dataset:
         for place, timeseries in self.dataset.iterrows():
             # print(place)
             self.places[place] = Place(place, timeseries, self)
+
+        # the report's default place: the lowest percent of LTA up to the current period, then the
+        # lowest ensemble median percentile, then the first in the dataset; a missing value counts
+        # as the highest
+        def default_place_order(item):
+            position, place = item
+            pct = place.seasonal_general_stats['Total up to Current Period Pct. of Avg.']
+            pctl = place.selected_seasons_general_stats['Ensemble Med. Pctl.']
+            return (np.inf if pd.isna(pct) else pct, np.inf if pd.isna(pctl) else pctl, position)
+        if self.places:
+            default_place = min(enumerate(self.places.values()), key=default_place_order)[1]
+            self.properties.default_place_id = str(default_place.id)
+        else:
+            self.properties.default_place_id = None
     
 class Place:
     """Represents a place with associated time series data.

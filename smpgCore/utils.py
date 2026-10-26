@@ -33,6 +33,7 @@ class Properties:
         current_season_index: The index of the current period in the dataset
         current_season_id: The year ID for the current year.
         current_season_length: The number of periods in the current year.
+        default_place_id: The place the report opens on (see Dataset).
     """
     def __init__(self, properties_dict: dict=None) -> None:
         """Constructor
@@ -47,6 +48,7 @@ class Properties:
         self.season_quantity: int
 
         self.place_ids : list[str]
+        self.default_place_id: Optional[str] # computation property
         self.year_ids: list[str]
         self.climatology_year_ids: list[str] # computation property
         self.selected_years: Union[list[str], str] # computation property
