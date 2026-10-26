@@ -495,13 +495,13 @@ def get_similar_years(reference_year: np.ndarray, year_df: pd.DataFrame) -> list
         list[str]: A list containing the IDs of the most similar years based on 
             certain criteria.
     """
-    year_df = year_df.iloc[:,:reference_year.size]
     year_ids = list(year_df.index)
+    year_values = year_df.to_numpy()[:, :reference_year.size]
     current_year_accumulation = np.cumsum(reference_year)
-    accumulations = year_df.cumsum(axis=1)
-    curve_diff_rankings = np.argsort(np.sum((year_df - reference_year) ** 2, axis=1))
+    accumulations = np.cumsum(year_values, axis=1)
+    curve_diff_rankings = np.argsort(np.sum((year_values - reference_year) ** 2, axis=1))
     accumulation_curve_rankings = np.argsort(np.sum((accumulations - current_year_accumulation) ** 2, axis=1))
-    season_total_rankings = np.argsort((accumulations.iloc[:,-1] - current_year_accumulation[-1]) ** 2)
+    season_total_rankings = np.argsort((accumulations[:, -1] - current_year_accumulation[-1]) ** 2)
     sum_of_rankings = curve_diff_rankings + accumulation_curve_rankings + season_total_rankings
     ranked_indexes = np.argsort(sum_of_rankings)
     ranked_year_ids = [year_ids[i] for i in ranked_indexes]
