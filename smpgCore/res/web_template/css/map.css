@@ -67,21 +67,21 @@
 .selector-halo {
     fill: none;
     stroke: white;
-    stroke-width: calc(4px * var(--map-scale, 1));
+    stroke-width: calc(6px * var(--map-scale, 1));
     stroke-linejoin: round;
     pointer-events: none;
 }
 .selection-path {
     fill: none;
     stroke: red;
-    stroke-width: calc(2px * var(--map-scale, 1));
+    stroke-width: calc(4px * var(--map-scale, 1));
     stroke-linejoin: round;
     pointer-events: none;
 }
 .persistent-selection-path {
     fill: none;
     stroke: black;
-    stroke-width: calc(2px * var(--map-scale, 1));
+    stroke-width: calc(4px * var(--map-scale, 1));
     stroke-linejoin: round;
     pointer-events: none;
     stroke-dasharray: calc(8px * var(--map-scale, 1)), calc(4px * var(--map-scale, 1));
