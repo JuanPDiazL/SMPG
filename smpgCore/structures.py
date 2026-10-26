@@ -144,8 +144,7 @@ class Place:
         # get selected seasons (the similarity is measured against the observed data)
         if len(current_season) > 0:
             self.similar_seasons = get_similar_years(current_season.to_numpy(), 
-                                                seasons_df, 
-                                                parent.parameters.use_pearson)
+                                                seasons_df)
         else:
             self.similar_seasons = []
         if isinstance(parent.properties.selected_years, str):

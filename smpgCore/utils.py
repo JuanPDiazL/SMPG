@@ -95,8 +95,6 @@ class Parameters:
         selected_years (list | int): This represents the selected years.
             When it is a list, it is the list of selected years.
             When it is a int, it is the number of similar years.
-        use_pearson (bool): A boolean indicating whether to use Pearson's 
-            correlation coefficient for selecting similar years.
         forecast_length (int): The length of the forecast period.
         ignore_current_season (bool): A boolean indicating whether to use 
             only the selected years, leaving the current season empty even 
@@ -130,7 +128,6 @@ class Parameters:
         self.cross_years = False
         # year selection defaults
         self.selected_years: Optional[Union[list[str], int]] = None
-        self.use_pearson = False
         # analysis defaults
         self.forecast_length = 0
         self.ignore_current_season = False
@@ -480,13 +477,12 @@ def get_key_by_value(dictionary: dict, value) -> str:
     """
     return next((k for k, v in dictionary.items() if v == value), None)
 
-def get_similar_years(reference_year: np.ndarray, year_df: pd.DataFrame, 
-                      use_pearson=False) -> list[str]:
+def get_similar_years(reference_year: np.ndarray, year_df: pd.DataFrame) -> list[str]:
     """
     Get the ranked year ids based on similarity to the reference year, using 
     criteria such as difference of raw and accumulation curves, total 
-    accumulation comparison, and Pearson correlation if selected. The final 
-    ranking is the sum of all previous rankings.
+    accumulation comparison. The final ranking is the sum of all previous 
+    rankings.
 
     Args:
         reference_year (ndarray): A 1D numpy array representing the values for 
@@ -494,10 +490,6 @@ def get_similar_years(reference_year: np.ndarray, year_df: pd.DataFrame,
         year_df (DataFrame): A pandas DataFrame with columns containing the 
             time series data for each year. The index will be treated as the ID of 
             the years in ascending order.
-        use_pearson (bool, optional):
-            A flag indicating whether to also calculate and consider Pearson's
-            r-statistic for correlation between the reference year and each other 
-            year. Defaults to False.
 
     Returns:
         list[str]: A list containing the IDs of the most similar years based on 
@@ -511,9 +503,6 @@ def get_similar_years(reference_year: np.ndarray, year_df: pd.DataFrame,
     accumulation_curve_rankings = np.argsort(np.sum((accumulations - current_year_accumulation) ** 2, axis=1))
     season_total_rankings = np.argsort((accumulations.iloc[:,-1] - current_year_accumulation[-1]) ** 2)
     sum_of_rankings = curve_diff_rankings + accumulation_curve_rankings + season_total_rankings
-    if use_pearson:
-        pearson_correlation_rankings = np.argsort([1 - (sp.pearsonr(arr, reference_year).statistic) ** 2 for arr in year_df])
-        sum_of_rankings += pearson_correlation_rankings
     ranked_indexes = np.argsort(sum_of_rankings)
     ranked_year_ids = [year_ids[i] for i in ranked_indexes]
     return ranked_year_ids

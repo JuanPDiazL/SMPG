@@ -111,7 +111,6 @@ class SMPGDialog(QDialog, FORM_CLASS):
     customYearsRadioButton: QRadioButton
     similarYearsRadioButton: QRadioButton
     similarYearsComboBox: QComboBox
-    usePearsonCheckBox: QCheckBox
     selectYearsButton: QPushButton
 
     # analysis group
@@ -179,8 +178,6 @@ Github Project Page: {self.metadata["homepage"]}
             self.exportParametersCheckBox,
         ]
 
-        self.usePearsonCheckBox.setHidden(True)
-
         # signal connections
         self.mappingButton.clicked.connect(self.mapping_button_event)
         self.rainySeasonDetectionButton.clicked.connect(self.rainy_season_detection_button_event)
@@ -234,7 +231,6 @@ Github Project Page: {self.metadata["homepage"]}
             "cross_years": self.crossYearsCheckBox.isChecked(),
             "selected_years": selected_years,
             "forecast_length": self.forecastLengthSpinBox.value(),
-            "use_pearson": self.usePearsonCheckBox.isChecked(),
             "ignore_current_season": self.ignoreCurrentSeasonCheckBox.isChecked(),
             "rainy_season_detection_enabled": self.rainy_season_detection_dialog.sosEnabled,
             "rainy_season_detection_sos_method": self.rainy_season_detection_dialog.sosDetectionMethod,
@@ -313,7 +309,6 @@ Github Project Page: {self.metadata["homepage"]}
             self.customYearsRadioButton.setChecked(True)
             self.selectYearsButton.setEnabled(True)
             self.similarYearsComboBox.setEnabled(False)
-            self.usePearsonCheckBox.setEnabled(False)
         self.year_selection_dialog.updateYearsList(year_ids)
         self.year_selection_dialog.selected_years = parameters.selected_years
         self.year_selection_dialog.update_selection()
@@ -325,9 +320,7 @@ Github Project Page: {self.metadata["homepage"]}
             self.similarYearsRadioButton.setChecked(True)
             self.similarYearsComboBox.setEnabled(True)
             self.similarYearsComboBox.setCurrentText(parameters.selected_years)
-            self.usePearsonCheckBox.setEnabled(True)
             self.selectYearsButton.setEnabled(False)
-        self.usePearsonCheckBox.setChecked(parameters.use_pearson)
 
         # update analysis parameters
         self.forecastLengthSpinBox.setEnabled(True)
@@ -578,6 +571,8 @@ Github Project Page: {self.metadata["homepage"]}
         try:
             with open(self.parameters_source, 'r') as json_file:
                 external_parameters = json.load(json_file)
+                # removed option, still in older parameter files
+                external_parameters.pop('use_pearson', None)
                 parameters = Parameters()
                 non_valid_parameters = parameters.set_parameters(external_parameters)
         except Exception as e:
@@ -646,10 +641,8 @@ Github Project Page: {self.metadata["homepage"]}
         if self.customYearsRadioButton.isChecked():
             self.selectYearsButton.setEnabled(True)
             self.similarYearsComboBox.setEnabled(False)
-            self.usePearsonCheckBox.setEnabled(False)
         elif self.similarYearsRadioButton.isChecked():
             self.similarYearsComboBox.setEnabled(True)
-            self.usePearsonCheckBox.setEnabled(True)
             self.selectYearsButton.setEnabled(False)
 
     def ignore_current_season_cb_changed_event(self):
