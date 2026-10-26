@@ -13,6 +13,9 @@ var maximizedCard = null; // the card filling the report, see setMaximizedCard()
 // default, hides them (see setReportEditMode()). Reader mode offers to switch to edit mode when
 // the address has an edit_mode parameter, whatever its value (see handleNavigation()).
 var reportEditMode = getHashParamsObject()["edit_mode"] === "true";
+// Whether edit mode was used in this visit: leaving the page then warns about an unsaved layout,
+// also from reader mode (see layoutHasUnsavedChanges())
+var reportEditModeUsed = reportEditMode;
 
 // Decompress and parse data
 var datasetProperties = JSON.parse(decompress(dataset_properties_json));
@@ -242,3 +245,13 @@ loadingOverlay.classList.add('loading-done');
 loadingOverlay.addEventListener('transitionend', function () {
     loadingOverlay.remove();
 }, { once: true });
+
+// The layout as loaded is the saved one; leaving the page with changes to it asks first (the
+// browser shows its own message). Readers can't save a layout, so they aren't asked.
+markLayoutSaved();
+window.addEventListener("beforeunload", (event) => {
+    if (reportEditModeUsed && layoutHasUnsavedChanges()) {
+        event.preventDefault();
+        event.returnValue = ""; // older browsers ask only with returnValue set
+    }
+});

@@ -188,6 +188,7 @@ let saveLayoutContent = "";
  * the text is selected in a box instead, for the reader to copy.
  * @param {string} text - The text to copy.
  * @param {string} what - What it is, for the message ("Path", "Layout").
+ * @returns {Promise<boolean>} Whether the text was copied.
  */
 async function copySaveLayoutText(text, what) {
     const status = document.getElementById("saveLayoutStatus");
@@ -196,6 +197,7 @@ async function copySaveLayoutText(text, what) {
         await navigator.clipboard.writeText(text);
         fallback.classList.add(HIDE_CLASS);
         status.textContent = `${what} copied.`;
+        return true;
     } catch (error) {
         fallback.value = text;
         fallback.classList.remove(HIDE_CLASS);
@@ -203,6 +205,7 @@ async function copySaveLayoutText(text, what) {
         fallback.select();
         status.textContent = `${what} couldn't be copied automatically: it's selected below, press`
             + " Ctrl+C (Cmd+C on a Mac) to copy it.";
+        return false;
     }
 }
 
@@ -239,6 +242,7 @@ function buildSaveLayoutDialog(body) {
     body.append("h4").text("Option A: download");
     button(body, "saveLayoutDownloadButton", "Download layout.js", () => {
         downloadFile("layout.js", saveLayoutContent, "text/javascript");
+        markLayoutSaved(saveLayoutContent);
         document.getElementById("saveLayoutFallbackText").classList.add(HIDE_CLASS);
         document.getElementById("saveLayoutStatus").textContent = "layout.js downloaded.";
     });
@@ -249,8 +253,12 @@ function buildSaveLayoutDialog(body) {
     ]);
 
     body.append("h4").text("Option B: copy");
-    button(body, "saveLayoutCopyLayoutButton", "Copy layout",
-        () => copySaveLayoutText(saveLayoutContent, "Layout"));
+    button(body, "saveLayoutCopyLayoutButton", "Copy layout", async () => {
+        const content = saveLayoutContent;
+        if (await copySaveLayoutText(content, "Layout")) {
+            markLayoutSaved(content);
+        }
+    });
     steps([
         "Open the report's <code>data/layout.js</code> in a text editor (e.g. Notepad).",
         "Select everything, paste, and save.",

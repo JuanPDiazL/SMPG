@@ -622,12 +622,13 @@ function toggleLayoutEdit() {
 
 /**
  * Switches between edit mode, which shows the controls that change the report, and reader mode,
- * which hides them: widget type selection, layout export and editing, the map's control panel,
- * and Rich Text editing (texts show in view mode, keeping their own mode for edit mode).
+ * which hides them: widget type selection, layout export and editing, and Rich Text editing
+ * (texts show in view mode, keeping their own mode for edit mode).
  * @param {boolean} state - True for edit mode, false for reader mode.
  */
 function setReportEditMode(state) {
     if (state === reportEditMode) { return; }
+    reportEditModeUsed ||= state;
     if (!state && editingLayout) {
         toggleLayoutEdit();
     }
@@ -708,6 +709,25 @@ function buildLayoutExport() {
  */
 function buildLayoutJsContent() {
     return `var layout = ${JSON.stringify(buildLayoutExport(), null, 4)};\n`;
+}
+
+// The layout.js content last saved (downloaded or copied in the Save layout window), or loaded
+var savedLayoutContent = null;
+
+/**
+ * Marks a layout as saved, so leaving the page doesn't warn about it.
+ * @param {string} [content] - The saved layout.js content; the current layout by default.
+ */
+function markLayoutSaved(content = buildLayoutJsContent()) {
+    savedLayoutContent = content;
+}
+
+/**
+ * Returns whether the layout changed since it was last saved, or loaded (see markLayoutSaved()).
+ * @returns {boolean}
+ */
+function layoutHasUnsavedChanges() {
+    return savedLayoutContent !== null && buildLayoutJsContent() !== savedLayoutContent;
 }
 
 /**
