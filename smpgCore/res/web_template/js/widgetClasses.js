@@ -498,7 +498,7 @@ class chartCard {
         }
         if (this.cardElements["controlPanel"]) {
             this.openMapControlPanelButton = this.cardButtonGroup.append("span").append("button")
-                    .attr("class", `card-button mi w3-button w3-ripple w3-right capture-ignore ${REPORT_EDIT_ONLY_CLASS}`)
+                    .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
                     .attr("title", "Open Control Panel")
                     .text("settings")
                     .on("click", (event) => {

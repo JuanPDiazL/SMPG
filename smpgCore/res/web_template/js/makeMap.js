@@ -913,8 +913,10 @@ class mapControlPanel {
         this.map = map;
         this.description = description;
 
+        // Readers open it with the card's button, so it doesn't cover the map at load
         this.controlPanelContainer = containerElement.append("div")
-            .attr("class", `map-control-panel-container w3-card draggable capture-ignore ${REPORT_EDIT_ONLY_CLASS}`);
+            .attr("class", "map-control-panel-container w3-card draggable capture-ignore")
+            .classed(HIDE_CLASS, !reportEditMode);
         
         // Header
         this.controlPanelHeader = this.controlPanelContainer.append("header")
