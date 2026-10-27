@@ -281,11 +281,11 @@ class Place:
         # 'Total up to Current Period Pct. of Avg.' is for the current season (the report's year in view)
         self.seasonal_pct_of_avg_upto_current = (self.seasonal_sums_upto_current / clim_avg_upto_current) * 100
 
-        self.seasonal_long_term_stats = pd.DataFrame.from_dict({
+        self.seasonal_long_term_stats = stack_rows({
             'LTA': clim_avg,
             # 'Ensemble Med.': clim_ensemble_med,
             # 'E. LTA': clim_ensemble_avg,
-        }, orient='index')
+        })
         self.seasonal_general_stats = pd.Series({
             'LTA': clim_avg.iloc[-1],
             # 'E. LTA': clim_ensemble_avg[-1],
@@ -333,13 +333,13 @@ class Place:
             selected_avg_upto_forecast = np.nan
 
         # calculate the stats
-        self.selected_seasons_long_term_stats = pd.DataFrame.from_dict({
+        self.selected_seasons_long_term_stats = stack_rows({
             'LTA': selected_avg,
             # 'Median': selected_med,
             'Ensemble Med.': selected_ensemble_med,
             'Ensemble Med. w. Forecast': selected_ensemble_med_with_forecast,
             'E. LTA': selected_ensemble_avg,
-        }, orient='index')
+        })
         self.selected_seasons_general_stats = pd.Series({
             'LTA': selected_avg.iloc[-1],
             'E. LTA': selected_ensemble_avg.iloc[-1],

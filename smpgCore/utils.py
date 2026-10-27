@@ -440,6 +440,22 @@ def get_ensemble(fixed_data: np.ndarray, post_data: pd.DataFrame) -> pd.DataFram
     return pd.DataFrame(np.ascontiguousarray(ensemble), index=post_data.index, 
                         columns=post_data.columns, copy=False)
 
+def stack_rows(rows: dict) -> pd.DataFrame:
+    """
+    Stack Series as the rows of a DataFrame.
+
+    Parameters:
+        rows (dict): The rows by name. Every Series must have the same index, 
+            which becomes the columns; unlike DataFrame.from_dict(), it isn't 
+            aligned.
+
+    Returns:
+        DataFrame: A DataFrame with a row per item of `rows`.
+    """
+    first_row = next(iter(rows.values()))
+    return pd.DataFrame(np.vstack([row.to_numpy() for row in rows.values()]), 
+                        index=list(rows), columns=first_row.index)
+
 
 def slice_by_element(_list: list, start, end=None) -> list:
     """Slice a list by the position of a given element.
