@@ -392,9 +392,6 @@ function makeAccumulationPercentilesPlot(containerElement) {
     }
     
     const customSettings = {
-        bar: {
-            zerobased: false,
-        }
     };
     const xsDefinition = {
         'default_xs': ascendingArray(xNames.length),
@@ -468,7 +465,6 @@ function makeForecastAccumulationPercentilesPlot(containerElement) {
 
     const customSettings = {
         bar: {
-            zerobased: false,
             overlap: true,
             padding: 0,
             width: {
