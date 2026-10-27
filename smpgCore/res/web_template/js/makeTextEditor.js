@@ -220,7 +220,8 @@ function getTextEditorTemplateContextGroups(placeId) {
             monitoring_start: datasetProperties.sub_season_ids[datasetProperties.season_start_index],
             // season_end_index is the position after the season's last period
             monitoring_end: datasetProperties.sub_season_ids[datasetProperties.season_end_index - 1],
-            
+            // the last period with data, forecast excluded, as in the report's header
+            ...(ignoreCurrentSeason ? {} : { current_dekad_id: getCurrentPeriodId() }),
         },
         "Map statistics": { stat },
         "Functions": functions,
