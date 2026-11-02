@@ -161,6 +161,17 @@ function makeCurrentYearPlot(containerElement) {
             bar: {
                 zerobased: true,
             },
+            // the season monitoring window. A period's bar is centred on its index, so the region
+            // starts and ends half a period out (-0.5) to fully enclose the first and last bars,
+            // instead of cutting them at their centres (season_end_index is the position after
+            // the window's last period, so its -0.5 is the half after the last one)
+            regions: [{
+                axis: "x",
+                start: datasetProperties.season_start_index - 0.5,
+                end: datasetProperties.season_end_index - 0.5,
+                class: "monitoring-window-region",
+                label: { text: "Monitoring Season" },
+            }],
         }
     const plot = new BBPlot(containerElement, makeCurrentYearPlotData, xNames, 
         xsDefinition, xsDataRelation, plotTypes, makeCurrentYearPlotGridLines, options);

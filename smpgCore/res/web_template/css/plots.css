@@ -79,6 +79,22 @@
     stroke-dashoffset: 10;
 }
 
+/* The season monitoring window on the Current Year Status plot; the label is black with an
+   outline in both modes, like the SoS markers' */
+.monitoring-window-region text {
+    paint-order: stroke;
+    fill: #000f !important;
+    stroke: #fffe !important;
+    stroke-width: 3px;
+}
+.monitoring-window-region rect {
+    fill: skyblue;
+    fill-opacity: .12;
+}
+.darkmode .monitoring-window-region rect {
+    fill-opacity: .05;
+}
+
 /* Over a year's line or bar, which a click makes the year in view (see BBPlot.getYearAtPointer()) */
 .plot-year-hover,
 .plot-year-hover .bb-event-rect {
