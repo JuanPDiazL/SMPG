@@ -167,7 +167,6 @@ function openHelp(helpId) {
     const help = HELP_TEXTS[helpId];
     const dialog = getDialog("helpDialog", {
         title: "Help",
-        bodyClass: "report-dialog-body",
     });
     dialog.modal.select("header > h3").text(`Help: ${help.title}`);
     dialog.body.html(`${help.html}<p>More in the

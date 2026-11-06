@@ -5,26 +5,30 @@
 
 // The windows built so far, by id
 const dialogs = {};
+// The header's color class of each window variant (see getDialog())
+const DIALOG_HEADER_CLASSES = {
+    default: "w3-blue-grey",
+    warning: "w3-red",
+};
 
 /**
  * Returns a window, building it the first time: a w3-modal with a header (its title and a close
- * button) and an empty body. It closes with its close button, Esc, or a click outside it.
+ * button) and an empty body. It closes with its close button, Esc, or a click outside it. Its
+ * styles are shared by every window (the report-dialog classes, see style.css).
  * @param {string} id - The window's element id.
  * @param {Object} options
  * @param {string} options.title - The header's title.
+ * @param {string} [options.variant] - A key of DIALOG_HEADER_CLASSES: "default" (a blue-grey
+ *     header) or "warning" (a red one).
  * @param {string} [options.className] - Classes for the w3-modal element, e.g. for its styles.
- * @param {string} [options.bodyClass] - Classes for the body, added to w3-container.
- * @param {string} [options.headerClass] - The header's color class.
- * @param {string} [options.titleTag] - The title's heading element.
- * @param {string} [options.closeClass] - Classes for the close button, added to w3-button.
- * @param {string} [options.closeText] - The close button's text (an icon name with .mi).
+ * @param {string} [options.bodyClass] - Classes for the body, added to w3-container and
+ *     report-dialog-body.
  * @param {Function} [options.onClose] - Called after it closes.
  * @param {Function} [options.build] - Fills the body (a d3 selection), once.
  * @returns {Object} {modal, body, open(), close()}; modal and body are d3 selections.
  */
 function getDialog(id, {
-    title, className = "", bodyClass = "", headerClass = "w3-blue-grey", titleTag = "h3",
-    closeClass = "mi w3-ripple", closeText = "close", onClose = () => {}, build = () => {},
+    title, variant = "default", className = "", bodyClass = "", onClose = () => {}, build = () => {},
 }) {
     if (dialogs[id]) { return dialogs[id]; }
     const modal = d3.select("body").append("div")
@@ -33,10 +37,10 @@ function getDialog(id, {
     const content = modal.append("div")
         .attr("class", "w3-modal-content w3-card-4");
     const header = content.append("header")
-        .attr("class", `w3-container ${headerClass}`);
+        .attr("class", `w3-container ${DIALOG_HEADER_CLASSES[variant]}`);
     const dialog = {
         modal,
-        body: content.append("div").attr("class", `w3-container ${bodyClass}`),
+        body: content.append("div").attr("class", `w3-container report-dialog-body ${bodyClass}`),
         open: () => modal.style("display", "block"),
         close: () => {
             modal.style("display", "none");
@@ -44,11 +48,11 @@ function getDialog(id, {
         },
     };
     header.append("button")
-        .attr("class", `w3-button w3-display-topright ${closeClass}`)
+        .attr("class", "w3-button w3-display-topright mi w3-ripple")
         .attr("title", "Close")
-        .text(closeText)
+        .text("close")
         .on("click", dialog.close);
-    header.append(titleTag).text(title);
+    header.append("h3").text(title);
 
     modal.on("click", (event) => {
         if (event.target === modal.node()) { dialog.close(); }
@@ -76,10 +80,7 @@ function getDialog(id, {
 function getWarningDialog() {
     return getDialog("modal", {
         title: "Warning",
-        headerClass: "w3-red",
-        titleTag: "h2",
-        closeClass: "w3-ripple w3-hover-pale-red",
-        closeText: "×",
+        variant: "warning",
         // The message isn't kept once it's read
         onClose: () => dialogs["modal"].body.select("p").html(""),
         build: (body) => body.append("p").attr("id", "modalText"),
@@ -135,8 +136,6 @@ function getAboutDataRows() {
 function openAboutDataDialog() {
     const dialog = getDialog("aboutDataModal", {
         title: "About this data",
-        className: "about-data-modal",
-        bodyClass: "report-dialog-body",
         build: (body) => body.append("table")
             .attr("id", "aboutDataTable")
             .attr("class", "w3-table report-dialog-table"),
@@ -229,8 +228,8 @@ function buildSaveLayoutDialog(body) {
         + " report's <code>layout.js</code> file. Replace it with the current layout:");
     const pathRow = body.append("div")
         .attr("id", "saveLayoutPathRow")
-        .attr("class", "save-layout-path");
-    pathRow.append("code").attr("id", "saveLayoutPath");
+        .attr("class", "report-dialog-row");
+    pathRow.append("code").attr("id", "saveLayoutPath").attr("class", "report-dialog-code");
     button(pathRow, "saveLayoutCopyPathButton", "Copy path",
         () => copySaveLayoutText(getLayoutFilePath(), "Path"));
     body.append("p")
@@ -266,11 +265,11 @@ function buildSaveLayoutDialog(body) {
 
     body.append("p")
         .attr("id", "saveLayoutStatus")
-        .attr("class", "save-layout-status")
+        .attr("class", "report-dialog-status")
         .attr("aria-live", "polite");
     body.append("textarea")
         .attr("id", "saveLayoutFallbackText")
-        .attr("class", `save-layout-fallback ${HIDE_CLASS}`)
+        .attr("class", `report-dialog-textarea ${HIDE_CLASS}`)
         .attr("readonly", "");
     body.append("p").html("<b>Then reload this page</b> to check the saved layout.");
 }
@@ -282,8 +281,6 @@ function buildSaveLayoutDialog(body) {
 function openSaveLayoutDialog() {
     const dialog = getDialog("saveLayoutModal", {
         title: "Save layout",
-        className: "save-layout-modal",
-        bodyClass: "save-layout-body",
         build: buildSaveLayoutDialog,
     });
     saveLayoutContent = buildLayoutJsContent();
@@ -323,8 +320,6 @@ function saveRenameDialog() {
 function openRenameDialog(card) {
     const dialog = getDialog("renameModal", {
         title: "Rename window",
-        className: "rename-dialog",
-        bodyClass: "report-dialog-body",
         build: (body) => {
             body.append("p").text("The window's title. Without one, it shows its type's title,"
                 + " which it also goes back to when its type changes.");
@@ -338,7 +333,7 @@ function openRenameDialog(card) {
                         saveRenameDialog();
                     }
                 });
-            const buttons = body.append("div").attr("class", "rename-dialog-buttons");
+            const buttons = body.append("div").attr("class", "report-dialog-row report-dialog-buttons");
             buttons.append("button")
                 .attr("id", "renameSaveButton")
                 .attr("class", "w3-button w3-blue-grey w3-ripple")

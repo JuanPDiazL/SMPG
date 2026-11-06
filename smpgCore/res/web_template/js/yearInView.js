@@ -116,14 +116,12 @@ function refreshYearInViewSelector() {
 function openYearInViewDialog() {
     const dialog = getDialog("yearInViewModal", {
         title: "Year in view",
-        className: "year-in-view-modal",
-        bodyClass: "year-in-view-body",
         build: (body) => {
             body.append("button")
                 .attr("class", "w3-button w3-border year-in-view-none")
                 .text("No year in view")
                 .on("click", () => chooseYearInView(null));
-            const filter = body.append("label").attr("class", "year-in-view-filter");
+            const filter = body.append("label").attr("class", "report-dialog-row report-dialog-check year-in-view-filter");
             filter.append("input")
                 .attr("type", "checkbox")
                 .attr("class", "w3-check year-in-view-only-selected")
@@ -154,13 +152,12 @@ function refreshYearInViewYears() {
         .data(years)
         .join((enter) => {
             const yearButton = enter.append("button")
-                .attr("class", "w3-button w3-border year-in-view-year")
+                .attr("class", "w3-button w3-border report-dialog-row")
                 .on("click", (event, year) => chooseYearInView(year));
             yearButton.append("span").attr("class", "year-in-view-swatch");
             yearButton.append("span").attr("class", "year-in-view-year-label");
             return yearButton;
         })
-        .classed("year-in-view-selected", (year) => year === yearInView)
         .attr("aria-pressed", (year) => year === yearInView)
         .call((yearButton) => {
             yearButton.select(".year-in-view-swatch").style("background-color", (year) => getPlotColor(year));
