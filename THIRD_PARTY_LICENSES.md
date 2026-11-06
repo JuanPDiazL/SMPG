@@ -8,7 +8,7 @@ Python libraries used by the plugin but not bundled with it (PyQGIS, PyQt5, NumP
 
 | Component | Version | License | Location in this repository |
 |---|---|---|---|
-| [billboard.js](https://github.com/naver/billboard.js) | 3.17.2 (JS), 3.10.3 (CSS) | MIT | `smpgCore/res/web_template/js/libraries/billboard.min.js`<br>`smpgCore/res/web_template/css/libraryStyles/billboard_modern.min.css` |
+| [billboard.js](https://github.com/naver/billboard.js) | 4.1.3 | MIT | `smpgCore/res/web_template/js/libraries/billboard.min.js`<br>`smpgCore/res/web_template/css/libraryStyles/billboard_modern.min.css` |
 | [D3](https://github.com/d3/d3) | 7.9.0 | ISC | `smpgCore/res/web_template/js/libraries/d3.v7.min.js` |
 | [TopoJSON](https://github.com/topojson/topojson) | 3.0.2 | BSD-3-Clause | `smpgCore/res/web_template/js/libraries/topojson.v3.min.js` |
 | [gridstack.js](https://github.com/gridstack/gridstack.js) | 12.4.2 | MIT | `smpgCore/res/web_template/js/libraries/gridstack-all.min.js`<br>`smpgCore/res/web_template/css/libraryStyles/gridstack.min.css` |
