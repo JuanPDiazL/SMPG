@@ -38,14 +38,34 @@ p.card-title {
     line-height: 24px;
 }
 
-/* Hidden header (showHeader: false): reader mode shows no header, but a left border in the
-   header's color; edit mode shows the header, striped. The header's color is the same in dark
-   mode, so these are too. Only the card's own header (the map's control panel has one too). */
-body.report-reader-mode .plot-card.header-hidden > .card-header {
-    display: none;
-}
+/* Hidden header (showHeader: false): reader mode shows a left border in the header's color
+   instead of the header; edit mode shows the header, striped. The header's color is the same in
+   dark mode, so these are too. Only the card's own header (the map's control panel has one too). */
 body.report-reader-mode .plot-card.header-hidden {
     border-left: 4px solid #607d8b;
+    /* the floating header's z-index stays inside the card, under a maximized card */
+    isolation: isolate;
+}
+/* In reader mode the hidden header floats, transparent, over the body's top-right corner, and
+   only shows its elements with the show-on-hidden-header class (e.g. a help button); without
+   any, nothing shows. Clicks go through it to the body, except on those elements. */
+body.report-reader-mode .plot-card.header-hidden > .card-header {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    pointer-events: none;
+    /* over w3-blue-grey's own !important colors; buttons in the header's color, on the body.
+       The same in dark mode, where a text card's body stays white */
+    background-color: transparent !important;
+    color: #607d8b !important;
+}
+body.report-reader-mode .plot-card.header-hidden > .card-header > :not(.show-on-hidden-header):not(:has(.show-on-hidden-header)),
+body.report-reader-mode .plot-card.header-hidden > .card-header > .card-button-group > :not(.show-on-hidden-header):not(:has(.show-on-hidden-header)) {
+    display: none;
+}
+body.report-reader-mode .plot-card.header-hidden > .card-header .show-on-hidden-header {
+    pointer-events: auto;
 }
 .plot-card.header-hidden > .card-header {
     background-image: repeating-linear-gradient(-45deg,
