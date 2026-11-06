@@ -188,16 +188,25 @@ const FORECAST_CARD_REGULAR_TYPES = {
     "Ensemble with Forecast": "Ensemble",
     "Seasonal Accumulation Percentiles with Forecast": "Seasonal Accumulation Percentiles",
 };
+// The help of each forecast card's regular variant (see helpTexts.js)
+const FORECAST_HELP_REGULAR_IDS = {
+    "ensemble-with-forecast": "ensemble",
+    "seasonal-accumulation-percentiles-with-forecast": "seasonal-accumulation-percentiles",
+};
 
 // The layout's cards fit this report: without a forecast, the forecast cards show their regular
-// variant; without a map, the maps are empty widgets
+// variant; without a map, the maps are empty widgets. Their help follows.
 for (const widget of Object.values(layout.gridstackWidgets)) {
     const smpgOpts = widget.smpgOpts;
     if (!hasForecast && smpgOpts.smpgCardType in FORECAST_CARD_REGULAR_TYPES) {
         smpgOpts.smpgCardType = FORECAST_CARD_REGULAR_TYPES[smpgOpts.smpgCardType];
+        if (smpgOpts.help in FORECAST_HELP_REGULAR_IDS) {
+            smpgOpts.help = FORECAST_HELP_REGULAR_IDS[smpgOpts.help];
+        }
     }
     if (!hasMap && smpgOpts.smpgCardType === "Map") {
         smpgOpts.smpgCardType = "Empty Widget";
+        delete smpgOpts.help;
     }
 }
 

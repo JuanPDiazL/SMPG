@@ -11,6 +11,7 @@ var layout = {
         "w6": {
             "smpgOpts": {
                 "smpgCardType": "Rich Text",
+                "help": "rich-text",
                 "title": "Polygon Briefing",
                 "showHeader": false,
                 "editor": {
@@ -28,6 +29,7 @@ var layout = {
         "w7": {
             "smpgOpts": {
                 "smpgCardType": "Seasonal Accumulations",
+                "help": "seasonal-accumulations",
                 "showHeader": true,
                 "table": {
                     "tableShown": false
@@ -43,6 +45,7 @@ var layout = {
         "w3": {
             "smpgOpts": {
                 "smpgCardType": "Current Year Status",
+                "help": "current-year-status",
                 "showHeader": true,
                 "table": {
                     "tableShown": false
@@ -58,6 +61,7 @@ var layout = {
         "w1": {
             "smpgOpts": {
                 "smpgCardType": "Map",
+                "help": "map",
                 "showHeader": true,
                 "map": {
                     "label_field": "ADM2_NAME",
@@ -78,6 +82,7 @@ var layout = {
         "w4": {
             "smpgOpts": {
                 "smpgCardType": "Ensemble",
+                "help": "ensemble",
                 "showHeader": true,
                 "table": {
                     "tableShown": true
@@ -93,6 +98,7 @@ var layout = {
         "w5": {
             "smpgOpts": {
                 "smpgCardType": "Seasonal Accumulation Percentiles",
+                "help": "seasonal-accumulation-percentiles",
                 "showHeader": true,
                 "table": {
                     "tableShown": false
@@ -109,6 +115,7 @@ var layout = {
             "unloaded": true,
             "smpgOpts": {
                 "smpgCardType": "Rich Text",
+                "help": "rich-text",
                 "title": "Monitoring Report",
                 "showHeader": true,
                 "editor": {

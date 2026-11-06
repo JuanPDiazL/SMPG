@@ -175,24 +175,22 @@
     font-family: monospace;
     white-space: pre;
 }
-/* About this data window: labels in bold, values next to them */
-.about-data-body {
+/* A window's body with room under its content (About this data, Rename, Help) */
+.report-dialog-body {
     padding-bottom: 16px;
 }
-.about-data-table td:first-child {
+/* A window's table of labels in bold, values next to them (About this data, Help) */
+.report-dialog-table td:first-child {
     width: 1%;
     white-space: nowrap;
     font-weight: bold;
 }
 @media (max-width: 600px) {
-    .about-data-table td:first-child {
+    .report-dialog-table td:first-child {
         white-space: normal;
     }
 }
 /* Rename window: the title's text box, then its buttons */
-.rename-dialog-body {
-    padding-bottom: 16px;
-}
 .rename-dialog-buttons {
     display: flex;
     gap: 8px;
@@ -258,6 +256,9 @@
 .darkmode .report-dialog .w3-modal-content {
     background-color: var(--dark-bg-color);
     color: #ddd;
+}
+.darkmode .report-dialog .w3-modal-content a {
+    color: #8ab4f8;
 }
 .darkmode .save-layout-path code,
 .darkmode .save-layout-fallback {

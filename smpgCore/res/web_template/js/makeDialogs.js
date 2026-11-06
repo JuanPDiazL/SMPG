@@ -136,10 +136,10 @@ function openAboutDataDialog() {
     const dialog = getDialog("aboutDataModal", {
         title: "About this data",
         className: "about-data-modal",
-        bodyClass: "about-data-body",
+        bodyClass: "report-dialog-body",
         build: (body) => body.append("table")
             .attr("id", "aboutDataTable")
-            .attr("class", "w3-table about-data-table"),
+            .attr("class", "w3-table report-dialog-table"),
     });
     dialog.body.select("table").selectAll("tr")
         .data(getAboutDataRows())
@@ -324,7 +324,7 @@ function openRenameDialog(card) {
     const dialog = getDialog("renameModal", {
         title: "Rename window",
         className: "rename-dialog",
-        bodyClass: "rename-dialog-body",
+        bodyClass: "report-dialog-body",
         build: (body) => {
             body.append("p").text("The window's title. Without one, it shows its type's title,"
                 + " which it also goes back to when its type changes.");

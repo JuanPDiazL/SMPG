@@ -322,7 +322,8 @@ class chartCard {
      * @param {Object} smpgOpts - Initial properties, in the same shape as getProperties()/setProperties()
      *   (e.g. {smpgCardType: "Map", map: {legend_stat: "Average Total"}}). Only smpgCardType is
      *   required; the rest is applied via setProperties() once the card is built. showHeader
-     *   (default true) false hides the header in reader mode. A type this
+     *   (default true) false hides the header in reader mode. help is one of helpTexts.js's
+     *   HELP_TEXTS ids, opened by the card's help button. A type this
      *   report doesn't offer builds an "Empty Widget", see invalidCardType.
      */
     constructor(containerSelector, smpgOpts = {}) {
@@ -376,6 +377,9 @@ class chartCard {
         // The header's title instead of the type's, while the card keeps its type (smpgOpts.title,
         // applied by setProperties())
         this.customTitle = null;
+        // The help opened by the help button, one of HELP_TEXTS' ids, or null for no button
+        // (smpgOpts.help, applied by setProperties())
+        this.helpId = null;
 
         this.elementContainer = d3.select(containerSelector);
         this.cardContainer = this.elementContainer
@@ -426,9 +430,10 @@ class chartCard {
     }
 
     changePlot(cardType) {
-        // A custom title belongs to the type it was given for
+        // A custom title and a help belong to the type they were given for
         if (cardType !== this.cardType) {
             this.customTitle = null;
+            this.helpId = null;
         }
         this.cardType = cardType;
         this.destroy();
@@ -456,6 +461,14 @@ class chartCard {
             .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore")
             .on("click", () => this.toggleMaximize());
         this.refreshMaximizeButton();
+
+        // Also shown by a hidden header in reader mode (see widgetCard.css)
+        this.helpButton = this.cardButtonGroup.append("span").append("button")
+            .attr("class", "card-button mi w3-button w3-ripple w3-right capture-ignore show-on-hidden-header")
+            .attr("title", "Help: what this window shows")
+            .text("help_outline")
+            .on("click", () => openHelp(this.helpId));
+        this.refreshHelpButton();
 
         this.headerDisplayButton = this.cardButtonGroup.append("span").append("button")
             .attr("class", `card-button mi w3-button w3-ripple w3-right capture-ignore ${REPORT_EDIT_ONLY_CLASS}`)
@@ -556,6 +569,7 @@ class chartCard {
         return {
             smpgCardType: this.cardType,
             ...(this.customTitle ? { title: this.customTitle } : {}),
+            ...(this.helpId ? { help: this.helpId } : {}),
             showHeader: this.showHeader,
             ...cardElementsProps,
         };
@@ -594,11 +608,14 @@ class chartCard {
         if ("title" in properties && !this.invalidCardType) {
             this.setCustomTitle(properties.title);
         }
+        if ("help" in properties && !this.invalidCardType) {
+            this.setHelp(properties.help);
+        }
         if ("showHeader" in properties) {
             this.changeHeaderDisplay(properties.showHeader !== false);
         }
         for (const key in properties) {
-            if (key === "smpgCardType" || key === "title" || key === "showHeader") { continue; }
+            if (key === "smpgCardType" || key === "title" || key === "help" || key === "showHeader") { continue; }
             const element = this.cardElements[key];
             if (element && element.setProperties) {
                 element.setProperties(properties[key]);
@@ -659,6 +676,26 @@ class chartCard {
     setCustomTitle(title) {
         this.customTitle = String(title ?? "").trim() || null;
         this.refreshTitle();
+    }
+
+    /**
+     * Sets the help opened by the card's help button.
+     * @param {string|null} helpId - One of HELP_TEXTS' ids, or null for no help button. An
+     *     unknown id is dropped, with a warning.
+     */
+    setHelp(helpId) {
+        if (helpId != null && !hasHelp(helpId)) {
+            console.warn(`Unknown help "${helpId}", the card has no help button.`);
+        }
+        this.helpId = hasHelp(helpId) ? helpId : null;
+        this.refreshHelpButton();
+    }
+
+    /**
+     * Shows the help button only while the card has a help.
+     */
+    refreshHelpButton() {
+        this.helpButton.classed("w3-hide", this.helpId === null);
     }
 
     /**
