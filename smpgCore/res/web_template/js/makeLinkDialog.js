@@ -11,12 +11,13 @@ const REPORT_LINK_CURRENT_PLACE = "current";
 
 // Widget properties a report view link can set, per card element, in the shape of
 // chartCard.getProperties(). Keep in step with the elements' setProperties(). A property is a
-// yes/no choice, or a choice among the values returned by `values`.
+// yes/no choice, or a choice among the values returned by `values`, shown by their `labels` if
+// it has them.
 const REPORT_LINK_ELEMENT_PROPERTIES = {
     map: {
         legend_stat: { label: "Map statistic", values: () => mapFields },
         label_field: { label: "Map labels", values: () => property_ids },
-        show_legend: { label: "Map legend", yes: "Show", no: "Hide" },
+        legend_mode: { label: "Map legend", values: () => Object.keys(MAP_LEGEND_MODES), labels: MAP_LEGEND_MODES },
     },
     mapDescription: {
         show_description: { label: "Map description", yes: "Show", no: "Hide" },
@@ -306,7 +307,7 @@ function openReportLinkDialog(editor, anchor = null) {
             for (const [property, field] of Object.entries(REPORT_LINK_ELEMENT_PROPERTIES[element] ?? {})) {
                 const value = row.props[`${element}.${property}`] ?? "";
                 const options = field.values
-                    ? field.values().map((option) => ({ text: String(option), value: String(option) }))
+                    ? field.values().map((option) => ({ text: field.labels?.[option] ?? String(option), value: String(option) }))
                     : [{ text: field.yes, value: "true" }, { text: field.no, value: "false" }];
                 propertyItems.push({ type: "listbox", name: `row${index}_prop_${element}.${property}`,
                     label: field.label, items: [{ text: "No change", value: "" }, ...options] });

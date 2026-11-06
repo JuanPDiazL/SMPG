@@ -65,8 +65,7 @@ var layout = {
                 "showHeader": true,
                 "map": {
                     "label_field": "ADM2_NAME",
-                    "legend_stat": "Total up to Current Period Pct. of Avg.",
-                    "show_legend": true
+                    "legend_stat": "Total up to Current Period Pct. of Avg."
                 },
                 "mapDescription": {
                     "show_description": false

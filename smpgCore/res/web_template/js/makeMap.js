@@ -61,6 +61,39 @@ let mapStatsCategories = {
 // The year in view's percent of average uses the classes of the ensemble median's
 mapStatsCategories[YEAR_IN_VIEW_MAP_STAT] = mapStatsCategories['Ensemble Med. Pct. of Avg.'];
 
+// The legend modes, which classes a map's legend lists (see getListedLegendClasses()), with their
+// names in the Map Parameters: the range from the first to the last class with places on the
+// map, empty ones in between included, so it reads as a continuous scale; only the classes with
+// places; every class; or no legend
+const MAP_LEGEND_MODES = {
+    range: "From the lowest to the highest used",
+    used: "Only the used ones",
+    all: "All",
+    none: "Hide",
+};
+const DEFAULT_MAP_LEGEND_MODE = "range";
+
+/**
+ * Returns the classes a legend lists in a legend mode, in the legend's order.
+ * @param {Object} bins - The statistic's legend, {label: {color, function}}.
+ * @param {Object} polygonBins - The places in each class, {label: [feature, ...]}.
+ * @param {string} mode - One of MAP_LEGEND_MODES' keys.
+ * @returns {Array} The listed classes, as [label, {color, function}] entries.
+ */
+function getListedLegendClasses(bins, polygonBins, mode) {
+    const classes = Object.entries(bins);
+    const used = classes.map(([label]) => polygonBins[label].length > 0);
+    switch (mode) {
+        case "all": return classes;
+        case "used": return classes.filter((entry, index) => used[index]);
+        case "none": return [];
+        default: {
+            const first = used.indexOf(true);
+            return first < 0 ? [] : classes.slice(first, used.lastIndexOf(true) + 1);
+        }
+    }
+}
+
 const mapDescriptions = {
     [YEAR_IN_VIEW_MAP_STAT]: "Depicts the percent of the long-term average (LTA) for the accumulated precipitation of the year in view, from the start of the season monitoring up to the current period (or the season's end without one), compared with the LTA at the same period.",
     "Total up to Current Period Pct. of Avg.": "Depicts the percent of the long-term average (LTA) for the accumulated precipitation from the Start of Season (SOS) up to the current period.",
@@ -190,13 +223,13 @@ class d3Map {
      * @param {Object} geoJsonMap - The places' GeoJSON features.
      * @param {Object} geoJsonReferenceMap - The reference layer's GeoJSON features.
      * @param {Object} borders - Each layer's borders, {map, reference}, from getPolygonBorders().
-     * @param {Object} [options] - {label_field, legend_stat, show_legend}.
+     * @param {Object} [options] - {label_field, legend_stat, legend_mode}.
      */
     constructor(containerElement, geoJsonMap, geoJsonReferenceMap, borders, options={}) {
         this.options = {
             label_field: options.label_field ?? idField,
             legend_stat: options.legend_stat ?? "None",
-            show_legend: options.show_legend ?? true,
+            legend_mode: DEFAULT_MAP_LEGEND_MODE,
         };
         this.geoJsonMap = geoJsonMap;
         this.geoJsonReferenceMap = geoJsonReferenceMap;
@@ -345,8 +378,8 @@ class d3Map {
         .on('zoom', (event) => this.applyZoom(event.transform));
         this.svg.call(this.svgZoomHandler);
 
+        this.changeLegendMode(options.legend_mode ?? DEFAULT_MAP_LEGEND_MODE);
         this.changeLegend(this.options.legend_stat);
-        this.changeLegendDisplay(this.options.show_legend);
     }
 
     /**
@@ -527,9 +560,19 @@ class d3Map {
         }
     }
 
-    changeLegendDisplay(state) {
-        this.options.show_legend = state;
-        this.legend.classed("w3-hide", this.options.show_legend? null : "none");
+    /**
+     * Sets which classes the legend lists, and draws it again; the map's colors stay.
+     * @param {string} mode - One of MAP_LEGEND_MODES' keys; another is taken as the default.
+     */
+    changeLegendMode(mode) {
+        if (!(mode in MAP_LEGEND_MODES)) {
+            console.warn(`Unknown legend mode "${mode}", "${DEFAULT_MAP_LEGEND_MODE}" is used instead.`);
+            mode = DEFAULT_MAP_LEGEND_MODE;
+        }
+        this.options.legend_mode = mode;
+        if (this.legendBins) {
+            this.drawLegend();
+        }
     }
 
     changeLabels(fieldId) {
@@ -554,13 +597,7 @@ class d3Map {
         }
         this.options.legend_stat = statId;
         const selectedBins = mapStatsCategories[statId];
-        // Update legend based on the selected property
-        const legendElementHeight = 16;
-        const legendElementGap = 1;
-        const startY = this.internal_height - 30;
-        const startX = this.internal_width - 30;
-        const coordX = startX;
-        
+
         // Update polygon color based on the selected property
         let hasUncategorizedPolygons = false;
         let polygonBins = objectMap(selectedBins, (value, key, obj) => {
@@ -591,12 +628,29 @@ class d3Map {
             showModal(`There was missing data when drawing map.<br>Please check for a possible mismatch between the dataset and the selected target field from the shapefile.<br>Target Field: ${parameters.target_id_field}`)
         }
 
-        // Build legend
-        const nonEmptyBins = Object.entries(selectedBins).filter(([k, v]) => polygonBins[k].length > 0);
+        // kept for drawLegend(), so a new legend mode doesn't color the map again
+        this.legendBins = { statId, bins: selectedBins, polygonBins };
+        this.drawLegend();
+        this.legendListener?.();
+    }
+
+    /**
+     * Draws the legend of the statistic shown (see changeLegend()): its title and the classes its
+     * legend mode lists (see getListedLegendClasses()). Nothing without a statistic or in the
+     * "none" mode.
+     */
+    drawLegend() {
+        const { statId, bins, polygonBins } = this.legendBins;
+        const legendElementHeight = 16;
+        const legendElementGap = 1;
+        const startY = this.internal_height - 30;
+        const startX = this.internal_width - 30;
+        const coordX = startX;
+
         this.legend.selectChildren().remove()
-        if (statId !== "None") {
+        if (statId !== "None" && this.options.legend_mode !== "none") {
             this.legend.selectAll().append("g")
-                .data(nonEmptyBins)
+                .data(getListedLegendClasses(bins, polygonBins, this.options.legend_mode))
                 .join("g")
                 .attr("class", "legend-element")
                 .attr("transform", (d, i, nodes) => {
@@ -639,7 +693,6 @@ class d3Map {
                     // console.log(nodes[i].getBoundingClientRect().width);
                 })
         }
-        this.legendListener?.();
     }
 
     /**
@@ -666,7 +719,7 @@ class d3Map {
 
     /**
      * Applies a patch of options to the map, in the same shape returned by getProperties().
-     * @param {Object} properties - A subset of {label_field, legend_stat, show_legend}.
+     * @param {Object} properties - A subset of {label_field, legend_stat, legend_mode}.
      */
     setProperties(properties) {
         if ("label_field" in properties) {
@@ -675,8 +728,8 @@ class d3Map {
         if ("legend_stat" in properties) {
             this.changeLegend(properties.legend_stat);
         }
-        if ("show_legend" in properties) {
-            this.changeLegendDisplay(properties.show_legend);
+        if ("legend_mode" in properties) {
+            this.changeLegendMode(properties.legend_mode);
         }
     }
 }
@@ -753,17 +806,22 @@ class mapControlPanel {
             });
         this.refreshStatOptions();
 
-        // Show legend checkbox
-        this.showLegendCheckbox = this.controlPanelBody.append("input")
-            .attr("class", "w3-check")
-            .attr("type", "checkbox")
-            .attr("checked", map.options.show_legend ? "checked" : null)
-            .on("change", (event) => {
-                const showLegend = event.target.checked;
-                map.changeLegendDisplay(showLegend);
-            });
+        this.controlPanelBody.append("br");
+
+        // Legend mode select: which classes the legend lists, or none
         this.controlPanelBody.append("label")
-            .text("Show Legend");
+            .text("Legend");
+        this.legendModeSelect = this.controlPanelBody.append("select")
+            .attr("class", "w3-block w3-border")
+            .on("change", (event) => {
+                map.changeLegendMode(event.target.value);
+            });
+        this.legendModeSelect.selectAll("option")
+            .data(Object.entries(MAP_LEGEND_MODES))
+            .join("option")
+                .attr("value", ([mode]) => mode)
+                .text(([mode, name]) => name);
+        this.legendModeSelect.property("value", map.options.legend_mode);
 
         this.controlPanelBody.append("br");
 
@@ -810,7 +868,7 @@ class mapControlPanel {
     refresh() {
         this.labelFieldSelect.property("value", this.map.options.label_field);
         this.legendStatSelect.property("value", this.map.options.legend_stat);
-        this.showLegendCheckbox.property("checked", this.map.options.show_legend);
+        this.legendModeSelect.property("value", this.map.options.legend_mode);
         this.showDescriptionCheckbox.property("checked", this.description.options.show_description);
     }
 }

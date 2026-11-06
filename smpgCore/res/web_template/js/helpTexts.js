@@ -121,7 +121,8 @@ is added to the current season first (<b>Forecast Accumulation</b>, pink).</p>`,
         html: `<p><b>What it shows.</b> One statistic for every place, to compare the selected
 place with the others. Click a place to select it; the selected place has a dashed outline.</p>
 <p>The settings button opens the <b>Map Parameters</b>: the places' labels, the statistic shown
-(<b>Selected Map Stat</b>), its legend, and its description, which explains the statistic.</p>
+(<b>Selected Map Stat</b>), which classes its legend lists (or no legend), and its description,
+which explains the statistic.</p>
 <p><b>Which years.</b> The percent of average maps compare with the climatology years. The
 ensemble and probability maps use the selected years' scenarios (see the Ensemble help). The
 percentile maps rank among every past season.</p>
