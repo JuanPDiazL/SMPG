@@ -85,31 +85,31 @@
     box-sizing: border-box;
 }
 
-#contentHeaderText, .place-list-title {
+#contentHeaderText, .place-list-title, .report-dialog-title {
     font-size: 1.75em;
 }
 
-/* The main and places headers: the title and the buttons are centered vertically, also when the
-   title wraps; the main title takes the space between its buttons */
-#contentHeader, #leftSidebarHeader, #contentHeaderMenu {
+/* The main, places and windows' headers: the title and the buttons are centered vertically, also
+   when the title wraps; the main and windows' titles take the space between their buttons */
+#contentHeader, #leftSidebarHeader, #contentHeaderMenu, .report-dialog-header {
     display: flex;
     align-items: center;
 }
-#contentHeader > *, #leftSidebarHeader > * {
+#contentHeader > *, #leftSidebarHeader > *, .report-dialog-header > * {
     flex-shrink: 0;
 }
-#contentHeader > #contentHeaderText {
+#contentHeader > #contentHeaderText, .report-dialog-header > .report-dialog-title {
     flex: 1 1 auto;
     min-width: 0;
 }
-
-/* Compact buttons: list items (the places list, the header menu, the card type list) and the
-   message window's close button get less padding than w3.css gives them; text sizes are kept.
-   Icon buttons are in icons.css, card header buttons in widgetCard.css. */
-.w3-bar-block .w3-bar-item.w3-button {
-    padding: 4px 12px;
+.report-dialog-title {
+    margin: 0;
 }
-.w3-modal .w3-button.w3-display-topright {
+
+/* Compact buttons: list items (the places list, the header menu, the card type list) get less
+   padding than w3.css gives them; text sizes are kept. Icon buttons are in icons.css, card header
+   buttons in widgetCard.css. */
+.w3-bar-block .w3-bar-item.w3-button {
     padding: 4px 12px;
 }
 

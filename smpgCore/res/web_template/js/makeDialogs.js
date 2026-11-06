@@ -36,8 +36,9 @@ function getDialog(id, {
         .attr("class", `w3-modal report-dialog ${className}`);
     const content = modal.append("div")
         .attr("class", "w3-modal-content w3-card-4");
+    // Styled like the report's header (see style.css)
     const header = content.append("header")
-        .attr("class", `w3-container ${DIALOG_HEADER_CLASSES[variant]}`);
+        .attr("class", `w3-container report-dialog-header ${DIALOG_HEADER_CLASSES[variant]}`);
     const dialog = {
         modal,
         body: content.append("div").attr("class", `w3-container report-dialog-body ${bodyClass}`),
@@ -47,12 +48,12 @@ function getDialog(id, {
             onClose();
         },
     };
+    header.append("h3").attr("class", "report-dialog-title").text(title);
     header.append("button")
-        .attr("class", "w3-button w3-display-topright mi w3-ripple")
+        .attr("class", "mi w3-button w3-ripple")
         .attr("title", "Close")
         .text("close")
         .on("click", dialog.close);
-    header.append("h3").text(title);
 
     modal.on("click", (event) => {
         if (event.target === modal.node()) { dialog.close(); }
