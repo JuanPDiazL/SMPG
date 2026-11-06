@@ -278,7 +278,7 @@ function makeEnsembleTable(containerElement) {
                 ['Ensemble Med.', selected_seasons_general_stats[index]['Ensemble Med.'], seasonal_general_stats[index]['Ensemble Med.']],
                 ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
                 ['Ensemble Med. Pct. of Avg.', selected_seasons_general_stats[index]['Ensemble Med. Pct. of Avg.'], seasonal_general_stats[index]['Ensemble Med. Pct. of Avg.']],
-                ['Ensemble Med. Pctl.', selected_seasons_general_stats[index]['Ensemble Med. Pctl.'], selected_seasons_general_stats[index]['Ensemble Med. Pctl.']],
+                ['Ensemble Med. Pctl.', selected_seasons_general_stats[index]['Ensemble Med. Pctl.'], seasonal_general_stats[index]['Ensemble Med. Pctl.']],
             ],
             "Probability at EoS": [
                 [null, 'Sel. Yrs.', 'Clim.'],
@@ -371,7 +371,7 @@ function makeEnsembleWithForecastTable(containerElement) {
                 ['Ensemble Med. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. w. Forecast'], seasonal_general_stats[index]['Ensemble Med. w. Forecast']],
                 ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
                 ['Ensemble Med. w Forecast Pct. of Avg.', selected_seasons_general_stats[index]['Ensemble Med. w Forecast Pct. of Avg.'], seasonal_general_stats[index]['Ensemble Med. w Forecast Pct. of Avg.']],
-                ['Ensemble Med. Pctl. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. Pctl. w. Forecast'], selected_seasons_general_stats[index]['Ensemble Med. Pctl. w. Forecast']],
+                ['Ensemble Med. Pctl. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. Pctl. w. Forecast'], seasonal_general_stats[index]['Ensemble Med. Pctl. w. Forecast']],
             ],
             "Probability at EoS": [
                 [null, 'Sel. Yrs.', 'Clim.'],
