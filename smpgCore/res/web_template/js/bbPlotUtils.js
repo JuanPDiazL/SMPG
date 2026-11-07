@@ -185,6 +185,39 @@ const chartColors = {
     'E. w. Forecast (33, 67) Pctl.': '#0000FF',
 }
 
+// Table cells' colors (see Table.update()), by row label: one color for the row's values, or
+// colors by column header; a column header ("Sel. Yrs.") takes its own entry. They're the
+// matching chart series' colors, so a value has its line's color
+const tableColors = {
+    'Sel. Yrs.': chartColors['LTA (Sel. Yrs.)'],
+    'Clim.': chartColors['LTA'],
+    'LTA': { 'Sel. Yrs.': chartColors['LTA (Sel. Yrs.)'], 'Clim.': chartColors['LTA'] },
+    '% of Average': { 'Sel. Yrs.': chartColors['LTA (Sel. Yrs.)'], 'Clim.': chartColors['LTA'] },
+    'Current Accumulation': chartColors['Current Season Accumulation'],
+    'Accumulation with Forecast': chartColors['Forecast Accumulation'],
+    'Current SOS': chartColors['Current Season'],
+    // the median SOS line's red (see .avg-sos-marker in plots.css)
+    'Median SOS of Climatology': '#FF0000',
+}
+
+/**
+ * Returns a table cell's color from tableColors, or null.
+ * @param {Array} row - The cell's row: its label, then its values; a header row's label is null.
+ * @param {number} column - The cell's position in the row (0 is the label).
+ * @param {Array|undefined} headerRow - The table's header row ([null, 'Sel. Yrs.', 'Clim.']).
+ * @returns {string|null}
+ */
+function getTableCellColor(row, column, headerRow) {
+    if (column === 0) { return null; }
+    if (row[0] === null) {
+        const color = tableColors[row[column]];
+        return typeof color === "string" ? color : null;
+    }
+    const color = tableColors[row[0]];
+    if (typeof color === "string") { return color; }
+    return color?.[headerRow?.[column]] ?? null;
+}
+
 // Each series' line styles (see plots.css): a series given a class has bb-target-<class> on its
 // group (see BBPlot.update())
 const chartClasses = {

@@ -345,13 +345,17 @@ class Table {
                     .attr("colspan", d => data[d][0].length)
                         .text(d => d);
             
+                    // each cell with its color, from its row and column (see tableColors)
                     table.append("tbody").selectAll("tr")
-                        .data(d => data[d])
+                        .data(d => data[d].map(row => ({ row, headerRow: data[d].find(r => r[0] === null) })))
                         .join("tr").selectAll("td")
-                            .data(d => d)
+                            .data(({ row, headerRow }) => row.map((value, column) =>
+                                ({ value, color: getTableCellColor(row, column, headerRow) })))
                             .join("td")
+                                .classed("table-colored", d => d.color !== null)
+                                .style("--table-color", d => d.color)
                                 .call(td => {
-                                    td.text((d) => {
+                                    td.text(({ value: d }) => {
                                             if (typeof d === 'number' && !isNaN(d)) {
                                                 return d.toFixed(0);
                                             } else if (d === null) {

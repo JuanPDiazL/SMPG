@@ -44,6 +44,15 @@
     font-size: x-small;
     box-shadow: #000 1px 1px 1px;
 }
+/* A value or header in its chart line's color (see tableColors); mixed with white in dark mode,
+   so dark blue and red stay readable on the dark table */
+.chart-table td.table-colored {
+    color: var(--table-color);
+}
+.darkmode .chart-table td.table-colored {
+    /* at least 5:1 contrast with the dark table for every color in tableColors */
+    color: color-mix(in srgb, var(--table-color) 45%, white);
+}
 
 /* Plot internal elements */
 
