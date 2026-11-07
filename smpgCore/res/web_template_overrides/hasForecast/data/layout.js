@@ -84,7 +84,7 @@ var layout = {
                 "help": "ensemble-with-forecast",
                 "showHeader": true,
                 "table": {
-                    "tableShown": true
+                    "tableShown": false
                 }
             },
             "gridstackOpts": {
