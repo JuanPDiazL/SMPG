@@ -1,6 +1,9 @@
 // This file contains the classes and code to construct the widgets that
 // contain the plots, maps, and other type of data
 
+// How long a chart's load can take before the next one runs anyway (see BBPlot.update()), in ms
+const BB_LOAD_TIMEOUT = 5000;
+
 class BBPlot {
     constructor(containerElement, dataGetter, xNames, xsDefinition, 
         xsDataRelation, chartTypes, 
@@ -19,6 +22,11 @@ class BBPlot {
         // Optional: returns {seriesName: [className, ...]} for the data of a place, added to the
         // series' classes from chartClasses (see update())
         this.seriesClassesGetter = null;
+        // One load at a time (see update()): the load running, and the place and the resize
+        // waiting for it
+        this.runningLoad = null;
+        this.pendingUpdate = null;
+        this.pendingResize = false;
 
         this.allContainer = this.containerElement.append("div")
             .attr("class", "plot-context-container");
@@ -163,7 +171,20 @@ class BBPlot {
         this.chartAreaListener = listener;
     }
 
+    /**
+     * Loads a place's data. billboard.js applies a load's settings (its xs, classes and colors) at
+     * once, but loads its data later (after an idle callback, to unload the previous data first),
+     * so overlapping loads mix one load's settings with another's data: bars without data (a
+     * "can't access property 'value'" error in redrawBar) or an earlier place's series left on the
+     * chart. So one load runs at a time: an update during a load waits for it, and only the latest
+     * one waiting is loaded. A redraw before the data arrives breaks the chart too (see resize()).
+     * @param {string} index - The place.
+     */
     update(index) {
+        if (this.runningLoad) {
+            this.pendingUpdate = { index };
+            return;
+        }
         const data = this.dataGetter(index);
         // NaN/null only series are removed from the data
         for (const id of Object.keys(data)) {
@@ -185,6 +206,10 @@ class BBPlot {
             ...xsDefinition,
             ...data,
         };
+        const load = { index };
+        // A load that never ends (e.g. an error inside billboard.js) doesn't block the next ones
+        load.timeout = setTimeout(() => this.endLoad(load), BB_LOAD_TIMEOUT);
+        this.runningLoad = load;
         this.plot.load({
             json: jsonData,
             xs: xs,
@@ -195,8 +220,30 @@ class BBPlot {
             unload: true,
             // The legend is drawn with the data, so the chart is sized again once it's there
             resizeAfter: true,
+            done: () => this.endLoad(load),
         });
-        this.plot.xgrids(this.gridLinesGetter(index));
+    }
+
+    /**
+     * Ends a load (see update()): draws its grid lines, with its data, resizes the chart if a
+     * resize waited for it, then loads the update waiting, if any.
+     * @param {Object} load - The load, {index, timeout}; another than the one running is ignored.
+     */
+    endLoad(load) {
+        if (load !== this.runningLoad) { return; }
+        clearTimeout(load.timeout);
+        this.runningLoad = null;
+        if (this.destroyed) { return; }
+        this.plot.xgrids(this.gridLinesGetter(load.index));
+        if (this.pendingResize) {
+            this.pendingResize = false;
+            this.plot.resize();
+        }
+        const pending = this.pendingUpdate;
+        this.pendingUpdate = null;
+        if (pending) {
+            this.update(pending.index);
+        }
     }
 
     /**
@@ -224,11 +271,25 @@ class BBPlot {
         return classes;
     }
 
+    /**
+     * Resizes the chart to its container. During a load it waits for the load's end: a redraw
+     * after billboard.js unloaded the previous data but before the new data arrives leaves bars
+     * and lines without data ("can't access property 'value'" or "'id'" errors when the data is
+     * drawn).
+     * @param {Array} [size] - Unused; the chart takes its container's size.
+     */
     resize(size) {
+        if (this.runningLoad) {
+            this.pendingResize = true;
+            return;
+        }
         this.plot.resize();
     }
 
     destroy() {
+        this.destroyed = true;
+        clearTimeout(this.runningLoad?.timeout);
+        this.pendingUpdate = null;
         this.resizeObserver.disconnect();
         this.plot.destroy();
     }
