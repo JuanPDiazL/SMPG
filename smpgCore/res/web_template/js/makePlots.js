@@ -26,6 +26,7 @@ function makeAccumulationsPlot(containerElement) {
             'Median': seasonal_long_term_stats[index]['Median'],
             'LTA±20%': arrayMoreLess20(seasonal_long_term_stats[index]['LTA']),
             'LTA': seasonal_long_term_stats[index]['LTA'],
+            'LTA (Sel. Yrs.)': selected_seasons_long_term_stats[index]['LTA'],
             'Current Season Accumulation':place_long_term_stats[index]['Current Season Accumulation']
             .slice(monitoringOffset),
             'LTA±St. Dev.': [

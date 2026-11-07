@@ -337,7 +337,7 @@ class Place:
 
         # calculate the stats
         self.selected_seasons_long_term_stats = pd.DataFrame.from_dict({
-            # 'LTA': selected_avg,
+            'LTA': selected_avg,
             # 'Median': selected_med,
             'Ensemble Med.': selected_ensemble_med,
             'Ensemble Med. w. Forecast': selected_ensemble_med_with_forecast,
