@@ -20,7 +20,7 @@ up to the 2nd threshold.</li>
 candidate period's climatology average, and the 2nd as a percent of the climatology average of the
 second period after it. The fixed thresholds in mm are used as a fallback.</li>
 </ul>
-<p>A candidate that isn't confirmed is a <b>Possible Start</b>. The <b>SoS of Historical Avg.</b>
+<p>A candidate that isn't confirmed is a <b>Possible Start</b>. The <b>Median SoS of Climatology</b>
 is the median start of the climatology years that started. The <b>SoS Anomaly</b> is how many
 periods the current start is early or late compared with it; <b>Yet to Start</b> while there is
 no start to compare.</p>`;
@@ -69,8 +69,8 @@ compared with the climatology average. The shaded area is the monitoring season.
 <li><b>Current Season</b> (blue bars): the rainfall of each period.</li>
 <li><b>Forecast</b> (pink bars): the forecast rainfall of the next periods.</li>
 <li><b>Climatology Average</b> (red): the average rainfall of each period over the climatology years.</li>
-<li>Vertical lines: <b>SoS of Current Season</b> or <b>Possible SoS</b> (blue), <b>SoS of
-Historical Avg.</b> (red) and, with a forecast, <b>SoS of Forecast</b> (pink).</li>
+<li>Vertical lines: <b>SoS of Current Season</b> or <b>Possible SoS</b> (blue), <b>Median SoS
+of Climatology</b> (red) and, with a forecast, <b>SoS of Forecast</b> (pink).</li>
 </ul>
 <p><b>Tables.</b> <b>Seasonal Analysis</b>: the LTA and standard deviation of the season totals,
 for the selected years (<b>Sel. Yrs.</b>) and the climatology years (<b>Clim.</b>). <b>Rainy Season

@@ -146,7 +146,7 @@ function makeCurrentYearPlot(containerElement) {
         if (place_general_stats[index]['Start of Season of Avg. Raw'] !== null) {
             gridLines.push({
             value: place_general_stats[index]['Start of Season of Avg. Raw'],
-            text: 'SoS of Historical Avg.',
+            text: 'Median SoS of Climatology',
             position: "middle",
             class: "sos-marker avg-sos-marker"
             });
@@ -208,7 +208,7 @@ function makeCurrentYearTable(containerElement) {
         if (hasSos && ignoreCurrentSeason) {
             // only the historical start of season is defined without a current season
             data["Rainy Season Status"] = [
-                ['SoS of Historical Avg.', place_general_stats[index]['Start of Season of Avg.']],
+                ['Median SoS of Climatology', place_general_stats[index]['Start of Season of Avg.']],
             ];
         } else if (hasSos) {
             data["Rainy Season Status"] = [
