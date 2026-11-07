@@ -9,7 +9,7 @@
 const HELP_GUIDE_URL = "https://help.fews.net/en/tools/v3/smpg-tool";
 
 // Shared by the cards that show the start of season
-const HELP_SOS_RULE = `<p><b>How the start of season (SoS) is detected.</b> The rule runs over the
+const HELP_SOS_RULE = `<p><b>How the start of season (SOS) is detected.</b> The rule runs over the
 monitoring season, with the same thresholds for the current season and for every climatology year,
 as set in the plugin's Rainy Season Detection Preferences.</p>
 <ul>
@@ -20,8 +20,8 @@ up to the 2nd threshold.</li>
 candidate period's climatology average, and the 2nd as a percent of the climatology average of the
 second period after it. The fixed thresholds in mm are used as a fallback.</li>
 </ul>
-<p>A candidate that isn't confirmed is a <b>Possible Start</b>. The <b>Median SoS of Climatology</b>
-is the median start of the climatology years that started. The <b>SoS Anomaly</b> is how many
+<p>A candidate that isn't confirmed is a <b>Possible Start</b>. The <b>Median SOS of Climatology</b>
+is the median start of the climatology years that started. The <b>SOS anomaly</b> is how many
 periods the current start is early or late compared with it; <b>Yet to Start</b> while there is
 no start to compare.</p>`;
 
@@ -41,9 +41,9 @@ percentiles of the scenarios' totals.</li>
 <p><b>Tables.</b> <b>Sel. Yrs.</b> builds the scenarios with the selected years, <b>Clim.</b> with
 the climatology years.</p>
 <ul>
-<li><b>Projection at EoS</b>: the scenarios' median, the season's LTA, the median as a percent of
+<li><b>EOS Statistics</b>: the scenarios' median, the season's LTA, the median as a percent of
 the LTA, and the median's percentile among the season totals of every past season.</li>
-<li><b>Probability at EoS</b>: the share of scenarios that end the season below normal (under the
+<li><b>Probability at EOS</b>: the share of scenarios that end the season below normal (under the
 33rd percentile of the climatology years' season totals), normal (from the 33rd up to the 67th) or
 above normal (the 67th or more). Every scenario counts the same.</li>
 </ul>`;
@@ -69,12 +69,12 @@ compared with the climatology average. The shaded area is the monitoring season.
 <li><b>Current Season</b> (blue bars): the rainfall of each period.</li>
 <li><b>Forecast</b> (pink bars): the forecast rainfall of the next periods.</li>
 <li><b>Climatology Average</b> (red): the average rainfall of each period over the climatology years.</li>
-<li>Vertical lines: <b>SoS of Current Season</b> or <b>Possible SoS</b> (blue), <b>Median SoS
-of Climatology</b> (red) and, with a forecast, <b>SoS of Forecast</b> (pink).</li>
+<li>Vertical lines: <b>SOS of Current Season</b> or <b>Possible SOS</b> (blue), <b>Median SOS
+of Climatology</b> (red) and, with a forecast, <b>SOS of Forecast</b> (pink).</li>
 </ul>
 <p><b>Tables.</b> <b>Seasonal Analysis</b>: the LTA and standard deviation of the season totals,
-for the selected years (<b>Sel. Yrs.</b>) and the climatology years (<b>Clim.</b>). <b>Rainy Season
-Status</b>: the start of season and its anomaly, also with the forecast.</p>
+for the selected years (<b>Sel. Yrs.</b>) and the climatology years (<b>Clim.</b>). <b>Start of
+Season (SOS)</b>: the current SOS and its anomaly, also with the forecast.</p>
 ${HELP_SOS_RULE}`,
     },
     "seasonal-accumulations": {
@@ -91,11 +91,11 @@ season, compared with past seasons.</p>
 <li>Dots at the end of the season: <b>LTA±St. Dev.</b> (green) and <b>(33, 67) Pctl.</b> (black),
 from the climatology years' season totals.</li>
 </ul>
-<p><b>Table.</b> <b>LTA up to Current Period</b>: the average accumulation up to the current period,
-for the selected years (<b>Sel. Yrs.</b>) and the climatology years (<b>Clim.</b>). <b>Total up to
-Current Period Pct. of Avg.</b>: the current accumulation as a percent of it. Then the current
-accumulation, and with a forecast, the accumulation including it. Without a current season, the
-table shows the LTA at the end of the season.</p>`,
+<p><b>Table.</b> <b>LTA</b>: the average accumulation up to the current period, for the selected
+years (<b>Sel. Yrs.</b>) and the climatology years (<b>Clim.</b>). <b>% of Average</b>: the current
+accumulation as a percent of it. <b>Current Accumulation</b>: the rainfall so far, and with a
+forecast, <b>Accumulation with Forecast</b>: the same, with the forecast inside the season added.
+Without a current season, the table shows the LTA at the end of the season.</p>`,
     },
     "seasonal-accumulation-percentiles": {
         title: "Seasonal Accumulation Percentiles",

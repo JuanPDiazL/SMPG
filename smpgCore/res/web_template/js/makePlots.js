@@ -70,7 +70,7 @@ function makeAccumulationsTable(containerElement) {
         if (ignoreCurrentSeason) {
             // without a current season, the assessment is at the end of the season
             return {
-                "Assessment at EoS": [
+                "Assessment at EOS": [
                     [null, 'Sel. Yrs.', 'Clim.'],
                     ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
                 ],
@@ -80,15 +80,15 @@ function makeAccumulationsTable(containerElement) {
         const assesmentTitle = `Assessment at Current ${period_unit}`;
         data[assesmentTitle] = [
             [null, 'Sel. Yrs.', 'Clim.'],
-            [`LTA up to Current Period`, selected_seasons_general_stats[index]['LTA up to Current Period'], seasonal_general_stats[index]['LTA up to Current Period']],
-            [`Total up to Current Period Pct. of Avg.`, selected_seasons_general_stats[index]['Total up to Current Period Pct. of Avg.'], seasonal_general_stats[index]['Total up to Current Period Pct. of Avg.']],
+            [`LTA`, selected_seasons_general_stats[index]['LTA up to Current Period'], seasonal_general_stats[index]['LTA up to Current Period']],
+            [`% of Average`, selected_seasons_general_stats[index]['Total up to Current Period Pct. of Avg.'], seasonal_general_stats[index]['Total up to Current Period Pct. of Avg.']],
         ]
         data["[hide header]"] = [
-            [`Current Accumulation to Present`, place_general_stats[index]['Current Accumulation to Present']],
+            [`Current Accumulation`, place_general_stats[index]['Current Accumulation to Present']],
         ];
         if(hasForecast) {
             data["[hide header]"].push(
-            [`Current Accumulation to Forecast`, place_general_stats[index]['Current Accumulation to Forecast']]);
+            [`Accumulation with Forecast`, place_general_stats[index]['Current Accumulation to Forecast']]);
         }
 
         return data;
@@ -145,7 +145,7 @@ function makeCurrentYearPlot(containerElement) {
         if (place_general_stats[index]['Start of Season of Avg. Raw'] !== null) {
             gridLines.push({
             value: place_general_stats[index]['Start of Season of Avg. Raw'],
-            text: 'Median SoS of Climatology',
+            text: 'Median SOS of Climatology',
             position: "middle",
             class: "sos-marker avg-sos-marker"
             });
@@ -155,7 +155,7 @@ function makeCurrentYearPlot(containerElement) {
         ) {
             gridLines.push({
             value: place_general_stats[index]['Start of Season Raw'],
-            text: sosCurrentClass.startsWith('Possible Start') ? 'Possible SoS' : 'SoS of Current Season',
+            text: sosCurrentClass.startsWith('Possible Start') ? 'Possible SOS' : 'SOS of Current Season',
             position: "start",
             class: "sos-marker current-sos-marker"
             });
@@ -167,7 +167,7 @@ function makeCurrentYearPlot(containerElement) {
         ) {
             gridLines.push({
             value: place_general_stats[index]['Forecast Start of Season Raw'],
-            text: sosForecastClass.startsWith('Possible Start') ? 'Possible SoS of Forecast' : 'SoS of Forecast',
+            text: sosForecastClass.startsWith('Possible Start') ? 'Possible SOS of Forecast' : 'SOS of Forecast',
             position: "start",
             class: "sos-marker forecast-sos-marker"
             });
@@ -206,17 +206,17 @@ function makeCurrentYearTable(containerElement) {
         }
         if (hasSos && ignoreCurrentSeason) {
             // only the historical start of season is defined without a current season
-            data["Rainy Season Status"] = [
-                ['Median SoS of Climatology', place_general_stats[index]['Start of Season of Avg.']],
+            data["Start of Season (SOS)"] = [
+                ['Median SOS of Climatology', place_general_stats[index]['Start of Season of Avg.']],
             ];
         } else if (hasSos) {
-            data["Rainy Season Status"] = [
-                ['SoS', place_general_stats[index]['Start of Season']],
-                ['SoS Anomaly', place_general_stats[index]['Start of Season Anomaly']],
+            data["Start of Season (SOS)"] = [
+                ['Current SOS', place_general_stats[index]['Start of Season']],
+                ['SOS anomaly', place_general_stats[index]['Start of Season Anomaly']],
             ];
             if (hasForecast) {
-                data["Rainy Season Status"].push(['Forecast SoS', place_general_stats[index]['Forecast Start of Season']]);
-                data["Rainy Season Status"].push(['Forecast SoS Anomaly', place_general_stats[index]['Forecast Start of Season Anomaly']]);
+                data["Start of Season (SOS)"].push(['SOS with forecast', place_general_stats[index]['Forecast Start of Season']]);
+                data["Start of Season (SOS)"].push(['SOS anomaly with forecast', place_general_stats[index]['Forecast Start of Season Anomaly']]);
             }
         }
         return data;
@@ -290,14 +290,14 @@ function makeEnsemblePlot(containerElement) {
 function makeEnsembleTable(containerElement) {
     const getAccumulationsCurrentTableData = (index) => {
         return {
-            "Projection at EoS": [
+            "EOS Statistics": [
                 [null, 'Sel. Yrs.', 'Clim.'],
                 ['Ensemble Med.', selected_seasons_general_stats[index]['Ensemble Med.'], seasonal_general_stats[index]['Ensemble Med.']],
                 ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
                 ['Ensemble Med. Pct. of Avg.', selected_seasons_general_stats[index]['Ensemble Med. Pct. of Avg.'], seasonal_general_stats[index]['Ensemble Med. Pct. of Avg.']],
                 ['Ensemble Med. Pctl.', selected_seasons_general_stats[index]['Ensemble Med. Pctl.'], seasonal_general_stats[index]['Ensemble Med. Pctl.']],
             ],
-            "Probability at EoS": [
+            "Probability at EOS": [
                 [null, 'Sel. Yrs.', 'Clim.'],
                 ['Above Normal', selected_seasons_general_stats[index]['Probability Above Normal'], seasonal_general_stats[index]['Probability Above Normal']],
                 ['Normal', selected_seasons_general_stats[index]['Probability of Normal'], seasonal_general_stats[index]['Probability of Normal']],
@@ -384,14 +384,14 @@ function makeEnsembleWithForecastPlot(containerElement) {
 function makeEnsembleWithForecastTable(containerElement) {
     const getAccumulationsCurrentTableData = (index) => {
         return {
-            "Projection at EoS": [
+            "EOS Statistics": [
                 [null, 'Sel. Yrs.', 'Clim.'],
                 ['Ensemble Med. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. w. Forecast'], seasonal_general_stats[index]['Ensemble Med. w. Forecast']],
                 ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
                 ['Ensemble Med. w Forecast Pct. of Avg.', selected_seasons_general_stats[index]['Ensemble Med. w Forecast Pct. of Avg.'], seasonal_general_stats[index]['Ensemble Med. w Forecast Pct. of Avg.']],
                 ['Ensemble Med. Pctl. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. Pctl. w. Forecast'], seasonal_general_stats[index]['Ensemble Med. Pctl. w. Forecast']],
             ],
-            "Probability at EoS": [
+            "Probability at EOS": [
                 [null, 'Sel. Yrs.', 'Clim.'],
                 ['Above Normal', selected_seasons_general_stats[index]['Probability Above Normal w. Forecast'], seasonal_general_stats[index]['Probability Above Normal w. Forecast']],
                 ['Normal', selected_seasons_general_stats[index]['Probability of Normal w. Forecast'], seasonal_general_stats[index]['Probability of Normal w. Forecast']],

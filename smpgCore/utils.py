@@ -580,7 +580,7 @@ def get_sos_fixed(year_data: pd.Series, first_value, second_value):
     def confirming_condition(dq): 
         return dq[1] + dq[2] >= second_value
     
-    for i, value in enumerate(year_data): # check year data for SoS or candidates
+    for i, value in enumerate(year_data): # check year data for SOS or candidates
         dq.append(value)
         if len(dq) < 3: continue # avoid out of bounds
         if candidate_condition(dq):
@@ -639,7 +639,7 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
     def fallback_confirming_condition(dq):
         return (dq[1] + dq[2] >= fixed_second_value)
     
-    for i in range(len(year_data)): # check year data for SoS or candidates
+    for i in range(len(year_data)): # check year data for SOS or candidates
         dq.append(year_data.iloc[i]); dq_c.append(clim_avg.iloc[i])
         if len(dq) < 3: continue # avoid out of bounds
         if candidate_condition(dq, dq_c):
@@ -691,7 +691,7 @@ def get_sos_pct_clim_avg(year_data: pd.Series, clim_avg: pd.Series, first_value,
 #     def confirming_condition(dq): 
 #         return ((dq[3] + dq[2]) / dq[1] >= 1 + (second_value / 100))
     
-#     for i in range(len(year_data)): # check year data for SoS or candidates
+#     for i in range(len(year_data)): # check year data for SOS or candidates
 #         dq.append(year_data[i])
 #         if len(dq) < 4: continue # avoid out of bounds
 #         if candidate_condition(dq): 

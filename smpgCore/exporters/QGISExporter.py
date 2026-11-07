@@ -183,7 +183,7 @@ def generate_layers_from_csv(map_layer: QgsVectorLayer, join_field: str, selecte
         add_to_project(item["layer"])
         data[key] = item
     
-    # Legend for SoS and EOS
+    # Legend for SOS and EOS
     base_sos = list(styles["sos_eos_detection_base"]["legend"].values())[2:] # variable part of the sos legend
     monitoring_ids = dataset_properties.sub_season_monitoring_ids
     size_legend = min(len(base_sos), len(monitoring_ids))
