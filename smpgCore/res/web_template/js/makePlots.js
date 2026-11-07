@@ -7,7 +7,8 @@ function makeAccumulationsPlot(containerElement) {
     let xsDefinition = {
         'default_xs': ascendingArray(xNames.length),
         'scatter_xs': [xNames.length - 1, xNames.length - 1],
-        'forecast_xs': ascendingArray(Math.max(parameters.forecast_length + 1, 1), currentMonitoringLength - 1),
+        // the forecast inside the season, from the current period (see forecast_monitoring_length)
+        'forecast_xs': ascendingArray(datasetProperties.forecast_monitoring_length + 1, currentMonitoringLength - 1),
     };
     const xsDataRelation = {
             'Forecast Accumulation': 'forecast_xs',
@@ -308,7 +309,8 @@ function makeEnsembleWithForecastPlot(containerElement) {
     const xsDefinition = {
         'default_xs': ascendingArray(xNames.length),
         'scatter_xs': [xNames.length - 1, xNames.length - 1],
-        'forecast_xs': ascendingArray(Math.max(parameters.forecast_length + 1, 1), currentMonitoringLength - 1),
+        // the forecast inside the season, from the current period (see forecast_monitoring_length)
+        'forecast_xs': ascendingArray(datasetProperties.forecast_monitoring_length + 1, currentMonitoringLength - 1),
     };
     const xsDataRelation = {
         'Forecast Accumulation': 'forecast_xs',

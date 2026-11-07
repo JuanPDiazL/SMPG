@@ -84,8 +84,14 @@ class Dataset:
         self.properties.place_ids = self.dataset.index.astype(str).tolist()
         self.properties.season_start_index = default_sub_seasons.index(self.parameters.season_start)
         self.properties.season_end_index = default_sub_seasons.index(self.parameters.season_end)+1
+        # the observed periods end where the forecast starts, and both are cut at the season's end,
+        # so a forecast that runs past the season's end doesn't shorten the observed periods
+        observed_length = max(self.properties.current_season_length - self.parameters.forecast_length, 0)
         self.properties.current_season_trim_index_with_forecast = min(self.properties.current_season_length, self.properties.season_end_index)
-        self.properties.current_season_trim_index = self.properties.current_season_trim_index_with_forecast - parameters.forecast_length
+        self.properties.current_season_trim_index = min(observed_length, self.properties.season_end_index)
+        # the forecast periods inside the season, which its statistics with the forecast add
+        self.properties.forecast_monitoring_length = max(self.properties.current_season_trim_index_with_forecast
+            - max(self.properties.current_season_trim_index, self.properties.season_start_index), 0)
 
         # create a dictionary with the places
         self.places: dict[str, Place] = {}
@@ -163,6 +169,18 @@ class Place:
         current_season_monitoring_with_forecast = current_season_with_forecast[parent.properties.season_start_index:parent.properties.current_season_trim_index_with_forecast]
         current_cumsum_mon = current_season_monitoring.cumsum()
         current_cumsum_mon_with_forecast = current_season_monitoring_with_forecast.cumsum()
+        # the forecast inside the season (the season's statistics with the forecast add only this
+        # part); NaN without a forecast, 0 when it starts after the season's end
+        forecast_monitoring_length = parent.properties.forecast_monitoring_length
+        forecast_in_season = current_season_with_forecast[
+            max(parent.properties.current_season_trim_index, parent.properties.season_start_index)
+            :parent.properties.current_season_trim_index_with_forecast]
+        if parent.parameters.forecast_length == 0:
+            forecast_in_season_total = np.nan
+        elif len(forecast_in_season) > 0:
+            forecast_in_season_total = forecast_in_season.cumsum().iloc[-1]
+        else:
+            forecast_in_season_total = 0.0
 
         # an empty current season leaves the values that need a current period as NaN,
         # except when only the selected years are used: then the current period is the end of the season
@@ -176,7 +194,7 @@ class Place:
             current_monitoring_index = None
         has_current_period = current_monitoring_index is not None
         current_index = len(current_season) - 1
-        forecast_monitoring_index = current_monitoring_index + parent.parameters.forecast_length if has_current_period else None
+        forecast_monitoring_index = current_monitoring_index + forecast_monitoring_length if has_current_period else None
         forecast_start_index = current_index + 1
         forecast_end_index = current_index + parent.parameters.forecast_length
 
@@ -256,7 +274,7 @@ class Place:
 
         clim_avg_upto_current = clim_avg.iloc[current_monitoring_index] if has_current_period else np.nan
         if has_current_period and not np.isnan(forecast_values.iloc[-1]):
-            clim_avg_upto_forecast = clim_avg.iloc[current_monitoring_index + parent.parameters.forecast_length]
+            clim_avg_upto_forecast = clim_avg.iloc[current_monitoring_index + forecast_monitoring_length]
         else:
             clim_avg_upto_forecast = np.nan
 
@@ -278,7 +296,7 @@ class Place:
             'Ensemble Med. w. Forecast': clim_ensemble_med_with_forecast.iloc[-1],
             'LTA up to Current Period': clim_avg_upto_current,
             'Total up to Current Period Pct. of Avg.': (current_total/clim_avg_upto_current)*100,
-            'Total up to Forecast Pct. of Avg.': ((current_total+forecast_cumsum.iloc[-1])/clim_avg_upto_forecast)*100,
+            'Total up to Forecast Pct. of Avg.': ((current_total+forecast_in_season_total)/clim_avg_upto_forecast)*100,
             'Ensemble Med. Pct. of Avg.': (clim_ensemble_med.iloc[-1]/clim_avg.iloc[-1])*100,
             'Ensemble Med. w Forecast Pct. of Avg.': (clim_ensemble_med_with_forecast.iloc[-1]/clim_avg.iloc[-1])*100,
             'Ensemble Med. Pctl.': percentiles_from_values(seasonal_sums, [clim_ensemble_med.iloc[-1]])[0],
@@ -313,7 +331,7 @@ class Place:
 
         selected_avg_upto_current = selected_avg.iloc[current_monitoring_index] if has_current_period else np.nan
         if has_current_period and not np.isnan(forecast_values.iloc[-1]):
-            selected_avg_upto_forecast = selected_avg.iloc[current_monitoring_index + parent.parameters.forecast_length]
+            selected_avg_upto_forecast = selected_avg.iloc[current_monitoring_index + forecast_monitoring_length]
         else:
             selected_avg_upto_forecast = np.nan
 
@@ -368,7 +386,7 @@ class Place:
             'Current Season Pctl.': percentiles_from_values(self.seasonal_sums_upto_current.to_numpy(), 
                 [current_total])[0],
             'Forecast Pctl.': percentiles_from_values(self.seasonal_sums_upto_forecast.to_numpy(), 
-                [current_total + forecast_cumsum.iloc[-1]])[0],
+                [current_total + forecast_in_season_total])[0],
 
             'Current Period Pct. of Avg.': (current_season.iloc[-1] / climatology_avg.iloc[current_index])*100 if len(current_season) > 0 else np.nan,
             'Forecast 1st Period Pct. of Avg.': forecast_pct_avg[0],
@@ -377,7 +395,7 @@ class Place:
             'Forecast Accumulation Pct. of Avg.': (forecast_cumsum.iloc[-1] / climatology_avg.iloc[forecast_start_index:forecast_end_index+1].sum())*100,
 
             'Current Accumulation to Present': current_total,
-            'Current Accumulation to Forecast': current_total + forecast_cumsum.iloc[-1],
+            'Current Accumulation to Forecast': current_total + forecast_in_season_total,
 
             'Seasonal 3 Pctl.': seasonal_pctls[0],
             'Seasonal 6 Pctl.': seasonal_pctls[1],

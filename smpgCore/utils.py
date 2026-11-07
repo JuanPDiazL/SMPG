@@ -65,6 +65,7 @@ class Properties:
         self.season_end_index: int
         self.current_season_trim_index: int
         self.current_season_trim_index_with_forecast: int
+        self.forecast_monitoring_length: int # computation property, the forecast periods inside the season
 
         if properties_dict is not None:
             self.update(properties_dict)
