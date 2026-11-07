@@ -44,8 +44,24 @@ function makeAccumulationsPlot(containerElement) {
         };
         return data;
     };
+    // The current period, the last one with observed data, when it's in the monitoring season
+    // (from its place in the year, so also when the observed data ends before or after the season)
+    const getAccumulationsGridLines = () => {
+        // currentLength is -1 when the whole year has data (see getCurrentPeriodId())
+        const length = currentLength >= 0 ? currentLength : datasetProperties.sub_season_ids.length;
+        const currentX = length - 1 - monitoringOffset;
+        if (ignoreCurrentSeason || length === 0 || currentX < 0 || currentX >= xNames.length) {
+            return [];
+        }
+        return [{
+            value: currentX,
+            text: `Current ${period_unit.toLowerCase()} (${getCurrentPeriodId()})`,
+            position: "end",
+            class: "current-period-marker",
+        }];
+    };
     const plot = new BBPlot(containerElement, getAccumulationsPlotData, xNames, 
-        xsDefinition, xsDataRelation, plotTypes);
+        xsDefinition, xsDataRelation, plotTypes, getAccumulationsGridLines);
     return plot;
 }
 

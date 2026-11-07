@@ -55,7 +55,8 @@
     display: inline-block;
 }
 
-.sos-marker text {
+.sos-marker text,
+.current-period-marker text {
     paint-order: stroke;
     fill: #000f !important;
     stroke: #fffe !important;
@@ -77,6 +78,16 @@
 .avg-sos-marker line {
     stroke: red !important;
     stroke-dashoffset: 10;
+}
+/* The current period on the Seasonal Accumulations plot (its label is styled with the SoS
+   markers'); the line is light in dark mode, so it shows on the dark background */
+.current-period-marker line {
+    stroke: #222 !important;
+    stroke-width: 2px;
+    stroke-dasharray: 7 4;
+}
+.darkmode .current-period-marker line {
+    stroke: #ddd !important;
 }
 
 /* The season monitoring window on the Current Year Status plot; the label is black with an

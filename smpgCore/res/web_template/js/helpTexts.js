@@ -87,6 +87,7 @@ season, compared with past seasons.</p>
 <li><b>LTA</b> (red) and <b>LTA±20%</b> (band): the average accumulation of the climatology years.</li>
 <li><b>Median</b> (black): their median accumulation.</li>
 <li>One thin line per selected year.</li>
+<li>Dashed vertical line: the current period, the last one with observed data.</li>
 <li>Dots at the end of the season: <b>LTA±St. Dev.</b> (green) and <b>(33, 67) Pctl.</b> (black),
 from the climatology years' season totals.</li>
 </ul>
