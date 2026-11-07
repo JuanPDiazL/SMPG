@@ -3,6 +3,9 @@
 
 // How long a chart's load can take before the next one runs anyway (see BBPlot.update()), in ms
 const BB_LOAD_TIMEOUT = 5000;
+// How long a chart's resize can take before the next load runs anyway (see BBPlot.resize()), in
+// ms; billboard.js ends a resize 200 ms after it starts
+const BB_RESIZE_TIMEOUT = 3000;
 
 class BBPlot {
     constructor(containerElement, dataGetter, xNames, xsDefinition, 
@@ -22,9 +25,10 @@ class BBPlot {
         // Optional: returns {seriesName: [className, ...]} for the data of a place, added to the
         // series' classes from chartClasses (see update())
         this.seriesClassesGetter = null;
-        // One load at a time (see update()): the load running, and the place and the resize
-        // waiting for it
+        // One load or resize at a time (see update() and resize()): the load and the resize
+        // running, and the place and the resize waiting
         this.runningLoad = null;
+        this.runningResize = null;
         this.pendingUpdate = null;
         this.pendingResize = false;
 
@@ -54,6 +58,8 @@ class BBPlot {
             },
             // New data can change the axes' widths, so where the plot area starts
             onrendered: () => this.chartAreaListener?.(),
+            // The end of a resize (see resize())
+            onresized: () => this.endResize(this.runningResize),
         };
         this.plot = bb.generate(
             _.merge(
@@ -177,11 +183,12 @@ class BBPlot {
      * so overlapping loads mix one load's settings with another's data: bars without data (a
      * "can't access property 'value'" error in redrawBar) or an earlier place's series left on the
      * chart. So one load runs at a time: an update during a load waits for it, and only the latest
-     * one waiting is loaded. A redraw before the data arrives breaks the chart too (see resize()).
+     * one waiting is loaded. A redraw before the data arrives breaks the chart too, and data drawn
+     * during a resize loses its dots (see resize()), so an update also waits for a resize.
      * @param {string} index - The place.
      */
     update(index) {
-        if (this.runningLoad) {
+        if (this.runningLoad || this.runningResize) {
             this.pendingUpdate = { index };
             return;
         }
@@ -225,8 +232,8 @@ class BBPlot {
     }
 
     /**
-     * Ends a load (see update()): draws its grid lines, with its data, resizes the chart if a
-     * resize waited for it, then loads the update waiting, if any.
+     * Ends a load (see update()): draws its grid lines, with its data, then runs the resize
+     * waiting, if any, and the update waiting, if any, after it.
      * @param {Object} load - The load, {index, timeout}; another than the one running is ignored.
      */
     endLoad(load) {
@@ -237,8 +244,17 @@ class BBPlot {
         this.plot.xgrids(this.gridLinesGetter(load.index));
         if (this.pendingResize) {
             this.pendingResize = false;
-            this.plot.resize();
+            this.resize();
         }
+        this.runPendingUpdate();
+    }
+
+    /**
+     * Loads the update waiting, if any, unless a load or a resize is running (it then waits for
+     * their end).
+     */
+    runPendingUpdate() {
+        if (this.runningLoad || this.runningResize || this.destroyed) { return; }
         const pending = this.pendingUpdate;
         this.pendingUpdate = null;
         if (pending) {
@@ -275,7 +291,9 @@ class BBPlot {
      * Resizes the chart to its container. During a load it waits for the load's end: a redraw
      * after billboard.js unloaded the previous data but before the new data arrives leaves bars
      * and lines without data ("can't access property 'value'" or "'id'" errors when the data is
-     * drawn).
+     * drawn). A resize runs until billboard.js calls onresized (200 ms later, see endResize());
+     * until then billboard.js doesn't draw dots, so data loaded meanwhile would have none: the
+     * next update waits for it.
      * @param {Array} [size] - Unused; the chart takes its container's size.
      */
     resize(size) {
@@ -283,12 +301,32 @@ class BBPlot {
             this.pendingResize = true;
             return;
         }
+        // a resize during another one restarts it (billboard.js restarts its timer too)
+        clearTimeout(this.runningResize?.timeout);
+        const resize = {};
+        // a resize that never ends (e.g. a chart not drawn yet) doesn't block the next loads
+        resize.timeout = setTimeout(() => this.endResize(resize), BB_RESIZE_TIMEOUT);
+        this.runningResize = resize;
         this.plot.resize();
+    }
+
+    /**
+     * Ends a resize (see resize()) and loads the update waiting, if any.
+     * @param {Object|null} resize - The resize; another than the one running (or none, when
+     *     billboard.js ends a resize of its own) is ignored.
+     */
+    endResize(resize) {
+        if (!resize || resize !== this.runningResize) { return; }
+        clearTimeout(resize.timeout);
+        this.runningResize = null;
+        // billboard.js clears its resizing state right after calling onresized
+        setTimeout(() => this.runPendingUpdate(), 0);
     }
 
     destroy() {
         this.destroyed = true;
         clearTimeout(this.runningLoad?.timeout);
+        clearTimeout(this.runningResize?.timeout);
         this.pendingUpdate = null;
         this.resizeObserver.disconnect();
         this.plot.destroy();
