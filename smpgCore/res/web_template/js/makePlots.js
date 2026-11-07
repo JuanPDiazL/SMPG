@@ -23,7 +23,6 @@ function makeAccumulationsPlot(containerElement) {
     const getAccumulationsPlotData = (index) => {
         let data = {
             ...selected_seasons_cumsum[index],
-            'Median': seasonal_long_term_stats[index]['Median'],
             'LTA±20%': arrayMoreLess20(seasonal_long_term_stats[index]['LTA']),
             'LTA': seasonal_long_term_stats[index]['LTA'],
             'LTA (Sel. Yrs.)': selected_seasons_long_term_stats[index]['LTA'],

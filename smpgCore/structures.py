@@ -263,7 +263,6 @@ class Place:
         clim_ensemble_sums_with_forecast = clim_seasons_ensemble_with_forecast.iloc[:, -1].to_numpy()
 
         clim_avg = clim_seasons_cumsum.mean() # cumulative average aka. LTA (long term average)
-        clim_med = clim_seasons_cumsum.median()
         clim_ensemble_med = clim_seasons_ensemble.median()
         clim_ensemble_med_with_forecast = clim_seasons_ensemble_with_forecast.median()
         # clim_ensemble_avg = clim_seasons_ensemble.mean()
@@ -284,14 +283,12 @@ class Place:
 
         self.seasonal_long_term_stats = pd.DataFrame.from_dict({
             'LTA': clim_avg,
-            'Median': clim_med,
             # 'Ensemble Med.': clim_ensemble_med,
             # 'E. LTA': clim_ensemble_avg,
         }, orient='index')
         self.seasonal_general_stats = pd.Series({
             'LTA': clim_avg.iloc[-1],
             # 'E. LTA': clim_ensemble_avg[-1],
-            # 'Median': clim_med[-1],
             'Ensemble Med.': clim_ensemble_med.iloc[-1],
             'Ensemble Med. w. Forecast': clim_ensemble_med_with_forecast.iloc[-1],
             'LTA up to Current Period': clim_avg_upto_current,

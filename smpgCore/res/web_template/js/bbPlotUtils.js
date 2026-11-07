@@ -154,7 +154,6 @@ const globalBBChartDefaultOptions = {
 const chartColors = {
     'LTA': '#FF0000',
     'LTA (Sel. Yrs.)': '#A00000',
-    'Median': '#000000',
     'LTA±20%': '#00AFE5',
     'Climatology Average': '#FF0000',
     'Ensemble Med.': '#000000',
