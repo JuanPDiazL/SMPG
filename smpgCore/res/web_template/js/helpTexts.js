@@ -74,7 +74,8 @@ of Climatology</b> (red) and, with a forecast, <b>SOS of Forecast</b> (pink).</l
 </ul>
 <p><b>Tables.</b> <b>Seasonal Analysis</b>: the LTA and standard deviation of the season totals,
 for the selected years (<b>Sel. Yrs.</b>) and the climatology years (<b>Clim.</b>). <b>Start of
-Season (SOS)</b>: the current SOS and its anomaly, also with the forecast.</p>
+Season (SOS)</b>: the current SOS and its anomaly, and the same with the forecast when the forecast
+changes them.</p>
 ${HELP_SOS_RULE}`,
     },
     "seasonal-accumulations": {

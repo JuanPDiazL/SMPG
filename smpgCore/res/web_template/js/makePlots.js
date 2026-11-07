@@ -214,9 +214,12 @@ function makeCurrentYearTable(containerElement) {
                 ['Current SOS', place_general_stats[index]['Start of Season']],
                 ['SOS anomaly', place_general_stats[index]['Start of Season Anomaly']],
             ];
-            if (hasForecast) {
-                data["Start of Season (SOS)"].push(['SOS with forecast', place_general_stats[index]['Forecast Start of Season']]);
-                data["Start of Season (SOS)"].push(['SOS anomaly with forecast', place_general_stats[index]['Forecast Start of Season Anomaly']]);
+            // the start with the forecast only when the forecast changes it
+            const stats = place_general_stats[index];
+            if (hasForecast && (stats['Forecast Start of Season'] !== stats['Start of Season']
+                || stats['Forecast Start of Season Anomaly'] !== stats['Start of Season Anomaly'])) {
+                data["Start of Season (SOS)"].push(['SOS with forecast', stats['Forecast Start of Season']]);
+                data["Start of Season (SOS)"].push(['SOS anomaly with forecast', stats['Forecast Start of Season Anomaly']]);
             }
         }
         return data;
