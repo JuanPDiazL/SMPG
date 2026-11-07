@@ -181,8 +181,9 @@ const chartColors = {
     '(33, 67) Pctl.': '#000000',
     'E. LTA±St. Dev.': '#FFA500',
     'E. LTA w. Forecast±St. Dev.': '#FFA500',
-    'E. (33, 67) Pctl.': '#0000FF',
-    'E. w. Forecast (33, 67) Pctl.': '#0000FF',
+    // purple, not the current season's blue, which the same chart uses
+    'E. (33, 67) Pctl.': '#8E24AA',
+    'E. w. Forecast (33, 67) Pctl.': '#8E24AA',
 }
 
 // Table cells' colors (see Table.update()), by row label: one color for the row's values, or

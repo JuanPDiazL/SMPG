@@ -35,7 +35,7 @@ end of the season.</p>
 <li><b>LTA</b> (red) and <b>LTA±20%</b> (band): the average accumulation of the climatology years.</li>
 <li>Dots at the end of the season: <b>LTA±St. Dev.</b> (green) and <b>(33, 67) Pctl.</b> (black),
 from the climatology years' season totals; <b>E. LTA±St. Dev.</b> (orange), the scenarios' average
-± the selected years' standard deviation; and <b>E. (33, 67) Pctl.</b> (blue), the 33rd and 67th
+± the selected years' standard deviation; and <b>E. (33, 67) Pctl.</b> (purple), the 33rd and 67th
 percentiles of the scenarios' totals.</li>
 </ul>
 <p><b>Tables.</b> <b>Sel. Yrs.</b> builds the scenarios with the selected years, <b>Clim.</b> with
