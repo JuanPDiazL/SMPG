@@ -31,6 +31,8 @@ class BBPlot {
         this.runningResize = null;
         this.pendingUpdate = null;
         this.pendingResize = false;
+        // The markers toggled on from the table (see toggleMarker()), as "<series>@<at>" keys
+        this.activeMarkers = new Set();
 
         this.allContainer = this.containerElement.append("div")
             .attr("class", "plot-context-container");
@@ -323,6 +325,29 @@ class BBPlot {
         setTimeout(() => this.runPendingUpdate(), 0);
     }
 
+    /**
+     * Turns a marker, a point of a series (see tableActions), on or off. They're kept while the
+     * place changes.
+     * @param {Object} marker - {series, at}.
+     * @returns {boolean} Whether it's now on.
+     */
+    toggleMarker(marker) {
+        const key = `${marker.series}@${marker.at}`;
+        if (!this.activeMarkers.delete(key)) {
+            this.activeMarkers.add(key);
+        }
+        return this.activeMarkers.has(key);
+    }
+
+    /**
+     * Whether a marker is on (see toggleMarker()).
+     * @param {Object} marker - {series, at}.
+     * @returns {boolean}
+     */
+    isMarkerActive(marker) {
+        return this.activeMarkers.has(`${marker.series}@${marker.at}`);
+    }
+
     destroy() {
         this.destroyed = true;
         clearTimeout(this.runningLoad?.timeout);
@@ -343,10 +368,24 @@ class BBPlot {
     }
 }
 
+// The table cell actions (see tableActions in bbPlotUtils.js), by name: run() does it, isActive()
+// tells whether it's on, for the cell's pressed state. Each receives the card and the cell's entry.
+const TABLE_ACTIONS = {
+    'toggle-marker': {
+        run: (card, marker) => card.cardElements.plot.toggleMarker(marker),
+        isActive: (card, marker) => card.cardElements.plot.isMarkerActive(marker),
+    },
+};
+
 class Table {
     constructor(containerElement, dataGetter) {
         this.containerElement = containerElement;
         this.dataGetter = dataGetter;
+        // Set by the card (see chartCard.changePlot()): its card type's tableActions, and the
+        // functions that run a cell's action and tell whether it's on; none, no cell has actions
+        this.actions = null;
+        this.onCellAction = null;
+        this.isCellActive = null;
 
         this.tableContainer = this.containerElement
             .append("div")
@@ -383,15 +422,27 @@ class Table {
                     .attr("colspan", d => data[d][0].length)
                         .text(d => d);
             
-                    // each cell with its color, from its row and column (see tableColors)
+                    // each cell with its color and action, from its row and column (see
+                    // tableColors and tableActions); a cell with an action is a button
                     table.append("tbody").selectAll("tr")
                         .data(d => data[d].map(row => ({ row, headerRow: data[d].find(r => r[0] === null) })))
                         .join("tr").selectAll("td")
-                            .data(({ row, headerRow }) => row.map((value, column) =>
-                                ({ value, color: getTableCellColor(row, column, headerRow) })))
+                            .data(({ row, headerRow }) => row.map((value, column) => ({ value,
+                                color: getTableCellColor(row, column, headerRow),
+                                action: getTableCellAction(this.actions, row, column, headerRow) })))
                             .join("td")
                                 .classed("table-colored", d => d.color !== null)
                                 .style("--table-color", d => d.color)
+                                .classed("table-action", d => d.action !== null)
+                                .attr("role", d => d.action ? "button" : null)
+                                .attr("tabindex", d => d.action ? 0 : null)
+                                .attr("aria-pressed", d => d.action ? String(!!this.isCellActive?.(d.action)) : null)
+                                .on("click", (event, d) => this.runCellAction(event, d))
+                                .on("keydown", (event, d) => {
+                                    if (event.key === "Enter" || event.key === " ") {
+                                        this.runCellAction(event, d);
+                                    }
+                                })
                                 .call(td => {
                                     td.text(({ value: d }) => {
                                             if (typeof d === 'number' && !isNaN(d)) {
@@ -404,6 +455,19 @@ class Table {
                                         });
                                 })
             });
+    }
+
+    /**
+     * Runs a cell's action, if it has one, and shows whether it's now on.
+     * @param {Event} event - The click or key press on the cell.
+     * @param {Object} cell - The cell's data, {value, color, action}.
+     */
+    runCellAction(event, cell) {
+        if (!cell.action) { return; }
+        event.preventDefault();
+        event.stopPropagation();
+        this.onCellAction?.(cell.action);
+        d3.select(event.currentTarget).attr("aria-pressed", String(!!this.isCellActive?.(cell.action)));
     }
 
     getProperties() {
@@ -597,10 +661,21 @@ class chartCard {
             this.cardElements["map"].onLegendChange(() => this.refreshTitle());
         }
         this.refreshTitle();
-        // A chart's table follows its plot area
+        // A chart's table follows its plot area, and its cells' actions act on the chart (see
+        // tableActions and TABLE_ACTIONS)
         if (this.cardElements["plot"] && this.cardElements["table"]) {
             const { plot, table } = this.cardElements;
             plot.onChartAreaChange(() => table.alignTo(plot.getChartAreaOrigin()));
+            table.actions = tableActions[this.cardType] ?? null;
+            table.onCellAction = (entry) => {
+                const action = TABLE_ACTIONS[entry.action];
+                if (!action) {
+                    console.warn(`Unknown table cell action "${entry.action}".`);
+                    return;
+                }
+                action.run(this, entry);
+            };
+            table.isCellActive = (entry) => TABLE_ACTIONS[entry.action]?.isActive(this, entry) ?? false;
         }
 
         if (this.cardElements["table"]) {

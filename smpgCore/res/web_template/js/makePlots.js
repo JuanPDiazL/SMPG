@@ -62,6 +62,19 @@ function makeAccumulationsPlot(containerElement) {
     };
     const plot = new BBPlot(containerElement, getAccumulationsPlotData, xNames, 
         xsDefinition, xsDataRelation, plotTypes, getAccumulationsGridLines);
+    // Where the table's values are read, as the point's index in its series: the current period
+    // (the season's end when the current period is after it or without a current season, and none
+    // before the season), and the forecast's end (Forecast Accumulation's last point, from the
+    // current period, see forecast_xs)
+    plot.markerIndexGetter = (at) => {
+        if (at === 'forecast-end') {
+            return hasForecast && !ignoreCurrentSeason ? datasetProperties.forecast_monitoring_length : null;
+        }
+        if (at !== 'current-period') { return null; }
+        if (ignoreCurrentSeason) { return xNames.length - 1; }
+        const currentX = getCurrentX();
+        return currentX === null || currentX < 0 ? null : Math.min(currentX, xNames.length - 1);
+    };
     return plot;
 }
 

@@ -201,22 +201,59 @@ const tableColors = {
     'Median SOS of Climatology': '#FF0000',
 }
 
+// What clicking a table cell does (see Table.update()), by card type, then by row label like
+// tableColors: one entry for the row's values, or entries by column header. Each entry names an
+// action of TABLE_ACTIONS (widgetClasses.js) and its target: a chart series, and where on it (at,
+// see the plot's markerIndexGetter: "current-period", where the table's value is read, the current
+// period or the season's end without a current season; "forecast-end", the forecast's last point)
+const tableActions = {
+    'Seasonal Accumulations': {
+        'LTA': {
+            'Sel. Yrs.': { action: 'toggle-marker', series: 'LTA (Sel. Yrs.)', at: 'current-period' },
+            'Clim.': { action: 'toggle-marker', series: 'LTA', at: 'current-period' },
+        },
+        'Current Accumulation': { action: 'toggle-marker', series: 'Current Season Accumulation', at: 'current-period' },
+        'Accumulation with Forecast': { action: 'toggle-marker', series: 'Forecast Accumulation', at: 'forecast-end' },
+    },
+}
+
 /**
- * Returns a table cell's color from tableColors, or null.
+ * Returns a table cell's entry in a set of definitions (tableColors, or a card type's
+ * tableActions), or null. A header cell ("Sel. Yrs.") takes its own entry; a value takes its row
+ * label's entry, or the entry under its column header when the row's entry is split by column.
+ * @param {Object} definitions - The definitions, by row label (and column header).
  * @param {Array} row - The cell's row: its label, then its values; a header row's label is null.
  * @param {number} column - The cell's position in the row (0 is the label).
  * @param {Array|undefined} headerRow - The table's header row ([null, 'Sel. Yrs.', 'Clim.']).
- * @returns {string|null}
+ * @param {Function} isEntry - Whether a value of the definitions is an entry, not a split by column.
+ * @returns {*} The entry, or null.
+ */
+function getTableCellDefinition(definitions, row, column, headerRow, isEntry) {
+    if (!definitions || column === 0) { return null; }
+    if (row[0] === null) {
+        const entry = definitions[row[column]];
+        return isEntry(entry) ? entry : null;
+    }
+    const entry = definitions[row[0]];
+    if (isEntry(entry)) { return entry; }
+    const columnEntry = entry?.[headerRow?.[column]];
+    return isEntry(columnEntry) ? columnEntry : null;
+}
+
+/**
+ * Returns a table cell's color from tableColors, or null (see getTableCellDefinition()).
  */
 function getTableCellColor(row, column, headerRow) {
-    if (column === 0) { return null; }
-    if (row[0] === null) {
-        const color = tableColors[row[column]];
-        return typeof color === "string" ? color : null;
-    }
-    const color = tableColors[row[0]];
-    if (typeof color === "string") { return color; }
-    return color?.[headerRow?.[column]] ?? null;
+    return getTableCellDefinition(tableColors, row, column, headerRow, (entry) => typeof entry === "string");
+}
+
+/**
+ * Returns a table cell's action from a card type's tableActions, or null (see
+ * getTableCellDefinition()).
+ * @param {Object|null} actions - The card type's tableActions.
+ */
+function getTableCellAction(actions, row, column, headerRow) {
+    return getTableCellDefinition(actions, row, column, headerRow, (entry) => typeof entry?.action === "string");
 }
 
 // Each series' line styles (see plots.css): a series given a class has bb-target-<class> on its

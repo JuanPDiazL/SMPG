@@ -7,7 +7,6 @@
     left: 0;
     width: max-content;
     display: inline-block;
-    pointer-events: none;
 }
 
 .plot-context-container {
@@ -52,6 +51,20 @@
 .darkmode .chart-table td.table-colored {
     /* at least 5:1 contrast with the dark table for every color in tableColors */
     color: color-mix(in srgb, var(--table-color) 45%, white);
+}
+/* A cell that does something on a click (see tableActions); 
+   Its outline takes its text color, in both modes */
+.chart-table td.table-action {
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+}
+.chart-table td.table-action[aria-pressed="true"] {
+    box-shadow: inset 0 0 0 2px currentColor;
+}
+.chart-table td.table-action:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
 }
 
 /* Plot internal elements */
