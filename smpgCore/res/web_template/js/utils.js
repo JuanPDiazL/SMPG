@@ -466,7 +466,7 @@ function buildHeaderMenu(containerSelector, items, onOpen = null) {
         .attr("class", "w3-dropdown-content w3-bar-block w3-border header-menu-content");
 
     menuContainer.append("span")
-        .attr("class", "mi w3-button w3-ripple header-menu-trigger")
+        .attr("class", `mi w3-button w3-ripple header-menu-trigger ${DROPDOWN_TRIGGER_CLASS}`)
         .text("more_vert")
         .on("click.toggleHeaderMenu", () => {
             const opening = !menuContent.classed("w3-show");
@@ -775,6 +775,42 @@ function setupMaximizedCardEscape() {
         if (event.key === "Escape" && !event.defaultPrevented && maximizedCard) {
             setMaximizedCard(null);
         }
+    });
+}
+
+/** The class of a dropdown menu's button, which shares a parent with the menu's content */
+const DROPDOWN_TRIGGER_CLASS = "dropdown-trigger";
+
+/**
+ * Closes the open dropdown menus (the header menu, the widget type lists), except the one a press
+ * is in or on the button of.
+ * @param {Node|null} target - The pressed element; null closes them all.
+ */
+function closeDropdownsOutside(target) {
+    for (const content of document.querySelectorAll(".w3-dropdown-content.w3-show")) {
+        const trigger = content.parentElement.querySelector(`.${DROPDOWN_TRIGGER_CLASS}`);
+        if (target && (content.contains(target) || (trigger && trigger.contains(target)))) {
+            continue;
+        }
+        content.classList.remove("w3-show");
+    }
+}
+
+/**
+ * Closes the open dropdown menus when pressing outside them and their buttons. Presses in a rich
+ * text editor (its own frame) don't reach the page: see setupEditorDropdownClose().
+ */
+function setupDropdownOutsideClose() {
+    document.addEventListener("pointerdown", (event) => closeDropdownsOutside(event.target), true);
+}
+
+/**
+ * Closes the open dropdown menus when pressing in a rich text editor's frame.
+ * @param {Object} editor - The TinyMCE editor, before its init.
+ */
+function setupEditorDropdownClose(editor) {
+    editor.on("init", () => {
+        editor.getWin().addEventListener("pointerdown", () => closeDropdownsOutside(null), true);
     });
 }
 

@@ -171,6 +171,7 @@ const HEADER_MENU_ITEMS = {
 };
 const HEADER_MENU_ELEMENTS = buildHeaderMenu('#contentHeaderMenu', HEADER_MENU_ITEMS, refreshRestoreWidgetMenu);
 setupMaximizedCardEscape();
+setupDropdownOutsideClose();
 buildYearInViewSelector();
 const EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Edit layout"];
 const STOP_EDIT_LAYOUT_BUTTON = HEADER_MENU_ELEMENTS["Stop edit layout"];

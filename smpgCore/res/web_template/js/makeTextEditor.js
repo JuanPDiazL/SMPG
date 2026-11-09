@@ -939,6 +939,8 @@ class RichTextEditor {
                 setupPlaceBlocks(editor);
                 // Lists of the headings, shown in view mode
                 setupTableOfContents(editor);
+                // Presses in the editor close the page's dropdown menus
+                setupEditorDropdownClose(editor);
                 // Inserts a template variable, or edits the selected one
                 editor.ui.registry.addButton("templatevariable", {
                     icon: "addtag",

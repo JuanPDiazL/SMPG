@@ -778,7 +778,7 @@ class chartCard {
             .attr("class", "card-button-group");
         this.graphTypeSelectContainer = this.cardHeader
             .append("div")
-            .attr("class", "card-title-select w3-dropdown-click")
+            .attr("class", `card-title-select w3-dropdown-click ${DROPDOWN_TRIGGER_CLASS}`)
             .on("click.openDropDownMenu", (event) => {
                 // Widget types are only changed in edit mode
                 if (!reportEditMode) { return; }
