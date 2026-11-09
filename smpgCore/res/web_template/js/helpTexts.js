@@ -206,6 +206,21 @@ ${HELP_RICH_TEXT_EDIT}`,
     },
 };
 
+// The help a card of each type starts with when its layout entry doesn't choose one (smpgOpts.help),
+// also when it's changed to that type; a type without an entry has no help button
+const DEFAULT_HELP_IDS = {
+    "Rich Text": "rich-text",
+};
+
+/**
+ * Returns a card type's default help (see DEFAULT_HELP_IDS).
+ * @param {string} cardType
+ * @returns {string|null} One of HELP_TEXTS' ids, or null.
+ */
+function getDefaultHelp(cardType) {
+    return DEFAULT_HELP_IDS[cardType] ?? null;
+}
+
 /**
  * Whether a help id is one of HELP_TEXTS'.
  * @param {string} helpId - A card's help id (smpgOpts.help).

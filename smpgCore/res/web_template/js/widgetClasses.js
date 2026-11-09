@@ -748,9 +748,9 @@ class chartCard {
         // The header's title instead of the type's, while the card keeps its type (smpgOpts.title,
         // applied by setProperties())
         this.customTitle = null;
-        // The help opened by the help button, one of HELP_TEXTS' ids, or null for no button
-        // (smpgOpts.help, applied by setProperties())
-        this.helpId = null;
+        // The help opened by the help button, one of HELP_TEXTS' ids, or null for no button: the
+        // type's default (see DEFAULT_HELP_IDS), or smpgOpts.help, applied by setProperties()
+        this.helpId = getDefaultHelp(this.cardType);
 
         this.elementContainer = d3.select(containerSelector);
         this.cardContainer = this.elementContainer
@@ -801,10 +801,11 @@ class chartCard {
     }
 
     changePlot(cardType) {
-        // A custom title and a help belong to the type they were given for
+        // A custom title and a help belong to the type they were given for; the new type starts
+        // with its default help
         if (cardType !== this.cardType) {
             this.customTitle = null;
-            this.helpId = null;
+            this.helpId = getDefaultHelp(cardType);
         }
         this.cardType = cardType;
         this.destroy();
