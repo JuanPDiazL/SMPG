@@ -259,11 +259,16 @@ loadingOverlay.addEventListener('transitionend', function () {
 }, { once: true });
 
 // The layout as loaded is the saved one; leaving the page with changes to it asks first (the
-// browser shows its own message). Readers can't save a layout, so they aren't asked.
+// browser shows its own message). Readers can't save a layout, so they aren't asked. The Save
+// layout window opens behind the browser's message, so it is there when staying on the page.
 markLayoutSaved();
 window.addEventListener("beforeunload", (event) => {
     if (reportEditModeUsed && layoutHasUnsavedChanges()) {
         event.preventDefault();
         event.returnValue = ""; // older browsers ask only with returnValue set
+        // An open one keeps what it says (e.g. that the layout was copied)
+        if (dialogs["saveLayoutModal"]?.modal.style("display") !== "block") {
+            openSaveLayoutDialog();
+        }
     }
 });
