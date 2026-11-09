@@ -198,6 +198,32 @@ const tableColors = {
     'Median SOS of Climatology': '#FF0000',
 }
 
+// Table values' units (see Table.update()), by row label like tableColors: shown after a number
+// ("433 mm", "51 %"); a row without an entry, or a value that isn't a number, has none
+const tableUnits = {
+    // Seasonal Accumulations, Ensemble
+    'LTA': 'mm',
+    '% of Average': '%',
+    'Current Accumulation': 'mm',
+    'Accumulation with Forecast': 'mm',
+    'St. Dev.': 'mm',
+    'Ensemble Med.': 'mm',
+    'Ensemble Med. w. Forecast': 'mm',
+    'Ensemble Med. Pct. of Avg.': '%',
+    'Ensemble Med. w Forecast Pct. of Avg.': '%',
+    'Ensemble Med. Pctl.': '%',
+    'Ensemble Med. Pctl. w. Forecast': '%',
+    'Above Normal': '%',
+    'Normal': '%',
+    'Below Normal': '%',
+    // Seasonal Accumulation Percentiles: the rainfall at each percentile, and the season's rank
+    '67 Percentile': 'mm',
+    '33 Percentile': 'mm',
+    '11 Percentile': 'mm',
+    'Current Season Pctl.': '%',
+    'Forecast Pctl.': '%',
+}
+
 // What clicking a table cell does (see Table.update()), by card type, then by row label like
 // tableColors: one entry for the row's values, or entries by column header. Each entry names an
 // action of TABLE_ACTIONS (widgetClasses.js) and its target: a chart series, and where on it (at,
@@ -215,8 +241,8 @@ const tableActions = {
 }
 
 /**
- * Returns a table cell's entry in a set of definitions (tableColors, or a card type's
- * tableActions), or null. A header cell ("Sel. Yrs.") takes its own entry; a value takes its row
+ * Returns a table cell's entry in a set of definitions (tableUnits, tableColors, or a card
+ * type's tableActions), or null. A header cell ("Sel. Yrs.") takes its own entry; a value takes its row
  * label's entry, or the entry under its column header when the row's entry is split by column.
  * @param {Object} definitions - The definitions, by row label (and column header).
  * @param {Array} row - The cell's row: its label, then its values; a header row's label is null.
@@ -242,6 +268,13 @@ function getTableCellDefinition(definitions, row, column, headerRow, isEntry) {
  */
 function getTableCellColor(row, column, headerRow) {
     return getTableCellDefinition(tableColors, row, column, headerRow, (entry) => typeof entry === "string");
+}
+
+/**
+ * Returns a table cell's unit from tableUnits, or null (see getTableCellDefinition()).
+ */
+function getTableCellUnit(row, column, headerRow) {
+    return getTableCellDefinition(tableUnits, row, column, headerRow, (entry) => typeof entry === "string");
 }
 
 /**

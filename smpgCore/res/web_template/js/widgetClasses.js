@@ -626,12 +626,13 @@ class Table {
                     .attr("colspan", d => data[d][0].length)
                         .text(d => d);
             
-                    // each cell with its color and action, from its row and column (see
-                    // tableColors and tableActions); a cell with an action is a button
+                    // each cell with its unit, color and action, from its row and column (see
+                    // tableUnits, tableColors and tableActions); a cell with an action is a button
                     table.append("tbody").selectAll("tr")
                         .data(d => data[d].map(row => ({ row, headerRow: data[d].find(r => r[0] === null) })))
                         .join("tr").selectAll("td")
                             .data(({ row, headerRow }) => row.map((value, column) => ({ value,
+                                unit: getTableCellUnit(row, column, headerRow),
                                 color: getTableCellColor(row, column, headerRow),
                                 action: getTableCellAction(this.actions, row, column, headerRow) })))
                             .join("td")
@@ -648,9 +649,9 @@ class Table {
                                     }
                                 })
                                 .call(td => {
-                                    td.text(({ value: d }) => {
+                                    td.text(({ value: d, unit }) => {
                                             if (typeof d === 'number' && !isNaN(d)) {
-                                                return d.toFixed(0);
+                                                return d.toFixed(0) + (unit ? ` ${unit}` : '');
                                             } else if (d === null) {
                                                 return '';
                                             } else {
