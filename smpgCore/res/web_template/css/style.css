@@ -164,6 +164,13 @@
         white-space: normal;
     }
 }
+/* A header row, set apart from the bold labels under it (the Map help) */
+.report-dialog-table th {
+    border-bottom: 1px solid #ccc;
+}
+.darkmode .report-dialog-table th {
+    border-bottom-color: #555;
+}
 /* Elements side by side, centered (Save layout's path, Rename's buttons, Year in view's
    checkbox and years) */
 .report-dialog-row {
