@@ -38,11 +38,11 @@ from the climatology years' season totals; <b>E. LTA±St. Dev.</b> (orange), the
 ± the selected years' standard deviation; and <b>E. (33, 67) Pctl.</b> (purple), the 33rd and 67th
 percentiles of the scenarios' totals.</li>
 </ul>
-<p><b>Tables.</b> <b>Sel. Yrs.</b> builds the scenarios with the selected years, <b>Clim.</b> with
-the climatology years.</p>
+<p><b>Tables.</b> <b>Sel. Yrs.</b> uses the selected years, <b>Clim.</b> the climatology years.</p>
 <ul>
-<li><b>EOS Statistics</b>: the scenarios' median, the season's LTA, the median as a percent of
-the LTA, and the median's percentile among the season totals of every past season.</li>
+<li><b>EOS Statistics</b>: first the climatology of the season, the <b>LTA</b> and standard
+deviation (<b>St. Dev.</b>) of the years' season totals; then the scenarios' median, the median as a
+percent of the LTA, and the median's percentile among the season totals of every past season.</li>
 <li><b>Probability at EOS</b>: the share of scenarios that end the season below normal (under the
 33rd percentile of the climatology years' season totals), normal (from the 33rd up to the 67th) or
 above normal (the 67th or more). Every scenario counts the same.</li>
@@ -72,10 +72,10 @@ compared with the climatology average. The shaded area is the monitoring season.
 <li>Vertical lines: <b>SOS of Current Season</b> or <b>Possible SOS</b> (blue), <b>Median SOS
 of Climatology</b> (red) and, with a forecast, <b>SOS of Forecast</b> (pink).</li>
 </ul>
-<p><b>Tables.</b> <b>Seasonal Analysis</b>: the LTA and standard deviation of the season totals,
-for the selected years (<b>Sel. Yrs.</b>) and the climatology years (<b>Clim.</b>). <b>Start of
-Season (SOS)</b>: the current SOS and its anomaly, and the same with the forecast when the forecast
-changes them.</p>
+<p><b>Table.</b> <b>Start of Season (SOS)</b>, when the start of season detection is on: the
+current SOS, the Median SOS of Climatology and the current SOS's anomaly, and the SOS and anomaly
+with the forecast when the forecast changes them. Without a current season, only the Median SOS of
+Climatology. The season's LTA and standard deviation are in the Ensemble tables.</p>
 ${HELP_SOS_RULE}`,
     },
     "seasonal-accumulations": {
@@ -97,7 +97,7 @@ years (<b>Sel. Yrs.</b>) and the climatology years (<b>Clim.</b>). <b>% of Avera
 accumulation as a percent of it. <b>Current Accumulation</b>: the rainfall so far, and with a
 forecast, <b>Accumulation with Forecast</b>: the same, with the forecast inside the season added.
 Without a current season, the table shows the LTA at the end of the season. Click an underlined
-value (LTA or Current Accumulation) to show its point on the chart, and click it again to hide it.</p>`,
+value (LTA, Current Accumulation or Accumulation with Forecast) to show its point on the chart, and click it again to hide it.</p>`,
     },
     "seasonal-accumulation-percentiles": {
         title: "Seasonal Accumulation Percentiles",

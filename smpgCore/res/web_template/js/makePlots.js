@@ -213,14 +213,10 @@ function makeCurrentYearPlot(containerElement) {
 }
 
 function makeCurrentYearTable(containerElement) {
+    // Only the start of season belongs to this chart of the calendar year; the season's LTA and
+    // St. Dev. are in the Ensembles' EOS Statistics
     const getAccumulationsCurrentTableData = (index) => {
-        let data = {
-            "Seasonal Analysis": [
-                [null, 'Sel. Yrs.', 'Clim.'],
-                ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
-                ['St. Dev.', selected_seasons_general_stats[index]['St. Dev.'], seasonal_general_stats[index]['St. Dev.']],
-            ],
-        }
+        let data = {};
         if (hasSos && ignoreCurrentSeason) {
             // only the historical start of season is defined without a current season
             data["Start of Season (SOS)"] = [
@@ -229,6 +225,7 @@ function makeCurrentYearTable(containerElement) {
         } else if (hasSos) {
             data["Start of Season (SOS)"] = [
                 ['Current SOS', place_general_stats[index]['Start of Season']],
+                ['Median SOS of Climatology', place_general_stats[index]['Start of Season of Avg.']],
                 ['SOS anomaly', place_general_stats[index]['Start of Season Anomaly']],
             ];
             // the start with the forecast only when the forecast changes it
@@ -249,7 +246,8 @@ function makeCurrentYearTable(containerElement) {
 function makeCurrentYearCard(containerElement) {
     return {
         "plot": makeCurrentYearPlot(containerElement),
-        "table": makeCurrentYearTable(containerElement),
+        // its table only has the start of season
+        ...(hasSos ? { "table": makeCurrentYearTable(containerElement) } : {}),
     }
 }
 
@@ -312,8 +310,10 @@ function makeEnsembleTable(containerElement) {
         return {
             "EOS Statistics": [
                 [null, 'Sel. Yrs.', 'Clim.'],
-                ['Ensemble Med.', selected_seasons_general_stats[index]['Ensemble Med.'], seasonal_general_stats[index]['Ensemble Med.']],
+                // the season's climatology, then the scenarios
                 ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
+                ['St. Dev.', selected_seasons_general_stats[index]['St. Dev.'], seasonal_general_stats[index]['St. Dev.']],
+                ['Ensemble Med.', selected_seasons_general_stats[index]['Ensemble Med.'], seasonal_general_stats[index]['Ensemble Med.']],
                 ['Ensemble Med. Pct. of Avg.', selected_seasons_general_stats[index]['Ensemble Med. Pct. of Avg.'], seasonal_general_stats[index]['Ensemble Med. Pct. of Avg.']],
                 ['Ensemble Med. Pctl.', selected_seasons_general_stats[index]['Ensemble Med. Pctl.'], seasonal_general_stats[index]['Ensemble Med. Pctl.']],
             ],
@@ -406,8 +406,10 @@ function makeEnsembleWithForecastTable(containerElement) {
         return {
             "EOS Statistics": [
                 [null, 'Sel. Yrs.', 'Clim.'],
-                ['Ensemble Med. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. w. Forecast'], seasonal_general_stats[index]['Ensemble Med. w. Forecast']],
+                // the season's climatology, then the scenarios
                 ['LTA', selected_seasons_general_stats[index]['LTA'], seasonal_general_stats[index]['LTA']],
+                ['St. Dev.', selected_seasons_general_stats[index]['St. Dev.'], seasonal_general_stats[index]['St. Dev.']],
+                ['Ensemble Med. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. w. Forecast'], seasonal_general_stats[index]['Ensemble Med. w. Forecast']],
                 ['Ensemble Med. w Forecast Pct. of Avg.', selected_seasons_general_stats[index]['Ensemble Med. w Forecast Pct. of Avg.'], seasonal_general_stats[index]['Ensemble Med. w Forecast Pct. of Avg.']],
                 ['Ensemble Med. Pctl. w. Forecast', selected_seasons_general_stats[index]['Ensemble Med. Pctl. w. Forecast'], seasonal_general_stats[index]['Ensemble Med. Pctl. w. Forecast']],
             ],
