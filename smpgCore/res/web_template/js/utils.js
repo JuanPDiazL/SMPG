@@ -164,6 +164,19 @@ function removeHashParams(...paramNames) {
 }
 
 /**
+ * Development settings, all off. data/devOverrides.local.js (git-ignored, loaded when present)
+ * turns them on for this machine's reports, e.g.
+ * Object.assign(DEV_OVERRIDES, { skipUnsavedLayoutPrompt: true, darkModeByDefault: true });
+ * It is copied into the reports this copy of the plugin exports.
+ */
+var DEV_OVERRIDES = {
+    // Leaving the page with an unsaved layout doesn't ask (see main.js)
+    skipUnsavedLayoutPrompt: false,
+    // Dark mode when its cookie isn't set
+    darkModeByDefault: false,
+};
+
+/**
  * Retrieves the value of a cookie by name.
  * @param {string} cname - The name of the cookie to look up.
  * @returns {string} The decoded cookie value, or an empty string if not found.

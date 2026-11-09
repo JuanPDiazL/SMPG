@@ -180,7 +180,12 @@ const ADD_WIDGET_BUTTON = HEADER_MENU_ELEMENTS["Add widget"];
 const SWITCH_TO_EDIT_MODE_BUTTON = HEADER_MENU_ELEMENTS["Switch to edit mode"];
 
 // set page state using cookies
-setDarkMode(getCookie(DARKMODE_COOKIE_NAME));
+const darkModeCookie = getCookie(DARKMODE_COOKIE_NAME);
+setDarkMode(darkModeCookie);
+// Without the cookie, the default doesn't set it
+if (darkModeCookie === "" && DEV_OVERRIDES.darkModeByDefault) {
+    document.body.classList.add("darkmode");
+}
 setMenuState(getCookie(MENU_HIDE_STATE_COOKIE_NAME));
 
 
@@ -263,6 +268,7 @@ loadingOverlay.addEventListener('transitionend', function () {
 // layout window opens behind the browser's message, so it is there when staying on the page.
 markLayoutSaved();
 window.addEventListener("beforeunload", (event) => {
+    if (DEV_OVERRIDES.skipUnsavedLayoutPrompt) { return; }
     if (reportEditModeUsed && layoutHasUnsavedChanges()) {
         event.preventDefault();
         event.returnValue = ""; // older browsers ask only with returnValue set
