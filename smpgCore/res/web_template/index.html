@@ -227,6 +227,8 @@
         connections, and applied and run in the order listed below. Keep the order:
         stylesheets first, then libraries -> data -> app -> main.
         When bundling files later, just replace the entries here.
+        An entry is a path, or an object: { url: path, optional: true } for a file that may be
+        missing (not retried, and skipped when it fails to load).
     -->
     <script>
         (function () {
@@ -349,7 +351,13 @@
                 return ' (HTTP ' + status + ')';
             }
 
-            function loadWithRetry(insert, createElement, onLoad, onFinalError) {
+            // A list entry as an object: { url, optional }
+            function toFileEntry(entry) {
+                return typeof entry === 'string' ? { url: entry } : entry;
+            }
+
+            // An optional file isn't retried: a missing file would be retried for nothing
+            function loadWithRetry(insert, createElement, onLoad, onFinalError, optional) {
                 var attempt = 0;
                 function tryLoad() {
                     var element = createElement(attempt);
@@ -365,7 +373,7 @@
                         element.remove();
                         probeStatus(element.href || element.src, function (status) {
                             // A missing file won't appear on a retry
-                            if (status === 404 || status === 410 || attempt >= MAX_RETRIES) {
+                            if (status === 404 || status === 410 || optional || attempt >= MAX_RETRIES) {
                                 clearRetryStatus();
                                 onFinalError(element, describeFailure(status));
                                 return;
@@ -393,14 +401,16 @@
             var probe = document.createElement('link');
             var canPreload = !!(probe.relList && probe.relList.supports && probe.relList.supports('preload'));
 
-            var styleFiles = stylesheetUrls.map(function (url) {
+            var styleFiles = stylesheetUrls.map(toFileEntry).map(function (entry) {
                 // Keeps the stylesheet's place in <head>, also while it's retried
-                var placeholder = document.createComment(' ' + url + ' ');
+                var placeholder = document.createComment(' ' + entry.url + ' ');
                 document.head.appendChild(placeholder);
-                return { url: url, isStyle: true, placeholder: placeholder, downloaded: false };
+                return { url: entry.url, optional: !!entry.optional, isStyle: true,
+                    placeholder: placeholder, downloaded: false };
             });
-            var scriptFiles = scriptUrls.map(function (url) {
-                return { url: url, isStyle: false, downloaded: !canPreload };
+            var scriptFiles = scriptUrls.map(toFileEntry).map(function (entry) {
+                return { url: entry.url, optional: !!entry.optional, isStyle: false,
+                    downloaded: !canPreload };
             });
 
             function retryUrl(url, attempt) {
@@ -446,20 +456,29 @@
                     link.href = retryUrl(file.url, attempt);
                     return link;
                 }, function (link) {
-                    downloadsInFlight -= 1;
-                    file.downloaded = true;
                     // The script runs from the address that was downloaded
                     file.url = link.getAttribute('href');
+                    downloadDone();
+                }, function (link, failure) {
+                    if (file.optional) {
+                        file.skipped = true;
+                        downloadDone();
+                        return;
+                    }
+                    window.smpgShowLoadError((file.isStyle ? 'Failed to load a required stylesheet'
+                        : 'Failed to load a required script') + failure, link.href);
+                }, file.optional);
+
+                function downloadDone() {
+                    downloadsInFlight -= 1;
+                    file.downloaded = true;
                     if (file.isStyle) {
                         stylesheetsLoaded += 1;
                         showProgress();
                     }
                     startDownloads();
                     runNextScript();
-                }, function (link, failure) {
-                    window.smpgShowLoadError((file.isStyle ? 'Failed to load a required stylesheet'
-                        : 'Failed to load a required script') + failure, link.href);
-                });
+                }
             }
 
             var nextScript = 0;
@@ -468,6 +487,10 @@
                 if (scriptRunning || stylesheetsLoaded < styleFiles.length) { return; }
                 var file = scriptFiles[nextScript];
                 if (!file || !file.downloaded) { return; }
+                if (file.skipped) {
+                    scriptDone();
+                    return;
+                }
                 scriptRunning = true;
                 loadWithRetry(function (element) {
                     document.body.appendChild(element);
@@ -477,12 +500,21 @@
                     return script;
                 }, function () {
                     scriptRunning = false;
-                    nextScript += 1;
-                    showProgress();
-                    runNextScript();
+                    scriptDone();
                 }, function (script, failure) {
+                    if (file.optional) {
+                        scriptRunning = false;
+                        scriptDone();
+                        return;
+                    }
                     window.smpgShowLoadError('Failed to load a required script' + failure, script.src);
-                });
+                }, file.optional);
+            }
+
+            function scriptDone() {
+                nextScript += 1;
+                showProgress();
+                runNextScript();
             }
 
             showProgress();
