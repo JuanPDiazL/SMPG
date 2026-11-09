@@ -11,7 +11,7 @@ var layout = {
         "w6": {
             "smpgOpts": {
                 "smpgCardType": "Rich Text",
-                "help": "rich-text",
+                "help": "polygon-briefing",
                 "title": "Polygon Briefing",
                 "showHeader": false,
                 "editor": {
@@ -114,7 +114,7 @@ var layout = {
             "unloaded": true,
             "smpgOpts": {
                 "smpgCardType": "Rich Text",
-                "help": "rich-text",
+                "help": "monitoring-report",
                 "title": "Monitoring Report",
                 "showHeader": true,
                 "editor": {
