@@ -96,7 +96,8 @@ from the climatology years' season totals.</li>
 years (<b>Sel. Yrs.</b>) and the climatology years (<b>Clim.</b>). <b>% of Average</b>: the current
 accumulation as a percent of it. <b>Current Accumulation</b>: the rainfall so far, and with a
 forecast, <b>Accumulation with Forecast</b>: the same, with the forecast inside the season added.
-Without a current season, the table shows the LTA at the end of the season.</p>`,
+Without a current season, the table shows the LTA at the end of the season. Click an underlined
+value (LTA or Current Accumulation) to show its point on the chart, and click it again to hide it.</p>`,
     },
     "seasonal-accumulation-percentiles": {
         title: "Seasonal Accumulation Percentiles",

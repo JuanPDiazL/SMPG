@@ -1,6 +1,10 @@
 // This file contains the classes and code to construct the widgets that
 // contain the plots, maps, and other type of data
 
+// The radius of the scatter series' points (billboard.js's default) and of a marker's point (see
+// BBPlot.getPointRadius())
+const BB_POINT_RADIUS = 2.5;
+const BB_MARKER_RADIUS = 5;
 // How long a chart's load can take before the next one runs anyway (see BBPlot.update()), in ms
 const BB_LOAD_TIMEOUT = 5000;
 // How long a chart's resize can take before the next load runs anyway (see BBPlot.resize()), in
@@ -31,8 +35,12 @@ class BBPlot {
         this.runningResize = null;
         this.pendingUpdate = null;
         this.pendingResize = false;
-        // The markers toggled on from the table (see toggleMarker()), as "<series>@<at>" keys
+        // The markers toggled on from the table (see toggleMarker()), as "<series>@<at>" keys, and
+        // the function that gives a marker's data index from its "at" (null: no marker there)
         this.activeMarkers = new Set();
+        this.markerIndexGetter = null;
+        // A marker toggled during a load or a resize, drawn when it ends (see redrawMarkers())
+        this.pendingMarkerRedraw = false;
 
         this.allContainer = this.containerElement.append("div")
             .attr("class", "plot-context-container");
@@ -58,8 +66,23 @@ class BBPlot {
                     template: (title, color, data) => getLegend(title, color, data, this.chartTypes),
                 },
             },
-            // New data can change the axes' widths, so where the plot area starts
-            onrendered: () => this.chartAreaListener?.(),
+            // Only the markers' points are drawn on lines (the others have no radius), with their
+            // values as labels; billboard.js reads both on every redraw (see toggleMarker())
+            point: {
+                r: (d) => this.getPointRadius(d),
+            },
+            data: {
+                labels: {
+                    format: (value, id, index) => this.isMarkerAt(id, index) ? String(Math.round(value)) : "",
+                    position: (type, value, id, index) => this.getMarkerLabelOffset(type, id, index),
+                },
+            },
+            // New data can change the axes' widths, so where the plot area starts; and the
+            // markers are put above the lines (see raiseMarkers())
+            onrendered: () => {
+                this.raiseMarkers();
+                this.chartAreaListener?.();
+            },
             // The end of a resize (see resize())
             onresized: () => this.endResize(this.runningResize),
         };
@@ -244,6 +267,8 @@ class BBPlot {
         this.runningLoad = null;
         if (this.destroyed) { return; }
         this.plot.xgrids(this.gridLinesGetter(load.index));
+        // the load's redraw drew the markers
+        this.pendingMarkerRedraw = false;
         if (this.pendingResize) {
             this.pendingResize = false;
             this.resize();
@@ -322,7 +347,10 @@ class BBPlot {
         clearTimeout(resize.timeout);
         this.runningResize = null;
         // billboard.js clears its resizing state right after calling onresized
-        setTimeout(() => this.runPendingUpdate(), 0);
+        setTimeout(() => {
+            if (this.pendingMarkerRedraw) { this.redrawMarkers(); }
+            this.runPendingUpdate();
+        }, 0);
     }
 
     /**
@@ -336,7 +364,183 @@ class BBPlot {
         if (!this.activeMarkers.delete(key)) {
             this.activeMarkers.add(key);
         }
+        this.redrawMarkers();
         return this.activeMarkers.has(key);
+    }
+
+    /**
+     * Draws the markers again: a redraw, which reads the labels' format, then the line points'
+     * radius (billboard.js reads getPointRadius() only when it creates a point, i.e. on a load).
+     * A load or a resize running draws them when it ends: a redraw during a load breaks the chart,
+     * and during a resize billboard.js doesn't draw points (see update() and resize()).
+     */
+    redrawMarkers() {
+        if (this.runningLoad || this.runningResize) {
+            this.pendingMarkerRedraw = true;
+            return;
+        }
+        this.pendingMarkerRedraw = false;
+        this.plot.flush();
+        d3.select(this.allContainer.node()).selectAll(".bb-chart-lines .bb-circle")
+            .attr("r", (d) => this.getPointRadius(d));
+        this.raiseMarkers();
+    }
+
+    /**
+     * Puts the markers above every line and grid line, after each redraw: billboard.js draws the
+     * labels first (under the lines), each point in its own line's group (under the lines drawn
+     * after it), and the grid lines after the chart. The points are drawn again in a layer of their
+     * own, over the originals (billboard.js keeps those: moving them would break its updates); that
+     * layer and the labels' layer go right after the grid lines, under the axes, clipped like the
+     * chart. The copies are grouped by series, and each group follows its line's focus and hiding
+     * (see syncMarkerSeries()).
+     */
+    raiseMarkers() {
+        const chart = d3.select(this.allContainer.node()).select(".bb-chart");
+        if (chart.empty()) { return; }
+        const series = [...chart.node().querySelectorAll(".bb-chart-lines .bb-chart-line")]
+            .map((line) => ({
+                line,
+                points: [...line.querySelectorAll(".bb-circle")]
+                    .filter((point) => +point.getAttribute("r") > 0)
+                    .map((point) => ({ cx: point.getAttribute("cx"), cy: point.getAttribute("cy"), color: point.style.fill })),
+            }))
+            .filter((entry) => entry.points.length > 0);
+        const main = d3.select(chart.node().parentNode);
+        let layer = main.select(".marker-points");
+        if (layer.empty()) {
+            layer = main.append("g").attr("class", "marker-points");
+        }
+        layer.selectAll("g")
+            .data(series)
+            .join("g")
+                .attr("class", "marker-series")
+            .selectAll("circle")
+            .data((entry) => entry.points)
+            .join("circle")
+                .attr("cx", (d) => d.cx)
+                .attr("cy", (d) => d.cy)
+                .attr("r", BB_MARKER_RADIUS)
+                .style("fill", (d) => d.color);
+        this.syncMarkerSeries();
+        // billboard.js focuses and hides a series by changing its line's group, without a redraw
+        const lines = chart.select(".bb-chart-lines").node();
+        if (lines && this.observedLines !== lines) {
+            this.markerSeriesObserver?.disconnect();
+            this.markerSeriesObserver = new MutationObserver(() => this.syncMarkerSeries());
+            this.markerSeriesObserver.observe(lines, { subtree: true, attributes: true, attributeFilter: ["class", "style"] });
+            this.observedLines = lines;
+        }
+        const texts = main.select(".bb-chart-texts");
+        let previous = main.select(".bb-grid-lines").node() ?? chart.node();
+        for (const group of [layer, texts]) {
+            if (group.empty()) { continue; }
+            group.attr("clip-path", chart.attr("clip-path"));
+            previous.after(group.node());
+            previous = group.node();
+        }
+        this.separateMarkerLabels();
+    }
+
+    /**
+     * Gives each series' copied markers (see raiseMarkers()) its line's focus (billboard.js's
+     * bb-focused and bb-defocused classes) and hiding (its inline opacity and display).
+     */
+    syncMarkerSeries() {
+        d3.select(this.allContainer.node()).selectAll(".marker-points .marker-series")
+            .classed("bb-focused", (entry) => entry.line.classList.contains("bb-focused"))
+            .classed("bb-defocused", (entry) => entry.line.classList.contains("bb-defocused"))
+            .style("opacity", (entry) => entry.line.style.opacity || null)
+            .style("display", (entry) => entry.line.style.display || null);
+    }
+
+    /**
+     * Returns a marker label's offset from its point (data.labels.position), by the markers'
+     * values at the same period: the highest's label above, the lowest's below, and between them
+     * to the right; so a label is next to its own point when the lines are close or cross.
+     * @param {string} type - "x" or "y".
+     * @param {string} id - The series.
+     * @param {number} index - The point's index in the series' data.
+     * @returns {number}
+     */
+    getMarkerLabelOffset(type, id, index) {
+        if (!this.isMarkerAt(id, index)) { return 0; }
+        // by x, not index: a series with its own xs (the forecast) starts at another period
+        const x = this.plot.data(id)[0]?.values[index]?.x;
+        const markers = this.getMarkerPoints()
+            .filter((point) => point.x === x)
+            .sort((a, b) => b.value - a.value || a.id.localeCompare(b.id))
+            .map((point) => point.id);
+        const rank = markers.indexOf(id);
+        const offset = rank === 0 ? { x: -18, y: -4 }
+            : rank === markers.length - 1 ? { x: -18, y: 24 }
+            : { x: 22, y: 10 };
+        return offset[type];
+    }
+
+    /**
+     * Keeps the markers' labels apart: from the top, a label overlapping the one above it is moved
+     * down below it. billboard.js places them again on each redraw (from their offsets in
+     * data.labels.position), then this runs (onrendered).
+     */
+    separateMarkerLabels() {
+        const labels = [...this.allContainer.node().querySelectorAll(".bb-chart-texts .bb-text")]
+            .filter((label) => label.textContent)
+            .map((label) => ({ label, box: label.getBBox() }))
+            .sort((a, b) => a.box.y - b.box.y);
+        for (let i = 1; i < labels.length; i++) {
+            const { label, box } = labels[i];
+            for (const above of labels.slice(0, i)) {
+                const overlapsX = box.x < above.box.x + above.box.width && above.box.x < box.x + box.width;
+                const shift = above.box.y + above.box.height - box.y;
+                if (overlapsX && shift > 0) {
+                    label.setAttribute("y", +label.getAttribute("y") + shift);
+                    box.y += shift;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the toggled-on markers' points.
+     * @returns {Array<Object>} {id, x, value} each.
+     */
+    getMarkerPoints() {
+        const points = [];
+        for (const key of this.activeMarkers) {
+            const separator = key.lastIndexOf("@");
+            const id = key.slice(0, separator);
+            const index = this.markerIndexGetter?.(key.slice(separator + 1));
+            const point = index === null || index === undefined ? null : this.plot.data(id)[0]?.values[index];
+            if (point && point.value !== null) { points.push({ id, x: point.x, value: point.value }); }
+        }
+        return points;
+    }
+
+    /**
+     * Whether a series' data point is a marker toggled on (see toggleMarker()).
+     * @param {string} id - The series.
+     * @param {number} index - The point's index in the series' data.
+     * @returns {boolean}
+     */
+    isMarkerAt(id, index) {
+        if (!this.markerIndexGetter) { return false; }
+        for (const key of this.activeMarkers) {
+            const at = key.slice(key.lastIndexOf("@") + 1);
+            if (key === `${id}@${at}` && this.markerIndexGetter(at) === index) { return true; }
+        }
+        return false;
+    }
+
+    /**
+     * Returns a point's radius: the scatter series' points keep billboard.js's size, a marker's
+     * point is larger, and the other line points have none (they aren't shown).
+     * @param {Object} d - The point, {id, index, value, x}.
+     * @returns {number}
+     */
+    getPointRadius(d) {
+        if (this.chartTypes[d.id] === "scatter") { return BB_POINT_RADIUS; }
+        return this.isMarkerAt(d.id, d.index) ? BB_MARKER_RADIUS : 0;
     }
 
     /**

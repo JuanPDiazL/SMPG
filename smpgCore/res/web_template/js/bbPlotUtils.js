@@ -134,9 +134,6 @@ const globalBBChartDefaultOptions = {
     transition: {
         duration: false,
     },
-    line: {
-        point: false,
-    },
     area: {
         front: false,
         zerobased: true,

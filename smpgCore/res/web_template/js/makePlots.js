@@ -46,11 +46,15 @@ function makeAccumulationsPlot(containerElement) {
     };
     // The current period, the last one with observed data, when it's in the monitoring season
     // (from its place in the year, so also when the observed data ends before or after the season)
-    const getAccumulationsGridLines = () => {
+    // The current period's position, which may be outside the season (see currentLength)
+    const getCurrentX = () => {
         // currentLength is -1 when the whole year has data (see getCurrentPeriodId())
         const length = currentLength >= 0 ? currentLength : datasetProperties.sub_season_ids.length;
-        const currentX = length - 1 - monitoringOffset;
-        if (ignoreCurrentSeason || length === 0 || currentX < 0 || currentX >= xNames.length) {
+        return length === 0 ? null : length - 1 - monitoringOffset;
+    };
+    const getAccumulationsGridLines = () => {
+        const currentX = getCurrentX();
+        if (ignoreCurrentSeason || currentX === null || currentX < 0 || currentX >= xNames.length) {
             return [];
         }
         return [{

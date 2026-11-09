@@ -62,6 +62,29 @@
 .chart-table td.table-action[aria-pressed="true"] {
     box-shadow: inset 0 0 0 2px currentColor;
 }
+/* A marker on a line, shown from the table (see BBPlot.toggleMarker()), above every line (see
+   BBPlot.raiseMarkers()): its point and its value in its line's color, both with a white outline
+   in both modes, like the SOS labels, so dark colors stay readable on the dark background. The
+   points and labels don't take the pointer, so the chart's tooltip still works under them */
+.marker-points,
+.bb-chart-texts {
+    pointer-events: none;
+}
+.marker-points circle {
+    stroke: #fff;
+    stroke-width: 2px;
+}
+/* As billboard.js's defocused series (.bb-target.bb-defocused), for the copied markers */
+.marker-points .marker-series.bb-defocused {
+    opacity: .3 !important;
+}
+.bb-chart-texts .bb-text {
+    font-size: 12px;
+    font-weight: bold;
+    paint-order: stroke;
+    stroke: #fffe;
+    stroke-width: 3px;
+}
 .chart-table td.table-action:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: -2px;
