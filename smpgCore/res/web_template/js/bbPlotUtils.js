@@ -2,6 +2,9 @@
 
 "use strict";
 
+// The unit of every chart's values (rainfall), on the y axis and the value markers' labels
+const CHART_VALUE_UNIT = 'mm';
+
 function arrayMoreLess20(numbers) {
     return numbers.map(n => [n * (1 + .2), n, n * (1 - .2)]);
 }
@@ -71,7 +74,7 @@ const globalBBChartDefaultOptions = {
         y: {
             // min: 0,
             label: {
-                text: 'Rainfall (mm)',
+                text: `Rainfall (${CHART_VALUE_UNIT})`,
                 position: 'outer-top',
             },
             padding: {

@@ -67,13 +67,13 @@ class BBPlot {
                 },
             },
             // Only the markers' points are drawn on lines (the others have no radius), with their
-            // values as labels; billboard.js reads both on every redraw (see toggleMarker())
+            // values and unit as labels; billboard.js reads both on every redraw (see toggleMarker())
             point: {
                 r: (d) => this.getPointRadius(d),
             },
             data: {
                 labels: {
-                    format: (value, id, index) => this.isMarkerAt(id, index) ? String(Math.round(value)) : "",
+                    format: (value, id, index) => this.isMarkerAt(id, index) ? `${Math.round(value)} ${CHART_VALUE_UNIT}` : "",
                     position: (type, value, id, index) => this.getMarkerLabelOffset(type, id, index),
                 },
             },
@@ -472,10 +472,22 @@ class BBPlot {
             .sort((a, b) => b.value - a.value || a.id.localeCompare(b.id))
             .map((point) => point.id);
         const rank = markers.indexOf(id);
-        const offset = rank === 0 ? { x: -18, y: -4 }
-            : rank === markers.length - 1 ? { x: -18, y: 24 }
-            : { x: 22, y: 10 };
+        // from the side of the point facing the label (see anchorMarkerLabels()), so a label of any
+        // width stays clear of its point
+        const offset = rank === 0 ? { x: -9, y: -4 }
+            : rank === markers.length - 1 ? { x: -9, y: 24 }
+            : { x: 9, y: 10 };
         return offset[type];
+    }
+
+    /**
+     * Anchors each marker label at its side facing the point: a label left of its point ends
+     * there, one to the right starts there (billboard.js centres them, see getMarkerLabelOffset()).
+     */
+    anchorMarkerLabels() {
+        d3.select(this.allContainer.node()).selectAll(".bb-chart-texts .bb-text")
+            .filter(function () { return this.textContent !== ""; })
+            .attr("text-anchor", (d) => this.getMarkerLabelOffset("x", d.id, d.index) < 0 ? "end" : "start");
     }
 
     /**
@@ -484,6 +496,7 @@ class BBPlot {
      * data.labels.position), then this runs (onrendered).
      */
     separateMarkerLabels() {
+        this.anchorMarkerLabels();
         const labels = [...this.allContainer.node().querySelectorAll(".bb-chart-texts .bb-text")]
             .filter((label) => label.textContent)
             .map((label) => ({ label, box: label.getBBox() }))
