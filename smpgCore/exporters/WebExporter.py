@@ -14,6 +14,12 @@ from qgis.core import (
 
 from ..structures import Dataset
 
+# The web map's coordinates are rounded to a grid of 1/MAP_QUANTIZATION of the map's extent (about
+# 10 m on Kenya, 45 m on the Sahel per step): under a pixel at the map's largest zoom on maps of
+# km-sized places, and the encoded map is about half as large. Slivers may collapse to nothing or
+# flip their winding; the report rewinds them (rewindInvertedPolygons() in js/makeMap.js).
+MAP_QUANTIZATION = 1e5
+
 def serialize_dict(input_dict: dict):
     '''Recursively serializes a dictionary and its nested dictionaries to a flattened format.
 
@@ -82,10 +88,10 @@ def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
         js_data_wrapper.write(f'var report_data = `{compress(json.dumps(texts))}`;')
 
 def layer_to_topojson(layer: QgsVectorLayer) -> dict:
-    """Converts a vector layer into GeoJSON"""
+    """Converts a vector layer into quantized TopoJSON (see MAP_QUANTIZATION)"""
     exporter = QgsJsonExporter()
     geojson: dict = json.loads(exporter.exportFeatures(layer.getFeatures()))
-    return Topology()({'map': geojson})
+    return Topology()({'map': geojson}, MAP_QUANTIZATION)
 
 def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_layer: QgsVectorLayer, subFolderName, structured_dataset: Dataset, ):
     """Outputs all the required data for a dynamic web report.
