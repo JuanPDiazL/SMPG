@@ -119,8 +119,9 @@ if(hasMap) {
         var referenceTopoJsonObjectMap = topoJsonObjectMap;
     }
 
-    var mapJson = topojson.feature(topoJsonObjectMap, topoJsonObjectMap.objects.map);
-    var referenceMapJson = topojson.feature(referenceTopoJsonObjectMap, referenceTopoJsonObjectMap.objects.map);
+    // Rings wound the wrong way would fill the whole map (see rewindInvertedPolygons())
+    var mapJson = rewindInvertedPolygons(topojson.feature(topoJsonObjectMap, topoJsonObjectMap.objects.map));
+    var referenceMapJson = rewindInvertedPolygons(topojson.feature(referenceTopoJsonObjectMap, referenceTopoJsonObjectMap.objects.map));
     // Each layer's borders, split among its polygons so a border between two places is drawn once
     var mapBorders = getPolygonBorders(topoJsonObjectMap, topoJsonObjectMap.objects.map);
     // Without a reference map, the reference layer is the map itself

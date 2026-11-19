@@ -217,6 +217,53 @@ function getPolygonBorders(topology, object) {
     return ownedArcs.map((arcs) => topojson.feature(topology, { type: "MultiLineString", arcs }));
 }
 
+// Below this planar area (in squared degrees, about 1 m²) a ring's winding is left to d3.geoArea()
+const RING_WINDING_MIN_PLANAR_AREA = 1e-10;
+
+/**
+ * Whether a ring, taken alone, encloses more than half of the sphere for d3 (wound like a hole).
+ * Its winding is read from its signed area in longitude/latitude, which is valid for rings that
+ * don't cross the antimeridian or a pole (the plugin's maps), and hundreds of times faster than
+ * d3.geoArea() (a trigonometric sum per point); near-zero areas, whose sign may be noise, are
+ * left to d3.geoArea().
+ * @param {Array<Array<number>>} ring - A closed ring of [longitude, latitude] points.
+ * @returns {boolean} True if d3 reads the ring as most of the sphere.
+ */
+function ringEnclosesMostOfSphere(ring) {
+    let doubleArea = 0;
+    for (let i = 0; i < ring.length - 1; i++) {
+        doubleArea += ring[i][0] * ring[i + 1][1] - ring[i + 1][0] * ring[i][1];
+    }
+    if (Math.abs(doubleArea) < RING_WINDING_MIN_PLANAR_AREA) {
+        return d3.geoArea({ type: "Polygon", coordinates: [ring] }) > 2 * Math.PI;
+    }
+    return doubleArea > 0; // d3's outer rings are clockwise, a negative area
+}
+
+/**
+ * Reverses the polygon rings wound the wrong way for d3, in place. d3 draws on a sphere: an outer
+ * ring must enclose less than half of it and a hole, taken alone, more; a ring wound the other way
+ * (e.g. a sliver flipped by rounding the coordinates) is read as the whole globe except that ring,
+ * so its feature fills the map and the map, fitted to the layer's bounds, shrinks.
+ * @param {Object} featureCollection - A GeoJSON FeatureCollection, e.g. from topojson.feature().
+ * @returns {Object} The same FeatureCollection.
+ */
+function rewindInvertedPolygons(featureCollection) {
+    for (const feature of featureCollection.features) {
+        const geometry = feature.geometry;
+        if (geometry == null) continue;
+        const polygons = geometry.type === "Polygon" ? [geometry.coordinates]
+            : geometry.type === "MultiPolygon" ? geometry.coordinates : [];
+        for (const rings of polygons) {
+            rings.forEach((ring, index) => {
+                const isHole = index > 0;
+                if (ringEnclosesMostOfSphere(ring) !== isHole) ring.reverse();
+            });
+        }
+    }
+    return featureCollection;
+}
+
 class d3Map {
     /**
      * @param {d3.Selection} containerElement - The element the map is drawn in.
