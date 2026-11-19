@@ -1,6 +1,6 @@
 # Third-party licenses
 
-SMPG itself is released under the MIT License (see [LICENSE](LICENSE)). It bundles the third-party components listed below, which keep their own licenses. All of them are included unmodified, as distributed by their authors.
+SMPG itself is released under the MIT License (see [LICENSE](LICENSE)). It bundles the third-party components listed below, which keep their own licenses. All of them are included unmodified, as distributed by their authors, except lzma1: only its decoder is included, bundled from its npm package into one minified script (the build command is in the file's header comment).
 
 Python libraries used by the plugin but not bundled with it (PyQGIS, PyQt5, NumPy, SciPy, pandas) are provided by the QGIS installation and are not covered here.
 
@@ -13,7 +13,7 @@ Python libraries used by the plugin but not bundled with it (PyQGIS, PyQt5, NumP
 | [TopoJSON](https://github.com/topojson/topojson) | 3.0.2 | BSD-3-Clause | `smpgCore/res/web_template/js/libraries/topojson.v3.min.js` |
 | [gridstack.js](https://github.com/gridstack/gridstack.js) | 12.4.2 | MIT | `smpgCore/res/web_template/js/libraries/gridstack-all.min.js`<br>`smpgCore/res/web_template/css/libraryStyles/gridstack.min.css` |
 | [lodash](https://github.com/lodash/lodash) | 4.17.21 | MIT | `smpgCore/res/web_template/js/libraries/lodash-4.17.21.min.js` |
-| [pako](https://github.com/nodeca/pako) | 2.1.0 | MIT AND Zlib | `smpgCore/res/web_template/js/libraries/pako.min.js` |
+| [lzma1](https://github.com/xseman/lzma1) | 0.8.0 | MIT OR Apache-2.0 (used here under MIT) | `smpgCore/res/web_template/js/libraries/lzma1.min.js` |
 | [html2canvas](https://github.com/niklasvh/html2canvas) | 1.4.1 | MIT | `smpgCore/res/web_template/js/libraries/html2canvas.min.js` |
 | [interact.js](https://github.com/taye/interact.js) | 1.10.27 | MIT | `smpgCore/res/web_template/js/libraries/interact.min.js` |
 | [Showdown](https://github.com/showdownjs/showdown) | 2.1.0 | MIT | `smpgCore/res/web_template/js/libraries/showdown.min.js` |
@@ -194,14 +194,12 @@ licenses; we recommend you read them, as their terms may differ from the
 terms above.
 ```
 
-### pako
-
-pako's own code is MIT; its zlib port carries the zlib license notice, reproduced below the MIT text.
+### lzma1
 
 ```text
-(The MIT License)
+MIT License
 
-Copyright (C) 2014-2017 by Vitaly Puzrin and Andrei Tuputcyn
+Copyright (c) Filip Seman and lzma1 contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -210,35 +208,16 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-(C) 1995-2013 Jean-loup Gailly and Mark Adler
-(C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-
-This software is provided 'as-is', without any express or implied
-warranty. In no event will the authors be held liable for any damages
-arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
-freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not
-  claim that you wrote the original software. If you use this software
-  in a product, an acknowledgment in the product documentation would be
-  appreciated but is not required.
-2. Altered source versions must be plainly marked as such, and must not be
-  misrepresented as being the original software.
-3. This notice may not be removed or altered from any source distribution.
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ### html2canvas

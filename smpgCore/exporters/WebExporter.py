@@ -4,7 +4,7 @@ import json
 import os
 import shutil as sh
 from ...libraries.pytopojson.pytopojson.topology import Topology
-import zlib
+import lzma
 import base64
 
 from qgis.core import (
@@ -37,7 +37,8 @@ def serialize_dict(input_dict: dict):
 
 def compress(data: str) -> str:
     """
-    Compresses string data using zlib and encodes it as base64.
+    Compresses string data using lzma (the .lzma "alone" format, which the
+    report's lzma1 decoder reads) and encodes it as base64.
 
     Args:
         data (str): The string data to be compressed.
@@ -45,7 +46,12 @@ def compress(data: str) -> str:
     Returns:
         str: A base64-encoded string representing the compressed data.
     """
-    compressed_data = zlib.compress(data.encode())
+    data_bytes = data.encode()
+    # a dictionary of the smallest power of two holding the data: for data under preset 6's 8 MB
+    # dictionary it compresses as well and needs less memory to decode; larger data uses all of it
+    dict_size = 1 << max(12, (len(data_bytes) - 1).bit_length())
+    compressed_data = lzma.compress(data_bytes, format=lzma.FORMAT_ALONE,
+        filters=[{"id": lzma.FILTER_LZMA1, "preset": 6, "dict_size": dict_size}])
     compressed_data = base64.b64encode(compressed_data).decode("ascii")
     return compressed_data
 
@@ -61,16 +67,19 @@ def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
         destination_path (str): The path where the generated JavaScript file will be saved.
         filename (str): The name of the JavaScript file that will be generated.
     '''
-    vars = []
+    # each variable's text (CSV or JSON), compressed together: one blob lets lzma find the
+    # repeats between variables. The report declares each item as a global variable (main.js);
+    # the other values (e.g. a missing map's None) are left out, so they stay undeclared
+    texts = {}
     for name, data in data_bundle.items():
         if isinstance(data, (pd.DataFrame, pd.Series)):
-            vars.append(f'var {name} = `{compress(data.round(1).to_csv())}`;')
+            texts[name] = data.round(1).to_csv()
         if isinstance(data, dict):
-            vars.append(f'var {name} = `{compress(json.dumps(serialize_dict(data)))}`;')
+            texts[name] = json.dumps(serialize_dict(data))
 
     os.makedirs(destination_path, exist_ok=True)
     with open(f'{destination_path}/{filename}.js', 'w') as js_data_wrapper:
-        js_data_wrapper.write('\n\n'.join(vars))
+        js_data_wrapper.write(f'var report_data = `{compress(json.dumps(texts))}`;')
 
 def layer_to_topojson(layer: QgsVectorLayer) -> dict:
     """Converts a vector layer into GeoJSON"""

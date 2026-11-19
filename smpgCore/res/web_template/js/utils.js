@@ -323,16 +323,18 @@ function objectMap(obj, fn) {
 }
 
 /**
- * Decompresses a base64-encoded pako-inflated string back to its original form.
+ * Decompresses a base64-encoded lzma string (.lzma "alone" format, written by WebExporter.py)
+ * back to its original form.
  * @param {string} data - The base64-encoded compressed data string.
  * @returns {string} The decompressed string.
  */
 function decompress(data) {
     const compressedData = atob(data);
-    const compressedDataString = compressedData.split('').map(function(x){return x.charCodeAt(0);});
-    const compressedDataBin = new Uint8Array(compressedDataString);
-    const decompressedString = pako.inflate(compressedDataBin, { to: 'string'});
-    return decompressedString;
+    const compressedDataBin = new Uint8Array(compressedData.length);
+    for (let i = 0; i < compressedData.length; i++) {
+        compressedDataBin[i] = compressedData.charCodeAt(i);
+    }
+    return lzma1.decompressString(compressedDataBin);
 }
 
 /**

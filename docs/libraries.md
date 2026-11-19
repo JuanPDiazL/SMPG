@@ -48,11 +48,12 @@ It is a Python built-in library.
 It is used to convert python dictionaries that represent settings into JSON 
 files or strings.
 
-## zlib
+## lzma
 
 It is a Python built-in library.
 Its main use in the plugin is to compress data in order to reduce the size of 
-data for the web report.
+data for the web report. The report decompresses it with the bundled lzma1 
+decoder (`js/libraries/lzma1.min.js`).
 
 ## base64
 
