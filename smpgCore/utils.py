@@ -451,8 +451,17 @@ def stack_rows(rows: dict) -> pd.DataFrame:
 
     Returns:
         DataFrame: A DataFrame with a row per item of `rows`.
+
+    Raises:
+        ValueError: If `rows` is empty, or a row's index isn't equal to the
+            first row's (other labels, order or length).
     """
-    first_row = next(iter(rows.values()))
+    if len(rows) == 0:
+        raise ValueError("No rows to stack.")
+    first_name, first_row = next(iter(rows.items()))
+    for name, row in rows.items():
+        if not row.index.equals(first_row.index):
+            raise ValueError(f"Row '{name}' doesn't have the same index as row '{first_name}'.")
     return pd.DataFrame(np.vstack([row.to_numpy() for row in rows.values()]), 
                         index=list(rows), columns=first_row.index)
 
