@@ -1,5 +1,15 @@
 """Builds TopoJSON from GeoJSON with NumPy, for the web report's map (see WebExporter.py)."""
+import math
+from typing import Callable, List, Optional, Set
+
 import numpy as np
+
+# The report zooms a place until it fills 60% of the map's view: in a 1200-px-wide view (a
+# maximized map card) the place then spans this many pixels (see simplify_topojson())
+FOCUSED_PLACE_PX = 720
+# What that view shows around the place: a square this many times the place's size, centred on it
+# (its smaller side spans size / 0.6; the square covers views up to twice as wide as tall)
+FOCUSED_VIEW_SPAN = 2 / 0.6
 
 
 def geojson_to_topojson(feature_collection: dict, quantization: float, object_name: str = 'map') -> dict:
@@ -170,3 +180,130 @@ def geojson_to_topojson(feature_collection: dict, quantization: float, object_na
     if feature_collection.get('bbox') is not None:
         collection['bbox'] = feature_collection['bbox']
     return {'type': 'Topology', 'objects': {object_name: collection}, 'arcs': arcs, **topology_extras}
+
+
+def simplify_topojson(topology: dict, max_shift_px: float, simplify_lines: Callable,
+                      find_broken_places: Callable, object_name: str = 'map') -> dict:
+    """Simplifies a quantized topology's arcs, by at most max_shift_px at each place's own zoom.
+
+    Each arc is simplified once (Douglas-Peucker, by simplify_lines()), keeping its end points, so
+    borders shared by two places stay shared. Its tolerance is the size (the larger side of the
+    bounding box, in metres) of the smallest place whose zoomed view shows it (FOCUSED_VIEW_SPAN)
+    × max_shift_px / FOCUSED_PLACE_PX: zoomed to any place as the report does, no border in view
+    moves by more than max_shift_px, and borders near places without a size (slivers) aren't
+    simplified. Places that break (find_broken_places(), or a ring
+    left without area) get their original arcs back, until none breaks.
+
+    Args:
+        topology (dict): A topology from geojson_to_topojson(), with a transform.
+        max_shift_px (float): The largest shift of a border, in pixels, at a place's zoom.
+        simplify_lines (Callable): (lines, tolerances) -> lines: simplifies each line (an (n, 2)
+            array, in metres) by its tolerance, keeping its first and last points, and returns a
+            subset of its points (see simplify_lines() in pyqgis_utils.py).
+        find_broken_places (Callable): (original, changed, checked) -> set of indexes: the
+            places among checked (changed since the last call) that became invalid or overlap
+            another place, given every place's original polygons and the changed places' new ones
+            (see find_broken_places() in pyqgis_utils.py); each place is None or a list of
+            polygons, each a list of rings ((n, 2) arrays of longitude, latitude).
+        object_name (str, optional): The layer's name in the topology's objects. Defaults to 'map'.
+
+    Returns:
+        dict: A new topology with the simplified arcs (delta-encoded); the others are the same.
+    """
+    if 'transform' not in topology or not topology['arcs']:
+        return topology
+    scale = np.array(topology['transform']['scale'], dtype=float)
+    translate = np.array(topology['transform']['translate'], dtype=float)
+    arcs = [np.cumsum(np.array(arc, dtype=np.int64), axis=0) for arc in topology['arcs']]
+    # metres per grid step, at the map's mean latitude (its places span at most a few degrees)
+    latitude = translate[1] + scale[1] * np.concatenate(arcs)[:, 1].mean()
+    metres = scale * np.array([111320 * math.cos(math.radians(latitude)), 110540])
+
+    geometries = topology['objects'][object_name]['geometries']
+    place_arcs = [None if geometry.get('type') is None else _arc_indexes(geometry['arcs'])
+                  for geometry in geometries]
+    # every place's zoomed view (a square around it, in grid units) and the tolerance it needs
+    views, view_tolerances = [], []
+    for indexes in place_arcs:
+        if indexes:
+            points = np.concatenate([arcs[i] for i in indexes])
+            low, high = points.min(axis=0), points.max(axis=0)
+            size = ((high - low) * metres).max()
+            half_span = size * FOCUSED_VIEW_SPAN / 2 / metres
+            views.append(np.concatenate([(low + high) / 2 - half_span, (low + high) / 2 + half_span]))
+            view_tolerances.append(size * max_shift_px / FOCUSED_PLACE_PX)
+    views, view_tolerances = np.array(views).reshape(-1, 4), np.array(view_tolerances)
+    # each arc: the smallest tolerance among the views its bounding box meets
+    arc_boxes = np.array([np.concatenate([arc.min(axis=0), arc.max(axis=0)]) for arc in arcs])
+    in_view = ((arc_boxes[:, None, 0] <= views[None, :, 2]) & (arc_boxes[:, None, 2] >= views[None, :, 0])
+               & (arc_boxes[:, None, 1] <= views[None, :, 3]) & (arc_boxes[:, None, 3] >= views[None, :, 1]))
+    tolerances = np.where(in_view, view_tolerances[None, :], np.inf).min(axis=1, initial=np.inf)
+    tolerances[~np.isfinite(tolerances)] = 0
+
+    simplified_lines = simplify_lines([arc * metres for arc in arcs], tolerances.tolist())
+    simplified = []
+    for arc, line in zip(arcs, simplified_lines):
+        points = np.rint(line / metres).astype(np.int64)
+        # only shorter subsets of the arc with its end points are used; otherwise the arc itself
+        simplified.append(points if 2 <= len(points) < len(arc) and (points[0] == arc[0]).all()
+                          and (points[-1] == arc[-1]).all() else arc)
+
+    def place_rings(arc_points: List[np.ndarray], geometry: dict) -> Optional[list]:
+        """the place's polygons as lists of rings of grid points, joined from its arcs"""
+        if geometry.get('type') is None:
+            return None
+        polygons = [geometry['arcs']] if geometry['type'] == 'Polygon' else geometry['arcs']
+        rings = []
+        for polygon in polygons:
+            polygon_rings = []
+            for ring in polygon:
+                parts = [arc_points[i] if i >= 0 else arc_points[~i][::-1] for i in ring]
+                # consecutive arcs share their joining point
+                polygon_rings.append(np.concatenate([parts[0]] + [part[1:] for part in parts[1:]]))
+            rings.append(polygon_rings)
+        return rings
+    def to_degrees(rings: Optional[list]) -> Optional[list]:
+        return None if rings is None else [[translate + ring * scale for ring in polygon] for polygon in rings]
+    def area(ring: np.ndarray) -> float:
+        return abs(np.dot(ring[:-1, 0], ring[1:, 1]) - np.dot(ring[1:, 0], ring[:-1, 1])) / 2
+
+    original_rings = [place_rings(arcs, geometry) for geometry in geometries]
+    original_polygons = [to_degrees(rings) for rings in original_rings]
+    restored: Set[int] = set()
+    newly_restored: Set[int] = set()
+    first_check = True
+    while True:
+        current = [arcs[i] if i in restored else simplified[i] for i in range(len(arcs))]
+        changed = [place for place, indexes in enumerate(place_arcs)
+                   if indexes and any(current[i] is not arcs[i] for i in indexes)]
+        # after the first check, only the places whose arcs were just restored changed
+        checked = changed if first_check else [place for place, indexes in enumerate(place_arcs)
+                                               if indexes and newly_restored.intersection(indexes)]
+        first_check = False
+        current_rings = {place: place_rings(current, geometries[place]) for place in changed}
+        broken = set(find_broken_places(original_polygons,
+                                        {place: to_degrees(rings) for place, rings in current_rings.items()},
+                                        checked))
+        broken |= {place for place in checked if place in current_rings
+                   and any(area(before) > 0 and area(after) == 0
+                           for polygon_before, polygon_after in zip(original_rings[place], current_rings[place])
+                           for before, after in zip(polygon_before, polygon_after))}
+        newly_restored = {i for place in broken for i in place_arcs[place]} - restored
+        if not newly_restored:
+            break
+        restored |= newly_restored
+
+    def delta(points: np.ndarray) -> list:
+        moves = np.diff(points, axis=0)
+        moves = moves[(moves != 0).any(axis=1)]
+        if len(moves) == 0:
+            moves = np.zeros((1, 2), dtype=np.int64)
+        return [points[0].tolist()] + moves.tolist()
+    return {**topology, 'arcs': [delta(points) for points in current]}
+
+
+def _arc_indexes(arcs: list) -> List[int]:
+    """The arcs a geometry uses (their indexes, reversed ones as their own), from its nested lists."""
+    if isinstance(arcs, list):
+        return sorted({i for item in arcs for i in _arc_indexes(item)})
+    return [~arcs if arcs < 0 else arcs]

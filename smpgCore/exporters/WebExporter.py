@@ -6,7 +6,7 @@ import shutil as sh
 import io
 import zipfile
 from typing import List, Optional
-from .TopoJSONBuilder import geojson_to_topojson
+from .TopoJSONBuilder import geojson_to_topojson, simplify_topojson
 import lzma
 
 from qgis.core import (
@@ -15,12 +15,17 @@ from qgis.core import (
 )
 
 from ..structures import Dataset
+from ..pyqgis_utils import simplify_lines, find_broken_places
 
 # The web map's coordinates are rounded to a grid of 1/MAP_QUANTIZATION of the map's extent (about
 # 10 m on Kenya, 45 m on the Sahel per step): under a pixel at the map's largest zoom on maps of
 # km-sized places, and the encoded map is about half as large. Slivers may collapse to nothing or
 # flip their winding; the report rewinds them (rewindInvertedPolygons() in js/makeMap.js).
 MAP_QUANTIZATION = 1e5
+
+# The map's borders are then simplified by at most this many pixels at each place's own zoom (see
+# simplify_topojson()): not visible, and the encoded map gets 25-75% smaller on the sample maps
+MAP_SIMPLIFY_MAX_SHIFT_PX = 0.5
 
 # data.js holds a Zarr v2 store (in a zip): every numeric table as an array of int32 tenths (see
 # table_to_tenths()), this value marking its empty cells, and the other variables in texts.json
@@ -261,10 +266,12 @@ def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
         js_data_wrapper.write('\ufeff' + f'var report_data = `{compress(store_buffer.getvalue())}`;')
 
 def layer_to_topojson(layer: QgsVectorLayer) -> dict:
-    """Converts a vector layer into quantized TopoJSON (see MAP_QUANTIZATION)"""
+    """Converts a vector layer into quantized, simplified TopoJSON (see MAP_QUANTIZATION and
+    MAP_SIMPLIFY_MAX_SHIFT_PX)"""
     exporter = QgsJsonExporter()
     geojson: dict = json.loads(exporter.exportFeatures(layer.getFeatures()))
-    return geojson_to_topojson(geojson, MAP_QUANTIZATION)
+    return simplify_topojson(geojson_to_topojson(geojson, MAP_QUANTIZATION), MAP_SIMPLIFY_MAX_SHIFT_PX,
+                             simplify_lines, find_broken_places)
 
 def export_to_web_files(destination_path, map_layer: QgsVectorLayer, reference_layer: QgsVectorLayer, subFolderName, structured_dataset: Dataset, ):
     """Outputs all the required data for a dynamic web report.

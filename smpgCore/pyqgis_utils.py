@@ -1,4 +1,8 @@
 import os
+import struct
+from typing import Dict, List, Optional, Set
+
+import numpy as np
 
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt import QtCore
@@ -17,6 +21,9 @@ from qgis.core import (
     QgsClassificationQuantile,
     QgsMessageLog,
     QgsWkbTypes,
+    QgsGeometry,
+    QgsFeature,
+    QgsSpatialIndex,
 )
 
 def load_layer_file(source: str) -> QgsVectorLayer:
@@ -206,3 +213,88 @@ def rename_layer(layer: QgsVectorLayer, name='', prefix='', suffix=''):
 
 def get_root():
     return QgsProject.instance().layerTreeRoot()
+
+def simplify_lines(lines: List[np.ndarray], tolerances: List[float]) -> List[np.ndarray]:
+    """Simplifies each line with GEOS's Douglas-Peucker (QgsGeometry.simplify()), which keeps its
+    first and last points and returns a subset of its points.
+
+    Args:
+        lines (list[ndarray]): The lines, (n, 2) arrays.
+        tolerances (list[float]): Each line's tolerance: the farthest a point may be from the
+            simplified line, in the lines' units; 0 leaves the line as it is.
+
+    Returns:
+        list[ndarray]: The simplified lines.
+    """
+    simplified = []
+    for line, tolerance in zip(lines, tolerances):
+        if tolerance <= 0 or len(line) <= 2:
+            simplified.append(line)
+            continue
+        # through WKB (little-endian LineString), much faster than building points one by one
+        geometry = QgsGeometry()
+        geometry.fromWkb(struct.pack('<BII', 1, 2, len(line)) + np.ascontiguousarray(line, '<f8').tobytes())
+        wkb = bytes(geometry.simplify(float(tolerance)).asWkb())
+        if len(wkb) < 9 or struct.unpack_from('<BI', wkb) != (1, 2):
+            simplified.append(line)
+            continue
+        count = struct.unpack_from('<I', wkb, 5)[0]
+        simplified.append(np.frombuffer(wkb, '<f8', 2 * count, 9).reshape(count, 2))
+    return simplified
+
+def find_broken_places(original: List[Optional[list]], changed: Dict[int, Optional[list]],
+                       checked: List[int]) -> Set[int]:
+    """The places that a change of geometry broke: valid before and invalid now (e.g. a border
+    crossing itself), or overlapping a place they didn't overlap before. Problems the original
+    geometries already had are left alone.
+
+    Args:
+        original (list): Every place's polygons: None, or a list of polygons, each a list of rings
+            ((n, 2) arrays of x, y, closed).
+        changed (dict): The new polygons of every place that differs from the original, by index.
+        checked (list[int]): The places to check (with every place they touch): those changed
+            since the last check.
+
+    Returns:
+        set[int]: The broken places' indexes.
+    """
+    def geometry(polygons: Optional[list]) -> Optional[QgsGeometry]:
+        if not polygons:
+            return None
+        parts = [struct.pack('<BII', 1, 6, len(polygons))]   # little-endian MultiPolygon
+        for rings in polygons:
+            parts.append(struct.pack('<BII', 1, 3, len(rings)))
+            for ring in rings:
+                parts.append(struct.pack('<I', len(ring)) + np.ascontiguousarray(ring, '<f8').tobytes())
+        result = QgsGeometry()
+        result.fromWkb(b''.join(parts))
+        return result
+    def interiors_meet(a: QgsGeometry, b: QgsGeometry) -> bool:
+        """whether two places overlap (more than a shared border)"""
+        engine = QgsGeometry.createGeometryEngine(a.constGet())
+        engine.prepareGeometry()
+        return engine.relatePattern(b.constGet(), 'T********')
+    before = [geometry(polygons) for polygons in original]
+    after = list(before)
+    for place, polygons in changed.items():
+        after[place] = geometry(polygons)
+    index = QgsSpatialIndex()
+    for place, place_geometry in enumerate(after):
+        if place_geometry is not None:
+            feature = QgsFeature(place)
+            feature.setGeometry(place_geometry)
+            index.addFeature(feature)
+    broken = set()
+    checked_set = set(checked)
+    for place in checked:
+        if after[place] is None:
+            continue
+        if before[place].isGeosValid() and not after[place].isGeosValid():
+            broken.add(place)
+        for other in index.intersects(after[place].boundingBox()):
+            if other == place or (other in checked_set and other < place):
+                continue   # each pair once
+            # the original pair only when needed: overlaps are rare
+            if interiors_meet(after[place], after[other]) and not interiors_meet(before[place], before[other]):
+                broken.update((place, other))
+    return broken
