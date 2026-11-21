@@ -48,6 +48,12 @@ Its main use in the plugin is to compress data in order to reduce the size of
 data for the web report. The report decompresses it with the bundled lzma1 
 decoder (`js/libraries/lzma1.min.js`).
 
+## zipfile
+
+It is a Python built-in library.
+It is used to write the web report's data as a Zarr v2 store, a zip file of numeric 
+arrays and their descriptions, which the report reads without a library.
+
 ## os
 
 It is a Python built-in library.

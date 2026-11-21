@@ -3,6 +3,9 @@ import numpy as np
 import json
 import os
 import shutil as sh
+import io
+import zipfile
+from typing import Optional
 from .TopoJSONBuilder import geojson_to_topojson
 import lzma
 
@@ -18,6 +21,10 @@ from ..structures import Dataset
 # km-sized places, and the encoded map is about half as large. Slivers may collapse to nothing or
 # flip their winding; the report rewinds them (rewindInvertedPolygons() in js/makeMap.js).
 MAP_QUANTIZATION = 1e5
+
+# data.js holds a Zarr v2 store (in a zip): every numeric table as an array of int32 tenths (see
+# table_to_tenths()), this value marking its empty cells, and the other variables in texts.json
+ZARR_FILL_VALUE = -2**31
 
 def serialize_dict(input_dict: dict):
     '''Recursively serializes a dictionary and its nested dictionaries to a flattened format.
@@ -66,30 +73,129 @@ def encode_base32768(data: bytes) -> str:
         code_units[-1] = 0x8080 + ((code_units[-1] - 0x80) >> 8)
     return code_units.astype('<u2').tobytes().decode('utf-16-le')
 
-def compress(data: str) -> str:
+def compress(data: bytes) -> str:
     """
-    Compresses string data using lzma (the .lzma "alone" format, which the
-    report's lzma1 decoder reads) and encodes it as base32768 (see encode_base32768()).
+    Compresses data using lzma (the .lzma "alone" format, which the report's lzma1 decoder reads)
+    and encodes it as base32768 (see encode_base32768()).
 
     Args:
-        data (str): The string data to be compressed.
+        data (bytes): The data to be compressed.
 
     Returns:
         str: The base32768-encoded compressed data.
     """
-    data_bytes = data.encode()
     # a dictionary of the smallest power of two holding the data: for data under preset 6's 8 MB
     # dictionary it compresses as well and needs less memory to decode; larger data uses all of it
-    dict_size = 1 << max(12, (len(data_bytes) - 1).bit_length())
-    compressed_data = lzma.compress(data_bytes, format=lzma.FORMAT_ALONE,
+    dict_size = 1 << max(12, (len(data) - 1).bit_length())
+    compressed_data = lzma.compress(data, format=lzma.FORMAT_ALONE,
         filters=[{"id": lzma.FILTER_LZMA1, "preset": 6, "dict_size": dict_size}])
     return encode_base32768(compressed_data)
+
+def table_to_tenths(table: pd.DataFrame) -> Optional[np.ndarray]:
+    """
+    The table's values, rounded to 0.1 as the report shows them, as int32 tenths with
+    ZARR_FILL_VALUE for empty cells; tenths / 10 in the report gives the very number its CSV did.
+
+    Args:
+        table (DataFrame): The table.
+
+    Returns:
+        ndarray | None: The int32 tenths, or None when they can't stand for the CSV exactly (text,
+            booleans, infinite or -0.0 values, values beyond int32): the table then stays CSV.
+    """
+    for column in table.columns[table.dtypes == object]:
+        # object columns may hold numbers and None (empty), nothing else
+        if not all(value is None or (isinstance(value, (int, float, np.integer, np.floating))
+                                     and not isinstance(value, (bool, np.bool_)))
+                   for value in table[column]):
+            return None
+    if any(pd.api.types.is_bool_dtype(dtype) for dtype in table.dtypes):
+        return None
+    try:
+        values = table.round(1).to_numpy(dtype=float)
+    except (TypeError, ValueError):
+        return None
+    filled = ~np.isnan(values)
+    tenths = np.rint(values * 10)
+    if (not np.isfinite(values[filled]).all()
+            or (tenths[filled] / 10 != values[filled]).any()
+            or ((values[filled] == 0) & np.signbit(values[filled])).any()
+            or (np.abs(tenths[filled]) > 2**31 - 2).any()):
+        return None
+    tenths[~filled] = ZARR_FILL_VALUE
+    return tenths.astype('<i4')
+
+def write_zarr_array(store: zipfile.ZipFile, name: str, values: np.ndarray, attributes: dict):
+    """
+    Writes an int32 array to a Zarr v2 store: one chunk, no compressor (data.js is compressed as a
+    whole), the standard byte shuffle filter (all first bytes, then all second bytes...).
+
+    Args:
+        store (ZipFile): The store.
+        name (str): The array's name (its folder in the store).
+        values (ndarray): The int32 values.
+        attributes (dict): Its .zattrs.
+    """
+    metadata = {'zarr_format': 2, 'shape': list(values.shape), 'chunks': list(values.shape),
+                'dtype': '<i4', 'compressor': None, 'fill_value': ZARR_FILL_VALUE, 'order': 'C',
+                'filters': [{'id': 'shuffle', 'elementsize': 4}]}
+    planes = np.ascontiguousarray(values, dtype='<i4').view(np.uint8).reshape(-1, 4).T
+    write_zip_entry(store, f'{name}/.zarray', json.dumps(metadata).encode())
+    write_zip_entry(store, f'{name}/.zattrs', json.dumps(attributes).encode())
+    write_zip_entry(store, f'{name}/' + '.'.join('0' * values.ndim), planes.tobytes())
+
+def write_zip_entry(store: zipfile.ZipFile, name: str, data: bytes):
+    """Writes an uncompressed entry with a fixed date, so the same data gives the same bytes."""
+    store.writestr(zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0)), data,
+                   compress_type=zipfile.ZIP_STORED)
+
+def numeric_table_array(name: str, data) -> Optional[tuple]:
+    """
+    A numeric variable as a Zarr array: a table of places (DataFrame) in 2 dimensions, a table per
+    place (dict of DataFrames with the same columns and number of rows) in 3.
+
+    Args:
+        name (str): The variable's name.
+        data (DataFrame | dict): Its value.
+
+    Returns:
+        tuple | None: (values, attributes) for write_zarr_array(), or None when it stays CSV.
+    """
+    attributes = {'scale_factor': 0.1, '_FillValue': ZARR_FILL_VALUE}
+    if isinstance(data, pd.DataFrame):
+        # read with csvParse() or csvParseRows(): the index must be unnamed, the columns unique
+        values = table_to_tenths(data)
+        if (values is None or values.size == 0 or data.index.name is not None
+                or not data.columns.is_unique):
+            return None
+        return values, {**attributes, '_ARRAY_DIMENSIONS': ['place', f'{name}_columns'],
+                        'rows': [str(label) for label in data.index],
+                        'columns': [str(label) for label in data.columns]}
+    if isinstance(data, dict) and data and all(isinstance(table, pd.DataFrame) for table in data.values()):
+        tables = list(data.values())
+        columns = [str(label) for label in tables[0].columns]
+        if any([str(label) for label in table.columns] != columns or len(table) != len(tables[0])
+               for table in tables):
+            return None
+        place_values = [table_to_tenths(table) for table in tables]
+        if any(values is None for values in place_values) or place_values[0].size == 0:
+            return None
+        rows = [[str(label) for label in table.index] for table in tables]
+        return np.stack(place_values), {
+            **attributes, '_ARRAY_DIMENSIONS': ['place', f'{name}_rows', f'{name}_columns'],
+            'places': [str(place) for place in data],
+            # one list when every place has the same rows, else one per place (e.g. similar years)
+            'rows': rows[0] if all(place_rows == rows[0] for place_rows in rows) else rows,
+            'columns': columns}
+    return None
 
 def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
     '''Convert a dictionary of Python objects to JavaScript code.
 
-    This function takes a dictionary of Python objects (e.g. DataFrames, dictionaries)
-    and generates JavaScript code that can be used to recreate the original data in a web page.
+    The data goes into a Zarr v2 store (a zip): every numeric table as an int32 array (see
+    numeric_table_array()), the other variables (JSON, the map, tables that must stay CSV) as text
+    in its texts.json. The store is compressed and encoded into one JavaScript variable,
+    report_data, which the report reads with readReportData() (js/utils.js).
 
     Args:
         data_bundle (dict): A dictionary where each key is a variable name and each value
@@ -97,21 +203,28 @@ def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
         destination_path (str): The path where the generated JavaScript file will be saved.
         filename (str): The name of the JavaScript file that will be generated.
     '''
-    # each variable's text (CSV or JSON), compressed together: one blob lets lzma find the
-    # repeats between variables. The report declares each item as a global variable (main.js);
-    # the other values (e.g. a missing map's None) are left out, so they stay undeclared
+    # all variables compressed together: one blob lets lzma find the repeats between them. The
+    # values that are neither tables nor dictionaries (e.g. a missing map's None) are left out, so
+    # the report leaves them undeclared
     texts = {}
-    for name, data in data_bundle.items():
-        if isinstance(data, (pd.DataFrame, pd.Series)):
-            texts[name] = data.round(1).to_csv()
-        if isinstance(data, dict):
-            texts[name] = json.dumps(serialize_dict(data))
+    store_buffer = io.BytesIO()
+    with zipfile.ZipFile(store_buffer, 'w', zipfile.ZIP_STORED) as store:
+        write_zip_entry(store, '.zgroup', json.dumps({'zarr_format': 2}).encode())
+        for name, data in data_bundle.items():
+            array = numeric_table_array(name, data) if name.endswith(('_csv', '_csv_obj')) else None
+            if array is not None:
+                write_zarr_array(store, name, *array)
+            elif isinstance(data, (pd.DataFrame, pd.Series)):
+                texts[name] = data.round(1).to_csv()
+            elif isinstance(data, dict):
+                texts[name] = json.dumps(serialize_dict(data))
+        write_zip_entry(store, 'texts.json', json.dumps(texts).encode())
 
     os.makedirs(destination_path, exist_ok=True)
     # UTF-16 (little-endian) with a BOM, which makes browsers read it as UTF-16 even when a server
     # announces another charset; newline='' writes the text as it is on every system
     with open(f'{destination_path}/{filename}.js', 'w', encoding='utf-16-le', newline='') as js_data_wrapper:
-        js_data_wrapper.write('\ufeff' + f'var report_data = `{compress(json.dumps(texts))}`;')
+        js_data_wrapper.write('\ufeff' + f'var report_data = `{compress(store_buffer.getvalue())}`;')
 
 def layer_to_topojson(layer: QgsVectorLayer) -> dict:
     """Converts a vector layer into quantized TopoJSON (see MAP_QUANTIZATION)"""

@@ -355,13 +355,12 @@ function decodeBase32768(text) {
 }
 
 /**
- * Decompresses a base32768-encoded lzma string (.lzma "alone" format, written by WebExporter.py)
- * back to its original form.
- * @param {string} data - The base32768-encoded compressed data string.
- * @returns {string} The decompressed string.
+ * Decompresses base32768-encoded lzma data (.lzma "alone" format, written by WebExporter.py).
+ * @param {string} data - The base32768-encoded compressed data.
+ * @returns {Uint8Array} The decompressed bytes.
  */
 function decompress(data) {
-    return lzma1.decompressString(decodeBase32768(data));
+    return lzma1.decompress(decodeBase32768(data));
 }
 
 /**
@@ -420,6 +419,133 @@ function parseObjectCsv(obj) {
  */
 function parseRowsObjectCsv(obj) {
     return objectMap(JSON.parse(obj), csvParseRows);
+}
+
+/**
+ * Reads the uncompressed ("stored") entries of a zip file, as Python's zipfile writes them.
+ * @param {Uint8Array} bytes - The zip file.
+ * @returns {Object<string, Uint8Array>} Each entry's bytes by its name.
+ */
+function readZipEntries(bytes) {
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const decoder = new TextDecoder();
+    // the end of central directory record, at most 64 KB (its comment) before the end
+    let end = bytes.length - 22;
+    while (end >= 0 && view.getUint32(end, true) !== 0x06054b50) end--;
+    if (end < 0) throw new Error("Invalid report data: not a zip file");
+    const entries = {};
+    let header = view.getUint32(end + 16, true);
+    for (let i = 0; i < view.getUint16(end + 10, true); i++) {
+        if (view.getUint16(header + 10, true) !== 0) throw new Error("Invalid report data: compressed zip entry");
+        const size = view.getUint32(header + 20, true);
+        const nameLength = view.getUint16(header + 28, true);
+        const name = decoder.decode(bytes.subarray(header + 46, header + 46 + nameLength));
+        const local = view.getUint32(header + 42, true);
+        const start = local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true);
+        entries[name] = bytes.subarray(start, start + size);
+        header += 46 + nameLength + view.getUint16(header + 30, true) + view.getUint16(header + 32, true);
+    }
+    return entries;
+}
+
+/**
+ * Reads the report's data (report_data in data.js, see data_py_to_js() in WebExporter.py): a Zarr
+ * v2 store in a zip, with every numeric table as an array of int32 tenths (shuffle filter, one
+ * chunk) and the other variables as text in texts.json.
+ * @param {string} data - report_data.
+ * @returns {{texts: Object<string, string>, arrays: Object<string, {shape: number[], values:
+ *   Int32Array, fill: number, attributes: Object}>}} The variables kept as text, and the arrays.
+ */
+function readReportData(data) {
+    const decoder = new TextDecoder();
+    const entries = readZipEntries(decompress(data));
+    const arrays = {};
+    for (const path of Object.keys(entries).filter((path) => path.endsWith("/.zarray"))) {
+        const name = path.slice(0, -"/.zarray".length);
+        const metadata = JSON.parse(decoder.decode(entries[path]));
+        const filters = JSON.stringify(metadata.filters);
+        if (metadata.dtype !== "<i4" || metadata.compressor !== null
+                || filters !== JSON.stringify([{ id: "shuffle", elementsize: 4 }])) {
+            throw new Error(`Invalid report data: unsupported array ${name}`);
+        }
+        // the shuffle filter stores every value's first bytes, then their second bytes...
+        const chunk = entries[`${name}/` + metadata.shape.map(() => "0").join(".")];
+        const count = chunk.length / 4;
+        const values = new Int32Array(count);
+        for (let i = 0; i < count; i++) {
+            values[i] = chunk[i] | (chunk[count + i] << 8) | (chunk[2 * count + i] << 16) | (chunk[3 * count + i] << 24);
+        }
+        arrays[name] = {
+            shape: metadata.shape, values, fill: metadata.fill_value,
+            attributes: JSON.parse(decoder.decode(entries[`${name}/.zattrs`])),
+        };
+    }
+    return { texts: JSON.parse(decoder.decode(entries["texts.json"])), arrays };
+}
+
+/**
+ * Reads a table of places from the report's data, as csvParse() or csvParseRows() parses its CSV:
+ * rows by their label (typed by d3.autoType), each an object by column or an array of values.
+ * @param {Object} reportData - From readReportData().
+ * @param {string} name - The variable's name.
+ * @param {Function} parse - csvParse or csvParseRows: the shape to build, and the parser of a
+ *   table kept as CSV.
+ * @returns {Object} The table.
+ */
+function readTable(reportData, name, parse) {
+    const array = reportData.arrays[name];
+    if (!array) return parse(reportData.texts[name]);
+    const [rowCount, columnCount] = array.shape;
+    const { rows, columns } = array.attributes;
+    const table = {};
+    for (let row = 0; row < rowCount; row++) {
+        const values = arrayRowValues(array, row * columnCount, columnCount);
+        table[d3.autoType([rows[row]])[0]] = parse === csvParse
+            ? Object.fromEntries(columns.map((column, i) => [column, values[i]]))
+            : values;
+    }
+    return table;
+}
+
+/**
+ * Reads a table per place from the report's data, as parseRowsObjectCsv() parses its CSVs.
+ * @param {Object} reportData - From readReportData().
+ * @param {string} name - The variable's name.
+ * @returns {Object} Each place's table: rows by their label (typed by d3.autoType), as arrays.
+ */
+function readPlaceTables(reportData, name) {
+    const array = reportData.arrays[name];
+    if (!array) return parseRowsObjectCsv(reportData.texts[name]);
+    const [placeCount, rowCount, columnCount] = array.shape;
+    const { places, rows } = array.attributes;
+    const sharedRows = !Array.isArray(rows[0]); // otherwise one list of rows per place
+    const tables = {};
+    for (let place = 0; place < placeCount; place++) {
+        const placeRows = sharedRows ? rows : rows[place];
+        const table = {};
+        for (let row = 0; row < rowCount; row++) {
+            table[d3.autoType([placeRows[row]])[0]] = arrayRowValues(array, (place * rowCount + row) * columnCount, columnCount);
+        }
+        tables[places[place]] = table;
+    }
+    return tables;
+}
+
+/**
+ * A row of a report data array as the numbers its CSV gave: tenths / 10, null for empty cells.
+ * @param {Object} array - From readReportData().
+ * @param {number} start - The row's first index in array.values.
+ * @param {number} length - Its number of values.
+ * @returns {Array<number|null>} The row.
+ */
+function arrayRowValues(array, start, length) {
+    const divisor = Math.round(1 / array.attributes.scale_factor);
+    const row = new Array(length);
+    for (let i = 0; i < length; i++) {
+        const value = array.values[start + i];
+        row[i] = value === array.fill ? null : value / divisor;
+    }
+    return row;
 }
 
 /**

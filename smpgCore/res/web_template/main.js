@@ -17,31 +17,32 @@ var reportEditMode = getHashParamsObject()["edit_mode"] === "true";
 // also from reader mode (see layoutHasUnsavedChanges())
 var reportEditModeUsed = reportEditMode;
 
-// Decompress the data (data.js holds each variable's text in one compressed blob) and declare
-// each item as a global variable; data left out of the blob stays undeclared (see isDeclared())
-for (const [name, value] of Object.entries(JSON.parse(decompress(report_data)))) {
+// Read the data (data.js holds a Zarr store, see readReportData()): the variables kept as text are
+// declared as global variables; data left out stays undeclared (see isDeclared())
+const reportData = readReportData(report_data);
+for (const [name, value] of Object.entries(reportData.texts)) {
     window[name] = value;
 }
 
 // Parse data
 var datasetProperties = JSON.parse(dataset_properties_json);
 var parameters = JSON.parse(parameters_json);
-var place_general_stats = csvParse(place_general_stats_csv);
-var place_long_term_stats = parseRowsObjectCsv(place_long_term_stats_csv_obj);
-var seasonal_current_totals = csvParseRows(seasonal_current_totals_csv);
+var place_general_stats = readTable(reportData, "place_general_stats_csv", csvParse);
+var place_long_term_stats = readPlaceTables(reportData, "place_long_term_stats_csv_obj");
+var seasonal_current_totals = readTable(reportData, "seasonal_current_totals_csv", csvParseRows);
 // Each past year's total up to the current period as a percent of the LTA up to it
-var seasonal_pct_of_avg = csvParse(seasonal_pct_of_avg_csv);
-var seasonal_forecast_totals = csvParseRows(seasonal_forecast_totals_csv);
-var seasonal_general_stats = csvParse(seasonal_general_stats_csv);
-var selected_seasons_general_stats = csvParse(selected_seasons_general_stats_csv);
-var seasonal_cumsum = parseRowsObjectCsv(seasonal_cumsum_csv_obj);
-var seasonal_ensemble = parseRowsObjectCsv(seasonal_ensemble_csv_obj);
-var seasonal_long_term_stats  = parseRowsObjectCsv(seasonal_long_term_stats_csv_obj);
-var seasonal_series = parseRowsObjectCsv(seasonal_series_csv_obj);
-var selected_seasons_cumsum = parseRowsObjectCsv(selected_seasons_cumsum_csv_obj);
-var selected_seasons_ensemble = parseRowsObjectCsv(selected_seasons_ensemble_csv_obj);
-var selected_seasons_ensemble_with_forecast = parseRowsObjectCsv(selected_seasons_ensemble_with_forecast_csv_obj);
-var selected_seasons_long_term_stats   = parseRowsObjectCsv(selected_seasons_long_term_stats_csv_obj);
+var seasonal_pct_of_avg = readTable(reportData, "seasonal_pct_of_avg_csv", csvParse);
+var seasonal_forecast_totals = readTable(reportData, "seasonal_forecast_totals_csv", csvParseRows);
+var seasonal_general_stats = readTable(reportData, "seasonal_general_stats_csv", csvParse);
+var selected_seasons_general_stats = readTable(reportData, "selected_seasons_general_stats_csv", csvParse);
+var seasonal_cumsum = readPlaceTables(reportData, "seasonal_cumsum_csv_obj");
+var seasonal_ensemble = readPlaceTables(reportData, "seasonal_ensemble_csv_obj");
+var seasonal_long_term_stats  = readPlaceTables(reportData, "seasonal_long_term_stats_csv_obj");
+var seasonal_series = readPlaceTables(reportData, "seasonal_series_csv_obj");
+var selected_seasons_cumsum = readPlaceTables(reportData, "selected_seasons_cumsum_csv_obj");
+var selected_seasons_ensemble = readPlaceTables(reportData, "selected_seasons_ensemble_csv_obj");
+var selected_seasons_ensemble_with_forecast = readPlaceTables(reportData, "selected_seasons_ensemble_with_forecast_csv_obj");
+var selected_seasons_long_term_stats   = readPlaceTables(reportData, "selected_seasons_long_term_stats_csv_obj");
 
 // Global data properties
 const period_unit = datasetProperties['period_unit_id'];
