@@ -35,13 +35,6 @@ and data analysis tools for the Python programming language.
 It is used in SMPG for storing and manipulating input data as well as derived 
 statistics from it.
 
-## pyTopoJSON
-
-pyTopoJSON provides tools for converting GeoJSON to TopoJSON.
-It is used in SMPG to convert GeoJSON data into TopoJSON format, which is a 
-more compact and efficient representation of geographic data and can be read 
-through a web browser with the proper Javascript libraries.
-
 ## json
 
 It is a Python built-in library.

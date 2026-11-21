@@ -22,7 +22,6 @@ Python libraries used by the plugin but not bundled with it (PyQGIS, PyQt5, NumP
 | [Material Icons (font)](https://github.com/google/material-design-icons) | - | Apache-2.0 | `smpgCore/res/web_template/css/material-icons.woff2` |
 | [W3.CSS](https://www.w3schools.com/w3css/) | 4.15 | No license (see note) | `smpgCore/res/web_template/css/libraryStyles/w3.css` |
 | [normalize.css (extract inside W3.CSS)](https://github.com/necolas/normalize.css) | - | MIT | `smpgCore/res/web_template/css/libraryStyles/w3.css` |
-| [pyTopoJSON](https://github.com/fferrin/pytopojson) | 1.1.2 | ISC | `libraries/pytopojson/` |
 
 ## TinyMCE source code
 
@@ -329,26 +328,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-```
-
-### pyTopoJSON
-
-Its `setup.py` declares MIT, but the bundled `LICENSE` file (reproduced below) is ISC.
-
-```text
-Copyright 2019 Facundo Ferrín
-
-Permission to use, copy, modify, and/or distribute this software for any purpose
-with or without fee is hereby granted, provided that the above copyright notice
-and this permission notice appear in all copies.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
-THIS SOFTWARE.
 ```
 
 ### Apache License 2.0
