@@ -63,7 +63,7 @@ The workflow of the plugin can be divided into 4 steps:
 
     ### Web Exporter:
 
-    The web exporter is responsible for creating a local web page with a template located in `/smpgCore/res/web_template`. The generated data is first converted to csv strings or JSON strings, then all of them are stored in one JSON object, compressed together with lzma and encoded as text with base122 (7 bits per character, about 14% smaller than base64) to reduce the size and make it readable by the browser, then saved as a javascript file (`data/data.js`, one variable `report_data`) and put in a copy of the template.
+    The web exporter is responsible for creating a local web page with a template located in `/smpgCore/res/web_template`. The generated data is first converted to csv strings or JSON strings, then all of them are stored in one JSON object, compressed together with lzma and encoded as text with base32768 (15 bits per character, about 20% smaller than base64) to reduce the size and make it readable by the browser, then saved as a javascript file in UTF-16 with a byte order mark (`data/data.js`, one variable `report_data`) and put in a copy of the template.
 
     The web template has all the files and code to decode and decompress the data, to then show the data in different charts without the need of external resources.
 

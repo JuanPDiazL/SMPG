@@ -19,10 +19,6 @@ from ..structures import Dataset
 # flip their winding; the report rewinds them (rewindInvertedPolygons() in js/makeMap.js).
 MAP_QUANTIZATION = 1e5
 
-# The characters base122 doesn't write as is in data.js's template literal (see encode_base122()):
-# NUL, CR (read as LF in a template literal), $ (${ starts a substitution), \ and `
-BASE122_BANNED = (0x00, 0x0D, 0x24, 0x5C, 0x60)
-
 def serialize_dict(input_dict: dict):
     '''Recursively serializes a dictionary and its nested dictionaries to a flattened format.
 
@@ -44,54 +40,42 @@ def serialize_dict(input_dict: dict):
             serialized_dict[key] = value
     return serialized_dict
 
-def encode_base122(data: bytes) -> str:
+def encode_base32768(data: bytes) -> str:
     """
-    Encodes bytes as text for a JavaScript template literal, 7 bits per character (base122).
+    Encodes bytes as text, 15 bits per character, for data.js written in UTF-16 (base32768).
 
-    The bits are read in 7-bit chunks, each written as the ASCII character of that value, except
-    the values a template literal can't hold as is (BASE122_BANNED): such a chunk and the next one
-    are written together as one character, U+0080 + (its index in BASE122_BANNED * 128 + the next
-    chunk), two bytes in UTF-8; a banned last chunk uses index len(BASE122_BANNED). About 87.5%
-    of the file is data (base64: 75%). Decoded by decodeBase122() in the report's js/utils.js.
+    The bits are read in 15-bit chunks, each written as the character U+0080 + its value: U+0080
+    to U+807F holds no ASCII character, so none a template literal can't hold as is (`, \\, $, CR),
+    and no surrogate, which UTF-16 can't hold alone. A last chunk with fewer than 8 bits of data is
+    written as U+8080 + its first 7 bits instead, so its padding doesn't read as another byte.
+    About 93.75% of the file is data (base64: 75%). Decoded by decodeBase32768() in the report's
+    js/utils.js.
 
     Args:
         data (bytes): The bytes to encode.
 
     Returns:
-        str: The encoded text (UTF-8 to be written as such).
+        str: The encoded text, to be written in UTF-16.
     """
     bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
-    chunk_count = -(-len(bits) // 7)
-    bits = np.concatenate([bits, np.zeros(chunk_count * 7 - len(bits), dtype=np.uint8)])
-    chunks = bits.reshape(-1, 7).astype(np.int64) @ (1 << np.arange(6, -1, -1))
-
-    banned_index = np.full(128, -1, dtype=np.int64)
-    banned_index[list(BASE122_BANNED)] = np.arange(len(BASE122_BANNED))
-    code_points = chunks.copy()
-    is_kept = np.ones(chunk_count, dtype=bool)
-    # in order: a banned chunk takes the next one with it, and a taken chunk isn't checked
-    taken = -1
-    for i in np.flatnonzero(banned_index[chunks] >= 0).tolist():
-        if i == taken:
-            continue
-        if i + 1 < chunk_count:
-            code_points[i] = 0x80 + (banned_index[chunks[i]] << 7) + chunks[i + 1]
-            is_kept[i + 1] = False
-            taken = i + 1
-        else:
-            code_points[i] = 0x80 + (len(BASE122_BANNED) << 7) + chunks[i]
-    return code_points[is_kept].astype('<u4').tobytes().decode('utf-32-le')
+    chunk_count = -(-len(bits) // 15)
+    padding = chunk_count * 15 - len(bits)
+    bits = np.concatenate([bits, np.zeros(padding, dtype=np.uint8)])
+    code_units = 0x80 + bits.reshape(-1, 15).astype(np.int64) @ (1 << np.arange(14, -1, -1))
+    if padding >= 8:
+        code_units[-1] = 0x8080 + ((code_units[-1] - 0x80) >> 8)
+    return code_units.astype('<u2').tobytes().decode('utf-16-le')
 
 def compress(data: str) -> str:
     """
     Compresses string data using lzma (the .lzma "alone" format, which the
-    report's lzma1 decoder reads) and encodes it as base122 (see encode_base122()).
+    report's lzma1 decoder reads) and encodes it as base32768 (see encode_base32768()).
 
     Args:
         data (str): The string data to be compressed.
 
     Returns:
-        str: The base122-encoded compressed data.
+        str: The base32768-encoded compressed data.
     """
     data_bytes = data.encode()
     # a dictionary of the smallest power of two holding the data: for data under preset 6's 8 MB
@@ -99,7 +83,7 @@ def compress(data: str) -> str:
     dict_size = 1 << max(12, (len(data_bytes) - 1).bit_length())
     compressed_data = lzma.compress(data_bytes, format=lzma.FORMAT_ALONE,
         filters=[{"id": lzma.FILTER_LZMA1, "preset": 6, "dict_size": dict_size}])
-    return encode_base122(compressed_data)
+    return encode_base32768(compressed_data)
 
 def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
     '''Convert a dictionary of Python objects to JavaScript code.
@@ -124,10 +108,10 @@ def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
             texts[name] = json.dumps(serialize_dict(data))
 
     os.makedirs(destination_path, exist_ok=True)
-    # UTF-8 with a BOM, which makes browsers read it as UTF-8 even when a server announces another
-    # charset; newline='' keeps the encoded text's line feeds as they are (no CR on Windows)
-    with open(f'{destination_path}/{filename}.js', 'w', encoding='utf-8-sig', newline='') as js_data_wrapper:
-        js_data_wrapper.write(f'var report_data = `{compress(json.dumps(texts))}`;')
+    # UTF-16 (little-endian) with a BOM, which makes browsers read it as UTF-16 even when a server
+    # announces another charset; newline='' writes the text as it is on every system
+    with open(f'{destination_path}/{filename}.js', 'w', encoding='utf-16-le', newline='') as js_data_wrapper:
+        js_data_wrapper.write('\ufeff' + f'var report_data = `{compress(json.dumps(texts))}`;')
 
 def layer_to_topojson(layer: QgsVectorLayer) -> dict:
     """Converts a vector layer into quantized TopoJSON (see MAP_QUANTIZATION)"""

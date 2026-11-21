@@ -322,57 +322,46 @@ function objectMap(obj, fn) {
     );
 }
 
-// The 7-bit values base122 doesn't write as is in data.js (BASE122_BANNED in WebExporter.py)
-const BASE122_BANNED = [0x00, 0x0D, 0x24, 0x5C, 0x60];
-
 /**
- * Decodes base122 text (written by encode_base122() in WebExporter.py) back to its bytes. Each
- * character below U+0080 is a 7-bit chunk; above, U+0080 + (index * 128 + chunk) is the banned
- * chunk BASE122_BANNED[index] followed by that chunk, or with the index after the last banned one,
- * only that chunk (the last). The bits left over at the end are the encoder's padding.
- * @param {string} text - The base122 text.
+ * Decodes base32768 text (written by encode_base32768() in WebExporter.py) back to its bytes. Each
+ * character U+0080 to U+807F is a 15-bit chunk (its code - 0x80); a last character from U+8080 is
+ * a last chunk of 7 bits (its code - 0x8080). The bits left over at the end are the padding.
+ * @param {string} text - The base32768 text.
  * @returns {Uint8Array} The decoded bytes.
  */
-function decodeBase122(text) {
-    const bytes = new Uint8Array(Math.ceil(text.length * 14 / 8));
+function decodeBase32768(text) {
+    const bytes = new Uint8Array(Math.ceil(text.length * 15 / 8));
     let byteCount = 0;
-    let buffer = 0; // the bits not yet written, at most 14 after a chunk is added
+    let buffer = 0; // the bits not yet written, at most 22 after a chunk is added
     let bufferBits = 0;
-    const addChunk = (chunk) => {
-        buffer = ((buffer << 7) | chunk) & 0x3FFF;
-        bufferBits += 7;
-        if (bufferBits >= 8) {
-            bufferBits -= 8;
-            bytes[byteCount++] = buffer >> bufferBits;
-            buffer &= (1 << bufferBits) - 1;
-        }
-    };
     for (let i = 0; i < text.length; i++) {
         const code = text.charCodeAt(i);
-        if (code < 0x80) {
-            addChunk(code);
-            continue;
+        if (code >= 0x80 && code < 0x8080) {
+            buffer = (buffer << 15) | (code - 0x80);
+            bufferBits += 15;
+        } else if (code >= 0x8080 && code < 0x8100 && i === text.length - 1) {
+            buffer = (buffer << 7) | (code - 0x8080);
+            bufferBits += 7;
+        } else {
+            throw new Error("Invalid base32768 data");
         }
-        const value = code - 0x80;
-        const bannedIndex = value >> 7;
-        if (bannedIndex < BASE122_BANNED.length) {
-            addChunk(BASE122_BANNED[bannedIndex]);
-        } else if (bannedIndex > BASE122_BANNED.length) {
-            throw new Error("Invalid base122 data");
+        while (bufferBits >= 8) {
+            bufferBits -= 8;
+            bytes[byteCount++] = buffer >> bufferBits;
         }
-        addChunk(value & 0x7F);
+        buffer &= (1 << bufferBits) - 1;
     }
     return bytes.subarray(0, byteCount);
 }
 
 /**
- * Decompresses a base122-encoded lzma string (.lzma "alone" format, written by WebExporter.py)
+ * Decompresses a base32768-encoded lzma string (.lzma "alone" format, written by WebExporter.py)
  * back to its original form.
- * @param {string} data - The base122-encoded compressed data string.
+ * @param {string} data - The base32768-encoded compressed data string.
  * @returns {string} The decompressed string.
  */
 function decompress(data) {
-    return lzma1.decompressString(decodeBase122(data));
+    return lzma1.decompressString(decodeBase32768(data));
 }
 
 /**
