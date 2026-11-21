@@ -5,7 +5,7 @@ import os
 import shutil as sh
 import io
 import zipfile
-from typing import Optional
+from typing import List, Optional
 from .TopoJSONBuilder import geojson_to_topojson
 import lzma
 
@@ -115,6 +115,40 @@ def table_to_tenths(table: pd.DataFrame) -> Optional[np.ndarray]:
         values = table.round(1).to_numpy(dtype=float)
     except (TypeError, ValueError):
         return None
+    return rounded_to_tenths(values)
+
+def tables_to_tenths(tables: List[pd.DataFrame]) -> Optional[np.ndarray]:
+    """
+    The tables' values as table_to_tenths() gives them, stacked (one table per first index). Tables
+    of float and integer columns only are converted together, much faster than one by one.
+
+    Args:
+        tables (list[DataFrame]): Tables of the same shape.
+
+    Returns:
+        ndarray | None: The stacked int32 tenths, or None when a table must stay CSV.
+    """
+    if all(pd.api.types.is_float_dtype(dtype)
+           or (pd.api.types.is_integer_dtype(dtype) and not pd.api.types.is_bool_dtype(dtype))
+           for table in tables for dtype in table.dtypes):
+        # np.round is what DataFrame.round() applies to each column
+        return rounded_to_tenths(np.round(np.stack([table.to_numpy(dtype=float) for table in tables]), 1))
+    place_values = [table_to_tenths(table) for table in tables]
+    if any(values is None for values in place_values):
+        return None
+    return np.stack(place_values)
+
+def rounded_to_tenths(values: np.ndarray) -> Optional[np.ndarray]:
+    """
+    Values rounded to 0.1 as int32 tenths, ZARR_FILL_VALUE for NaN (empty cells).
+
+    Args:
+        values (ndarray): The rounded values (float).
+
+    Returns:
+        ndarray | None: The int32 tenths, or None when a value can't be read back exactly as tenths
+            / 10 (infinite, -0.0, not a whole number of tenths, beyond int32).
+    """
     filled = ~np.isnan(values)
     tenths = np.rint(values * 10)
     if (not np.isfinite(values[filled]).all()
@@ -177,11 +211,11 @@ def numeric_table_array(name: str, data) -> Optional[tuple]:
         if any([str(label) for label in table.columns] != columns or len(table) != len(tables[0])
                for table in tables):
             return None
-        place_values = [table_to_tenths(table) for table in tables]
-        if any(values is None for values in place_values) or place_values[0].size == 0:
+        values = tables_to_tenths(tables)
+        if values is None or values.size == 0:
             return None
         rows = [[str(label) for label in table.index] for table in tables]
-        return np.stack(place_values), {
+        return values, {
             **attributes, '_ARRAY_DIMENSIONS': ['place', f'{name}_rows', f'{name}_columns'],
             'places': [str(place) for place in data],
             # one list when every place has the same rows, else one per place (e.g. similar years)
