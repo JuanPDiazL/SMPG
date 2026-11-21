@@ -1,4 +1,4 @@
-// This file contains the main logic that initializes the page
+﻿// This file contains the main logic that initializes the page
 
 "use strict";
 

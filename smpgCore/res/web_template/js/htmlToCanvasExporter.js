@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 function cropCanvas(canvas, x1, y1, x2, y2) {
     // Get cropped original canvas data
     var imgData = canvas.getContext('2d').getImageData(x1, y1, x2, y2);

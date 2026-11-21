@@ -1,4 +1,4 @@
-// This file contains the cards' help: the texts shown by a card's help button, and the functions
+﻿// This file contains the cards' help: the texts shown by a card's help button, and the functions
 // that show them. A card's help is chosen in its layout entry (smpgOpts.help, one of the ids of
 // HELP_TEXTS). The texts are part of the report, so they work without internet; only the link to
 // the user guide needs a connection. They describe the cards' charts and tables, so they change

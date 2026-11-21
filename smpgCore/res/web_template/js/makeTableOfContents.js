@@ -1,4 +1,4 @@
-// This file contains the Rich Text card's tables of contents: a placeholder in edit mode, replaced
+﻿// This file contains the Rich Text card's tables of contents: a placeholder in edit mode, replaced
 // in view mode by a list of links to the card's headings.
 
 "use strict";

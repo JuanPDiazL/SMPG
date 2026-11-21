@@ -1,4 +1,4 @@
-// This file contains utility functions and options
+﻿// This file contains utility functions and options
 
 "use strict";
 
@@ -757,11 +757,15 @@ function buildLayoutExport() {
 }
 
 /**
- * Renders the current widget layout as the text content of a layout.js file.
+ * Renders the current widget layout as the text content of a layout.js file. It's ASCII only:
+ * other characters (from Rich Text, place names…) are written as \u escapes, which only occur in
+ * its strings, so the file reads the same whatever encoding an editor saves or a server announces.
  * @returns {string} Source text in the same "var layout = {...};" form as data/layout.js.
  */
 function buildLayoutJsContent() {
-    return `var layout = ${JSON.stringify(buildLayoutExport(), null, 4)};\n`;
+    const json = JSON.stringify(buildLayoutExport(), null, 4)
+        .replace(/[^\x00-\x7F]/g, (character) => "\\u" + character.charCodeAt(0).toString(16).padStart(4, "0"));
+    return `var layout = ${json};\n`;
 }
 
 // The layout.js content last saved (downloaded or copied in the Save layout window), or loaded

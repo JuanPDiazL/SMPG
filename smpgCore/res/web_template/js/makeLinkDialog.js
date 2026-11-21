@@ -1,4 +1,4 @@
-// This file contains the Rich Text card's links: website links (TinyMCE's own dialog), report
+﻿// This file contains the Rich Text card's links: website links (TinyMCE's own dialog), report
 // view links (place and modify_layout hash parameters) and section links (headings of the same
 // card)
 

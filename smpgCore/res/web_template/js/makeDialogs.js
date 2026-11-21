@@ -1,4 +1,4 @@
-// This file contains the report's windows (w3-modal dialogs): the warning window, About this data,
+﻿// This file contains the report's windows (w3-modal dialogs): the warning window, About this data,
 // Save layout, and Rename window. Each is built the first time it opens, then reused.
 
 "use strict";

@@ -1,4 +1,4 @@
-// This file contains the code to construct the rich text editor card
+﻿// This file contains the code to construct the rich text editor card
 
 "use strict";
 

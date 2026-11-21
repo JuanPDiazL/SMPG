@@ -1,4 +1,4 @@
-// This file contains the year in view: a past year shown next to the current season, chosen with
+﻿// This file contains the year in view: a past year shown next to the current season, chosen with
 // the header's selector
 
 "use strict";

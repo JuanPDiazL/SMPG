@@ -1,4 +1,4 @@
-// This file contains the Rich Text card's place text blocks: parts of the text that view mode only
+﻿// This file contains the Rich Text card's place text blocks: parts of the text that view mode only
 // shows while their place is selected. Edit mode always shows them, highlighted.
 
 "use strict";

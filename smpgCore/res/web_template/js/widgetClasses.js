@@ -1,4 +1,4 @@
-// This file contains the classes and code to construct the widgets that
+﻿// This file contains the classes and code to construct the widgets that
 // contain the plots, maps, and other type of data
 
 // The radius of the scatter series' points (billboard.js's default) and of a marker's point (see

@@ -1,4 +1,4 @@
-const GS_H_RES = layout.general.gridstack.xResolution;
+﻿const GS_H_RES = layout.general.gridstack.xResolution;
 const GS_V_RES = layout.general.gridstack.yResolution;
 const GS_H_CELL_SIZE = Math.round(layout.general.gridstack.xResolution * layout.general.gridstack.widgetWidth);
 const GS_V_CELL_SIZE = Math.round(layout.general.gridstack.yResolution * layout.general.gridstack.widgetHeight);

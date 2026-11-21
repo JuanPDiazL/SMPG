@@ -1,4 +1,4 @@
-// This file contains the map legends, as JSON data: each legend's classes, in order, with their
+﻿// This file contains the map legends, as JSON data: each legend's classes, in order, with their
 // label and color, and the values they take. A class takes a value equal to its "value", or one
 // between its "min" and "max" (either can be left out); "min" is included and "max" isn't, unless
 // "minIncluded" or "maxIncluded" say otherwise (on the class, or on the legend for all its

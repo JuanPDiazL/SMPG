@@ -1,4 +1,4 @@
-// This file contains utility functions and options for the plots
+﻿// This file contains utility functions and options for the plots
 
 "use strict";
 

@@ -1,4 +1,4 @@
-// This file contains the code to construct the map
+﻿// This file contains the code to construct the map
 
 "use strict";
 
