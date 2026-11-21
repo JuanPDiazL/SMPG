@@ -1,0 +1,11 @@
+# Text files are stored and checked out with LF line endings, on every system
+* text=auto eol=lf
+
+# Bundled libraries stay exactly as distributed
+smpgCore/res/web_template/js/libraries/** -text
+smpgCore/res/web_template/css/libraryStyles/** -text
+
+# Binary files
+*.png binary
+*.ico binary
+*.woff2 binary

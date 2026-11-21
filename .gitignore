@@ -3,5 +3,7 @@
 **/*.code-workspace
 **/*.prof
 **/.*
+!.gitattributes
+!.git-blame-ignore-revs
 smpgCore/res/web_template/data/*
 !smpgCore/res/web_template/data/layout.js
