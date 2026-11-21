@@ -5,7 +5,6 @@ import os
 import shutil as sh
 from .TopoJSONBuilder import geojson_to_topojson
 import lzma
-import base64
 
 from qgis.core import (
     QgsVectorLayer,
@@ -19,6 +18,10 @@ from ..structures import Dataset
 # km-sized places, and the encoded map is about half as large. Slivers may collapse to nothing or
 # flip their winding; the report rewinds them (rewindInvertedPolygons() in js/makeMap.js).
 MAP_QUANTIZATION = 1e5
+
+# The characters base122 doesn't write as is in data.js's template literal (see encode_base122()):
+# NUL, CR (read as LF in a template literal), $ (${ starts a substitution), \ and `
+BASE122_BANNED = (0x00, 0x0D, 0x24, 0x5C, 0x60)
 
 def serialize_dict(input_dict: dict):
     '''Recursively serializes a dictionary and its nested dictionaries to a flattened format.
@@ -41,16 +44,54 @@ def serialize_dict(input_dict: dict):
             serialized_dict[key] = value
     return serialized_dict
 
+def encode_base122(data: bytes) -> str:
+    """
+    Encodes bytes as text for a JavaScript template literal, 7 bits per character (base122).
+
+    The bits are read in 7-bit chunks, each written as the ASCII character of that value, except
+    the values a template literal can't hold as is (BASE122_BANNED): such a chunk and the next one
+    are written together as one character, U+0080 + (its index in BASE122_BANNED * 128 + the next
+    chunk), two bytes in UTF-8; a banned last chunk uses index len(BASE122_BANNED). About 87.5%
+    of the file is data (base64: 75%). Decoded by decodeBase122() in the report's js/utils.js.
+
+    Args:
+        data (bytes): The bytes to encode.
+
+    Returns:
+        str: The encoded text (UTF-8 to be written as such).
+    """
+    bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
+    chunk_count = -(-len(bits) // 7)
+    bits = np.concatenate([bits, np.zeros(chunk_count * 7 - len(bits), dtype=np.uint8)])
+    chunks = bits.reshape(-1, 7).astype(np.int64) @ (1 << np.arange(6, -1, -1))
+
+    banned_index = np.full(128, -1, dtype=np.int64)
+    banned_index[list(BASE122_BANNED)] = np.arange(len(BASE122_BANNED))
+    code_points = chunks.copy()
+    is_kept = np.ones(chunk_count, dtype=bool)
+    # in order: a banned chunk takes the next one with it, and a taken chunk isn't checked
+    taken = -1
+    for i in np.flatnonzero(banned_index[chunks] >= 0).tolist():
+        if i == taken:
+            continue
+        if i + 1 < chunk_count:
+            code_points[i] = 0x80 + (banned_index[chunks[i]] << 7) + chunks[i + 1]
+            is_kept[i + 1] = False
+            taken = i + 1
+        else:
+            code_points[i] = 0x80 + (len(BASE122_BANNED) << 7) + chunks[i]
+    return code_points[is_kept].astype('<u4').tobytes().decode('utf-32-le')
+
 def compress(data: str) -> str:
     """
     Compresses string data using lzma (the .lzma "alone" format, which the
-    report's lzma1 decoder reads) and encodes it as base64.
+    report's lzma1 decoder reads) and encodes it as base122 (see encode_base122()).
 
     Args:
         data (str): The string data to be compressed.
 
     Returns:
-        str: A base64-encoded string representing the compressed data.
+        str: The base122-encoded compressed data.
     """
     data_bytes = data.encode()
     # a dictionary of the smallest power of two holding the data: for data under preset 6's 8 MB
@@ -58,8 +99,7 @@ def compress(data: str) -> str:
     dict_size = 1 << max(12, (len(data_bytes) - 1).bit_length())
     compressed_data = lzma.compress(data_bytes, format=lzma.FORMAT_ALONE,
         filters=[{"id": lzma.FILTER_LZMA1, "preset": 6, "dict_size": dict_size}])
-    compressed_data = base64.b64encode(compressed_data).decode("ascii")
-    return compressed_data
+    return encode_base122(compressed_data)
 
 def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
     '''Convert a dictionary of Python objects to JavaScript code.
@@ -84,7 +124,9 @@ def data_py_to_js(data_bundle: dict, destination_path: str, filename: str):
             texts[name] = json.dumps(serialize_dict(data))
 
     os.makedirs(destination_path, exist_ok=True)
-    with open(f'{destination_path}/{filename}.js', 'w') as js_data_wrapper:
+    # UTF-8 with a BOM, which makes browsers read it as UTF-8 even when a server announces another
+    # charset; newline='' keeps the encoded text's line feeds as they are (no CR on Windows)
+    with open(f'{destination_path}/{filename}.js', 'w', encoding='utf-8-sig', newline='') as js_data_wrapper:
         js_data_wrapper.write(f'var report_data = `{compress(json.dumps(texts))}`;')
 
 def layer_to_topojson(layer: QgsVectorLayer) -> dict:

@@ -322,19 +322,57 @@ function objectMap(obj, fn) {
     );
 }
 
+// The 7-bit values base122 doesn't write as is in data.js (BASE122_BANNED in WebExporter.py)
+const BASE122_BANNED = [0x00, 0x0D, 0x24, 0x5C, 0x60];
+
 /**
- * Decompresses a base64-encoded lzma string (.lzma "alone" format, written by WebExporter.py)
+ * Decodes base122 text (written by encode_base122() in WebExporter.py) back to its bytes. Each
+ * character below U+0080 is a 7-bit chunk; above, U+0080 + (index * 128 + chunk) is the banned
+ * chunk BASE122_BANNED[index] followed by that chunk, or with the index after the last banned one,
+ * only that chunk (the last). The bits left over at the end are the encoder's padding.
+ * @param {string} text - The base122 text.
+ * @returns {Uint8Array} The decoded bytes.
+ */
+function decodeBase122(text) {
+    const bytes = new Uint8Array(Math.ceil(text.length * 14 / 8));
+    let byteCount = 0;
+    let buffer = 0; // the bits not yet written, at most 14 after a chunk is added
+    let bufferBits = 0;
+    const addChunk = (chunk) => {
+        buffer = ((buffer << 7) | chunk) & 0x3FFF;
+        bufferBits += 7;
+        if (bufferBits >= 8) {
+            bufferBits -= 8;
+            bytes[byteCount++] = buffer >> bufferBits;
+            buffer &= (1 << bufferBits) - 1;
+        }
+    };
+    for (let i = 0; i < text.length; i++) {
+        const code = text.charCodeAt(i);
+        if (code < 0x80) {
+            addChunk(code);
+            continue;
+        }
+        const value = code - 0x80;
+        const bannedIndex = value >> 7;
+        if (bannedIndex < BASE122_BANNED.length) {
+            addChunk(BASE122_BANNED[bannedIndex]);
+        } else if (bannedIndex > BASE122_BANNED.length) {
+            throw new Error("Invalid base122 data");
+        }
+        addChunk(value & 0x7F);
+    }
+    return bytes.subarray(0, byteCount);
+}
+
+/**
+ * Decompresses a base122-encoded lzma string (.lzma "alone" format, written by WebExporter.py)
  * back to its original form.
- * @param {string} data - The base64-encoded compressed data string.
+ * @param {string} data - The base122-encoded compressed data string.
  * @returns {string} The decompressed string.
  */
 function decompress(data) {
-    const compressedData = atob(data);
-    const compressedDataBin = new Uint8Array(compressedData.length);
-    for (let i = 0; i < compressedData.length; i++) {
-        compressedDataBin[i] = compressedData.charCodeAt(i);
-    }
-    return lzma1.decompressString(compressedDataBin);
+    return lzma1.decompressString(decodeBase122(data));
 }
 
 /**

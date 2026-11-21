@@ -48,13 +48,6 @@ Its main use in the plugin is to compress data in order to reduce the size of
 data for the web report. The report decompresses it with the bundled lzma1 
 decoder (`js/libraries/lzma1.min.js`).
 
-## base64
-
-It is a Python built-in library.
-Its is used mainly to encode binary data in Base64 format, which can be read by 
-a web browser without the need of fetching external resources and triggering 
-security warnings.
-
 ## os
 
 It is a Python built-in library.
